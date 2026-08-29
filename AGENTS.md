@@ -23,3 +23,51 @@ attribution into the repo.
 This rule was added after a prior commit (`Puku CLI` / `Opus 4.8`,
 `noreply@puku.sh`) landed on GitHub with tool identity in the author and
 trailer fields. Don't repeat that.
+
+## Check dependency versions before implementing something new
+
+Before implementing something for the first time — a new feature, a new
+dependency, or the first time touching a given part of the stack — verify
+that the libraries, frameworks, and other dependencies involved are on a
+current **stable** release, not just whatever is newest. The newest release
+is sometimes unstable or carries known regressions; prefer the latest
+version that is actually documented as stable, and skim its changelog/
+release notes/issue tracker for known bugs before adopting it.
+
+Don't repeat this check on every task — log it instead:
+
+1. Read [docs/status/dependency-check-log.md](docs/status/dependency-check-log.md)
+   for the most recent entry that covers the dependency/dependencies you're
+   about to use.
+2. If that entry is **less than 3 days old**, skip re-checking and go with
+   what's already recorded.
+3. Otherwise (no entry, entry older than 3 days, or it doesn't cover what
+   you need), do the check now and append a new dated entry in that file
+   before you start implementing.
+
+This applies to first-time integrations and new/big features. Routine small
+edits to a dependency you're already using in this codebase don't need a
+fresh check every time.
+
+## Research before implementing or changing something
+
+When starting a new feature, or improving/changing existing functionality,
+don't just implement the literal instruction as given — first make sure the
+approach actually holds up:
+
+- It fits this codebase's existing architecture and conventions.
+- It fits the actual business/product need (check `docs/` — architecture
+  decisions, planning, PRD/BRD — not only the immediate prompt).
+- It reflects current best practice, not just whatever's fastest to type.
+
+Do your own research: search the internet for the current recommended
+approach, library, or pattern for the problem at hand instead of relying
+only on prior training knowledge, which can be outdated. If you find a
+better option than what was literally asked for, say so and propose it —
+don't silently deviate from the request, and don't silently implement a
+worse approach either; surface the trade-off and let the user decide.
+
+This applies in particular when the user explicitly asks for research, and
+whenever you're starting a new feature or a big piece of work from scratch.
+Non-trivial research findings are worth saving to
+`docs/planning/research/` so the next agent doesn't redo the same search.

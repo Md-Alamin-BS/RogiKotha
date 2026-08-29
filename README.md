@@ -11,7 +11,6 @@ RogiKotha captures the full lifecycle of the product from idea to delivery. The 
 * docs. Project documentation, design notes, and reference material.
 * RogiKotha_BRD_v1.0.docx. Business Requirements Document, version 1.0.
 * RogiKotha_Product_Requirements_Document_v1.0.docx. Product Requirements Document, version 1.0.
-* install.log. Local installation log for reference.
 * .agents, .claude, .github, _bmad, and _bmad output. Tooling, agent, and automation configuration.
 
 ## Getting Started

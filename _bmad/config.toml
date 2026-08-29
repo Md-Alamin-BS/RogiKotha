@@ -11,7 +11,7 @@
 # ─────────────────────────────────────────────────────────────────
 
 [core]
-project_name = "WMS"
+project_name = "RogiKotha"
 document_output_language = "English"
 output_folder = "{project-root}/_bmad-output"
 
