@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RogiKotha — Clinical Ledger</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-view="discover">
+
+<a class="skip" href="#main" data-i18n="a11y.skip">Skip to main content</a>
+
+<div class="ticker" role="note" aria-live="off">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<header class="bar">
+  <a class="brand" href="#discover">
+    <span class="brand-box">RK</span>
+    <span class="brand-lines">
+      <b data-i18n="brand.name">RogiKotha</b>
+      <i data-i18n="brand.tagline"></i>
+    </span>
+  </a>
+
+  <nav class="tabs" aria-label="Screens">
+    <a href="#discover" data-nav="discover" data-i18n="nav.discover"></a>
+    <a href="#results" data-nav="results" data-i18n="nav.results"></a>
+    <a href="#profile" data-nav="profile" data-i18n="nav.profile"></a>
+    <a href="#compose" data-nav="compose" data-i18n="nav.compose"></a>
+  </nav>
+
+  <div class="controls">
+    <button type="button" id="lang" class="ctl" data-i18n="a11y.lang" data-i18n-attr="title" aria-pressed="false"><span>অ</span></button>
+    <button type="button" id="theme" class="ctl" data-i18n="a11y.theme" data-i18n-attr="title"><span>◐</span></button>
+    <button type="button" id="motion" class="ctl" data-i18n="a11y.motion" data-i18n-attr="title" aria-pressed="false"><span>◌</span></button>
+    <a class="ctl" href="../../index.html" data-i18n="concept.back" data-i18n-attr="title"><span>⌘</span></a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ DISCOVER ============ -->
+  <section class="view" id="view-discover" aria-labelledby="d-h">
+    <section class="slab hero-slab">
+      <span class="stencil" data-en="PUBLIC RECORD" data-bn="জনসাধারণের নথি"></span>
+      <h1 id="d-h" data-i18n="hero.title"></h1>
+      <p class="lede" data-i18n="hero.body"></p>
+
+      <form class="search" id="search-form" role="search">
+        <label class="sr-only" for="q" data-i18n="search.label"></label>
+        <div class="search-row">
+          <input id="q" name="q" type="search" autocomplete="off" data-i18n="search.placeholder" data-i18n-attr="placeholder">
+          <button type="submit" data-i18n="search.submit"></button>
+        </div>
+        <p class="mono-note" data-i18n="search.banglish"></p>
+      </form>
+      <div class="chips" id="suggest-chips"></div>
+    </section>
+
+    <section class="slab alarm" role="note">
+      <h2 data-i18n="emergency.title"></h2>
+      <p data-i18n="emergency.body"></p>
+      <div class="dial-row">
+        <a href="tel:999" class="dial"><b>999</b><span data-en="Ambulance" data-bn="অ্যাম্বুলেন্স"></span></a>
+        <a href="tel:16263" class="dial"><b>16263</b><span data-en="Health guidance" data-bn="স্বাস্থ্য পরামর্শ"></span></a>
+        <a href="tel:09612119911" class="dial"><b>09612-119911</b><span data-i18n="emergency.crisis"></span></a>
+      </div>
+      <p class="mono-note" data-en="Last verified 21 August 2026" data-bn="সর্বশেষ যাচাই ২১ আগস্ট ২০২৬"></p>
+    </section>
+
+    <section class="how" aria-labelledby="how-h">
+      <h2 id="how-h" class="head-rule" data-i18n="how.title"></h2>
+      <div class="how-grid">
+        <article class="slab"><span class="stencil">01</span><h3 data-i18n="how.1.t"></h3><p data-i18n="how.1.b"></p></article>
+        <article class="slab"><span class="stencil">02</span><h3 data-i18n="how.2.t"></h3><p data-i18n="how.2.b"></p></article>
+        <article class="slab"><span class="stencil">03</span><h3 data-i18n="how.3.t"></h3><p data-i18n="how.3.b"></p></article>
+      </div>
+    </section>
+
+    <section class="ledger-preview" aria-labelledby="lp-h">
+      <h2 id="lp-h" class="head-rule" data-en="Latest entries" data-bn="সাম্প্রতিক এন্ট্রি"></h2>
+      <div class="table-scroll"><table class="ledger" id="entry-table"></table></div>
+    </section>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="view" id="view-results" hidden>
+    <section class="slab">
+      <span class="stencil" data-i18n="nav.results"></span>
+      <h1 class="query-line"></h1>
+      <p class="resolved" id="resolved-note"></p>
+      <div class="meta-row">
+        <span id="result-count" class="mono-note"></span>
+        <label class="sort"><span data-i18n="sort.label"></span>
+          <select id="sort">
+            <option value="relevance" data-i18n="sort.relevance"></option>
+            <option value="volume" data-i18n="sort.volume"></option>
+            <option value="recent" data-i18n="sort.recent"></option>
+          </select>
+        </label>
+      </div>
+      <details class="why"><summary data-i18n="sort.why"></summary><p data-i18n="sort.whyBody"></p></details>
+    </section>
+
+    <div class="results-body">
+      <aside class="filters slab" aria-labelledby="f-h">
+        <h2 id="f-h" class="stencil" data-i18n="filter.title"></h2>
+        <div id="filter-fields"></div>
+        <p class="mono-note" data-i18n="filter.note"></p>
+        <button type="button" class="hard-btn small" id="clear-filters" data-i18n="filter.clear"></button>
+      </aside>
+      <div id="result-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ PROFILE ============ -->
+  <section class="view" id="view-profile" hidden><div id="profile-root"></div></section>
+
+  <!-- ============ COMPOSE ============ -->
+  <section class="view" id="view-compose" hidden><div id="compose-root"></div></section>
+
+</main>
+
+<footer class="foot">
+  <p data-i18n="disclaimer.long"></p>
+  <p class="foot-demo" data-i18n="demo.banner"></p>
+</footer>
+
+<script src="../../shared/rogikotha-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

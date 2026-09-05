@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RogiKotha — two UI directions</title>
+<link rel="stylesheet" href="gallery.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to main content</a>
+
+<p class="demo" role="note">Design exploration — fictional records, not a real service. Nothing here is production UI.</p>
+
+<header class="head">
+  <h1>RogiKotha</h1>
+  <p class="sub">Two directions on the same product.</p>
+  <p class="lede">
+    Both render the same fictional records and obey the same product rules, so what differs
+    between them is <em>only</em> the design. 03 is the warm editorial direction, and the only one
+    carrying the moderation console. 04 is the calm clinic, built from researched
+    healthcare-identity conventions. The numbering is kept from the wider set these two came out of.
+  </p>
+</header>
+
+<main id="main">
+
+  <section class="brief">
+    <h2>What the product actually is</h2>
+    <div class="brief-grid">
+      <div>
+        <p>
+          RogiKotha is a Bangladesh-first, bilingual platform where patients, guardians, caregivers and
+          treatment witnesses publish first-hand accounts of a <strong>single treatment episode</strong>
+          — the symptoms, the diagnosis, the medicines, what happened afterwards.
+        </p>
+        <p>
+          It is deliberately <strong>narrative-first</strong>. There are no star ratings, no calculated
+          quality score and no best-to-worst leaderboard, because the platform refuses to reduce a
+          person's treatment to a number. That single constraint is what makes this an interesting
+          design problem: <em>how do you make a directory feel decisive without a 4.8&nbsp;★?</em>
+        </p>
+        <p class="note">
+          Each direction answers that question differently. The answer is named on every card below.
+        </p>
+      </div>
+      <aside class="rules">
+        <h3>Rules every direction obeys</h3>
+        <ul>
+          <li>No number ever stands for quality — only Positive / Mixed / Negative distributions with exact counts and denominators.</li>
+          <li><b>Limited data</b> whenever the sample is sparse.</li>
+          <li>Missing values read <b>Not provided</b> or <b>No documents</b>, never <b>0</b>.</li>
+          <li>Ordering is neutral: relevance, volume or recency. There is deliberately no "highest rated" sort.</li>
+          <li><b>Registration not verified</b> on every doctor — Phase 1 has no BMDC verification.</li>
+          <li>Evidence reads <b>Documents attached — not medically validated</b>. Never "verified".</li>
+          <li>User claims render as <b>Reviewer's label</b>, never as a platform finding.</li>
+          <li>Facility feedback never touches a doctor's summaries.</li>
+          <li>Bangla and English are peers, with a live toggle. Light and dark in both.</li>
+          <li>Motion can be switched off without losing a single fact.</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <h2 class="section-head">The two directions</h2>
+
+  <div class="grid">
+
+    <article class="card c03 featured">
+      <a class="thumb" href="concepts/concept-03-luminous-editorial/index.html" aria-label="Open Luminous Editorial">
+        <span class="t-bg t03" aria-hidden="true"></span>
+        <span class="t-mark merge" aria-hidden="true">
+          <span class="orb"></span>
+          <b>Aa</b>
+          <span class="rule"></span>
+          <span class="glass"></span>
+        </span>
+      </a>
+      <div class="body">
+        <span class="idx">03 · the merge</span>
+        <h3>Luminous Editorial</h3>
+        <p>02's structure wearing a warmer, simpler skin. The typographic hierarchy, the reading measure for long patient stories and provenance in the margin — over soft depth in bone, clay and espresso.</p>
+        <dl>
+          <dt>Distribution as</dt><dd>Both answers fused: the sentence of counts, with the spectrum as a second reading of the same numbers.</dd>
+          <dt>Material</dt><dd>Warm earth tones — bone and clay in light, espresso in dark — with a terracotta anchor and a sage counterpoint. Simpler than the other two: one accent, two washes, no second hue.</dd>
+          <dt>Screens</dt><dd>8 public <b>+ the moderation console</b>.</dd>
+        </dl>
+        <a class="open" href="concepts/concept-03-luminous-editorial/index.html">Open direction 03</a>
+      </div>
+    </article>
+
+    <article class="card c04">
+      <a class="thumb" href="concepts/concept-04-quiet-clinic/index.html" aria-label="Open Quiet Clinic">
+        <span class="t-bg t04" aria-hidden="true"></span>
+        <span class="t-mark clinic" aria-hidden="true">
+          <span class="ring"></span>
+          <span class="caps"><i class="p"></i><i class="m"></i><i class="n"></i></span>
+        </span>
+      </a>
+      <div class="body">
+        <span class="idx">04</span>
+        <h3>Quiet Clinic</h3>
+        <p>The unhurried consulting room. Oat and muted teal, soft shapes, generous air, and no glass anywhere — tuned for a worried person reading at 11pm rather than for a designer's eye.</p>
+        <dl>
+          <dt>Distribution as</dt><dd>A row of separate capsules, each carrying its own count and label — proportional to each other, never slices of one bar.</dd>
+          <dt>Material</dt><dd>Opaque surfaces, large radii, pill controls, circular avatars, still linework. Serif headings against a sans interface.</dd>
+          <dt>Screens</dt><dd>8 public.</dd>
+        </dl>
+        <a class="open" href="concepts/concept-04-quiet-clinic/index.html">Open direction 04</a>
+      </div>
+    </article>
+
+  </div>
+
+  <section class="how-to">
+    <h2>The screens, and what is in them</h2>
+    <div class="screens">
+      <div><b>Discover</b><span>Search, browse by condition with counts, emergency guidance, a way into facilities.</span></div>
+      <div><b>Results</b><span>Doctors / Facilities tabs, filters, neutral sort, and a compare tray — pin up to three.</span></div>
+      <div><b>Doctor</b><span>Provenance per field, condition switcher, distributions, a condition breakdown, account filters.</span></div>
+      <div class="hero"><b>Account — the body</b><span>Thirteen sections: the story in chapters, a dated timeline, evidence in its three groups, the follow-up chain with the newest marked current, later care elsewhere, discussion, reactions, report — and <b>related accounts</b>, other people who wrote about the same condition.</span></div>
+      <div><b>Condition</b><span>Everything tagged with one condition: spread, the medicines and treatments people mentioned with frequencies, doctors written about.</span></div>
+      <div><b>Facility</b><span>Nine service criteria with their own distributions, kept structurally separate from any doctor's summaries.</span></div>
+      <div><b>Write</b><span>Add-a-doctor panel, live safety checks, the evidence pipeline through quarantine and redaction, draft autosave.</span></div>
+      <div><b>Mine</b><span>Published, encrypted drafts with expiry, private bookmarks, notifications, and the appeal path.</span></div>
+      <div class="staff"><b>Moderation — 03 only</b><span>Critical and standard lanes, reporter identity shown as restricted rather than blank, evidence quarantine with the fail-closed path, providers and claims.</span></div>
+    </div>
+
+    <h2 style="margin-top:34px">How to compare them</h2>
+    <ol>
+      <li>Walk the screens in order. The one that matters most is <b>Account</b> — it is where the product actually lives.</li>
+      <li>Hit the <b>অ</b> button. Bengali has no capitals and needs far more leading, so each direction rebuilds its type scale for the script rather than swapping strings into a Latin one. Numerals switch too. This is where most "beautiful" designs quietly break.</li>
+      <li>Hit <b>◐</b> for the other colour mode, then <b>◌</b> to kill motion. Nothing should become unreadable or disappear.</li>
+      <li>Narrow the window to phone width. Margins should fold under the text, not vanish.</li>
+      <li>Then ask the real question: <em>on the doctor page, do you feel able to decide anything?</em> That is the whole bet of a product with no star ratings.</li>
+    </ol>
+    <p class="note">
+      No build step and no dependencies. Open this file directly, or serve the folder with
+      <code>python -m http.server 4173</code>. Nothing loads from the network.
+    </p>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <p>
+    Everything shown is fictional and synthetic. No real doctor, facility, patient, BMDC number or
+    document is represented. Provider marks are deterministic generated geometry derived from a name
+    hash — never a photograph or likeness of a person. Five earlier directions are kept in <code>.archive/</code>. Every palette here is
+    verified against WCAG AA from the tokens as shipped.
+  </p>
+</footer>
+
+</body>
+</html>

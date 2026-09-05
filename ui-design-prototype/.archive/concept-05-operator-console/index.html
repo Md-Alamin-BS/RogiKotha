@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RogiKotha — Operator Console</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-view="discover">
+
+<div class="blueprint" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+
+<a class="skip" href="#main" data-i18n="a11y.skip">Skip to main content</a>
+
+<header class="hud">
+  <a class="brand" href="#discover">
+    <svg class="brand-glyph" viewBox="0 0 32 32" aria-hidden="true">
+      <circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="7"/><path d="M16 3v26M3 16h26"/>
+    </svg>
+    <span class="brand-text"><b data-i18n="brand.name"></b><i data-i18n="brand.tagline"></i></span>
+  </a>
+
+  <nav class="tabs" aria-label="Screens">
+    <a href="#discover" data-nav="discover"><span class="idx">01</span><span data-i18n="nav.discover"></span></a>
+    <a href="#results" data-nav="results"><span class="idx">02</span><span data-i18n="nav.results"></span></a>
+    <a href="#profile" data-nav="profile"><span class="idx">03</span><span data-i18n="nav.profile"></span></a>
+    <a href="#compose" data-nav="compose"><span class="idx">04</span><span data-i18n="nav.compose"></span></a>
+  </nav>
+
+  <button type="button" class="cmd-open" id="cmd-open">
+    <span data-en="Command" data-bn="কমান্ড"></span><kbd>Ctrl K</kbd>
+  </button>
+
+  <div class="controls">
+    <button type="button" id="lang" class="ctl" data-i18n="a11y.lang" data-i18n-attr="title" aria-pressed="false"><span>অ</span></button>
+    <button type="button" id="theme" class="ctl" data-i18n="a11y.theme" data-i18n-attr="title"><span>◐</span></button>
+    <button type="button" id="motion" class="ctl" data-i18n="a11y.motion" data-i18n-attr="title" aria-pressed="false"><span>◌</span></button>
+    <a class="ctl" href="../../index.html" data-i18n="concept.back" data-i18n-attr="title"><span>⌘</span></a>
+  </div>
+</header>
+
+<p class="strip" role="note">
+  <span class="dot-live" aria-hidden="true"></span>
+  <span data-i18n="demo.banner"></span>
+  <span class="sep">/</span>
+  <span data-i18n="disclaimer.short"></span>
+</p>
+
+<main id="main">
+
+  <!-- ============ DISCOVER ============ -->
+  <section class="view" id="view-discover" aria-labelledby="d-h">
+    <div class="console-grid">
+      <section class="pane pane-main">
+        <span class="pane-label">01 / <span data-i18n="nav.discover"></span></span>
+        <h1 id="d-h" data-i18n="hero.title"></h1>
+        <p class="lede" data-i18n="hero.body"></p>
+
+        <form class="search" id="search-form" role="search">
+          <label class="sr-only" for="q" data-i18n="search.label"></label>
+          <div class="search-row">
+            <span class="prompt" aria-hidden="true">&gt;</span>
+            <input id="q" name="q" type="search" autocomplete="off" data-i18n="search.placeholder" data-i18n-attr="placeholder">
+            <button type="submit" class="btn" data-i18n="search.submit"></button>
+          </div>
+          <p class="hint" data-i18n="search.banglish"></p>
+        </form>
+        <div class="chips" id="suggest-chips"></div>
+
+        <div class="how-grid">
+          <article><span class="pane-label">01</span><h3 data-i18n="how.1.t"></h3><p data-i18n="how.1.b"></p></article>
+          <article><span class="pane-label">02</span><h3 data-i18n="how.2.t"></h3><p data-i18n="how.2.b"></p></article>
+          <article><span class="pane-label">03</span><h3 data-i18n="how.3.t"></h3><p data-i18n="how.3.b"></p></article>
+        </div>
+      </section>
+
+      <aside class="pane pane-side">
+        <span class="pane-label" data-en="Priority" data-bn="অগ্রাধিকার"></span>
+        <div class="alert">
+          <h2 data-i18n="emergency.title"></h2>
+          <p data-i18n="emergency.body"></p>
+          <div class="dials">
+            <a href="tel:999"><b>999</b><span data-en="Ambulance" data-bn="অ্যাম্বুলেন্স"></span></a>
+            <a href="tel:16263"><b>16263</b><span data-en="Health guidance" data-bn="স্বাস্থ্য পরামর্শ"></span></a>
+            <a href="tel:09612119911"><b>09612-119911</b><span data-i18n="emergency.crisis"></span></a>
+          </div>
+          <p class="hint" data-en="Last verified 21 August 2026" data-bn="সর্বশেষ যাচাই ২১ আগস্ট ২০২৬"></p>
+        </div>
+
+        <span class="pane-label" data-en="Recent entries" data-bn="সাম্প্রতিক এন্ট্রি"></span>
+        <div id="recent-stream" class="recent-stream"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="view" id="view-results" hidden>
+    <div class="console-grid triple">
+      <aside class="pane pane-filters" aria-labelledby="f-h">
+        <span class="pane-label" id="f-h" data-i18n="filter.title"></span>
+        <div id="filter-fields"></div>
+        <p class="hint" data-i18n="filter.note"></p>
+        <button type="button" class="btn ghost block" id="clear-filters" data-i18n="filter.clear"></button>
+      </aside>
+
+      <section class="pane pane-stream">
+        <span class="pane-label">02 / <span data-i18n="nav.results"></span></span>
+        <h1 class="query-line"></h1>
+        <p class="resolved" id="resolved-note"></p>
+        <div class="meta-row">
+          <span id="result-count" class="hint"></span>
+          <label class="sort"><span data-i18n="sort.label"></span>
+            <select id="sort">
+              <option value="relevance" data-i18n="sort.relevance"></option>
+              <option value="volume" data-i18n="sort.volume"></option>
+              <option value="recent" data-i18n="sort.recent"></option>
+            </select>
+          </label>
+        </div>
+        <details class="why"><summary data-i18n="sort.why"></summary><p data-i18n="sort.whyBody"></p></details>
+        <div id="result-list" class="stream"></div>
+      </section>
+
+      <aside class="pane pane-inspect" aria-live="polite">
+        <span class="pane-label" data-en="Inspector" data-bn="ইন্সপেক্টর"></span>
+        <div id="inspector"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ PROFILE ============ -->
+  <section class="view" id="view-profile" hidden><div id="profile-root"></div></section>
+
+  <!-- ============ COMPOSE ============ -->
+  <section class="view" id="view-compose" hidden><div id="compose-root"></div></section>
+
+</main>
+
+<div class="palette" id="palette" hidden>
+  <div class="palette-box" role="dialog" aria-modal="true" aria-label="Command palette">
+    <input type="text" id="palette-input" autocomplete="off" placeholder="Type a command…">
+    <ul id="palette-list" role="listbox"></ul>
+    <p class="palette-foot" data-en="Every command here also exists as a visible button." data-bn="এখানকার প্রতিটি কমান্ড দৃশ্যমান বাটন হিসেবেও আছে।"></p>
+  </div>
+</div>
+
+<footer class="foot">
+  <p data-i18n="disclaimer.long"></p>
+  <p class="foot-demo" data-i18n="demo.banner"></p>
+</footer>
+
+<script src="../../shared/rogikotha-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
