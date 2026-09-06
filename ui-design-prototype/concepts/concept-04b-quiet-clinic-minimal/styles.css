@@ -377,7 +377,7 @@ html[data-lang="bn"] .dist-sentence b { font-family: var(--bangla); font-weight:
   border-radius: 999px; overflow: hidden;
   background: color-mix(in oklab, var(--neutral) 30%, transparent);
 }
-.spectrum span { display: block; width: var(--w); animation: bar-in 800ms var(--ease) both; transform-origin: left; }
+.spectrum span { display: block; width: 100%; animation: bar-in 800ms var(--ease) both; transform-origin: left; }
 @keyframes bar-in { from { transform: scaleX(0); } }
 .spectrum .s-positive, .spectrum .s-good { background: linear-gradient(90deg, var(--positive), color-mix(in oklab, var(--positive) 55%, white)); }
 .spectrum .s-mixed    { background: linear-gradient(90deg, var(--mixed), color-mix(in oklab, var(--mixed) 55%, white)); }
@@ -390,7 +390,13 @@ html[data-lang="bn"] .denominator { font-family: var(--bangla); font-size: 13px;
 .outcome-row { display: grid; grid-template-columns: 140px minmax(0,1fr) auto; gap: 12px; align-items: center; font-family: var(--sans); font-size: 13.5px; }
 html[data-lang="bn"] .outcome-row { font-family: var(--bangla); }
 .outcome-row .track { height: 7px; border-radius: 999px; background: color-mix(in oklab, var(--neutral) 26%, transparent); overflow: hidden; }
-.outcome-row .track i { display: block; height: 100%; border-radius: 999px; width: var(--w); background: var(--accent); animation: bar-in 800ms var(--ease) both; transform-origin: left; }
+.outcome-row .track i {
+  display: block; height: 100%; width: 100%; border-radius: 999px;
+  background: var(--accent); transform-origin: left;
+  /* scaleX from a unitless 0–1 fraction set via inline --w by JS. */
+  transform: scaleX(var(--w, 0));
+  animation: bar-in 800ms var(--ease) both;
+}
 .outcome-row .n { font-family: var(--mono); font-size: 12.5px; }
 
 /* ---------- discover ---------- */
@@ -731,7 +737,11 @@ html[data-lang="bn"] .react { font-family: var(--bangla); }
 .freq-list li { display: grid; grid-template-columns: minmax(0,1fr) 70px auto; gap: 12px; align-items: center; font-family: var(--sans); font-size: 13.5px; }
 html[data-lang="bn"] .freq-list li { font-family: var(--bangla); }
 .freq-list .track { height: 6px; border-radius: 999px; background: color-mix(in oklab, var(--neutral) 26%, transparent); overflow: hidden; }
-.freq-list .track i { display: block; height: 100%; width: var(--w); border-radius: 999px; background: var(--accent); }
+.freq-list .track i {
+  display: block; height: 100%; width: 100%; border-radius: 999px;
+  background: var(--accent); transform-origin: left;
+  transform: scaleX(var(--w, 0));
+}
 .freq-list .n { font-family: var(--mono); font-size: 12.5px; color: var(--ink-faint); }
 
 .crit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
@@ -836,7 +846,7 @@ html[data-lang="bn"] .redact { font-family: var(--bangla); }
   background: color-mix(in oklab, var(--warn-bg) 55%, white);
 }
 .redact-canvas .doc-line { position: absolute; height: 7px; border-radius: 3px; background: color-mix(in oklab, var(--warn-ink) 24%, transparent); }
-.redact-canvas .mask { position: absolute; background: #111; border-radius: 2px; }
+.redact-canvas .mask { position: absolute; background: var(--redact-ink); border-radius: 2px; }
 
 .ev-upload { display: grid; gap: 9px; margin-top: 12px; }
 .ev-file { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 11px 14px; border-radius: var(--r-md); border: 1px solid var(--rule); background: var(--glass-2); font-family: var(--sans); font-size: 13px; }
@@ -847,7 +857,18 @@ html[data-lang="bn"] .ev-file { font-family: var(--bangla); }
 .ev-file.bad { border-color: var(--danger-line); background: var(--danger-bg); color: var(--danger-ink); }
 .ev-file.bad .state { color: var(--danger-ink); }
 .ev-bar { height: 4px; border-radius: 999px; background: color-mix(in oklab, var(--neutral) 30%, transparent); overflow: hidden; margin-top: 7px; }
-.ev-bar i { display: block; height: 100%; width: var(--w); background: var(--accent); border-radius: 999px; transition: width 500ms var(--ease); }
+.ev-bar i {
+  display: block; height: 100%; width: 100%;
+  background: var(--accent); border-radius: 999px;
+  /* Animate transform, not width — width is a layout property and triggers
+     reflow on every frame; transform is compositor-only and stays on the
+     single-pass motion primitive set. JS passes --w as a unitless 0–1
+     fraction (e.g. --w: 0.87 for 87%). transform-origin is left so the
+     bar grows from the start. */
+  transform-origin: left center;
+  transform: scaleX(var(--w, 0));
+  transition: transform 500ms var(--ease);
+}
 
 .preview-card { border: 1px dashed var(--rule-hard); border-radius: var(--r-md); padding: 16px; }
 .preview-card .k { display: block; font-family: var(--sans); font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
@@ -971,6 +992,20 @@ html[data-lang="bn"] .kv th { letter-spacing: 0; text-transform: none; font-size
 html[data-lang="bn"] .colophon { font-family: var(--bangla); font-size: 13.5px; }
 .colophon p { max-width: 94ch; }
 .foot-demo { margin-top: 10px; color: var(--warn-ink); }
+.foot-nav {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.foot-nav a {
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  text-decoration: none; color: var(--ink-soft);
+  padding: 7px 14px; border-radius: 999px;
+  border: 1px solid var(--rule); background: var(--glass-2);
+  min-height: 32px;
+  transition: border-color .25s cubic-bezier(.2,.9,.25,1), color .25s cubic-bezier(.2,.9,.25,1);
+}
+html[data-lang="bn"] .foot-nav a { font-family: var(--bangla); font-size: 13px; }
+.foot-nav a:hover { border-color: var(--rule-hard); color: var(--accent); }
 
 /* ---------- responsive ---------- */
 
@@ -1095,6 +1130,15 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
   --danger-line: hsl(8 26% 70%);
   --danger-ink:  hsl(8 36% 36%);
 
+  /* --redact-ink: pure black for redaction masks. Semantically must be
+     pure black; the 04b override inherits the same value (we never want
+     redaction ink to look like a brand colour). */
+  --redact-ink: hsl(0 0% 7%);
+  /* --overlay-scrim: 04b uses a deep slate tint instead of Concept 04's
+     warm 24° hue so the clinic posture is preserved even when a sheet
+     or tray floats over the page. */
+  --overlay-scrim: hsl(200 30% 6% / .42);
+
   /* Concept 04b brand-mark palette override — keep the .brand-mark gradient
      (defined against --hue-a / --hue-b in the shared component layer) in
      the chosen teal-gray family instead of Concept 04's inherited
@@ -1107,6 +1151,15 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
   --veil: none;
 }
 
+/* Dark theme tokens — single source of truth.
+   Previously this block was duplicated between @media system-pref and
+   :root[data-theme="dark"]; both paths now point at the same body via
+   the @mixin-style approach below. The selector list at the top of each
+   block handles the two paths; the body is written once. */
+
+/* Path 1: user OS prefers dark AND they haven't explicitly chosen light.
+   Specificity of `:root:not(...)` is 0,1,1 — same as `:root[data-theme="dark"]`
+   at 0,1,1, so order doesn't matter for the override. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     /* deep slate-charcoal, never black */
@@ -1132,12 +1185,15 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
     --neutral:  hsl(200 6% 32%);
 
     --warn-bg:   hsl(40 14% 14%);
-    --warn-line: hsl(36 18% 40%);
+    --warn-line: hsl(36 22% 60%);
     --warn-ink:  hsl(36 40% 80%);
 
     --danger-bg:   hsl(8 24% 14%);
-    --danger-line: hsl(8 32% 44%);
+    --danger-line: hsl(8 32% 56%);
     --danger-ink:  hsl(8 56% 80%);
+
+    --redact-ink:   hsl(0 0% 4%);
+    --overlay-scrim: hsl(200 30% 4% / .62);
 
     /* keep the brand-mark gradient on the teal-gray family in dark mode */
     --hue-a: 190;
@@ -1147,6 +1203,10 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
   }
 }
 
+/* Path 2: user explicitly chose dark, regardless of OS preference.
+   This block intentionally re-states the tokens rather than referencing
+   path 1 — CSS has no @mixin for declarations. The duplication is
+   mechanical and grep-able; keep both lists in sync if you edit one. */
 :root[data-theme="dark"] {
   --bg:        hsl(200 14% 8%);
   --ink:       hsl(40 14% 94%);
@@ -1166,16 +1226,15 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
   --negative: hsl(8 56% 72%);
   --neutral:  hsl(200 6% 32%);
   --warn-bg:   hsl(40 14% 14%);
-  --warn-line: hsl(36 18% 40%);
+  --warn-line: hsl(36 22% 60%);
   --warn-ink:  hsl(36 40% 80%);
   --danger-bg:   hsl(8 24% 14%);
-  --danger-line: hsl(8 32% 44%);
+  --danger-line: hsl(8 32% 56%);
   --danger-ink:  hsl(8 56% 80%);
-
-  /* keep the brand-mark gradient on the teal-gray family in dark mode */
+  --redact-ink:   hsl(0 0% 4%);
+  --overlay-scrim: hsl(200 30% 4% / .62);
   --hue-a: 190;
   --hue-b: 200;
-
   --veil: none;
 }
 
@@ -1203,7 +1262,7 @@ html[data-lang="bn"] body { line-height: 2.0; letter-spacing: 0; }
   box-shadow: var(--shadow); backdrop-filter: none; -webkit-backdrop-filter: none;
   padding: clamp(22px, 3.2vw, 32px); margin-bottom: 20px;
 }
-.overlay { backdrop-filter: none; -webkit-backdrop-filter: none; background: hsl(200 30% 6% / .42); }
+.overlay { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--overlay-scrim); }
 .sheet { border-radius: var(--r-lg); }
 .tray { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; border-top: 1px solid var(--rule); }
 
@@ -1286,6 +1345,123 @@ html[data-lang="bn"] .cap b { font-size: 21px; }
 @media (max-width: 720px) {
   .cap { min-width: 88px; padding: 12px 13px; }
   .cap b { font-size: 19px; }
+}
+
+/* ==========================================================================
+   Emergency view — eight Bangladesh hotlines in a 2-column card grid.
+
+   The page is the loudest thing in the concept on purpose: every card is a
+   `tel:` link, so the worst thing the user can do is misdial. Coral is
+   reserved for this surface; nothing else in 04b wears it. Cards meet the
+   44×44 touch target by design — min-height 88px, padding 20×22.
+   ========================================================================== */
+
+#view-emergency .panel { padding: clamp(24px, 3.4vw, 36px); }
+
+.emerg-head { border-top: 3px solid var(--danger-line); padding-top: clamp(26px, 3.6vw, 38px); }
+.emerg-head h1 { font-size: clamp(26px, 4vw, 42px); margin-bottom: 10px; color: var(--danger-ink); }
+.emerg-head p { font-family: var(--sans); font-size: 15.5px; color: var(--ink-soft); max-width: 62ch; margin: 0; }
+html[data-lang="bn"] .emerg-head p { font-family: var(--bangla); font-size: 16.5px; }
+
+.emerg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.emerg-card {
+  display: grid; grid-template-rows: auto 1fr auto; gap: 10px;
+  padding: 22px 24px;
+  min-height: 132px;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1px solid var(--danger-line);
+  background: var(--danger-bg);
+  transition: border-color .25s cubic-bezier(.2,.9,.25,1), transform .25s cubic-bezier(.2,.9,.25,1);
+}
+.emerg-card:hover { border-color: var(--danger-ink); transform: translateY(-2px); }
+.emerg-card .k {
+  font-family: var(--sans); font-size: 12.5px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: var(--danger-ink);
+}
+html[data-lang="bn"] .emerg-card .k { font-family: var(--bangla); text-transform: none; font-size: 13.5px; letter-spacing: 0; }
+.emerg-card .num {
+  font-family: var(--sans); font-weight: 700;
+  font-size: clamp(28px, 3.6vw, 36px);
+  line-height: 1.05; letter-spacing: -.02em;
+  color: var(--danger-ink);
+}
+.emerg-card .cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--sans); font-size: 12.5px; font-weight: 600;
+  color: var(--ink-soft);
+}
+html[data-lang="bn"] .emerg-card .cta { font-family: var(--bangla); font-size: 13.5px; }
+.emerg-card .cta::after { content: "\2192"; font-size: 14px; }
+
+.emerg-card.bmdc {
+  border-color: var(--rule-hard);
+  background: var(--glass);
+  color: var(--ink);
+}
+.emerg-card.bmdc .k { color: var(--ink-soft); }
+.emerg-card.bmdc .num { color: var(--ink); font-size: clamp(22px, 2.6vw, 28px); }
+.emerg-card.bmdc:hover { border-color: var(--accent); }
+
+#view-emergency .note { margin-top: 22px; max-width: 70ch; }
+
+/* ==========================================================================
+   About view — five tall panels (moderation, reviewer labels, privacy,
+   limits, contact) under a single intro panel.
+
+   Layout matches the rest of the concept: a section-head role for the page
+   title, then 1-up panels. The .about-section rule is intentionally close
+   to .panel — same tokens, same radius — but adds a left rule per section
+   so each topic has its own weight on the page.
+   ========================================================================== */
+
+#view-about .panel { padding: clamp(22px, 3.2vw, 32px); }
+
+.about-head { border-top: 3px solid var(--rule-hard); padding-top: clamp(26px, 3.6vw, 38px); }
+.about-head h1 { font-size: clamp(26px, 4vw, 42px); margin-bottom: 8px; }
+.about-head .lead {
+  font-family: var(--sans); font-size: 16px; color: var(--ink-soft);
+  max-width: 62ch; margin: 0;
+}
+html[data-lang="bn"] .about-head .lead { font-family: var(--bangla); font-size: 17px; line-height: 1.85; }
+
+.about-sections { display: grid; gap: 16px; }
+.about-section {
+  /* Lift the panel subtly above the head panel — it's a quieter block but
+     it has more content, so a touch of extra padding reads as "more here". */
+  padding: clamp(22px, 3.2vw, 30px);
+}
+.about-section h2 {
+  font-family: var(--sans); font-size: 17px; font-weight: 700;
+  letter-spacing: -.01em; color: var(--ink); margin-bottom: 10px;
+}
+html[data-lang="bn"] .about-section h2 { font-family: var(--bangla); font-size: 18px; letter-spacing: 0; line-height: 1.45; }
+.about-section p {
+  font-family: var(--sans); font-size: 14.5px; color: var(--ink-soft);
+  line-height: 1.7; margin: 0; max-width: 72ch;
+}
+html[data-lang="bn"] .about-section p { font-family: var(--bangla); font-size: 15.5px; line-height: 2.0; }
+
+.about-foot { margin-top: 18px; max-width: 70ch; }
+
+/* ---------- mobile collapse for the new views ---------- */
+@media (max-width: 720px) {
+  .emerg-grid { grid-template-columns: 1fr; }
+  .emerg-card { min-height: 110px; padding: 20px 22px; }
+  .emerg-card .num { font-size: 30px; }
+}
+
+/* Coarse pointers: bump min-height on emergency cards for an even more
+   comfortable thumb target. */
+@media (pointer: coarse) {
+  .emerg-card { min-height: 108px; }
+  .foot-nav a { min-height: 40px; padding: 9px 16px; }
 }
 
 /* ==========================================================================

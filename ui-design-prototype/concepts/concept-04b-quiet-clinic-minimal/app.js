@@ -79,7 +79,7 @@
     return state.motion === 'on' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
-  var VIEWS = ['discover', 'results', 'profile', 'account', 'condition', 'facility', 'compose', 'mine'];
+  var VIEWS = ['discover', 'results', 'profile', 'account', 'condition', 'facility', 'compose', 'mine', 'emergency', 'about'];
 
   function route() {
     var raw = (location.hash || '#discover').replace('#', '');
@@ -162,7 +162,7 @@
     }
     var rows = RK.OUTCOMES.map(function (k) {
       return '<div class="outcome-row"><span>' + esc(T('outcome.' + k)) + '</span>' +
-        '<span class="track"><i style="--w:' + dist.pct(k) + '%"></i></span>' +
+        '<span class="track"><i style="--w:' + (dist.pct(k) / 100) + '"></i></span>' +
         '<span class="n">' + bn(dist.counts[k]) + '/' + bn(dist.total) + '</span></div>';
     }).join('');
     return '<h3 style="font-size:15px">' + esc(T('outcome.title')) + '</h3>' +
@@ -750,7 +750,7 @@
         '<h2 style="font-size:15px">' + esc(title) + '</h2>' +
         '<ul class="freq-list">' + rows.map(function (x) {
           return '<li><span>' + esc(L(x.tag)) + '</span>' +
-            '<span class="track"><i style="--w:' + Math.round((x.count / max) * 100) + '%"></i></span>' +
+            '<span class="track"><i style="--w:' + (x.count / max) + '"></i></span>' +
             '<span class="n">' + bn(x.count) + '</span></li>';
         }).join('') + '</ul>' +
         '<p class="denominator">' + esc(T('condition.mentionNote')) + '</p>' +
@@ -1094,7 +1094,7 @@
       '<span><b>' + esc(f.name) + '</b>' +
         '<span class="state">' + esc(T('ev.state.' + (f.state === 'failed' ? 'failed' : f.state))) + '</span>' +
         (f.state === 'failed' ? '<span class="state">' + esc(T('ev.failNote')) + '</span>' : '') +
-        '<span class="ev-bar"><i style="--w:' + pct + '%"></i></span>' +
+        '<span class="ev-bar"><i style="--w:' + (pct / 100) + '"></i></span>' +
       '</span>' +
       '<span style="display:flex;gap:8px">' +
         '<button class="link-btn" type="button" data-refile="' + f.id + '">' + esc(T('ev.replace')) + '</button>' +
@@ -1258,6 +1258,81 @@
   }
 
   /* =====================================================================
+     9 · Emergency — Bangladesh national emergency contacts
+     ===================================================================== */
+
+  function renderEmergency() {
+    var host = $('#view-emergency');
+    if (!host) { return; }
+    var em = RK.config && RK.config.emergency ? RK.config.emergency : {};
+    var rows = [
+      { k: T('emergview.ambulance'), v: em.ambulance || '999',  hint: '' },
+      { k: T('emergview.healthLine'), v: em.healthLine || '16263', hint: '' },
+      { k: T('emergview.crisis'), v: em.crisisLine || '09612-119911', hint: '' }
+    ];
+    host.innerHTML =
+      '<section class="panel emerg-head">' +
+        '<span class="kicker">' + esc(T('nav.emergency')) + '</span>' +
+        '<h1>' + esc(T('emergency.title')) + '</h1>' +
+        '<p>' + esc(T('emergview.intro')) + '</p>' +
+      '</section>' +
+
+      '<div class="emerg-grid">' +
+        rows.map(function (r) {
+          return '<a class="panel emerg-card" href="tel:' + esc(r.v) + '">' +
+            '<span class="k">' + esc(r.k) + '</span>' +
+            '<span class="num">' + esc(r.v) + '</span>' +
+            '<span class="cta">' + esc(T('a11y.call')) + '</span>' +
+          '</a>';
+        }).join('') +
+        '<a class="panel emerg-card bmdc" href="https://www.bmdc.org.bd" target="_blank" rel="noopener">' +
+          '<span class="k">' + esc(T('emergview.bmdc')) + '</span>' +
+          '<span class="num">BMDC</span>' +
+          '<span class="cta">' + esc(T('emergview.bmdcBody')) + '</span>' +
+        '</a>' +
+      '</div>' +
+
+      '<p class="note" style="margin-top:18px">' +
+        esc(RK.config && RK.config.emergency && RK.config.emergency.lastVerified ?
+          P(RK.config.emergency.lastVerified) :
+          T('emergency.body')) +
+      '</p>';
+  }
+
+  /* =====================================================================
+     10 · About — methodology, moderation, privacy, limits, contact
+     ===================================================================== */
+
+  function renderAbout() {
+    var host = $('#view-about');
+    if (!host) { return; }
+    var sections = [
+      { t: T('aboutview.modTitle'),       b: T('aboutview.modBody') },
+      { t: T('aboutview.reviewerTitle'),  b: T('aboutview.reviewerBody') },
+      { t: T('aboutview.privacyTitle'),   b: T('aboutview.privacyBody') },
+      { t: T('aboutview.limitsTitle'),    b: T('aboutview.limitsBody') },
+      { t: T('aboutview.contact'),        b: T('aboutview.contactBody') }
+    ];
+    host.innerHTML =
+      '<section class="panel about-head">' +
+        '<span class="kicker">' + esc(T('nav.about')) + '</span>' +
+        '<h1>' + esc(T('aboutview.title')) + '</h1>' +
+        '<p class="lead">' + esc(T('aboutview.intro')) + '</p>' +
+      '</section>' +
+
+      '<div class="about-sections">' +
+        sections.map(function (s) {
+          return '<section class="panel about-section">' +
+            '<h2>' + esc(s.t) + '</h2>' +
+            '<p>' + esc(s.b) + '</p>' +
+          '</section>';
+        }).join('') +
+      '</div>' +
+
+      '<p class="note about-foot">' + esc(T('aboutview.lastReviewed')) + '</p>';
+  }
+
+  /* =====================================================================
      Sheets: compare, report, appeal
      ===================================================================== */
 
@@ -1332,6 +1407,7 @@
   function renderAll() {
     renderDiscover(); renderResults(); renderProfile(); renderAccount();
     renderCondition(); renderFacility(); renderCompose(); renderMine();
+    renderEmergency(); renderAbout();
     renderTray();
   }
 

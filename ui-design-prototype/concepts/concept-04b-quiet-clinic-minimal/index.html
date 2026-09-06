@@ -8,21 +8,6 @@
 </head>
 <body data-view="discover">
 
-<svg class="linework" aria-hidden="true" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
-  <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-    <circle cx="150" cy="140" r="96"/>
-    <circle cx="150" cy="140" r="58"/>
-    <path d="M980 120c-52 0-52 74 0 74s52 74 0 74"/>
-    <path d="M1060 96v196"/>
-    <path d="M120 660c62-58 132-58 194 0"/>
-    <path d="M217 660v-84"/>
-    <path d="M1010 620c-46 0-84 34-84 76h168c0-42-38-76-84-76z"/>
-    <path d="M1010 620v-72"/>
-    <path d="M1010 566c34 0 56-24 56-54-34 0-56 24-56 54z"/>
-  </g>
-</svg>
-<div class="veil" aria-hidden="true"></div>
-
 <a class="skip" href="#main" data-i18n="a11y.skip">Skip to main content</a>
 
 <p class="demo" role="note"><span data-i18n="demo.banner"></span></p>
@@ -66,6 +51,8 @@
   <section class="view" id="view-facility"  hidden></section>
   <section class="view" id="view-compose"   hidden></section>
   <section class="view" id="view-mine"      hidden></section>
+  <section class="view" id="view-emergency" hidden></section>
+  <section class="view" id="view-about"     hidden></section>
 </main>
 
 <!-- compare tray, present on results -->
@@ -92,6 +79,10 @@
 </div>
 
 <footer class="colophon">
+  <nav class="foot-nav" aria-label="Site sections">
+    <a href="#emergency" data-i18n="nav.emergency"></a>
+    <a href="#about"     data-i18n="nav.about"></a>
+  </nav>
   <p data-i18n="disclaimer.long"></p>
   <p class="foot-demo" data-i18n="demo.banner"></p>
 </footer>
