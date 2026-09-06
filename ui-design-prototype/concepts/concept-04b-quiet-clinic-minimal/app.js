@@ -45,73 +45,6 @@
   }
 
   /* =====================================================================
-     Living field — atmosphere only, never a carrier of meaning
-     ===================================================================== */
-  var Field = (function () {
-    var canvas, ctx, parts = [], raf = null, w = 0, h = 0, dpr = 1;
-
-    function seed() {
-      var count = Math.min(70, Math.round((w * h) / 26000));
-      parts = [];
-      for (var i = 0; i < count; i++) {
-        parts.push({
-          x: Math.random() * w, y: Math.random() * h,
-          r: 0.6 + Math.random() * 2.2,
-          vx: (Math.random() - 0.5) * 0.13, vy: -0.04 - Math.random() * 0.18,
-          hue: [14, 28, 42][Math.floor(Math.random() * 3)],
-          phase: Math.random() * Math.PI * 2, speed: 0.005 + Math.random() * 0.01
-        });
-      }
-    }
-    function resize() {
-      if (!canvas || !ctx) { return; }
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = window.innerWidth; h = window.innerHeight;
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      seed();
-    }
-    function frame() {
-      ctx.clearRect(0, 0, w, h);
-      var dark = document.documentElement.getAttribute('data-theme') === 'dark' ||
-        (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      for (var i = 0; i < parts.length; i++) {
-        var p = parts[i];
-        p.x += p.vx; p.y += p.vy; p.phase += p.speed;
-        if (p.y < -20) { p.y = h + 20; p.x = Math.random() * w; }
-        if (p.x < -20) { p.x = w + 20; } if (p.x > w + 20) { p.x = -20; }
-        var pulse = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(p.phase));
-        var alpha = (dark ? 0.5 : 0.26) * pulse;
-        var light = dark ? 66 : 44;
-        var g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 9);
-        g.addColorStop(0, 'hsl(' + p.hue + ' 90% ' + light + '% / ' + alpha.toFixed(3) + ')');
-        g.addColorStop(1, 'hsl(' + p.hue + ' 90% ' + light + '% / 0)');
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 9, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = 'hsl(' + p.hue + ' 95% ' + (dark ? 82 : 42) + '% / ' + (alpha * 1.5).toFixed(3) + ')';
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-      }
-      raf = requestAnimationFrame(frame);
-    }
-    return {
-      start: function () {
-        canvas = $('#field');
-        if (!canvas || raf) { return; }
-        /* No 2D context means no field — never a broken page. */
-        ctx = canvas.getContext && canvas.getContext('2d');
-        if (!ctx) { canvas.style.display = 'none'; return; }
-        resize();
-        window.addEventListener('resize', resize);
-        raf = requestAnimationFrame(frame);
-      },
-      stop: function () {
-        if (raf) { cancelAnimationFrame(raf); raf = null; }
-        if (ctx) { ctx.clearRect(0, 0, w, h); }
-      }
-    };
-  })();
-
-  /* =====================================================================
      Shell
      ===================================================================== */
 
@@ -137,7 +70,9 @@
     state.motion = on ? 'on' : 'off';
     document.body.setAttribute('data-motion', state.motion);
     $('#motion').setAttribute('aria-pressed', String(!on));
-    if (on) { Field.start(); } else { Field.stop(); }
+    /* Concept 04b has no atmospheric field; the toggle only affects CSS
+       transitions/animations, not a canvas paint loop. Concept 04 keeps
+       its own Field module in its own app.js. */
     try { localStorage.setItem('rk04.motion', state.motion); } catch (e) {}
   }
   function motionAllowed() {
