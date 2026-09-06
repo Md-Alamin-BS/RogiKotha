@@ -149,49 +149,53 @@
     var actions = ['warn', 'redact', 'removeFile', 'lock', 'hide', 'remove', 'restrict', 'none'];
     return '<section class="panel">' +
       '<span class="kicker">' + esc(T('admin.case')) + ' ' + esc(c.id) + '</span>' +
-      '<h2 style="font-size:16px">' + esc(L(c.summary)) + '</h2>' +
+      '<h2 style="font-size:17px;font-weight:600;letter-spacing:-.012em">' + esc(L(c.summary)) + '</h2>' +
       '<p class="note">' + esc(L(c.note)) + '</p>' +
 
-      (c.appealText ? '<div class="callout" style="margin-top:12px"><b>' + esc(T('appeal.text')) + '</b> ' + esc(L(c.appealText)) + '</div>' : '') +
+      (c.appealText ? '<div class="callout sub-in"><b>' + esc(T('appeal.text')) + '</b> ' + esc(L(c.appealText)) + '</div>' : '') +
 
-      (c.reasons && c.reasons.length ? '<h3 style="font-size:13px;margin-top:16px">' + esc(T('admin.reasonsGiven')) + '</h3>' +
+      (c.reasons && c.reasons.length ? '<div class="sub"><h4 class="sub-head">' + esc(T('admin.reasonsGiven')) + '</h4>' +
         '<div style="display:flex;flex-wrap:wrap;gap:6px">' + c.reasons.map(function (r) {
           return '<span class="tag">' + esc(T('report.' + r)) + '</span>';
-        }).join('') + '</div>' : '') +
+        }).join('') + '</div></div>' : '') +
 
-      (c.coordinated ? '<div class="callout warn" style="margin-top:12px"><b>' + esc(T('admin.coordinated')) + '</b> ' + esc(T('admin.coordinatedNote')) + '</div>' : '') +
+      (c.coordinated ? '<div class="callout sub-in"><b>' + esc(T('admin.coordinated')) + '</b> ' + esc(T('admin.coordinatedNote')) + '</div>' : '') +
 
-      '<div class="restricted" style="margin-top:14px"><b>' + esc(T('admin.reporterMasked')) + '</b>' +
-        '<span>' + esc(T('admin.reporterNote')) + '</span></div>' +
-      (c.targetKind === 'evidence' ? '<div class="restricted" style="margin-top:10px"><b>' + esc(T('admin.evidenceGated')) + '</b>' +
-        '<span>' + esc(T('admin.evidenceGateNote')) + '</span>' +
-        '<button class="btn small ghost" type="button" style="margin-top:8px;justify-self:start">' + esc(T('admin.requestAccess')) + '</button></div>' : '') +
+      '<div class="sub">' +
+        '<h4 class="sub-head">' + esc(T('admin.permissions')) + '</h4>' +
+        '<div class="restricted"><b>' + esc(T('admin.reporterMasked')) + '</b>' +
+          '<span>' + esc(T('admin.reporterNote')) + '</span></div>' +
+        (c.targetKind === 'evidence' ? '<div class="restricted" style="margin-top:8px"><b>' + esc(T('admin.evidenceGated')) + '</b>' +
+          '<span>' + esc(T('admin.evidenceGateNote')) + '</span>' +
+          '<button class="btn small ghost" type="button" style="margin-top:8px;justify-self:start">' + esc(T('admin.requestAccess')) + '</button></div>' : '') +
+      '</div>' +
 
-      '<h3 style="font-size:13px;margin-top:18px">' + esc(T('admin.decision')) + '</h3>' +
-      '<p class="note">' + esc(T('admin.proportion')) + '</p>' +
-      '<div class="opt-row" style="margin-top:8px">' + actions.map(function (a) {
-        return '<button class="opt" type="button" data-action="' + a + '" aria-pressed="' + (state.selAction === a) + '">' + esc(T('admin.act.' + a)) + '</button>';
-      }).join('') + '</div>' +
+      '<div class="sub">' +
+        '<h4 class="sub-head">' + esc(T('admin.decision')) + '</h4>' +
+        '<p class="note">' + esc(T('admin.proportion')) + '</p>' +
+        '<div class="opt-row">' + actions.map(function (a) {
+          return '<button class="opt" type="button" data-action="' + a + '" aria-pressed="' + (state.selAction === a) + '">' + esc(T('admin.act.' + a)) + '</button>';
+        }).join('') + '</div>' +
+        '<div class="callout" style="margin-top:14px">' + esc(T('admin.noRewrite')) + '</div>' +
+        '<div class="field" style="margin-top:14px"><label for="mod-reason">' + esc(T('admin.reasonToAuthor')) + '</label>' +
+          '<textarea id="mod-reason" style="min-height:72px"></textarea></div>' +
+      '</div>' +
 
-      '<div class="callout warn" style="margin-top:12px">' + esc(T('admin.noRewrite')) + '</div>' +
-
-      '<div class="field" style="margin-top:14px"><label for="mod-reason">' + esc(T('admin.reasonToAuthor')) + '</label>' +
-        '<textarea id="mod-reason" style="min-height:80px"></textarea></div>' +
-
-      '<h3 style="font-size:13px">' + esc(T('admin.auditPreview')) + '</h3>' +
-      '<div class="audit">' + esc(
-        'case=' + c.id +
-        '\nactor=moderator:you' +
-        '\naction=' + (state.selAction || '—') +
-        '\nobject=' + c.targetKind + ':' + c.targetId +
-        '\nresult=' + (state.done ? 'recorded' : 'pending') +
-        '\nreason=<written above>' +
-        '\nreporter_identity=not_accessed' +
-        '\noriginal_evidence=not_accessed'
-      ) + '</div>' +
-
-      '<button class="btn block" type="button" id="mod-commit" style="margin-top:12px">' + esc(T('admin.commit')) + '</button>' +
-      (state.done ? '<div class="callout" style="margin-top:12px;border-color:var(--positive);color:var(--positive)">✓ ' + esc(T('admin.recorded')) + '</div>' : '') +
+      '<div class="sub">' +
+        '<h4 class="sub-head">' + esc(T('admin.auditPreview')) + '</h4>' +
+        '<div class="audit">' + esc(
+          'case=' + c.id +
+          '\nactor=moderator:you' +
+          '\naction=' + (state.selAction || '—') +
+          '\nobject=' + c.targetKind + ':' + c.targetId +
+          '\nresult=' + (state.done ? 'recorded' : 'pending') +
+          '\nreason=<written above>' +
+          '\nreporter_identity=not_accessed' +
+          '\noriginal_evidence=not_accessed'
+        ) + '</div>' +
+        '<button class="btn block" type="button" id="mod-commit" style="margin-top:14px">' + esc(T('admin.commit')) + '</button>' +
+        (state.done ? '<div class="callout" style="margin-top:12px;border-color:var(--positive);color:var(--positive)">✓ ' + esc(T('admin.recorded')) + '</div>' : '') +
+      '</div>' +
     '</section>';
   }
 
@@ -207,11 +211,11 @@
         '<h1 class="display">' + esc(T('admin.tab.evidence')) + '</h1>' +
       '</section>' + permissionCallout() +
       '<section class="panel">' +
-        '<p class="note">' + esc(T('admin.failClosedNote')) + '</p>' +
-        '<p class="note" style="margin-top:6px">' + esc(T('admin.retention')) + ' · ' + esc(T('admin.legalHoldNote')) + '</p>' +
+        '<h4 class="sub-head">' + esc(T('admin.tab.evidence')) + '</h4>' +
+        '<p class="note">' + esc(T('admin.failClosedNote')) + ' ' + esc(T('admin.retention')) + ' · ' + esc(T('admin.legalHoldNote')) + '</p>' +
       '</section>' +
       RK.moderation.quarantine.map(function (q) {
-        return '<div class="q-item">' +
+        return '<section class="panel">' +
           '<div class="q-head"><b>' + esc(q.file) + '</b><span class="size">' + esc(q.size) + '</span>' +
             '<span class="size">' + esc(q.id) + '</span>' +
             (q.failed ? badge('danger', T('ev.state.failed')) : '') +
@@ -222,11 +226,11 @@
           '<div class="pipeline">' + steps.map(function (s) {
             return '<span class="pipe-step" data-s="' + esc(q.stages[s]) + '"><span class="s"></span>' + esc(T('admin.pl.' + s)) + '</span>';
           }).join('') + '</div>' +
-          '<p class="note">' + esc(L(q.note)) + '</p>' +
+          '<p class="note" style="margin-top:12px">' + esc(L(q.note)) + '</p>' +
           (q.failed || q.failClosed ? '<p class="note" style="margin-top:6px;color:var(--positive)">' + esc(T('admin.textStays')) + '</p>' : '') +
-          '<div class="restricted" style="margin-top:12px"><b>' + esc(T('admin.evidenceGated')) + '</b>' +
+          '<div class="restricted" style="margin-top:14px"><b>' + esc(T('admin.evidenceGated')) + '</b>' +
             '<span>' + esc(T('admin.evidenceGateNote')) + '</span></div>' +
-        '</div>';
+        '</section>';
       }).join('');
   }
 
@@ -242,11 +246,11 @@
         '<h1 class="display">' + esc(T('admin.tab.providers')) + '</h1>' +
       '</section>' + permissionCallout() +
       '<section class="panel">' +
-        '<h2 style="font-size:16px">' + esc(T('admin.newProfiles')) + '</h2>' +
+        '<h4 class="sub-head">' + esc(T('admin.newProfiles')) + '</h4>' +
         '<p class="note" style="margin-bottom:14px">' + esc(T('admin.newProfileNote')) + '</p>' +
         p.pending.map(function (x) {
           var dup = x.duplicateOf ? RK.doctorById(x.duplicateOf) : null;
-          return '<div class="q-item">' +
+          return '<div class="sub">' +
             '<div class="q-head"><b>' + esc(P(x.name)) + '</b><span class="size">' + esc(x.id) + '</span>' +
               badge('warn', T('label.notVerified')) +
               (dup ? badge('danger', T('admin.possibleDup')) : badge('plain', T('prov.community'))) +
@@ -269,10 +273,10 @@
       '</section>' +
 
       '<section class="panel">' +
-        '<h2 style="font-size:16px">' + esc(T('admin.claims')) + '</h2>' +
+        '<h4 class="sub-head">' + esc(T('admin.claims')) + '</h4>' +
         p.claims.map(function (x) {
           var d = RK.doctorById(x.doctorId);
-          return '<div class="q-item">' +
+          return '<div class="sub">' +
             '<div class="q-head"><b>' + esc(P(d.name)) + '</b><span class="size">' + esc(x.id) + '</span></div>' +
             '<p class="note">' + esc(P(x.method)) + '</p>' +
             '<p class="note" style="margin-top:6px">' + esc(L(x.note)) + '</p>' +
@@ -285,11 +289,11 @@
       '</section>' +
 
       '<section class="panel">' +
-        '<h2 style="font-size:16px">' + esc(T('admin.protectedFields')) + '</h2>' +
+        '<h4 class="sub-head">' + esc(T('admin.protectedFields')) + '</h4>' +
         '<p class="note" style="margin-bottom:14px">' + esc(T('admin.protectedNote')) + '</p>' +
         p.fieldChanges.map(function (x) {
           var d = RK.doctorById(x.doctorId);
-          return '<div class="q-item">' +
+          return '<div class="sub">' +
             '<div class="q-head"><b>' + esc(P(x.field)) + '</b><span class="size">' + esc(x.id) + '</span>' +
               badge(x.protected ? 'warn' : 'plain', x.protected ? T('admin.protectedFields') : T('prov.provider')) +
             '</div>' +

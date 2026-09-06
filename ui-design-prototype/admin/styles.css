@@ -156,13 +156,12 @@ a:hover { color: var(--accent-2); }
 }
 .skip:focus { top: 8px; }
 .demo {
-  margin: 0; padding: 8px clamp(14px, 3.5vw, 40px);
-  background: var(--warn-bg); color: var(--warn-ink);
-  border-bottom: 1px solid var(--warn-line);
-  font-family: var(--sans); font-size: 11.5px; font-weight: 600;
-  letter-spacing: .04em;
+  margin: 0; padding: 7px clamp(14px, 3.5vw, 40px);
+  color: var(--ink-faint);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--sans); font-size: 12px;
 }
-html[data-lang="bn"] .demo { font-family: var(--bangla); letter-spacing: 0; text-transform: none; font-size: 13px; }
+html[data-lang="bn"] .demo { font-family: var(--bangla); font-size: 13px; }
 
 /* ---------- masthead ---------- */
 
@@ -184,13 +183,14 @@ html[data-lang="bn"] .brand-text b { font-family: var(--bangla); font-weight: 70
 html[data-lang="bn"] .brand-text i { font-family: var(--bangla); font-size: 12px; }
 
 .staff-badge {
-  font-family: var(--sans); font-size: 11px; font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase;
-  padding: 6px 11px; border-radius: 999px;
-  border: 1px dashed var(--warn-line); color: var(--warn-ink);
-  background: var(--warn-bg);
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--rule); color: var(--ink-faint);
+  background: transparent;
 }
-html[data-lang="bn"] .staff-badge { font-family: var(--bangla); letter-spacing: 0; text-transform: none; font-size: 12.5px; }
+html[data-lang="bn"] .staff-badge { font-family: var(--bangla); letter-spacing: 0; text-transform: none; font-size: 12px; }
+.staff-meta { color: var(--ink-faint); font-size: 12px; }
 
 .controls { display: flex; gap: 6px; margin-inline-start: auto; }
 .ctl {
@@ -312,7 +312,7 @@ html[data-lang="bn"] .opt { font-family: var(--bangla); font-size: 13px; }
 
 /* ---------- admin tabs ---------- */
 
-.admin-note { border-color: var(--warn-line); background: var(--warn-bg); color: var(--warn-ink); }
+.admin-note { border-color: var(--rule); background: var(--glass-2); color: var(--ink-soft); }
 .admin-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 18px; }
 .admin-tabs button {
   font-family: var(--sans); font-size: 13px; font-weight: 600;
@@ -334,35 +334,56 @@ html[data-lang="bn"] .lane-head .target { font-family: var(--bangla); }
 .case {
   display: grid; grid-template-columns: 96px minmax(0,1fr) auto; gap: 16px; align-items: start;
   width: 100%; text-align: start; font: inherit; color: inherit; cursor: pointer;
-  border: 1px solid var(--rule); border-radius: var(--r-md); background: var(--glass-2);
-  padding: 15px 17px; margin-bottom: 9px;
-  transition: border-color 200ms, background 200ms;
+  border: 0; border-bottom: 1px solid var(--rule); border-radius: 0;
+  background: transparent;
+  padding: 14px 4px; margin-bottom: 0;
+  transition: background 200ms;
 }
-.case:hover { border-color: var(--accent); }
-.case[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
-.case .id { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); }
-.case .age { display: block; font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
-.case h4 { font-size: 15px; margin: 0 0 6px; }
+.case:last-child { border-bottom: 0; }
+.case:hover { background: var(--accent-soft); }
+.case[aria-pressed="true"] { background: var(--accent-soft); }
+.case[aria-pressed="true"]::before { content: ""; align-self: stretch; width: 2px; background: var(--accent); margin-inline-start: -4px; border-radius: 2px; }
+.case .id { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); }
+.case .age { display: block; font-family: var(--sans); font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
+.case h4 { font-size: 15px; font-weight: 600; margin: 0 0 6px; letter-spacing: -.012em; }
 .case .case-flags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---------- sub-section strips inside .panel ---------- */
+
+.sub {
+  margin-top: 22px; padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+.sub:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.sub-head {
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint);
+  margin: 0 0 12px;
+}
+html[data-lang="bn"] .sub-head { font-family: var(--bangla); letter-spacing: 0; text-transform: none; font-size: 12px; }
+.sub .note { margin: 0 0 12px; }
+.sub-in { margin-top: 14px; }
 
 /* ---------- audit + restricted boxes ---------- */
 
 .audit {
-  font-family: var(--mono); font-size: 11.5px; line-height: 1.7;
+  font-family: var(--sans); font-size: 12.5px; line-height: 1.72;
   padding: 13px 15px; border-radius: var(--r-md);
-  background: var(--glass-2); border: 1px dashed var(--rule-hard); color: var(--ink-soft);
+  background: var(--glass-2); border: 1px solid var(--rule); color: var(--ink-soft);
   white-space: pre-wrap; word-break: break-word;
 }
+html[data-lang="bn"] .audit { font-family: var(--bangla); }
+.audit b { color: var(--ink); font-weight: 600; }
 
 .restricted {
   display: grid; gap: 5px;
   padding: 13px 15px; border-radius: var(--r-md);
-  border: 1px dashed var(--rule-hard); background: transparent;
+  border: 1px solid var(--rule); background: var(--glass-2);
   font-family: var(--sans); font-size: 12.5px; color: var(--ink-faint);
 }
 html[data-lang="bn"] .restricted { font-family: var(--bangla); }
-.restricted b { color: var(--ink-soft); display: flex; align-items: center; gap: 8px; }
-.restricted b::before { content: "▨"; color: var(--warn-ink); }
+.restricted b { color: var(--ink-soft); display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.restricted b::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); }
 
 /* ---------- evidence pipeline ---------- */
 

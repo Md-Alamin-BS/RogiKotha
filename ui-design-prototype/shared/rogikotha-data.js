@@ -518,6 +518,7 @@
     'admin.wasNow':          { en: 'was → now', bn: 'ছিল → এখন' },
     'admin.auditLog':        { en: 'Audit', bn: 'অডিট' },
     'admin.permission':      { en: 'Your permissions', bn: 'আপনার অনুমতি' },
+    'admin.permissions':     { en: 'Permissions on this case', bn: 'এই কেসে অনুমতি' },
     'admin.permissionNote':  { en: 'Fields you cannot see are hidden rather than blanked, so it is obvious something exists that you are not cleared for.', bn: 'যেসব তথ্য আপনি দেখতে পারবেন না তা ফাঁকা না রেখে লুকানো হয়, যাতে বোঝা যায় কিছু আছে যার অনুমতি আপনার নেই।' },
     'admin.portal':          { en: 'Staff console', bn: 'কর্মী কনসোল' },
     'admin.staffOnly':       { en: 'Staff only', bn: 'শুধু কর্মীদের জন্য' },
