@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>RogiKotha — Staff console</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-view="queue">
+
+<a class="skip" href="#main" data-i18n="a11y.skip">Skip to main content</a>
+
+<p class="demo" role="note"><span data-i18n="demo.banner"></span> · <span data-i18n="admin.demoNote"></span></p>
+
+<header class="masthead">
+  <a class="brand" href="./index.html">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-text">
+      <b data-i18n="brand.name"></b>
+      <i data-i18n="admin.portal"></i>
+    </span>
+  </a>
+  <span class="staff-badge" data-i18n="admin.staffOnly"></span>
+
+  <div class="controls">
+    <button type="button" id="lang"   class="ctl" data-i18n="a11y.lang"   data-i18n-attr="title" aria-pressed="false"><span>অ</span></button>
+    <button type="button" id="theme"  class="ctl" data-i18n="a11y.theme"  data-i18n-attr="title"><span>◐</span></button>
+    <a class="ctl" href="../index.html" data-i18n="admin.backToGallery" data-i18n-attr="title"><span>↗</span></a>
+  </div>
+</header>
+
+<div class="progress" aria-hidden="true"><i></i></div>
+
+<main id="main">
+  <div class="admin-tabs">
+    <button type="button" data-admin="queue" data-i18n="admin.tab.queue"></button>
+    <button type="button" data-admin="evidence" data-i18n="admin.tab.evidence"></button>
+    <button type="button" data-admin="providers" data-i18n="admin.tab.providers"></button>
+  </div>
+  <section class="view" id="view-queue"></section>
+  <section class="view" id="view-evidence" hidden></section>
+  <section class="view" id="view-providers" hidden></section>
+</main>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <header class="sheet-head">
+      <h2 id="sheet-title"></h2>
+      <button type="button" class="sheet-close" id="sheet-close" aria-label="Close">✕</button>
+    </header>
+    <div class="sheet-body" id="sheet-body"></div>
+  </div>
+</div>
+
+<footer class="colophon">
+  <p class="foot-note" data-i18n="admin.staffOnlyNote"></p>
+  <p class="foot-demo" data-i18n="admin.permissionNote"></p>
+</footer>
+
+<script src="../shared/rogikotha-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

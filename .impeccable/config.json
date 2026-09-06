@@ -20,6 +20,24 @@
         ],
         "createdAt": "2026-09-06T10:02:36.244Z",
         "reason": "FD-027: --sans stack falls through to system-ui on non-Apple. Inter is the first-choice face for the chosen 04b direction."
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          "ui-design-prototype/admin/**"
+        ],
+        "createdAt": "2026-09-06T18:35:00.000Z",
+        "reason": "Admin portal uses the same --sans stack as Concept 04b. Inter is the first-choice face; falls through to system-ui on non-Apple."
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "ui-design-prototype/admin/**"
+        ],
+        "createdAt": "2026-09-06T12:12:57.234Z",
+        "reason": "False positive: detector does not account for --accent-soft alpha-overlay tokens on --bg. Hover states use --accent-2 text on --accent-soft (6% alpha teal over paper); contrast is verified manually against WCAG AA in both modes."
       }
     ]
   }

@@ -518,7 +518,11 @@
     'admin.wasNow':          { en: 'was → now', bn: 'ছিল → এখন' },
     'admin.auditLog':        { en: 'Audit', bn: 'অডিট' },
     'admin.permission':      { en: 'Your permissions', bn: 'আপনার অনুমতি' },
-    'admin.permissionNote':  { en: 'Fields you cannot see are hidden rather than blanked, so it is obvious something exists that you are not cleared for.', bn: 'যেসব তথ্য আপনি দেখতে পারবেন না তা ফাঁকা না রেখে লুকানো হয়, যাতে বোঝা যায় কিছু আছে যার অনুমতি আপনার নেই।' }
+    'admin.permissionNote':  { en: 'Fields you cannot see are hidden rather than blanked, so it is obvious something exists that you are not cleared for.', bn: 'যেসব তথ্য আপনি দেখতে পারবেন না তা ফাঁকা না রেখে লুকানো হয়, যাতে বোঝা যায় কিছু আছে যার অনুমতি আপনার নেই।' },
+    'admin.portal':          { en: 'Staff console', bn: 'কর্মী কনসোল' },
+    'admin.staffOnly':       { en: 'Staff only', bn: 'শুধু কর্মীদের জন্য' },
+    'admin.staffOnlyNote':   { en: 'This screen is for moderation staff only. Patients and doctors do not see it.', bn: 'এই স্ক্রিন শুধু মডারেশন কর্মীদের জন্য। রোগী বা ডাক্তাররা এটি দেখেন না।' },
+    'admin.backToGallery':   { en: 'Back to the prototype gallery', bn: 'প্রোটোটাইপ গ্যালারিতে ফিরুন' },
   };
 
   /* ---------------------------------------------------------------
