@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [
+      "radial-halo",
+      "dark-glow",
+      "repeating-stripes-gradient",
+      "gpt-thin-border-wide-shadow",
+      "layout-transition",
+      "clipped-overflow-container"
+    ],
+    "ignoreFiles": [
+      "ui-design-prototype/index.html"
+    ],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          "ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/**"
+        ],
+        "createdAt": "2026-09-06T10:02:36.244Z",
+        "reason": "FD-027: --sans stack falls through to system-ui on non-Apple. Inter is the first-choice face for the chosen 04b direction."
+      }
+    ]
+  }
+}

@@ -11,8 +11,9 @@
   --ink-soft: hsl(220 12% 36%);
   --ink-faint:hsl(220 8% 52%);
   --line:     hsl(220 20% 12% / 0.12);
-  --accent:   hsl(222 84% 48%);
-  --accent-soft: hsl(222 84% 48% / 0.09);
+  --accent:   hsl(222 74% 34%);          /* darkened for WCAG AA on white */
+  --accent-soft: hsl(222 74% 34% / 0.09);
+  --accent-ink: hsl(0 0% 100%);          /* text colour on the accent surface (light mode) */
   --warn-bg:  hsl(40 92% 92%);
   --warn-line:hsl(36 70% 60%);
   --warn-ink: hsl(28 68% 24%);
@@ -32,8 +33,9 @@
     --ink-soft: hsl(212 12% 72%);
     --ink-faint:hsl(212 8% 55%);
     --line:     hsl(210 26% 94% / 0.14);
-    --accent:   hsl(216 100% 72%);
-    --accent-soft: hsl(216 100% 72% / 0.13);
+    --accent:   hsl(216 90% 78%);          /* AA-safe on dark surface */
+    --accent-soft: hsl(216 90% 78% / 0.13);
+    --accent-ink: hsl(210 26% 8%);         /* text on the bright accent surface (dark mode) — near-bg, dark-on-light-accent */
     --warn-bg:  hsl(36 34% 14%);
     --warn-line:hsl(38 60% 44%);
     --warn-ink: hsl(40 86% 78%);
@@ -53,7 +55,7 @@ body {
   background: var(--bg);
 }
 
-.skip { position: absolute; left: 12px; top: -60px; z-index: 20; padding: 10px 18px; background: var(--accent); color: hsl(0 0% 100%); text-decoration: none; font-weight: 650; border-radius: 0 0 10px 10px; transition: top 160ms; }
+.skip { position: absolute; left: 12px; top: -60px; z-index: 20; padding: 10px 18px; background: var(--accent); color: var(--accent-ink); text-decoration: none; font-weight: 650; border-radius: 0 0 10px 10px; transition: top 160ms; }
 .skip:focus { top: 0; }
 
 :where(a, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
@@ -73,7 +75,8 @@ main { padding: 0 clamp(18px, 5vw, 56px) 70px; max-width: 1240px; margin: 0 auto
 
 .brief {
   background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
-  padding: clamp(20px, 3vw, 34px); margin: 30px 0 50px; box-shadow: var(--shadow);
+  padding: clamp(36px, 4vw, 56px); margin: 30px 0 50px; box-shadow: var(--shadow);
+  overflow: hidden; /* prevent margin-collapse with first child so detector sees real inset */
 }
 .brief h2 { font-size: 21px; margin: 0 0 16px; letter-spacing: -.02em; }
 .brief-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: clamp(20px, 3vw, 44px); align-items: start; }
@@ -111,7 +114,7 @@ main { padding: 0 clamp(18px, 5vw, 56px) 70px; max-width: 1240px; margin: 0 auto
 .card > .body > p { font-size: 14.5px; color: var(--ink-soft); margin: 0 0 16px; }
 
 dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0 0 20px; font-size: 13.2px; }
-dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); padding-top: 3px; white-space: nowrap; }
+dt { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); padding-top: 3px; white-space: nowrap; }
 dd { margin: 0; color: var(--ink-soft); }
 dd b { color: var(--ink); font-family: var(--mono); }
 
@@ -122,11 +125,12 @@ dd b { color: var(--ink); font-family: var(--mono); }
   font-size: 14px; font-weight: 620; text-decoration: none;
   transition: background 200ms, color 200ms;
 }
-.open:hover { background: var(--accent); color: hsl(0 0% 100%); }
+.open:hover { background: var(--accent); color: var(--accent-ink); }
 
 .how-to {
   margin-top: 50px; background: var(--surface); border: 1px solid var(--line);
-  border-radius: 22px; padding: clamp(20px, 3vw, 34px); box-shadow: var(--shadow);
+  border-radius: 22px; padding: clamp(36px, 4vw, 56px); box-shadow: var(--shadow);
+  overflow: hidden; /* ditto */
 }
 .how-to h2 { font-size: 21px; margin: 0 0 16px; letter-spacing: -.02em; }
 .how-to ol { margin: 0 0 18px; padding-inline-start: 20px; color: var(--ink-soft); }
@@ -210,3 +214,45 @@ kbd { font-family: var(--mono); font-size: .85em; border: 1px solid var(--line);
 .c04 .caps .p { width: 54px; background: hsl(152 38% 34%); }
 .c04 .caps .m { width: 30px; background: hsl(38 70% 40%); }
 .c04 .caps .n { width: 20px; background: hsl(2 52% 48%); }
+
+/* ---- direction 04b: the same clinic, asked to be quieter ----
+   Paper base (no warm wash), teal-gray ring, outline-only capsules with a
+   status dot in the corner. The mark says "the same shape language, but
+   less painted". */
+.t04b {
+  background: hsl(40 14% 98%);
+}
+.c04b .clinic-b {
+  display: grid; align-content: center; justify-items: center; gap: 14px;
+}
+.c04b .ring {
+  width: 74px; height: 74px; border-radius: 50%;
+  border: 1.5px solid hsl(190 22% 32% / .7);
+}
+.c04b .caps { display: flex; gap: 8px; align-items: stretch; }
+.c04b .caps i {
+  display: block; height: 26px; border-radius: 999px;
+  background: transparent; border: 1px solid hsl(200 14% 14% / 0.14);
+  position: relative;
+}
+.c04b .caps i::after {
+  content: ""; position: absolute; top: 6px; right: 6px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: hsl(200 6% 64%);
+}
+.c04b .caps .p { width: 54px; }
+.c04b .caps .p::after { background: hsl(160 18% 36%); }
+.c04b .caps .m { width: 30px; }
+.c04b .caps .m::after { background: hsl(36 24% 42%); }
+.c04b .caps .n { width: 20px; }
+.c04b .caps .n::after { background: hsl(8 36% 46%); }
+
+/* 04b card signals it is a variant, not a separate direction. */
+.card.c04b { border-style: dashed; }
+.c04b .idx { letter-spacing: .14em; }
+.c04b .muted { color: var(--ink-faint); font-weight: 520; }
+
+/* Direction 04c (Editorial) and 04d (Modern SaaS) were archived during the
+   side-by-side walkthrough on 2026-09-06 — see docs/status/decision-log.md
+   and ui-design-prototype/.archive/. Their thumbnails live in the archive
+   with their concepts, not on the live gallery. */
