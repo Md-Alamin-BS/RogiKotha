@@ -357,6 +357,14 @@
     'condition.provisional': { en: 'Submitted wording, not yet mapped', bn: 'জমা দেওয়া শব্দ, এখনো মেলানো হয়নি' },
     'condition.provNote':    { en: 'People write in Bangla, English and Banglish. Wording we have not mapped yet is kept exactly as submitted and stays searchable.', bn: 'মানুষ বাংলা, ইংরেজি ও বাংলিশে লেখেন। যেসব শব্দ এখনো মেলানো হয়নি তা হুবহু রাখা হয় এবং খোঁজা যায়।' },
 
+    'condition.treatedAt':      { en: 'Where this condition is treated', bn: 'এই রোগ যেখানে চিকিৎসা হয়' },
+    'condition.treatedAtNote':  { en: 'Districts, areas and hospitals pulled from the accounts above. Where someone actually went, not a directory.', bn: 'উপরের বিবরণগুলো থেকে নেওয়া জেলা, এলাকা ও হাসপাতাল। কেউ প্রকৃতপক্ষে কোথায় গেছেন সেটি — ডিরেক্টরি নয়।' },
+    'condition.districts':      { en: 'Districts', bn: 'জেলা' },
+    'condition.areas':          { en: 'Areas', bn: 'এলাকা' },
+    'condition.hospitals':      { en: 'Hospitals & chambers', bn: 'হাসপাতাল ও চেম্বার' },
+    'condition.noGeo':          { en: 'Not enough location data yet — accounts don\'t always name the place.', bn: 'এখনো পর্যাপ্ত অবস্থানের তথ্য নেই — বিবরণে সবসময় জায়গার নাম থাকে না।' },
+    'condition.specialtyTag':   { en: 'Usually seen by', bn: 'সাধারণত যাওয়া হয়' },
+
     /* ---- facilities ---- */
     'facility.type.hospital':   { en: 'Hospital', bn: 'হাসপাতাল' },
     'facility.type.clinic':     { en: 'Clinic', bn: 'ক্লিনিক' },

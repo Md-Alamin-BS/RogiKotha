@@ -742,6 +742,38 @@
     docs.forEach(function (x) { RK.facilitiesForDoctor(x.doctor.id).forEach(function (f) { facIds[f.id] = true; }); });
     var facs = Object.keys(facIds).map(RK.facilityById);
 
+    /* Where patients in Bangladesh went for this condition.
+       Aggregated from the doctors who treated it: each unique (hospital,
+       area, city) tuple gets a count. Hospital name and area matter most
+       in Bangladesh; district is the third level. Sorted by count desc so
+       the most-mentioned places surface first. */
+    var placeMap = {};
+    docs.forEach(function (x) {
+      var d = x.doctor;
+      var cityKey = P(d.city);
+      var areaKey = P(d.area);
+      var primary = (d.chambers && d.chambers[0]) ? P(d.chambers[0].name) : '';
+      var key = primary + '|' + areaKey + '|' + cityKey;
+      if (!placeMap[key]) {
+        placeMap[key] = { hospital: primary, area: areaKey, city: cityKey, count: 0 };
+      }
+      placeMap[key].count += x.count;
+    });
+    var places = Object.keys(placeMap).map(function (k) { return placeMap[k]; })
+      .sort(function (a, b) { return b.count - a.count; });
+
+    /* Top specialties (the "usually treated by" tag). Counts how many
+       accounts per specialty across doctors. */
+    var specMap = {};
+    docs.forEach(function (x) {
+      var s = P(x.doctor.specialty);
+      if (!specMap[s]) { specMap[s] = { name: s, count: 0 }; }
+      specMap[s].count += x.count;
+    });
+    var specs = Object.keys(specMap).map(function (k) { return specMap[k]; })
+      .sort(function (a, b) { return b.count - a.count; })
+      .slice(0, 3);
+
     function freq(group, title) {
       var rows = RK.tagFrequency(c.id, group);
       if (!rows.length) { return ''; }
@@ -757,6 +789,29 @@
       '</section>';
     }
 
+    var placesPanel = places.length ? '<section class="panel places-panel">' +
+      '<h2 style="font-size:15px">' + esc(T('condition.treatedAt')) + '</h2>' +
+      '<p class="note" style="margin:-4px 0 14px">' + esc(T('condition.treatedAtNote')) + '</p>' +
+      '<ul class="places">' + places.map(function (p) {
+        return '<li>' +
+          (p.hospital ? '<span class="pl-name">' + esc(p.hospital) + '</span>' : '<span class="pl-name pl-unk">' + esc(T('label.notProvided')) + '</span>') +
+          '<span class="pl-loc">' +
+            '<span>' + esc(p.area) + '</span>' +
+            '<span class="pl-sep">·</span>' +
+            '<span>' + esc(p.city) + '</span>' +
+          '</span>' +
+          '<span class="pl-n">' + bn(p.count) + '</span>' +
+        '</li>';
+      }).join('') + '</ul>' +
+    '</section>' : '';
+
+    var specsRow = specs.length ? '<p class="specs-tag">' +
+      '<span class="kicker" style="margin:0">' + esc(T('condition.specialtyTag')) + '</span>' +
+      specs.map(function (s) {
+        return '<span class="spec-pill">' + esc(s.name) + ' · ' + bn(s.count) + '</span>';
+      }).join(' ') +
+    '</p>' : '';
+
     host.innerHTML =
       '<section class="a-head">' +
         '<span class="kicker">' + esc(T('nav.condition')) + '</span>' +
@@ -764,7 +819,10 @@
         '<p class="note">' + esc(T('condition.alsoCalled')) + ': ' + c.aliases.map(esc).join(' · ') + '</p>' +
         '<p class="lede" style="margin-top:12px">' + bn(list.length) + ' ' + esc(T('sentiment.accounts')) + ' · ' +
           bn(docs.length) + ' ' + esc(T('condition.doctors').toLowerCase()) + '</p>' +
+        specsRow +
       '</section>' +
+
+      placesPanel +
 
       '<div class="p-grid">' +
         '<div>' +
@@ -788,10 +846,17 @@
           '<section class="panel">' +
             '<h2 style="font-size:15px">' + esc(T('condition.doctors')) + '</h2>' +
             '<div class="mini-list">' + docs.map(function (x) {
-              return '<button class="mini-row" type="button" data-doctor="' + x.doctor.id + '">' +
-                '<span class="mini-av">' + RK.avatar(x.doctor.name.en, x.doctor.accent, 38) + '</span>' +
-                '<span><b>' + esc(P(x.doctor.name)) + '</b><span>' + esc(P(x.doctor.specialty)) + ' · ' +
-                bn(x.count) + ' ' + esc(T('sentiment.accounts')) + '</span></span></button>';
+              var d = x.doctor;
+              var primary = (d.chambers && d.chambers[0]) ? P(d.chambers[0].name) : '';
+              return '<button class="mini-row" type="button" data-doctor="' + d.id + '">' +
+                '<span class="mini-av">' + RK.avatar(d.name.en, d.accent, 38) + '</span>' +
+                '<span><b>' + esc(P(d.name)) + '</b>' +
+                '<span>' + esc(P(d.specialty)) + ' · ' + bn(x.count) + ' ' + esc(T('sentiment.accounts')) + '</span>' +
+                '<span class="mini-loc">' +
+                  (primary ? esc(primary) + ' · ' : '') +
+                  esc(P(d.area)) + ' · ' + esc(P(d.city)) +
+                '</span>' +
+              '</span></button>';
             }).join('') + '</div>' +
             '<p class="note" style="margin-top:12px">' + esc(T('sort.whyBody')) + '</p>' +
           '</section>' +

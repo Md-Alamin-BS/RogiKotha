@@ -1465,6 +1465,85 @@ html[data-lang="bn"] .about-section p { font-family: var(--bangla); font-size: 1
 }
 
 /* ==========================================================================
+   Condition page — "Where this condition is treated" + per-doctor location
+
+   Drawn from the 2026-09-06 research (docs/planning/research/condition-page-
+   info-needs-2026-09-06/). The hierarchy patients actually use is hospital
+   name → area → district, not the reverse. District is shown but de-emphasised.
+
+   The "Usually seen by" tag pills the top 1–3 specialties with counts so a
+   reader can answer "who do I actually go to" without leaving the page.
+   ========================================================================== */
+
+.specs-tag {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin: 14px 0 0;
+}
+.specs-tag .kicker { margin: 0; }
+.spec-pill {
+  display: inline-flex; align-items: center;
+  font-family: var(--sans); font-size: 12.5px; font-weight: 600;
+  padding: 5px 12px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent);
+  border: 1px solid color-mix(in oklab, var(--accent) 24%, transparent);
+}
+html[data-lang="bn"] .spec-pill { font-family: var(--bangla); font-size: 13px; }
+
+.places-panel { /* same .panel base; the visual difference is the list */ }
+.places {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; gap: 0;
+}
+.places li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--rule);
+}
+.places li:first-child { border-top: 0; padding-top: 4px; }
+.places li:last-child { padding-bottom: 4px; }
+.pl-name {
+  grid-column: 1; grid-row: 1;
+  font-family: var(--sans); font-size: 14.5px; font-weight: 650;
+  color: var(--ink); letter-spacing: -.005em;
+}
+.pl-name.pl-unk { color: var(--ink-faint); font-weight: 500; font-style: italic; }
+html[data-lang="bn"] .pl-name { font-family: var(--bangla); font-size: 15px; font-weight: 600; letter-spacing: 0; }
+.pl-loc {
+  grid-column: 1; grid-row: 2;
+  font-family: var(--sans); font-size: 12.5px; color: var(--ink-faint);
+  display: inline-flex; gap: 6px; flex-wrap: wrap;
+  margin-top: 2px;
+}
+.pl-loc .pl-sep { opacity: .55; }
+html[data-lang="bn"] .pl-loc { font-family: var(--bangla); font-size: 13px; }
+.pl-n {
+  grid-column: 2; grid-row: 1 / span 2;
+  align-self: center;
+  font-family: var(--sans); font-size: 13px; font-weight: 700;
+  color: var(--accent);
+  min-width: 26px; text-align: right;
+}
+html[data-lang="bn"] .pl-n { font-family: var(--bangla); font-size: 14px; }
+
+/* Doctor sidebar row — add a third line under the existing name + specialty
+   line showing where this doctor practices (chamber · area · city). */
+.mini-row > span > .mini-loc {
+  display: block;
+  font-family: var(--sans); font-size: 11.5px; color: var(--ink-faint);
+  margin-top: 2px;
+}
+html[data-lang="bn"] .mini-row > span > .mini-loc { font-family: var(--bangla); font-size: 12px; }
+
+@media (max-width: 720px) {
+  .pl-name { font-size: 13.5px; }
+  .pl-loc { font-size: 12px; }
+  .pl-n { font-size: 12.5px; }
+}
+
+/* ==========================================================================
    Motion (CSS-only, default set)
 
    Five primitives — hero rise, first-screen stagger, capsule hover, tab
