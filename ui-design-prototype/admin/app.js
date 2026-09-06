@@ -119,7 +119,7 @@
     var sel = RK.moderation.cases.filter(function (c) { return c.id === state.selCase; })[0];
 
     return '<div class="p-grid"><div>' +
-      '<p class="note" style="margin-bottom:14px">' + esc(T('admin.threshold')) + '</p>' +
+      '<p class="note" style="margin-bottom:18px">' + esc(T('admin.threshold')) + '</p>' +
       lanes.map(function (lane) {
         var list = RK.moderation.cases.filter(function (c) { return c.lane === lane.k; });
         if (!list.length) { return ''; }
