@@ -1,13 +1,19 @@
 # Frontend-first prototype brief
 
-Status: Gate 3 design direction complete; Gate 4 implementation not started  
+Status: Gate 4 founder decision: Concept 04b Quiet Clinic (minimal pass) — FD-027, 2026-09-06. Frontend and backend implementation will be built from this direction.  
 UX contracts: [DESIGN.md](ux/DESIGN.md) and [EXPERIENCE.md](ux/EXPERIENCE.md)
 
-> **Gate 4 founder override (FD-025):** The three concepts documented below are the original Gate 3 directions. Gate 4 must expand the runnable comparison to five materially different concepts, implement every public/user and admin page in each, provide deliberate light and dark modes, and finish/validate the public interface before beginning admin. Follow the [Gate 4 execution prompt](../handoffs/GATE4_DUMMY_UI_AGENT_PROMPT.md); it controls wherever the older three-concept text conflicts.
+> **Selected direction (FD-027, 2026-09-06):** Concept 04b Quiet Clinic (minimal pass) is the chosen design direction. Source prototype at `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/` (runnable at `http://localhost:4173/ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/`). Frontend and backend implementation are built from this direction.
+>
+> **Historical note (superseded):** FD-026 (also 2026-09-06) initially picked Concept 04 — Quiet Clinic (the warm variant). FD-027 supersedes FD-026 and selects the minimal pass instead. FD-026's warm variant (oat + muted teal, serif headings) remains in the live gallery at `ui-design-prototype/concepts/concept-04-quiet-clinic/` as a comparison reference.
+>
+> **Gate 4 founder override (FD-025):** Five directions explored; FD-027 picks 04b; 03 and 04 remain comparison references in the live gallery; 04c and 04d are archived per FD-028 (2026-09-06). Follow the [Gate 4 execution prompt](../handoffs/GATE4_DUMMY_UI_AGENT_PROMPT.md) where it does not conflict with FD-027 and FD-028.
+>
+> **Motion on 04b:** Motion on 04b is CSS-only (5 primitives); killed by the in-app motion-off toggle and `prefers-reduced-motion`.
 
 ## Outcome
 
-Build one maintainable Next.js prototype with shared domain contracts, deterministic synthetic services and accessible primitives, then render three materially different route compositions. It is a public read-only USD 0 demo: no real credentials, writes, uploads, patient documents, analytics or production API.
+Build one maintainable Next.js prototype with shared domain contracts, deterministic synthetic services, and accessible primitives, then render the **Concept 04b Quiet Clinic (minimal pass)** route composition as the selected direction (FD-027, 2026-09-06). Concept 03 Luminous Editorial is also rendered for runnable comparison under FD-025; Concept 04 (warm Quiet Clinic) remains in the live gallery as the warm-vs-minimal comparator; Concepts 04c (Editorial) and 04d (Modern SaaS) are archived per FD-028 (2026-09-06) since 04b was chosen, with their source in `ui-design-prototype/.archive/`. The prototype is a public read-only USD 0 demo: no real credentials, writes, uploads, patient documents, analytics, or production API.
 
 ## Design principles
 
@@ -30,9 +36,11 @@ Build one maintainable Next.js prototype with shared domain contracts, determini
 
 These are pattern categories, not permission to copy components. Every adapted external component requires an entry in `docs/design/third-party-component-register.md`.
 
-## Three concept briefs
+## Three concept briefs (historical Gate 3)
 
-| Dimension | A — Calm Clinical Trust | B — Narrative Patient Stories | C — Structured Clarity |
+> **Historical note.** These three concept briefs are the Gate 3 starting points. FD-027 selects Concept A as the implementation direction; per FD-027, "Concept A" now means the 04b Quiet Clinic (minimal pass) variant, not the original "Calm Clinical Trust" reading. Concept B (Narrative Patient Stories) and Concept C (Structured Clarity) are not implemented; their wireframes remain in `ux/wireframes/.archive/` for historical reference. The Gate 4 prototype adds two surviving live comparison directions — 03 (Luminous Editorial) and 04 (warm Quiet Clinic, FD-026) — alongside the chosen 04b; 04c (Editorial) and 04d (Modern SaaS) were side-by-side comparators during the FD-027 walkthrough and are archived per FD-028; see `design-comparison.md`.
+
+| Dimension | A — Calm Clinical Trust *(→ 04b minimal pass)* | B — Narrative Patient Stories *(not implemented)* | C — Structured Clarity *(not implemented)* |
 |---|---|---|---|
 | Composition | centered guided sections and trust rail | editorial story column with contextual side notes | dense grid, sticky local navigation and comparison bands |
 | Navigation | calm header + mobile bottom actions | masthead + reading/action dock | compact utility bar + mobile command sheet |
@@ -41,10 +49,10 @@ These are pattern categories, not permission to copy components. Every adapted e
 | Profile | overview sections with provenance adjacent | latest stories lead, facts interrupt carefully | facts/branches/tags in scannable bands |
 | Timeline | calm step cards | editorial chapters and current-status opening | compact grouped event rail/table hybrid |
 | Evidence | reassuring tiles and viewer sheet | inline chapter attachments | structured document tray with status columns |
-| Motion | short fades/expansion | reading-progress and restrained chapter reveal | near-instant filter/list transitions |
+| Motion | short fades/expansion *(→ CSS-only five primitives in 04b)* | reading-progress and restrained chapter reveal | near-instant filter/list transitions |
 | Main risk | too generic/clinical | slower scanning | intimidating density on mobile |
 
-No concept is selected. Comparison criteria are clarity, trust, navigation, mobile usability, review/timeline/evidence readability, accessibility, visual appeal, performance, complexity, bilingual suitability and maintainability.
+FD-027 selects Concept A → Concept 04b (minimal pass). Comparison criteria were clarity, trust, navigation, mobile usability, review/timeline/evidence readability, accessibility, visual appeal, performance, complexity, bilingual suitability and maintainability.
 
 ## Route and state inventory
 

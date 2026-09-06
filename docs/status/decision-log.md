@@ -1,6 +1,6 @@
 # RogiKotha decision log
 
-**As of:** 2026-08-30  
+**As of:** 2026-09-06  
 **Rule:** A recommendation is not a confirmed product decision. Founder confirmation, source authority, and mandatory specialist sign-offs are recorded separately.
 
 ## Confirmed source-authority decisions
@@ -54,6 +54,27 @@
 | ID | Decision | Scope/status |
 |---|---|---|
 | FD-025 | Gate 4 must present five materially different, complete design concepts for every public/user and admin page, each with deliberate light and dark modes. Build and validate the public/user interface first, then the admin panel. | Confirmed founder override; supersedes older Gate 4 references to three concepts without changing the shared read-only synthetic-demo boundary |
+| FD-026 | Concept 04 — Quiet Clinic is the selected Gate 4 design direction. Frontend and backend implementation will be built from this direction. Other directions remain as comparison references only. | Confirmed founder override 2026-09-06 via BMad UX Update run; supersedes the prior UX memlog "blue teal and white" shared-direction note and the "no winner selected" decision; supersedes the Concept A "Calm Clinical Trust" wording in DESIGN.md; does not change FD-025's five-direction comparison scope |
+
+### FD-026 — Quiet Clinic selection (rationale)
+
+Quiet Clinic was selected because it (a) uses an opaque oat + muted-teal material with no glass blur, matching the calm-consulting-room posture the product rules require; (b) replaces stacked-bar distributions with a row of separate capsules that carry their own count and label, removing the risk of being read as a single quality score; (c) uses circular avatars and large radii to carry roundness through shape rather than through a typeface that we cannot ship; (d) reserves coral strictly for emergency and danger states so the accent never competes with ordinary actions; and (e) renders serif headings against a sans interface, matching established healthcare-identity conventions.
+
+The five-direction comparison from FD-025 is preserved. Concepts 01–03 and 05 remain in `ui-design-prototype/.archive/` as historical comparison; Concept 03 (Luminous Editorial) remains in the live gallery alongside Concept 04 (Quiet Clinic) so the comparison remains runnable. The selection is the answer to FD-025's "founder choice" step, not a replacement of its scope.
+
+| FD-027 | Concept 04b — Quiet Clinic (minimal pass) is the chosen implementation direction. Concept 04 (warm Quiet Clinic), Concept 04c (Editorial), and Concept 04d (Modern SaaS) were alternative directions built for side-by-side comparison during the prototype walkthrough. FD-026 is superseded; Concept A's identity contract is rewritten to mean "the minimal-pass variant of Quiet Clinic" rather than the original warm variant. FD-028 (2026-09-06) later archived 04c and 04d; only Concept 03 and Concept 04 remain in the live gallery alongside Concept 04b. | Confirmed founder override 2026-09-06 via BMad UX Update run; supersedes FD-026; preserves FD-025's five-direction comparison scope and the FD-024 bilingual peer status rule; does not change the Phase 1 product rules (no numeric scoring, no star ratings, BMDC-not-verified in Phase 1, evidence not medically validated, etc.) |
+
+### FD-027 — Quiet Clinic (minimal pass) selection (rationale)
+
+The minimal-pass variant of Quiet Clinic was selected after the runnable Gate 4 prototype was extended with two additional directions for explicit comparison: 04c (Editorial — Substack / Stripe Press / Scroll.in reference) and 04d (Modern SaaS — Linear / Stripe / Notion reference). All four variants were reviewed side by side. Concept 04 (the original warm Quiet Clinic) was retained for comparison but reads too "calm clinic" in the SaaS context of 2025–2026; Concept 04c (Editorial) was strong on stories but reduced the product affordances; Concept 04d (Modern SaaS) was visually precise but lost the clinic posture that the product rules require. The minimal-pass variant (04b) keeps the FD-026 identity — circular avatars, separate-capsule distributions, opaque surfaces, coral held back for emergencies — and applies the published 2025–2026 healthcare-UX research findings: paper background instead of warm oat, teal-gray instead of teal, thinner rules, no decorative linework, no atmospheric veil, no panel shadow, smaller radii (10 / 16 / 22 instead of 12 / 20 / 28), and an outline-only capsule row with a status dot rather than tinted fills. The result is the calm of FD-026 expressed without the warm "consulting-room" skin, which the founder confirmed as the chosen direction after the prototype walkthrough.
+
+The five-direction comparison from FD-025 is preserved. Concepts 01, 02, 03, 04c, 04d, and 05 remain in `ui-design-prototype/.archive/`; Concepts 03 (Luminous Editorial) and 04 (warm Quiet Clinic) remain in the live gallery alongside Concept 04b so the warm-vs-minimal comparison stays runnable. The decision-log frontier moves forward, not sideways — Concept A's identity contract is now "the 04b minimal-pass variant of Quiet Clinic", and Concept A's archived Concept B / Concept C wireframes remain historical references only.
+
+| FD-028 | Concept 04c (Editorial) and Concept 04d (Modern SaaS) are archived from the live gallery and moved into `ui-design-prototype/.archive/`. The live gallery now shows the three surviving directions — 03 Luminous Editorial, 04 warm Quiet Clinic, and 04b Quiet Clinic (minimal pass, the chosen implementation). 04c and 04d remain inspectable in the archive for future reference but are no longer part of the live side-by-side. | Confirmed founder override 2026-09-06 after the prototype walkthrough; FD-027's "comparison stays runnable" clause is narrowed to the warm-vs-minimal comparison of 04 and 04b; 03 stays as the editorial reference; does not change FD-027's chosen implementation direction or any Phase 1 product rule |
+
+### FD-028 — archive 04c and 04d from the live gallery (rationale)
+
+After the FD-027 walkthrough confirmed 04b as the chosen implementation, the live gallery still presented four directions (03, 04, 04c, 04d) alongside it. The 04c (Editorial — Substack / Stripe Press / Scroll.in reference) and 04d (Modern SaaS — Linear / Stripe / Notion reference) variants were built specifically as side-by-side comparators during the 04b selection. With that decision made, their continued presence in the live gallery added noise without adding signal — neither was a candidate for production, and the live page was reading as "five directions" when the actual choice had narrowed to "04 vs 04b" with 03 retained as the editorial reference. They are now archived alongside Concepts 01, 02, and 05. Their CSS, webfonts (Hind Siliguri, Source Serif 4, Inter, Inter Display, Baloo Da 2, Noto Serif Bengali), and capsule-row variants stay in the archive for any future revisit; the live `gallery.css` no longer carries their thumbnail rules; the live `index.html` no longer renders their cards. The "three directions" framing of the gallery is now accurate.
 
 ## Provisional technical recommendations
 

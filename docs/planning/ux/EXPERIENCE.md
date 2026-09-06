@@ -1,7 +1,11 @@
 ---
 name: RogiKotha Prototype Experience Contract
 status: final
-updated: 2026-08-30
+selected: Concept 04b — Quiet Clinic (minimal pass)
+selected-via: BMad UX Update run 2026-09-06 (FD-027)
+selected-by: founder decision FD-027
+supersedes: FD-026 (Concept 04 — Quiet Clinic, warm variant)
+updated: 2026-09-06
 design: ./DESIGN.md
 sources:
   - ../01-requirement-baseline.md
@@ -9,6 +13,9 @@ sources:
   - ../08-product-backlog.md
   - ../09-frontend-prototype-plan.md
 ---
+
+> Selected direction: **Concept 04b — Quiet Clinic (minimal pass)**. Founder decision FD-027, 2026-09-06 (supersedes FD-026 / Concept 04 warm variant).
+> Component patterns in this file are realised by the 04b direction; visual deltas in [DESIGN.md](./DESIGN.md).
 
 # Foundation
 
@@ -53,6 +60,7 @@ Bengali and English copy must be reviewed as independent natural-language interf
 | StatusMessage | Contains title, concise cause when safe, and one recovery/next action; announces only meaningful changes |
 | WarningPanel | Is persistent when policy requires, non-modal, readable without accepting, and has the relevant report/help action |
 | ModalDialog | Traps focus, closes with Escape when safe, restores focus and never contains a multi-step wizard |
+| DistributionCapsules | Outline capsules (no fill) carry a small status dot at top-right (`::before`); on hover the dot grows into a 2 px left rule over ~350 ms tinted per outcome, and the capsule border transitions to the harder hairline; the dot never moves, it only scales — focus state mirrors hover so keyboard users see the same affordance |
 
 # State Patterns
 
@@ -66,8 +74,11 @@ The demo-state switch can force loading/error/empty/limited/hidden/deleted witho
 - Wizards save after meaningful field changes, expose saved/saving/error status and never move focus automatically on validation failure.
 - The public preview is the publication contract: identity, public month/year, narrative, tags and processed documents match what will be shown.
 - Report and moderation actions require reason selection; dangerous-looking text is never automatically classified in Phase 1.
-- Motion is limited to opacity/short translation, expansion and viewer transitions. With reduced motion, state changes are immediate and retain equivalent context.
 - Viewer zoom/pan stays inside the viewer boundary; keyboard controls and processed-PDF download provide alternatives.
+
+## Motion (CSS-only, 04b default)
+
+Motion is CSS-only in Concept 04b — no JS, no GSAP, no Web Animations API — and is limited to a fixed set of five primitives: (1) hero rise, (2) first-screen stagger, (3) capsule hover with left-rule grow, (4) tab underline, (5) button press. All use the same easing token, `cubic-bezier(.2,.9,.25,1)`. Every animation is one-shot or in direct response to a user action; there is no decorative looping. All motion is killed by `body[data-motion="off"]` (collapses every transition to 1 ms and disables `animation`) and by `@media (prefers-reduced-motion: reduce)` via the universal-selector rule at the top of the stylesheet; under either state, every interaction becomes an immediate equivalent. No motion is added to Concept 03 or Concept 04 — only 04b carries this default set. Visual deltas for the five primitives live in [DESIGN.md](./DESIGN.md) (Motion subsection); styles.css lines 1238–1366 are the source of truth.
 
 # Responsive & Platform
 
