@@ -529,7 +529,10 @@ html[data-lang="bn"] .doc-sub { font-family: var(--bangla); }
 
 .tray {
   position: fixed; inset-inline: 0; bottom: 0; z-index: 60;
-  padding: 12px clamp(14px, 3.5vw, 40px) 16px;
+  /* Safe-area: leave room for the home indicator on iPhone 14+ and
+     Android with gesture bars. Uses the larger of 16px and the
+     viewport's bottom safe-area inset. */
+  padding: 12px clamp(14px, 3.5vw, 40px) max(16px, env(safe-area-inset-bottom));
   background: var(--glass); border-top: 1px solid var(--rule);
   backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
   animation: tray-in 320ms var(--ease) both;
@@ -982,7 +985,17 @@ html[data-lang="bn"] .colophon { font-family: var(--bangla); font-size: 13.5px; 
 
 @media (max-width: 720px) {
   .masthead { gap: 12px; }
-  .tabs { order: 3; width: 100%; margin-inline-start: 0; overflow-x: auto; padding-bottom: 2px; }
+  /* Tabs scroll horizontally on touch. The right-edge mask is a soft
+     visual cue that more tabs exist off-screen; it doesn't interfere
+     with tap targets because it lives in the wrapper padding, not the
+     tab elements. Mask colour matches the masthead's --bg so it blends
+     into the page background. */
+  .tabs {
+    order: 3; width: 100%; margin-inline-start: 0; overflow-x: auto;
+    padding-bottom: 2px; padding-inline-end: 28px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+            mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+  }
   .controls { margin-inline-start: auto; }
   .p-hero { grid-template-columns: 78px minmax(0,1fr); gap: 16px; }
   .p-av { width: 78px; height: 78px; border-radius: 22px; }
@@ -1008,7 +1021,8 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
    Enlarge interactive controls on coarse pointers only — desktop stays
    unchanged. The Quiet Clinic aesthetic is carried by the elements
    themselves; bumping their size on touch devices is invisible to mouse
-   users. Covers .ctl, .sheet-close, .tabs a, .chip, .pillrow button, .opt. */
+   users. Covers .ctl, .sheet-close, .tabs a, .chip, .pillrow button, .opt,
+   .seg button, .tray-chip button, .btn. */
 @media (pointer: coarse) {
   .ctl            { min-width: 44px; min-height: 44px; }
   .sheet-close    { min-width: 44px; min-height: 44px; }
@@ -1016,6 +1030,9 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
   .chip           { min-height: 44px; padding-block: 14px; }
   .pillrow button { min-height: 44px; padding-block: 14px; }
   .opt            { min-height: 44px; padding-block: 14px; }
+  .seg button     { min-height: 44px; padding-block: 12px; }
+  .tray-chip button { min-width: 32px; min-height: 32px; padding: 4px 6px; }
+  .btn            { min-height: 44px; padding-block: 12px; }
 }
 
 
@@ -1176,7 +1193,10 @@ html[data-lang="bn"] body { line-height: 2.0; letter-spacing: 0; }
 .masthead {
   background: var(--bg); border-bottom: 1px solid var(--rule);
   backdrop-filter: none; -webkit-backdrop-filter: none;
-  padding-block: 14px;
+  /* Safe-area: leave room for the notch on iPhone 14+ and similar. Uses
+     the larger of 14px (designer-intended masthead height) and the
+     viewport's top safe-area inset. */
+  padding-block: max(14px, env(safe-area-inset-top)) 14px;
 }
 .panel {
   background: var(--glass); border: 1px solid var(--rule); border-radius: var(--r-lg);
