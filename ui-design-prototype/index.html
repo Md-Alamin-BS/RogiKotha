@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RogiKotha — two UI directions</title>
+<title>RogiKotha — three UI directions</title>
 <link rel="stylesheet" href="gallery.css">
 </head>
 <body>
@@ -14,12 +14,16 @@
 
 <header class="head">
   <h1>RogiKotha</h1>
-  <p class="sub">Two directions on the same product.</p>
+  <p class="sub">Three directions on the same product.</p>
   <p class="lede">
-    Both render the same fictional records and obey the same product rules, so what differs
-    between them is <em>only</em> the design. 03 is the warm editorial direction, and the only one
-    carrying the moderation console. 04 is the calm clinic, built from researched
-    healthcare-identity conventions. The numbering is kept from the wider set these two came out of.
+    Each renders the same fictional records and obeys the same product rules, so what differs
+    between them is <em>only</em> the design. 03 is the warm editorial direction and the only one
+    carrying the moderation console. 04 is the calm clinic — oat and muted teal, serif headings,
+    generous air — built from researched healthcare-identity conventions (FD-026).
+    <b>04b</b> is the chosen implementation direction (FD-027, 2026-09-06): the same clinic
+    posture, expressed more quietly — paper instead of oat, teal-gray instead of teal, hairline
+    rules, smaller radii, no serif/sans contrast, CSS-only motion. Two sibling variants (04c
+    Editorial, 04d Modern SaaS) were explored during the side-by-side and archived.
   </p>
 </header>
 
@@ -62,7 +66,7 @@
     </div>
   </section>
 
-  <h2 class="section-head">The two directions</h2>
+  <h2 class="section-head">The three directions</h2>
 
   <div class="grid">
 
@@ -110,6 +114,27 @@
       </div>
     </article>
 
+    <article class="card c04b">
+      <a class="thumb" href="concepts/concept-04b-quiet-clinic-minimal/index.html" aria-label="Open Quiet Clinic (minimal)">
+        <span class="t-bg t04b" aria-hidden="true"></span>
+        <span class="t-mark clinic-b" aria-hidden="true">
+          <span class="ring"></span>
+          <span class="caps"><i class="p"></i><i class="m"></i><i class="n"></i></span>
+        </span>
+      </a>
+      <div class="body">
+        <span class="idx">04b · minimal pass</span>
+        <h3>Quiet Clinic <span class="muted">(minimal)</span></h3>
+        <p>The same FD-026 clinic, asked to be quieter. Paper instead of oat, teal-gray instead of teal, no decorative linework, no panel shadow, no serif/sans contrast. The check is whether removing the warmth strengthens the calm or strips it.</p>
+        <dl>
+          <dt>Distribution as</dt><dd>Same row of separate capsules — but now outline-only, with a small status dot. A tally on a desk, not a painted bar.</dd>
+          <dt>Material</dt><dd>Paper base, teal-gray accent, 10/16/22 px radii. Headings in the system rounded sans, weight and tracking carrying the posture.</dd>
+          <dt>Screens</dt><dd>8 public · identical IA and content to 04.</dd>
+        </dl>
+        <a class="open" href="concepts/concept-04b-quiet-clinic-minimal/index.html">Open direction 04b</a>
+      </div>
+    </article>
+
   </div>
 
   <section class="how-to">
@@ -146,8 +171,9 @@
   <p>
     Everything shown is fictional and synthetic. No real doctor, facility, patient, BMDC number or
     document is represented. Provider marks are deterministic generated geometry derived from a name
-    hash — never a photograph or likeness of a person. Five earlier directions are kept in <code>.archive/</code>. Every palette here is
-    verified against WCAG AA from the tokens as shipped.
+    hash — never a photograph or likeness of a person. Three earlier directions are kept in <code>.archive/</code>;
+    04b is a quiet variant of the chosen direction. Every palette here is verified against WCAG AA
+    from the tokens as shipped.
   </p>
 </footer>
 
