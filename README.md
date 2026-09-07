@@ -22,6 +22,7 @@ RogiKotha captures the full lifecycle of the product from idea to delivery. The 
 
 ## Documentation
 
+* Scope of Work. One-page entry point for stakeholders and partners — see `docs/scope-of-work.md`.
 * Product Requirements. See RogiKotha_Product_Requirements_Document_v1.0.docx.
 * Business Requirements. See RogiKotha_BRD_v1.0.docx.
 * Design and Notes. See the docs folder.

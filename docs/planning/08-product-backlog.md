@@ -15,6 +15,8 @@ status: planned
 
 Enable people to share and learn from condition-specific healthcare experiences without presenting those experiences as medical verification. Release sequencing is dependency-led, not a promise of dates.
 
+Live prototype status: see [`09-coverage-matrix.md`](./09-coverage-matrix.md) for current Done / Partial / Missing rollup.
+
 | Release | Outcome | Epics |
 |---|---|---|
 | R0 — Public synthetic demo | Anyone can compare three complete, read-only, bilingual concepts with safe synthetic data | EPIC-FOUND-001, EPIC-PROT-001 |
