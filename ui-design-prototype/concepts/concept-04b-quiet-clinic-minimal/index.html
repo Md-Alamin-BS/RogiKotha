@@ -8,6 +8,20 @@
 </head>
 <body data-view="discover">
 
+<!-- STORY-PLAT-001: synchronous lang set from localStorage -->
+<script>
+(function(){
+  try {
+    var l = localStorage.getItem('rk04.lang');
+    if (l === 'en' || l === 'bn') {
+      document.documentElement.setAttribute('lang', l);
+      document.documentElement.setAttribute('data-lang', l);
+    }
+  } catch (e) {}
+})();
+</script>
+
+
 <a class="skip" href="#main" data-i18n="a11y.skip">Skip to main content</a>
 
 <p class="demo" role="note"><span data-i18n="demo.banner"></span></p>
@@ -36,13 +50,30 @@
     <button type="button" id="lang"   class="ctl" data-i18n="a11y.lang"   data-i18n-attr="title" aria-pressed="false"><span>অ</span></button>
     <button type="button" id="theme"  class="ctl" data-i18n="a11y.theme"  data-i18n-attr="title"><span>◐</span></button>
     <button type="button" id="motion" class="ctl" data-i18n="a11y.motion" data-i18n-attr="title" aria-pressed="false"><span>◌</span></button>
+    <!-- STORY-PROT-001: role + reset demo controls -->
+    <button type="button" id="demo" class="ctl" title="Demo controls"><span>◇</span></button>
     <a class="ctl" href="../../index.html" data-i18n="concept.back" data-i18n-attr="title"><span>⌘</span></a>
+  </div>
+
+  <!-- STORY-PROT-001: demo controls panel (hidden until activated) -->
+  <div id="demo-panel" class="panel" hidden style="position:fixed;top:64px;right:16px;z-index:60;width:280px;padding:16px 18px">
+    <h4 class="sub-head" style="border-top:0;padding-top:0;margin:0 0 10px">Demo controls</h4>
+    <p class="note" style="margin:0 0 10px">Simulated role gates what you see. Production would sign in with confirmed email + identity check.</p>
+    <div class="opt-row" style="margin-bottom:14px">
+      <button class="opt" type="button" data-role="reader" aria-pressed="true">Reader</button>
+      <button class="opt" type="button" data-role="contributor" aria-pressed="false">Contributor</button>
+      <button class="opt" type="button" data-role="moderator" aria-pressed="false">Moderator</button>
+    </div>
+    <button class="btn small" type="button" id="demo-reset">Reset demo</button>
+    <button class="link-btn" type="button" id="demo-close" style="margin-left:8px">Close</button>
   </div>
 </header>
 
 <div class="progress" aria-hidden="true"><i></i></div>
 
 <main id="main">
+  <!-- STORY-NFR-006: aria-live for dynamic regions -->
+  <div id="sr-live" class="sr-only" aria-live="polite" role="status"></div>
   <section class="view" id="view-discover"></section>
   <section class="view" id="view-results"   hidden></section>
   <section class="view" id="view-profile"   hidden></section>

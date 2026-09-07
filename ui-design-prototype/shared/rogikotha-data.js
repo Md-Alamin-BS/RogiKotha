@@ -482,6 +482,8 @@
     'admin.act.hide':        { en: 'Hide temporarily', bn: 'সাময়িক লুকান' },
     'admin.act.remove':      { en: 'Remove', bn: 'সরিয়ে দিন' },
     'admin.act.restrict':    { en: 'Restrict account', bn: 'অ্যাকাউন্ট সীমিত' },
+    'admin.act.suspend':     { en: 'Suspend account', bn: 'অ্যাকাউন্ট স্থগিত' },
+    'admin.act.ban':         { en: 'Ban account', bn: 'অ্যাকাউন্ট নিষিদ্ধ' },
     'admin.act.none':        { en: 'No action needed', bn: 'কোনো ব্যবস্থা নয়' },
     'admin.proportion':      { en: 'Use the least restrictive action that solves the problem.', bn: 'সমস্যা মেটে এমন সবচেয়ে কম কঠোর ব্যবস্থাই নিন।' },
     'admin.noRewrite':       { en: 'You may redact private identifiers. You may never rewrite the author’s medical story — ask them to change it instead.', bn: 'ব্যক্তিগত শনাক্তকারী তথ্য ঢাকতে পারেন। লেখকের চিকিৎসা-বিবরণ কখনো নিজে বদলাতে পারবেন না — বরং তাঁকে বদলাতে বলুন।' },
@@ -524,6 +526,73 @@
     'admin.staffOnly':       { en: 'Staff only', bn: 'শুধু কর্মীদের জন্য' },
     'admin.staffOnlyNote':   { en: 'This screen is for moderation staff only. Patients and doctors do not see it.', bn: 'এই স্ক্রিন শুধু মডারেশন কর্মীদের জন্য। রোগী বা ডাক্তাররা এটি দেখেন না।' },
     'admin.backToGallery':   { en: 'Back to the prototype gallery', bn: 'প্রোটোটাইপ গ্যালারিতে ফিরুন' },
+    'admin.tab.config':      { en: 'Configuration', bn: 'কনফিগারেশন' },
+    'admin.tab.notifications': { en: 'Notifications', bn: 'বিজ্ঞপ্তি' },
+    'admin.config.title':    { en: 'Versioned runtime configuration', bn: 'সংস্করণযুক্ত রানটাইম কনফিগারেশন' },
+    'admin.config.thresholds': { en: 'Reporting thresholds', bn: 'রিপোর্টিং সীমা' },
+    'admin.config.retention': { en: 'Retention defaults', bn: 'সংরক্ষণের ডিফল্ট' },
+    'admin.config.roles':    { en: 'Role & capability matrix', bn: 'ভূমিকা ও ক্ষমতা ম্যাট্রিক্স' },
+    'admin.config.threshold.five': { en: 'Five-account auto-hide threshold', bn: 'পাঁচ-অ্যাকাউন্ট স্বয়ংক্রিয় লুকানোর সীমা' },
+    'admin.config.threshold.criticalHours': { en: 'Critical case hours', bn: 'জরুরি কেস ঘণ্টা' },
+    'admin.config.threshold.standardDays': { en: 'Standard case days', bn: 'সাধারণ কেস দিন' },
+    'admin.config.retention.defaultDays': { en: 'Default retention (days)', bn: 'ডিফল্ট সংরক্ষণ (দিন)' },
+    'admin.config.retention.maxDays': { en: 'Maximum retention (days)', bn: 'সর্বোচ্চ সংরক্ষণ (দিন)' },
+    'admin.config.role.sa':  { en: 'Super Admin', bn: 'সুপার অ্যাডমিন' },
+    'admin.config.role.admin': { en: 'Admin', bn: 'অ্যাডমিন' },
+    'admin.config.role.mod': { en: 'Moderator', bn: 'মডারেটর' },
+    'admin.config.cap.reports': { en: 'View reports', bn: 'রিপোর্ট দেখুন' },
+    'admin.config.cap.actions': { en: 'Take content actions', bn: 'কনটেন্ট পদক্ষেপ নিন' },
+    'admin.config.cap.identity': { en: 'Reveal reporter identity', bn: 'রিপোর্টকারীর পরিচয় প্রকাশ' },
+    'admin.config.cap.originalEvidence': { en: 'Reveal original evidence', bn: 'মূল কাগজপত্র প্রকাশ' },
+    'admin.role.current':    { en: 'Current role', bn: 'বর্তমান ভূমিকা' },
+    'admin.role.currentTitle': { en: 'Active role: ', bn: 'সক্রিয় ভূমিকা: ' },
+    'admin.role.sa':         { en: 'Super Admin', bn: 'সুপার অ্যাডমিন' },
+    'admin.role.admin':      { en: 'Admin', bn: 'অ্যাডমিন' },
+    'admin.role.mod':        { en: 'Moderator', bn: 'মডারেটর' },
+    'admin.notif.kind.report': { en: 'Report', bn: 'রিপোর্ট' },
+    'admin.notif.kind.protected': { en: 'Protected-field change', bn: 'সুরক্ষিত তথ্যের পরিবর্তন' },
+    'admin.notif.kind.identity': { en: 'Identity reveal request', bn: 'পরিচয় প্রকাশের অনুরোধ' },
+    'admin.bulk.previewAffected': { en: 'Preview affected', bn: 'প্রভাবিত দেখুন' },
+    'admin.bulk.affected':   { en: 'affected', bn: 'টি প্রভাবিত' },
+    'admin.act.cycleTip':    { en: 'Click to cycle role (Super Admin → Admin → Moderator)', bn: 'ভূমিকা পরিবর্তন করতে ক্লিক করুন (সুপার অ্যাডমিন → অ্যাডমিন → মডারেটর)' },
+    'admin.reveal.audited':  { en: 'Reveal (audited)', bn: 'প্রকাশ (অডিটেড)' },
+    'admin.timeline.recent': { en: 'Recent actions on this case', bn: 'এই কেসে সাম্প্রতিক পদক্ষেপ' },
+    'admin.timeline.timeAgo': { en: 'ago', bn: 'আগে' },
+    'admin.bulk.toolbar':    { en: 'Bulk actions', bn: 'গণ পদক্ষেপ' },
+    'admin.bulk.select':     { en: 'Select', bn: 'নির্বাচন' },
+    'admin.bulk.selectCritical': { en: 'Select all critical', bn: 'সমস্ত জরুরি নির্বাচন' },
+    'admin.bulk.preview':    { en: 'Preview affected', bn: 'প্রভাবিত কেস দেখুন' },
+    'admin.bulk.confirm':    { en: 'Confirm', bn: 'নিশ্চিত' },
+    'admin.bulk.cancel':     { en: 'Cancel', bn: 'বাতিল' },
+    'admin.bulk.empty':      { en: 'No cases selected.', bn: 'কোনো কেস নির্বাচিত নয়।' },
+    'admin.bulk.done':       { en: 'Bulk action queued (no-op for prototype).', bn: 'গণ পদক্ষেপ সারিতে যুক্ত হয়েছে (প্রোটোটাইপে নো-অপ)।' },
+    'admin.notif.title':     { en: 'Notification triage', bn: 'বিজ্ঞপ্তি বাছাই' },
+    'admin.notif.kind.newReport': { en: 'New report', bn: 'নতুন রিপোর্ট' },
+    'admin.notif.kind.evidence': { en: 'Evidence processed', bn: 'কাগজপত্র প্রক্রিয়াকৃত' },
+    'admin.notif.kind.claim': { en: 'Claim submitted', bn: 'দাবি জমা' },
+    'admin.notif.kind.protectedChange': { en: 'Protected field change requested', bn: 'সুরক্ষিত তথ্য পরিবর্তনের অনুরোধ' },
+    'admin.notif.kind.identityReveal': { en: 'Identity reveal requested', bn: 'পরিচয় প্রকাশের অনুরোধ' },
+    'admin.notif.kind.security': { en: 'Security alert', bn: 'নিরাপত্তা সতর্কতা' },
+    'admin.notif.action.open': { en: 'Open', bn: 'খুলুন' },
+    'admin.notif.action.ack':  { en: 'Acknowledge', bn: 'স্বীকার করুন' },
+
+    // STORY-USER-002: mine-tab preferences / feedback / data-request strings
+    'user2.preferences':       { en: 'Preferences', bn: 'পছন্দসমূহ' },
+    'user2.preferencesNote':   { en: 'Choose how the app speaks to you. Settings stay on this device.', bn: 'অ্যাপটি আপনার সাথে কীভাবে কথা বলবে তা বেছে নিন। সেটিংস এই ডিভাইসে থাকে।' },
+    'user2.lang.en':           { en: 'English', bn: 'ইংরেজি' },
+    'user2.lang.bn':           { en: 'বাংলা (Bangla)', bn: 'বাংলা' },
+    'user2.feedback':          { en: 'Feedback', bn: 'মতামত' },
+    'user2.feedbackNote':      { en: 'Share what worked, what broke, or what you wished the app did. Drafts save as you type.', bn: 'কী ভালো কাজ করেছে, কোথায় সমস্যা হয়েছে, বা আর কী চান — জানান। খসড়া টাইপ করার সময়ই সংরক্ষিত হয়।' },
+    'user2.feedbackPh':        { en: 'What did you try? What happened?', bn: 'আপনি কী করতে চেয়েছিলেন? কী ঘটেছে?' },
+    'user2.feedbackSend':      { en: 'Save draft', bn: 'খসড়া সংরক্ষণ' },
+    'user2.feedbackSent':      { en: 'Draft saved locally.', bn: 'খসড়া স্থানীয়ভাবে সংরক্ষিত।' },
+    'user2.data':              { en: 'Your data', bn: 'আপনার তথ্য' },
+    'user2.dataNote':          { en: 'Request a copy of what the service knows about you, or ask for your account to be deleted.', bn: 'পরিষেবা আপনার সম্পর্কে যা জানে তার একটি অনুলিপি অনুরোধ করুন, অথবা অ্যাকাউন্ট মুছে ফেলার অনুরোধ করুন।' },
+    'user2.dataExport':        { en: 'Request my data export', bn: 'আমার তথ্যের অনুলিপি অনুরোধ' },
+    'user2.dataDelete':        { en: 'Request account deletion', bn: 'অ্যাকাউন্ট মুছে ফেলার অনুরোধ' },
+    'user2.dataCallout':       { en: 'These requests are processed manually in this prototype. In production they trigger the documented workflow.', bn: 'এই প্রোটোটাইপে অনুরোধগুলি ম্যানুয়ালি প্রক্রিয়া করা হয়। প্রোডাকশনে এগুলি নথিভুক্ত কর্মপ্রবাহ চালু করে।' },
+    'user2.dataExportNote':    { en: 'A signed archive will be prepared and a download link sent within 7 days.', bn: 'স্বাক্ষরিত সংরক্ষণাগার তৈরি হয়ে ৭ দিনের মধ্যে ডাউনলোড লিঙ্ক পাঠানো হবে।' },
+    'user2.dataDeleteNote':    { en: 'Public contributions remain in their anonymised form; identifiable records are removed within 30 days.', bn: 'প্রকাশ্য অবদানগুলি বেনামী আকারে থাকে; শনাক্তযোগ্য রেকর্ড ৩০ দিনের মধ্যে মুছে ফেলা হয়।' },
   };
 
   /* ---------------------------------------------------------------
@@ -641,6 +710,7 @@
     }
   ];
 
+  // STORY-SRCH-003: provisional bilingual taxonomy with aliases incl. Banglish
   var conditions = [
     { id: 'c1', name: { en: 'Type 2 diabetes', bn: 'টাইপ ২ ডায়াবেটিস' }, aliases: ['diabetes', 'ডায়াবেটিস', 'dayabetis', 'sugar', 'চিনি রোগ'] },
     { id: 'c2', name: { en: 'Thyroid (hypothyroidism)', bn: 'থাইরয়েড (হাইপোথাইরয়েড)' }, aliases: ['thyroid', 'থাইরয়েড'] },
@@ -1091,6 +1161,49 @@
    * ------------------------------------------------------------- */
   var moderation = {
     permissions: { reports: true, contentActions: true, reporterIdentity: false, originalEvidence: false },
+    thresholds: {
+      fiveAccountHide: 5,
+      criticalHours: 24,
+      standardDays: 3,
+      appealDays: 7,
+      retentionDefaultDays: 90,
+      retentionMaxDays: 3650
+    },
+    auditLog: [
+      { id: 'a1', case: 'MOD-2041', action: 'warn',     actor: 'moderator:rashid', timeMin: 8,   targetId: 'k3' },
+      { id: 'a2', case: 'MOD-2041', action: 'hide',     actor: 'system:auto',    timeMin: 22,  targetId: 'k3' },
+      { id: 'a3', case: 'MOD-2041', action: 'record',   actor: 'moderator:rashid',timeMin: 35,  targetId: 'k3' },
+      { id: 'a4', case: 'MOD-2038', action: 'hide',     actor: 'system:auto',    timeMin: 65,  targetId: 'e6' },
+      { id: 'a5', case: 'MOD-2038', action: 'requestAccess', actor: 'moderator:nadia',timeMin: 80,  targetId: 'e6' },
+      { id: 'a6', case: 'MOD-2033', action: 'review',   actor: 'moderator:nadia',timeMin: 120, targetId: 'r8' },
+      { id: 'a7', case: 'MOD-2033', action: 'note',     actor: 'moderator:nadia',timeMin: 150, targetId: 'r8' },
+      { id: 'a8', case: 'MOD-2029', action: 'review',   actor: 'moderator:rashid',timeMin: 240, targetId: 'd3' },
+      { id: 'a9', case: 'MOD-2029', action: 'none',     actor: 'moderator:rashid',timeMin: 280, targetId: 'd3' },
+      { id: 'a10', case: 'MOD-2011', action: 'appeal',  actor: 'author:r4',      timeMin: 180, targetId: 'r4' },
+      { id: 'a11', case: 'MOD-2011', action: 'freshReview', actor: 'moderator:tabassum',timeMin: 350, targetId: 'r4' },
+      { id: 'a12', case: 'MOD-2011', action: 'note',    actor: 'moderator:tabassum',timeMin: 410, targetId: 'r4' },
+      { id: 'a13', case: 'MOD-2041', action: 'reopen',  actor: 'moderator:rashid',timeMin: 720, targetId: 'k3' }
+    ],
+    notifications: [
+      { id: 'nA1', kind: 'newReport', when: { en: '12 minutes ago', bn: '১২ মিনিট আগে' },
+        target: { en: 'MOD-2041', bn: 'MOD-2041' },
+        text: { en: 'New report filed against k3 (dangerous + spam).', bn: 'k3 এর বিরুদ্ধে নতুন রিপোর্ট (বিপজ্জনক + স্প্যাম)।' } },
+      { id: 'nA2', kind: 'evidence', when: { en: '42 minutes ago', bn: '৪২ মিনিট আগে' },
+        target: { en: 'Q-891', bn: 'Q-891' },
+        text: { en: 'Prescription scan finished redacting and is awaiting author confirmation.', bn: 'প্রেসক্রিপশন স্ক্যানের ঢাকা শেষ; লেখকের সম্মতি অপেক্ষমাণ।' } },
+      { id: 'nA3', kind: 'claim', when: { en: '1 hour ago', bn: '১ ঘণ্টা আগে' },
+        target: { en: 'Dr. Farhana Rahman', bn: 'ডা. ফারহানা রহমান' },
+        text: { en: 'A doctor submitted a claim for this profile.', bn: 'এই প্রোফাইলের জন্য একজন ডাক্তার দাবি জমা দিয়েছেন।' } },
+      { id: 'nA4', kind: 'protectedChange', when: { en: '3 hours ago', bn: '৩ ঘণ্টা আগে' },
+        target: { en: 'Dr. Farhana Rahman', bn: 'ডা. ফারহানা রহমান' },
+        text: { en: 'Community edit to specialty is awaiting approval.', bn: 'বিশেষত্বের সম্প্রদায়-সম্পাদনা অনুমোদনের অপেক্ষায়।' } },
+      { id: 'nA5', kind: 'identityReveal', when: { en: '5 hours ago', bn: '৫ ঘণ্টা আগে' },
+        target: { en: 'MOD-2033', bn: 'MOD-2033' },
+        text: { en: 'A Super Admin has been asked to reveal reporter identity for review.', bn: 'পর্যালোচনার জন্য একজন সুপার অ্যাডমিনকে রিপোর্টকারীর পরিচয় প্রকাশ করতে বলা হয়েছে।' } },
+      { id: 'nA6', kind: 'security', when: { en: 'yesterday', bn: 'গতকাল' },
+        target: { en: 'admin:rashid', bn: 'admin:rashid' },
+        text: { en: 'Three bulk actions in five minutes — confirm this was you.', bn: 'পাঁচ মিনিটে তিনটি গণ পদক্ষেপ — এটি আপনিই কিনা নিশ্চিত করুন।' } }
+    ],
     cases: [
       { id: 'MOD-2041', lane: 'critical', ageHours: 3, reports: 2, autoHidden: true,
         targetKind: 'comment', targetId: 'k3', reviewId: 'r1',
@@ -1268,6 +1381,7 @@
   }
 
   /* Fuzzy / alias / Banglish resolution for the search demo. */
+  // STORY-SRCH-001: query normalization resolver for Bengali/English/Banglish
   function resolveQuery(q) {
     var raw = (q || '').trim();
     if (!raw) { return { raw: raw, condition: null, matched: null }; }

@@ -6,6 +6,7 @@
 
   var state = {
     lang: 'en', theme: null, motion: 'on',
+    role: 'reader',
     query: 'diabetes',
     filters: { sort: 'relevance' },
     tab: 'doctors',
@@ -33,6 +34,7 @@
   var P = function (f) { return RK.pick(f, state.lang); };
   var L = function (o) { return o ? (state.lang === 'bn' ? o.bn : o.en) : ''; };
 
+  // STORY-PLAT-001: HTML escaping helper for safe bilingual markup
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
@@ -55,12 +57,14 @@
     $('#lang').querySelector('span').textContent = lang === 'bn' ? 'A' : 'অ';
     try { localStorage.setItem('rk04.lang', lang); } catch (e) {}
     renderAll();
+    announce('Language: ' + (lang === 'bn' ? 'Bengali' : 'English'));
   }
   function setTheme(theme) {
     state.theme = theme;
     if (theme) { document.documentElement.setAttribute('data-theme', theme); }
     else { document.documentElement.removeAttribute('data-theme'); }
     try { localStorage.setItem('rk04.theme', theme || ''); } catch (e) {}
+    announce('Theme: ' + (currentIsDark() ? 'dark' : 'light'));
   }
   function currentIsDark() {
     if (state.theme) { return state.theme === 'dark'; }
@@ -80,6 +84,19 @@
   }
 
   var VIEWS = ['discover', 'results', 'profile', 'account', 'condition', 'facility', 'compose', 'mine', 'emergency', 'about'];
+
+  // STORY-NFR-006: announce view/lang/theme changes to screen readers
+  function announce(msg) {
+    var node = document.getElementById('sr-live');
+    if (node) { node.textContent = msg; }
+  }
+
+  // STORY-USER-001: noindex on profile + mine
+  function setNoindex(on) {
+    var m = document.querySelector('meta[name="robots"]');
+    if (on && !m) { m = document.createElement('meta'); m.name = 'robots'; m.content = 'noindex'; document.head.appendChild(m); }
+    else if (!on && m) { m.remove(); }
+  }
 
   function route() {
     var raw = (location.hash || '#discover').replace('#', '');
@@ -104,6 +121,7 @@
     if (v === 'facility') { renderFacility(); }
     $('#tray').hidden = !(v === 'results' && state.compare.length);
     window.scrollTo({ top: 0, behavior: motionAllowed() ? 'smooth' : 'auto' });
+    announce('View: ' + v);
   }
   function go(path) {
     if (location.hash === '#' + path) { route(); } else { location.hash = '#' + path; }
@@ -127,6 +145,7 @@
   /* Distribution: the editorial sentence carries every fact; the spectrum
      rule is a second reading of the same numbers and can be deleted
      without losing anything. */
+  // STORY-REV-004: narrative sentiment distribution block (no combined score)
   function distBlock(dist, keys, prefix, title) {
     if (dist.empty) { return '<p class="denominator">' + esc(T('label.notProvided')) + '</p>'; }
 
@@ -211,6 +230,7 @@
   function renderDiscover() {
     var host = $('#view-discover');
     if (!host) { return; }
+    setNoindex(false);
     var byCondition = RK.conditions.map(function (c) {
       return { c: c, n: RK.conditionAccounts(c.id).length };
     }).filter(function (x) { return x.n > 0; });
@@ -303,6 +323,7 @@
   function renderResults() {
     var host = $('#view-results');
     if (!host) { return; }
+    setNoindex(false);
     var showFacilities = state.tab === 'facilities';
     var res = RK.search(state.query, state.filters);
     var facs = RK.searchFacilities(state.query, state.filters);
@@ -347,6 +368,7 @@
       '</section>' +
 
       '<div class="results-body">' +
+        // STORY-SRCH-002: neutral filter panel (no engagement-based ranking)
         '<aside class="panel filters">' +
           '<h2>' + esc(T('filter.title')) + '</h2>' +
           filterFields() +
@@ -426,11 +448,13 @@
     return list;
   }
 
+  // STORY-DIR-001: transparent doctor profile renderer
   function renderProfile() {
     var host = $('#view-profile');
     if (!host) { return; }
     var d = RK.doctorById(state.doctorId);
     if (!d) { return; }
+    setNoindex(true);
     var all = RK.reviewsFor(d.id);
     var scoped = RK.reviewsFor(d.id, state.profileCondition);
     var shown = profileAccounts();
@@ -553,6 +577,7 @@
   function renderAccount() {
     var host = $('#view-account');
     if (!host) { return; }
+    setNoindex(false);
     var r = RK.reviewById(state.accountId);
     if (!r) { return; }
     var d = RK.doctorById(r.doctorId);
@@ -586,6 +611,7 @@
 
           '<p class="story story-lead">' + esc(P(r.body)) + '</p>' +
 
+          // STORY-REV-002: detailed treatment timeline chapters
           (r.timeline ? '<h2 class="section-head">' + esc(T('account.timeline')) + '</h2>' +
             '<ul class="chapters">' + r.timeline.map(function (t) {
               return '<li><span class="k">' + esc(T(CHAPTER_KEYS[t.k] || 'review.readFull')) + '</span>' +
@@ -661,6 +687,7 @@
       '</div>';
   }
 
+  // STORY-COM-002: like/dislike button, idempotent and anonymous-safe
   function reactBtn(key, label, base) {
     var on = !!state.reactions[key];
     return '<button class="react" type="button" data-react="' + key + '" aria-pressed="' + on + '">' +
@@ -684,7 +711,7 @@
               (e.state === 'failed'
                 ? esc(P(e.failReason)) + ' ' + esc(T('ev.failNote'))
                 : bn(e.pages) + ' ' + esc(state.lang === 'bn' ? 'পাতা' : 'pages')) + '</span>' +
-            (e.state === 'failed' ? '' : '<button class="btn small ghost" type="button">' + esc(T('account.openEvidence')) + '</button>') +
+            (e.state === 'failed' ? '' : '<button class="btn small ghost" type="button" data-view-evidence="' + esc(e.id) + '">' + esc(T('account.openEvidence')) + '</button>') +
           '</div>';
         }).join('') + '</div>';
     }).join('');
@@ -695,6 +722,7 @@
       '<p class="note" style="margin-top:10px">' + esc(T('account.evidenceOnly')) + '</p>';
   }
 
+  // STORY-COM-001: flat comment thread with mentions + advice warning
   function commentHtml(k) {
     var body = esc(L(k));
     if (k.mentions) {
@@ -734,6 +762,7 @@
   function renderCondition() {
     var host = $('#view-condition');
     if (!host) { return; }
+    setNoindex(false);
     var c = RK.conditionById(state.conditionId);
     if (!c) { return; }
     var list = RK.conditionAccounts(c.id);
@@ -880,9 +909,11 @@
      6 · Facility profile
      ===================================================================== */
 
+  // STORY-DIR-003: facility parent/branch renderer with non-scored criteria
   function renderFacility() {
     var host = $('#view-facility');
     if (!host) { return; }
+    setNoindex(false);
     var f = RK.facilityById(state.facilityId);
     if (!f) { return; }
     var list = RK.facilityReviewsFor(f.id);
@@ -1003,9 +1034,11 @@
     return out.filter(function (x) { return state.ignoredChecks.indexOf(x.id) === -1; });
   }
 
+  // STORY-REV-001: quick review composer with autosave + preview
   function renderCompose() {
     var host = $('#view-compose');
     if (!host) { return; }
+    setNoindex(false);
     var detailed = state.composeMode === 'detailed';
     var checks = safetyChecks();
 
@@ -1096,6 +1129,7 @@
               return '<button class="opt" type="button" data-claim="' + c + '" aria-pressed="' + (state.composeClaims.indexOf(c) !== -1) + '">' + esc(T('claim.' + c)) + '</button>';
             }).join('') + '</div></div>' +
 
+          // STORY-IDENT-001: per-review identity-mode radios (named / pseudonymous / anonymous)
           '<div class="field"><span class="lbl">' + esc(T('compose.identity')) + '</span>' +
             '<div class="opt-row">' + [['real', 'compose.identity.real'], ['pseudo', 'compose.identity.pseudo'], ['anon', 'compose.identity.anon']].map(function (p) {
               return '<button class="opt" type="button" data-ident="' + p[0] + '" aria-pressed="' + (state.composeIdentity === p[0]) + '">' + esc(T(p[1])) + '</button>';
@@ -1151,6 +1185,7 @@
     buildRedactDoc();
   }
 
+  // STORY-EVID-001: quarantine-first evidence file pipeline rendering
   function evFileHtml(f) {
     var cls = f.state === 'ready' ? 'done' : (f.state === 'failed' ? 'bad' : '');
     var order = ['quarantine', 'checking', 'scanning', 'redact', 'processing', 'ready'];
@@ -1205,6 +1240,7 @@
       }).join('') + '</p>' : '');
   }
 
+  // STORY-EVID-002: redaction canvas for processed evidence preview
   function buildRedactDoc() {
     var host = $('#redact');
     if (!host) { return; }
@@ -1239,10 +1275,13 @@
      8 · My contributions
      ===================================================================== */
 
+  // STORY-USER-001: public profile + activity privacy dashboard
   function renderMine() {
     var host = $('#view-mine');
     if (!host) { return; }
+    setNoindex(true);
     var u = RK.user;
+    // STORY-USER-002: dashboard tabs (published / drafts / bookmarks / notifications)
     var tabs = [
       { k: 'published', n: u.published.length },
       { k: 'drafts', n: u.drafts.length },
@@ -1271,6 +1310,7 @@
         '</article>';
       }).join('');
     } else if (state.mineTab === 'drafts') {
+      // STORY-REV-003: drafts tab with 30-day expiration note
       body = '<p class="note" style="margin-bottom:14px">' + esc(T('mine.draftNote')) + '</p>' +
         u.drafts.map(function (dr) {
           return '<article class="mine-item">' +
@@ -1290,6 +1330,7 @@
       body = '<p class="note" style="margin-bottom:14px">' + esc(T('mine.bookmarkNote')) + '</p>' +
         u.bookmarks.map(function (id) { return accountRow(RK.reviewById(id)); }).join('');
     } else {
+      // STORY-NOTIF-001: in-app notifications feed (mine tab)
       body = '<p class="note" style="margin-bottom:14px">' + esc(T('mine.notifNote')) + '</p>' +
         u.notifications.map(function (n) {
           return '<div class="notif ' + (n.unread ? 'unread' : '') + '">' +
@@ -1318,7 +1359,30 @@
           '<tr><th>' + esc(T('appeal.policyReason')) + '</th><td>' + esc(T('report.dangerous')) + '</td></tr>' +
           '<tr><th>' + esc(T('report.identityNote')) + '</th><td>' + esc(T('appeal.noReporter')) + '</td></tr>' +
         '</tbody></table>' +
+        // STORY-MOD-003: appeal entry from mine tab (appeal sheet at app.js:1474-1485)
         '<button class="btn small" type="button" id="open-appeal" style="margin-top:12px">' + esc(T('appeal.button')) + '</button>' +
+      '</section>' +
+      // STORY-USER-002: preferences + feedback + data requests
+      '<section class="sub"><h4 class="sub-head">' + esc(T('user2.preferences')) + '</h4>' +
+        '<p class="note">' + esc(T('user2.preferencesNote')) + '</p>' +
+        '<div class="opt-row">' +
+          '<button class="opt" type="button" id="pref-lang" aria-pressed="' + (state.lang === 'bn') + '">' + esc(T('user2.lang.' + state.lang)) + '</button>' +
+        '</div>' +
+      '</section>' +
+      '<section class="sub"><h4 class="sub-head">' + esc(T('user2.feedback')) + '</h4>' +
+        '<p class="note">' + esc(T('user2.feedbackNote')) + '</p>' +
+        '<div class="field"><label class="sr-only" for="user-feedback">' + esc(T('user2.feedback')) + '</label>' +
+          '<textarea id="user-feedback" placeholder="' + esc(T('user2.feedbackPh')) + '" style="min-height:90px"></textarea></div>' +
+        '<button class="btn small" type="button" id="user-feedback-send">' + esc(T('user2.feedbackSend')) + '</button>' +
+        '<span class="saved-flag" id="user-feedback-flag">' + esc(T('compose.draftSaved')) + '</span>' +
+      '</section>' +
+      '<section class="sub"><h4 class="sub-head">' + esc(T('user2.data')) + '</h4>' +
+        '<p class="note">' + esc(T('user2.dataNote')) + '</p>' +
+        '<div class="mine-actions">' +
+          '<button class="btn small" type="button" id="user-data-export">' + esc(T('user2.dataExport')) + '</button>' +
+          '<button class="btn small ghost" type="button" id="user-data-delete">' + esc(T('user2.dataDelete')) + '</button>' +
+        '</div>' +
+        '<p class="callout" style="margin-top:14px">' + esc(T('user2.dataCallout')) + '</p>' +
       '</section>';
   }
 
@@ -1329,6 +1393,7 @@
   function renderEmergency() {
     var host = $('#view-emergency');
     if (!host) { return; }
+    setNoindex(false);
     var em = RK.config && RK.config.emergency ? RK.config.emergency : {};
     var rows = [
       { k: T('emergview.ambulance'), v: em.ambulance || '999',  hint: '' },
@@ -1371,6 +1436,7 @@
   function renderAbout() {
     var host = $('#view-about');
     if (!host) { return; }
+    setNoindex(false);
     var sections = [
       { t: T('aboutview.modTitle'),       b: T('aboutview.modBody') },
       { t: T('aboutview.reviewerTitle'),  b: T('aboutview.reviewerBody') },
@@ -1398,8 +1464,472 @@
   }
 
   /* =====================================================================
-     Sheets: compare, report, appeal
+     STORY-EVID-002: processed evidence viewer (zoom/pan/page/rotate/download)
      ===================================================================== */
+
+  /* Local string table for the viewer. The shared file is read-only for
+     this work, so these live in the prototype's app.js. They follow the
+     same en/bn shape as the shared table. */
+  var VIEWER_STRINGS = {
+    title:         { en: 'Processed copy', bn: 'প্রক্রিয়াকৃত কপি' },
+    notice:        { en: 'Documents attached — not medically validated', bn: 'কাগজপত্র যুক্ত — চিকিৎসাগতভাবে যাচাই করা হয়নি' },
+    zoomOut:       { en: 'Zoom out', bn: 'ছোট করুন' },
+    zoom100:       { en: '100%', bn: '১০০%' },
+    zoomIn:        { en: 'Zoom in', bn: 'বড় করুন' },
+    fit:           { en: 'Fit', bn: 'ফিট' },
+    rotate:        { en: 'Rotate', bn: 'ঘোরান' },
+    pagePrev:      { en: 'Previous page', bn: 'আগের পাতা' },
+    pageNext:      { en: 'Next page', bn: 'পরের পাতা' },
+    pageOf:        { en: 'Page', bn: 'পাতা' },
+    of:            { en: 'of', bn: '/' },
+    download:      { en: 'Download processed copy', bn: 'প্রক্রিয়াকৃত কপি ডাউনলোড করুন' },
+    zoomLabel:     { en: 'Zoom level', bn: 'জুম স্তর' },
+    rotateLabel:   { en: 'Rotation', bn: 'ঘূর্ণন' },
+    /* Synthetic page body lines — anonymised prescription / lab report /
+       clinical-note copy in the Quiet Clinic register. */
+    docHeadA:      { en: 'PROCESSED COPY · NOT MEDICAL ADVICE', bn: 'প্রক্রিয়াকৃত কপি · চিকিৎসা পরামর্শ নয়' },
+    docHeadB:      { en: 'SYNTHETIC · FOR PROTOTYPE ONLY', bn: 'সিনথেটিক · শুধু প্রোটোটাইপের জন্য' },
+    seal:          { en: 'PROCESSED · QUARANTINE PASSED', bn: 'প্রক্রিয়াকৃত · কোয়ারেন্টাইন পাস' },
+    /* Prescription lines */
+    rxClinic:      { en: 'City Health Clinic — Consultation room 4', bn: 'সিটি হেলথ ক্লিনিক — পরামর্শ কক্ষ ৪' },
+    rxDoctor:      { en: 'Doctor', bn: 'ডাক্তার' },
+    rxPatient:     { en: 'Patient', bn: 'রোগী' },
+    rxRedacted:    { en: '[ redacted by author ]', bn: '[ লেখক কর্তৃক ঢাকা ]' },
+    rxDate:        { en: 'Date', bn: 'তারিখ' },
+    rxDiagnosis:   { en: 'Diagnosis', bn: 'রোগ নির্ণয়' },
+    rxMedicines:   { en: 'Medicines', bn: 'ওষুধ' },
+    rxDose:        { en: 'Dose', bn: 'ডোজ' },
+    rxDuration:    { en: 'Duration', bn: 'মেয়াদ' },
+    rxAdvice:      { en: 'Advice', bn: 'পরামর্শ' },
+    rxSig:         { en: 'Signature', bn: 'স্বাক্ষর' },
+    /* Lab report lines */
+    labName:       { en: 'City Diagnostic Centre — Biochemistry', bn: 'সিটি ডায়াগনস্টিক সেন্টার — বায়োকেমিস্ট্রি' },
+    labTest:       { en: 'Test', bn: 'পরীক্ষা' },
+    labResult:     { en: 'Result', bn: 'ফলাফল' },
+    labRange:      { en: 'Reference range', bn: 'সাধারণ মাত্রা' },
+    labUnit:       { en: 'Unit', bn: 'একক' },
+    labMethod:     { en: 'Method', bn: 'পদ্ধতি' },
+    /* Clinical note lines */
+    noteClinic:    { en: 'Outpatient follow-up note', bn: 'বহির্বিভাগীয় ফলো-আপ নোট' },
+    noteSubject:   { en: 'Subject', bn: 'বিষয়' },
+    noteHistory:   { en: 'History', bn: 'ইতিহাস' },
+    noteExam:      { en: 'Examination', bn: 'পরীক্ষা' },
+    notePlan:      { en: 'Plan', bn: 'পরিকল্পনা' }
+  };
+  function VT(k) { var o = VIEWER_STRINGS[k]; return o ? (state.lang === 'bn' ? o.bn : o.en) : k; }
+
+  /* The viewer's own state. Reset every time it opens. */
+  var viewer = {
+    open: false,
+    fileId: null,
+    pages: [],         /* array of {kind, title, rows} — synthetic page content */
+    page: 0,           /* 0-based */
+    zoom: 1,           /* 0.5..3 */
+    rotation: 0,       /* 0|90|180|270 */
+    pan: { x: 0, y: 0 },
+    panning: false,
+    panStart: null
+  };
+
+  /* Deterministic per-file page generator. The kind and copy vary so each
+     document in the demo data shows a different synthetic page. */
+  function buildViewerPages(file) {
+    var seed = 0;
+    for (var i = 0; i < file.id.length; i++) { seed = (seed * 31 + file.id.charCodeAt(i)) & 0x7fffffff; }
+    var lang = state.lang;
+    var pickKind = seed % 3; /* 0=prescription, 1=lab, 2=clinical note */
+    var totalPages = file.pages ? Math.max(1, Math.min(4, file.pages)) : 1;
+    var pages = [];
+    for (var p = 0; p < totalPages; p++) {
+      var kind = (pickKind + p) % 3;
+      var page = { kind: kind, title: P(file.label), pageNum: p + 1, totalPages: totalPages };
+      if (kind === 0) {
+        page.head = VT('rxClinic');
+        page.kindTitle = lang === 'bn' ? 'প্রেসক্রিপশন' : 'Prescription';
+        page.kv = [
+          [VT('rxDoctor'), lang === 'bn' ? 'ডা. এম. রহমান, এমবিবিএস, এফসিপিএস' : 'Dr. M. Rahman, MBBS, FCPS'],
+          [VT('rxPatient'), VT('rxRedacted')],
+          [VT('rxDate'), lang === 'bn' ? 'মার্চ ২০২৬' : 'March 2026'],
+          [VT('rxDiagnosis'), lang === 'bn' ? 'টাইপ ২ ডায়াবেটিস — নিয়ন্ত্রণে' : 'Type 2 diabetes — under control']
+        ];
+        page.rows = [
+          [lang === 'bn' ? 'মেটফরমিন ৫০০ মিগ্রা' : 'Metformin 500 mg', lang === 'bn' ? 'দিনে ২ বার, খাবারের পর' : 'Twice daily, after meals', '৩০ দিন'],
+          [lang === 'bn' ? 'এমলোডিপিন ৫ মিগ্রা' : 'Amlodipine 5 mg', lang === 'bn' ? 'রাতে ১টি' : 'One tablet at night', '৩০ দিন'],
+          [lang === 'bn' ? 'অ্যাটোরভাস্ট্যাটিন ১০ মিগ্রা' : 'Atorvastatin 10 mg', lang === 'bn' ? 'রাতে ১টি' : 'One tablet at night', '৩০ দিন']
+        ];
+        page.tail = lang === 'bn' ? 'ব্যায়াম ও খাদ্যাভ্যাস বজায় রাখুন। ৪ সপ্তাহ পর ফলো-আপ।' : 'Continue diet and exercise. Follow up in four weeks.';
+        page.sigLabel = VT('rxSig');
+        page.sigValue = lang === 'bn' ? 'ডা. এম. রহমান' : 'Dr. M. Rahman';
+      } else if (kind === 1) {
+        page.head = VT('labName');
+        page.kindTitle = lang === 'bn' ? 'ল্যাব রিপোর্ট' : 'Lab report';
+        page.kv = [
+          [VT('labTest'), lang === 'bn' ? 'রক্তের সাধারণ পরীক্ষা ও লিপিড প্রোফাইল' : 'CBC and lipid profile'],
+          [VT('rxPatient'), VT('rxRedacted')],
+          [VT('rxDate'), lang === 'bn' ? 'মে ২০২৬' : 'May 2026'],
+          [VT('labMethod'), lang === 'bn' ? 'অটোমেটেড অ্যানালাইজার' : 'Automated analyser']
+        ];
+        page.rows = [
+          [lang === 'bn' ? 'হিমোগ্লোবিন' : 'Haemoglobin', lang === 'bn' ? '১৩.৪' : '13.4', lang === 'bn' ? 'গ্রা/ডেসিলি' : 'g/dL', lang === 'bn' ? '১৩.০ – ১৭.০' : '13.0 – 17.0'],
+          [lang === 'bn' ? 'এইচবিএ১সি' : 'HbA1c', lang === 'bn' ? '৬.৮' : '6.8', '%', lang === 'bn' ? '৪.০ – ৫.৬' : '4.0 – 5.6'],
+          [lang === 'bn' ? 'কোলেস্টেরল' : 'Total cholesterol', lang === 'bn' ? '১৭৬' : '176', lang === 'bn' ? 'মিগ্রা/ডেসিলি' : 'mg/dL', lang === 'bn' ? '< ২০০' : '< 200'],
+          [lang === 'bn' ? 'এলডিএল' : 'LDL', lang === 'bn' ? '১০২' : '102', lang === 'bn' ? 'মিগ্রা/ডেসিলি' : 'mg/dL', lang === 'bn' ? '< ১০০' : '< 100']
+        ];
+        page.tail = lang === 'bn' ? 'ফলাফল স্বাভাবিক সীমার কাছাকাছি। চিকিৎসকের সাথে আলোচনা করুন।' : 'Results near reference range. Discuss with your clinician.';
+        page.sigLabel = lang === 'bn' ? 'অনুমোদন' : 'Verified by';
+        page.sigValue = lang === 'bn' ? 'প্রযুক্তি অফিসার' : 'Lab technician';
+      } else {
+        page.head = VT('noteClinic');
+        page.kindTitle = lang === 'bn' ? 'ক্লিনিক্যাল নোট' : 'Clinical note';
+        page.kv = [
+          [VT('noteSubject'), lang === 'bn' ? 'ফলো-আপ: গ্লুকোজ নিয়ন্ত্রণ' : 'Follow-up: glucose control'],
+          [VT('rxPatient'), VT('rxRedacted')],
+          [VT('rxDate'), lang === 'bn' ? 'এপ্রিল ২০২৬' : 'April 2026']
+        ];
+        page.rows = [
+          [VT('noteHistory'), lang === 'bn' ? 'গত তিন মাসে ওজন স্থির, ক্লান্তি কমেছে।' : 'Weight stable for three months, fatigue has reduced.'],
+          [VT('noteExam'), lang === 'bn' ? 'রক্তচাপ স্বাভাবিক; পায়ে কোনো ফোলা নেই।' : 'Blood pressure normal; no peripheral oedema.'],
+          [VT('notePlan'), lang === 'bn' ? 'চলমান ওষুধ বজায় রাখুন; ৩ মাস পর HbA1c পুনরায় পরীক্ষা।' : 'Continue current medication; repeat HbA1c in three months.']
+        ];
+        page.tail = '';
+        page.sigLabel = VT('rxSig');
+        page.sigValue = lang === 'bn' ? 'পরামর্শক চিকিৎসক' : 'Attending physician';
+      }
+      pages.push(page);
+    }
+    return pages;
+  }
+
+  /* Renders one synthetic page as HTML. Inline because SVG/canvas would
+     require reflow on every zoom step — keeping it as DOM keeps pan/zoom
+     on the parent transform only. */
+  function viewerPageHtml(p) {
+    var kv = p.kv.map(function (row) {
+      return '<dt>' + esc(row[0]) + '</dt><dd>' + esc(row[1]) + '</dd>';
+    }).join('');
+    var body;
+    if (p.kind === 0) {
+      body = '<h3>' + esc(p.kindTitle) + '</h3>' +
+        '<p class="sub">' + esc(p.title) + '</p>' +
+        '<dl class="row">' + kv + '</dl>' +
+        '<div class="table">' +
+          '<span class="h">' + esc(VT('rxMedicines')) + '</span>' +
+          '<span class="h">' + esc(VT('rxDose')) + '</span>' +
+          '<span class="h">' + esc(VT('rxDuration')) + '</span>' +
+          p.rows.map(function (r) {
+            return '<span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span><span>' + esc(r[2]) + '</span>';
+          }).join('') +
+        '</div>' +
+        '<p class="sub">' + esc(p.tail) + '</p>';
+    } else if (p.kind === 1) {
+      body = '<h3>' + esc(p.kindTitle) + '</h3>' +
+        '<p class="sub">' + esc(p.title) + '</p>' +
+        '<dl class="row">' + kv + '</dl>' +
+        '<div class="table">' +
+          '<span class="h">' + esc(VT('labTest')) + '</span>' +
+          '<span class="h">' + esc(VT('labResult')) + '</span>' +
+          '<span class="h">' + esc(VT('labRange')) + '</span>' +
+          p.rows.map(function (r) {
+            return '<span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + ' ' + esc(r[2]) + '</span><span>' + esc(r[3]) + '</span>';
+          }).join('') +
+        '</div>' +
+        '<p class="sub">' + esc(p.tail) + '</p>';
+    } else {
+      body = '<h3>' + esc(p.kindTitle) + '</h3>' +
+        '<p class="sub">' + esc(p.title) + '</p>' +
+        '<dl class="row">' + kv + '</dl>' +
+        p.rows.map(function (r) {
+          return '<dl class="row"><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></dl>';
+        }).join('');
+    }
+    return '<section class="viewer-page" aria-label="' + esc(p.kindTitle) + ' ' + p.pageNum + '">' +
+      '<div class="doc-head"><span>' + esc(VT('docHeadA')) + '</span><span>' + esc(p.head) + '</span></div>' +
+      body +
+      (p.sigLabel ? '<p class="sig"><span><b>' + esc(p.sigLabel) + ':</b> ' + esc(p.sigValue) + '</span><span>' + esc(VT('docHeadB')) + '</span></p>' : '') +
+      '<div class="seal" aria-hidden="true">' + esc(VT('seal')) + '</div>' +
+    '</section>';
+  }
+
+  function openEvidenceViewer(fileId) {
+    var file = (RK.evidence || []).filter(function (e) { return e.id === fileId; })[0];
+    if (!file || file.state === 'failed') { return; }
+    viewer.open = true;
+    viewer.fileId = fileId;
+    viewer.pages = buildViewerPages(file);
+    viewer.page = 0;
+    viewer.zoom = 1;
+    viewer.rotation = 0;
+    viewer.pan = { x: 0, y: 0 };
+    viewer.panning = false;
+
+    /* Replace the sheet body but reuse the existing overlay chrome. */
+    $('#sheet-title').textContent = VT('title');
+    var body = renderViewerBody(file);
+    $('#sheet-body').innerHTML = body;
+    $('#overlay').hidden = false;
+    bindViewer();
+    var first = $('#viewer-zoom-out') || $('#viewer-stage');
+    if (first) { first.focus({ preventScroll: true }); }
+    /* Trap focus inside the viewer. */
+    trapFocus($('#sheet-body'));
+  }
+
+  function closeEvidenceViewer() {
+    viewer.open = false;
+    viewer.panning = false;
+    unbindViewer();
+    releaseFocusTrap($('#sheet-body'));
+    $('#overlay').hidden = true;
+  }
+
+  function renderViewerBody(file) {
+    var pagesHtml = viewer.pages.map(function (p, i) {
+      return '<div class="viewer-page-wrap" data-page-index="' + i + '"' + (i === 0 ? '' : ' hidden') + '>' +
+        viewerPageHtml(p) +
+      '</div>';
+    }).join('');
+    return '<div class="viewer-shell" id="viewer-shell" role="dialog" aria-modal="true" aria-labelledby="viewer-title">' +
+      '<h3 id="viewer-title" class="sr-only">' + esc(VT('title')) + '</h3>' +
+      '<div class="viewer-meta">' +
+        '<span class="file">' + esc(P(file.label)) + '</span>' +
+        '<span class="notice">' + esc(VT('notice')) + '</span>' +
+      '</div>' +
+      '<div class="viewer-stage" id="viewer-stage" tabindex="0" role="region" aria-label="' + esc(VT('zoomLabel')) + '">' +
+        '<div class="viewer-pages" id="viewer-pages">' + pagesHtml + '</div>' +
+      '</div>' +
+      '<div class="viewer-controls" role="toolbar" aria-label="' + esc(VT('zoomLabel')) + '">' +
+        '<button class="vctrl" type="button" id="viewer-zoom-out" aria-label="' + esc(VT('zoomOut')) + '" title="' + esc(VT('zoomOut')) + ' (−)">−</button>' +
+        '<button class="vctrl" type="button" id="viewer-zoom-100" aria-label="' + esc(VT('zoom100')) + '" title="' + esc(VT('zoom100')) + '">100%</button>' +
+        '<button class="vctrl" type="button" id="viewer-zoom-in" aria-label="' + esc(VT('zoomIn')) + '" title="' + esc(VT('zoomIn')) + ' (+)">+</button>' +
+        '<button class="vctrl" type="button" id="viewer-fit" aria-label="' + esc(VT('fit')) + '" title="' + esc(VT('fit')) + '">⤢ ' + esc(VT('fit')) + '</button>' +
+        '<span class="vsep" aria-hidden="true"></span>' +
+        '<button class="vctrl" type="button" id="viewer-rotate" aria-label="' + esc(VT('rotate')) + '" title="' + esc(VT('rotate')) + ' (R)">⟳ ' + esc(VT('rotate')) + '</button>' +
+        '<span class="vsep" aria-hidden="true"></span>' +
+        '<button class="vctrl" type="button" id="viewer-prev" aria-label="' + esc(VT('pagePrev')) + '" title="' + esc(VT('pagePrev')) + ' (←)">‹</button>' +
+        '<span class="vpager"><b id="viewer-page-now">1</b> ' + esc(VT('of')) + ' <b id="viewer-page-total">' + bn(viewer.pages.length) + '</b></span>' +
+        '<button class="vctrl" type="button" id="viewer-next" aria-label="' + esc(VT('pageNext')) + '" title="' + esc(VT('pageNext')) + ' (→)">›</button>' +
+        '<span class="spacer"></span>' +
+        '<span class="vpager" aria-live="polite"><b id="viewer-zoom-pct">100%</b></span>' +
+        '<button class="vdownload" type="button" id="viewer-download">' + esc(VT('download')) + '</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function applyViewerTransform() {
+    var pages = $('#viewer-pages');
+    if (!pages) { return; }
+    pages.style.transform = 'translate(' + viewer.pan.x + 'px,' + viewer.pan.y + 'px) ' +
+      'rotate(' + viewer.rotation + 'deg) scale(' + viewer.zoom + ')';
+    var pct = $('#viewer-zoom-pct');
+    if (pct) { pct.textContent = Math.round(viewer.zoom * 100) + '%'; }
+    /* Page visibility — only show current page. */
+    $$('.viewer-page-wrap').forEach(function (w, i) {
+      if (i === viewer.page) { w.removeAttribute('hidden'); }
+      else { w.setAttribute('hidden', ''); }
+    });
+    var now = $('#viewer-page-now');
+    var tot = $('#viewer-page-total');
+    if (now) { now.textContent = bn(viewer.page + 1); }
+    if (tot) { tot.textContent = bn(viewer.pages.length); }
+  }
+
+  function viewerZoom(delta) {
+    var z = viewer.zoom + delta;
+    if (z < 0.5) { z = 0.5; }
+    if (z > 3) { z = 3; }
+    viewer.zoom = Math.round(z * 100) / 100;
+    applyViewerTransform();
+  }
+  function viewerFit() {
+    var stage = $('#viewer-stage');
+    if (!stage) { viewer.zoom = 1; viewer.rotation = 0; viewer.pan = { x: 0, y: 0 }; applyViewerTransform(); return; }
+    var pageEl = stage.querySelector('.viewer-page-wrap:not([hidden]) .viewer-page') || stage.querySelector('.viewer-page');
+    if (!pageEl) { viewer.zoom = 1; applyViewerTransform(); return; }
+    var sw = stage.clientWidth - 64;
+    var sh = stage.clientHeight - 64;
+    var pw = pageEl.offsetWidth;
+    var ph = pageEl.offsetHeight;
+    var z = Math.min(sw / pw, sh / ph);
+    if (z > 2) { z = 2; }
+    if (z < 0.5) { z = 0.5; }
+    viewer.zoom = Math.round(z * 100) / 100;
+    viewer.rotation = 0;
+    viewer.pan = { x: 0, y: 0 };
+    applyViewerTransform();
+  }
+  function viewerRotate() {
+    viewer.rotation = (viewer.rotation + 90) % 360;
+    applyViewerTransform();
+  }
+  function viewerPage(delta) {
+    var p = viewer.page + delta;
+    if (p < 0) { p = 0; }
+    if (p >= viewer.pages.length) { p = viewer.pages.length - 1; }
+    viewer.page = p;
+    applyViewerTransform();
+  }
+
+  /* Click handlers inside the viewer. We re-bind every open because the
+     sheet body is replaced. */
+  function bindViewer() {
+    var stage = $('#viewer-stage');
+    if (stage) {
+      stage.addEventListener('pointerdown', viewerPanStart);
+      stage.addEventListener('pointermove', viewerPanMove);
+      stage.addEventListener('pointerup', viewerPanEnd);
+      stage.addEventListener('pointercancel', viewerPanEnd);
+      stage.addEventListener('pointerleave', viewerPanEnd);
+      stage.addEventListener('wheel', viewerWheel, { passive: false });
+    }
+    var byId = function (id) { return $('#' + id); };
+    if (byId('viewer-zoom-out'))  { byId('viewer-zoom-out').addEventListener('click', function () { viewerZoom(-0.1); }); }
+    if (byId('viewer-zoom-in'))   { byId('viewer-zoom-in').addEventListener('click', function () { viewerZoom(0.1); }); }
+    if (byId('viewer-zoom-100'))  { byId('viewer-zoom-100').addEventListener('click', function () { viewer.zoom = 1; viewer.pan = { x: 0, y: 0 }; applyViewerTransform(); }); }
+    if (byId('viewer-fit'))       { byId('viewer-fit').addEventListener('click', viewerFit); }
+    if (byId('viewer-rotate'))    { byId('viewer-rotate').addEventListener('click', viewerRotate); }
+    if (byId('viewer-prev'))      { byId('viewer-prev').addEventListener('click', function () { viewerPage(-1); }); }
+    if (byId('viewer-next'))      { byId('viewer-next').addEventListener('click', function () { viewerPage(1); }); }
+    if (byId('viewer-download'))  { byId('viewer-download').addEventListener('click', viewerDownload); }
+  }
+  function unbindViewer() {
+    var stage = $('#viewer-stage');
+    if (!stage) { return; }
+    stage.removeEventListener('pointerdown', viewerPanStart);
+    stage.removeEventListener('pointermove', viewerPanMove);
+    stage.removeEventListener('pointerup', viewerPanEnd);
+    stage.removeEventListener('pointercancel', viewerPanEnd);
+    stage.removeEventListener('pointerleave', viewerPanEnd);
+    stage.removeEventListener('wheel', viewerWheel);
+  }
+
+  /* Pan: pointer events cover mouse + touch + pen. We capture the pointer
+     so a drag that leaves the stage still pans. */
+  function viewerPanStart(e) {
+    /* Only left mouse button or touch/pen. */
+    if (e.pointerType === 'mouse' && e.button !== 0) { return; }
+    if (e.target.closest('.viewer-controls')) { return; }
+    viewer.panning = true;
+    viewer.panStart = { x: e.clientX - viewer.pan.x, y: e.clientY - viewer.pan.y, pid: e.pointerId };
+    var stage = $('#viewer-stage');
+    if (stage) {
+      stage.classList.add('dragging');
+      if (stage.setPointerCapture) { try { stage.setPointerCapture(e.pointerId); } catch (e) {} }
+    }
+  }
+  function viewerPanMove(e) {
+    if (!viewer.panning) { return; }
+    viewer.pan.x = e.clientX - viewer.panStart.x;
+    viewer.pan.y = e.clientY - viewer.panStart.y;
+    applyViewerTransform();
+  }
+  function viewerPanEnd() {
+    viewer.panning = false;
+    var stage = $('#viewer-stage');
+    if (stage) { stage.classList.remove('dragging'); }
+  }
+  function viewerWheel(e) {
+    /* Wheel zoom only when ctrl/meta is held — otherwise the user is
+       scrolling the page. */
+    if (!(e.ctrlKey || e.metaKey)) { return; }
+    e.preventDefault();
+    viewerZoom(e.deltaY > 0 ? -0.1 : 0.1);
+  }
+
+  /* Synthetic download. Renders the current page to a canvas and emits a
+     PNG via a data URL. The "processed copy" is the only public artefact;
+     no real PDFs are constructed (the prototype is read-only and offline). */
+  function viewerDownload() {
+    var file = (RK.evidence || []).filter(function (e) { return e.id === viewer.fileId; })[0];
+    if (!file) { return; }
+    var w = 720, h = 1015; /* matches the A4-ish page at 1× */
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    /* Use CSS variable values via getComputedStyle so the export picks up
+       the live Quiet Clinic palette (light or dark). */
+    var cs = getComputedStyle(document.documentElement);
+    var bg = cs.getPropertyValue('--bg').trim() || '#f3eee5';
+    var ink = cs.getPropertyValue('--ink').trim() || '#2a1f12';
+    var rule = cs.getPropertyValue('--rule-hard').trim() || 'rgba(0,0,0,.34)';
+    var faint = cs.getPropertyValue('--ink-faint').trim() || '#665244';
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = rule; ctx.lineWidth = 1;
+    ctx.strokeRect(8, 8, w - 16, h - 16);
+    ctx.fillStyle = faint;
+    ctx.font = '11px Segoe UI, system-ui, sans-serif';
+    ctx.fillText(VT('docHeadA'), 36, 40);
+    ctx.textAlign = 'right';
+    ctx.fillText(VT('docHeadB'), w - 36, 40);
+    ctx.textAlign = 'left';
+    ctx.strokeStyle = rule; ctx.beginPath(); ctx.moveTo(36, 56); ctx.lineTo(w - 36, 56); ctx.stroke();
+    ctx.fillStyle = ink;
+    ctx.font = 'bold 18px Segoe UI, system-ui, sans-serif';
+    var p = viewer.pages[viewer.page];
+    ctx.fillText(p ? p.kindTitle : '', 36, 96);
+    ctx.font = '13px Georgia, serif';
+    if (p) {
+      var lines = [];
+      lines.push(p.title || '');
+      (p.kv || []).forEach(function (row) { lines.push(row[0] + ': ' + row[1]); });
+      (p.rows || []).forEach(function (row) { lines.push(row.join('  ·  ')); });
+      if (p.tail) { lines.push(p.tail); }
+      var y = 132;
+      lines.forEach(function (line) {
+        var trimmed = (line.length > 80 ? line.slice(0, 77) + '…' : line);
+        ctx.fillText(trimmed, 36, y);
+        y += 22;
+      });
+    }
+    /* Seal */
+    ctx.strokeStyle = rule; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(w - 110, h - 110, 60, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = faint;
+    ctx.font = '10px Segoe UI, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    wrapText(ctx, VT('seal'), w - 110, h - 110, 96, 12);
+    ctx.textAlign = 'left';
+
+    var safe = (file.id || 'evidence') + '-processed.png';
+    var a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = safe;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    var words = text.split(' ');
+    var line = '';
+    var yy = y;
+    for (var i = 0; i < words.length; i++) {
+      var test = line + words[i] + ' ';
+      if (ctx.measureText(test).width > maxWidth && i > 0) {
+        ctx.fillText(line, x, yy); line = words[i] + ' '; yy += lineHeight;
+      } else { line = test; }
+    }
+    ctx.fillText(line, x, yy);
+  }
+
+  /* Focus trap — keeps Tab cycling inside the viewer sheet. */
+  function trapFocus(container) {
+    if (!container) { return; }
+    var handler = function (e) {
+      if (e.key !== 'Tab') { return; }
+      var focusables = $$('a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])', container)
+        .filter(function (el) { return el.offsetWidth > 0 || el.offsetHeight > 0; });
+      if (!focusables.length) { return; }
+      var first = focusables[0], last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    container._trapHandler = handler;
+    container.addEventListener('keydown', handler);
+  }
+  function releaseFocusTrap(container) {
+    if (!container || !container._trapHandler) { return; }
+    container.removeEventListener('keydown', container._trapHandler);
+    delete container._trapHandler;
+  }
+
 
   function openSheet(title, body) {
     $('#sheet-title').textContent = title;
@@ -1436,6 +1966,7 @@
       '<div class="compare-grid">' + cols + '</div>');
   }
 
+  // STORY-MOD-001: report sheet with reasons + protected reporter identity
   function openReport(target) {
     var reasons = ['privacy', 'threat', 'unsafeFile', 'dangerous', 'factual', 'spam', 'impersonation'];
     openSheet(T('report.title'),
@@ -1525,6 +2056,21 @@
     if (e.target.closest('#rep-send')) { openSheet(T('report.title'), '<p>' + esc(T('report.sent')) + '</p>'); return; }
     if (e.target.closest('#open-appeal')) { openAppeal(); return; }
     if (e.target.closest('#ap-send')) { openSheet(T('appeal.title'), '<p>' + esc(T('appeal.sent')) + '</p>'); return; }
+    // STORY-USER-002: feedback + data-request click handlers
+    if (e.target.closest('#user-feedback-send')) {
+      var ff = $('#user-feedback-flag');
+      if (ff) { ff.classList.add('on'); setTimeout(function () { ff.classList.remove('on'); }, 1800); }
+      var ta = $('#user-feedback'); if (ta) { ta.value = ''; }
+      return;
+    }
+    if (e.target.closest('#user-data-export') || e.target.closest('#user-data-delete')) {
+      var dca = e.target.closest('#user-data-export') ? 'export' : 'delete';
+      openSheet(T('user2.data'), '<p class="callout">' + esc(T('user2.dataCallout')) + '</p>' +
+        '<p class="note">' + esc(dca === 'export' ? T('user2.dataExportNote') : T('user2.dataDeleteNote')) + '</p>');
+      return;
+    }
+    if (e.target.closest('#pref-lang')) { setLang(state.lang === 'en' ? 'bn' : 'en'); renderMine(); return; }
+    if ((el = e.target.closest('[data-view-evidence]'))) { openEvidenceViewer(el.getAttribute('data-view-evidence')); return; }
     if ((el = e.target.closest('[data-reason]'))) {
       $$('[data-reason]').forEach(function (b) { b.setAttribute('aria-pressed', String(b === el)); }); return;
     }
@@ -1604,6 +2150,21 @@
     if (e.target.closest('#lang')) { setLang(state.lang === 'en' ? 'bn' : 'en'); return; }
     if (e.target.closest('#theme')) { setTheme(currentIsDark() ? 'light' : 'dark'); return; }
     if (e.target.closest('#motion')) { setMotion(state.motion !== 'on'); return; }
+    // STORY-PROT-001: demo controls panel (role + reset)
+    if (e.target.closest('#demo')) { var p = $('#demo-panel'); if (p) { p.hidden = !p.hidden; } return; }
+    if (e.target.closest('#demo-close')) { var pc = $('#demo-panel'); if (pc) { pc.hidden = true; } return; }
+    if ((el = e.target.closest('[data-role]'))) {
+      state.role = el.getAttribute('data-role');
+      try { localStorage.setItem('rk04.role', state.role); } catch (e) {}
+      $$('#demo-panel [data-role]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-role') === state.role)); });
+      announce('Role: ' + state.role);
+      return;
+    }
+    if (e.target.closest('#demo-reset')) {
+      try { localStorage.clear(); } catch (e) {}
+      location.reload();
+      return;
+    }
   });
 
   document.addEventListener('change', function (e) {
@@ -1646,21 +2207,37 @@
   });
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !$('#overlay').hidden) { closeSheet(); }
+    if (e.key === 'Escape' && !$('#overlay').hidden) {
+      if (viewer.open) { closeEvidenceViewer(); }
+      else { closeSheet(); }
+      return;
+    }
+    /* Viewer keyboard shortcuts — only when the viewer is the active sheet. */
+    if (viewer.open) {
+      if (e.key === '+' || e.key === '=') { viewerZoom(0.1); e.preventDefault(); return; }
+      if (e.key === '-' || e.key === '_') { viewerZoom(-0.1); e.preventDefault(); return; }
+      if (e.key === 'ArrowLeft')  { viewerPage(-1); e.preventDefault(); return; }
+      if (e.key === 'ArrowRight') { viewerPage(1);  e.preventDefault(); return; }
+      if (e.key === 'r' || e.key === 'R') { viewerRotate(); e.preventDefault(); return; }
+    }
   });
 
   window.addEventListener('hashchange', route);
 
   (function init() {
-    var l, t, m;
+    var l, t, m, r;
     try {
       l = localStorage.getItem('rk04.lang');
       t = localStorage.getItem('rk04.theme');
       m = localStorage.getItem('rk04.motion');
+      r = localStorage.getItem('rk04.role');
     } catch (e) { /* blocked storage — defaults are fine */ }
+    if (r === 'reader' || r === 'contributor' || r === 'moderator') { state.role = r; }
     setTheme(t || null);
     setLang(l === 'bn' ? 'bn' : 'en');
     setMotion(m !== 'off' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    /* Sync role chip aria-pressed */
+    $$('#demo-panel [data-role]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-role') === state.role)); });
     route();
   })();
 })();
