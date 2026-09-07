@@ -3,10 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<!-- STORY-PROT-002: admin console is noindex -->
+<meta name="robots" content="noindex">
 <title>RogiKotha — Staff console</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body data-view="queue">
+
+<!-- STORY-PLAT-001: synchronous lang set from localStorage -->
+<script>
+(function(){
+  try {
+    var l = localStorage.getItem('rk04.admin.lang');
+    if (l === 'en' || l === 'bn') {
+      document.documentElement.setAttribute('lang', l);
+      document.documentElement.setAttribute('data-lang', l);
+    }
+  } catch (e) {}
+})();
+</script>
 
 <a class="skip" href="#main" data-i18n="a11y.skip">Skip to main content</a>
 
@@ -25,6 +40,8 @@
   <div class="controls">
     <button type="button" id="lang"   class="ctl" data-i18n="a11y.lang"   data-i18n-attr="title" aria-pressed="false"><span>অ</span></button>
     <button type="button" id="theme"  class="ctl" data-i18n="a11y.theme"  data-i18n-attr="title"><span>◐</span></button>
+    <!-- STORY-ADMIN-001: role switcher demo control -->
+    <button type="button" id="role"   class="ctl" data-i18n="admin.role.current" data-i18n-attr="title"><span>SA</span></button>
     <a class="ctl" href="../index.html" data-i18n="admin.backToGallery" data-i18n-attr="title"><span>↗</span></a>
   </div>
 </header>
@@ -32,14 +49,22 @@
 <div class="progress" aria-hidden="true"><i></i></div>
 
 <main id="main">
+  <!-- STORY-NFR-006: aria-live for dynamic regions -->
+  <div id="sr-live" class="sr-only" aria-live="polite" role="status"></div>
   <div class="admin-tabs">
     <button type="button" data-admin="queue" data-i18n="admin.tab.queue"></button>
     <button type="button" data-admin="evidence" data-i18n="admin.tab.evidence"></button>
     <button type="button" data-admin="providers" data-i18n="admin.tab.providers"></button>
+    <button type="button" data-admin="config" data-i18n="admin.tab.config"></button>
+    <button type="button" data-admin="notifications" data-i18n="admin.tab.notifications"></button>
   </div>
   <section class="view" id="view-queue"></section>
   <section class="view" id="view-evidence" hidden></section>
   <section class="view" id="view-providers" hidden></section>
+  <!-- STORY-ADMIN-001: versioned runtime configuration + capability matrix -->
+  <section class="view" id="view-config" hidden></section>
+  <!-- STORY-NOTIF-001: notification triage surface -->
+  <section class="view" id="view-notifications" hidden></section>
 </main>
 
 <div class="overlay" id="overlay" hidden>

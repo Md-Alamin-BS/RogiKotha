@@ -22,7 +22,10 @@
     tab: 'queue',
     selCase: 'MOD-2041',
     selAction: null,
-    done: false
+    done: false,
+    role: 'Admin',
+    bulkSelected: {},
+    bulkConfirmed: false
   };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -54,12 +57,30 @@
     $('#lang').querySelector('span').textContent = lang === 'bn' ? 'A' : 'অ';
     try { localStorage.setItem('rk04.admin.lang', lang); } catch (e) {}
     renderAll();
+    announce('Language: ' + (lang === 'bn' ? 'Bengali' : 'English'));
   }
+  /* Theme: two states (light / dark). Default follows the OS via the
+     stylesheet's @media (prefers-color-scheme: dark) block — no JS
+     attribute is set until the user picks. Once picked, that choice
+     is remembered in localStorage. The toggle button shows the icon
+     for the CURRENT active state and uses aria-pressed to expose it. */
   function setTheme(theme) {
     state.theme = theme;
     if (theme) { document.documentElement.setAttribute('data-theme', theme); }
     else { document.documentElement.removeAttribute('data-theme'); }
     try { localStorage.setItem('rk04.admin.theme', theme || ''); } catch (e) {}
+    var btn = $('#theme');
+    if (btn) {
+      btn.setAttribute('aria-pressed', String(effectiveTheme() === 'dark'));
+      var span = btn.querySelector('span');
+      if (span) { span.textContent = effectiveTheme() === 'dark' ? '☾' : '☀'; }
+      btn.setAttribute('title', effectiveTheme() === 'dark' ? T('a11y.themeDark') : T('a11y.themeLight'));
+    }
+    announce('Theme: ' + (effectiveTheme() === 'dark' ? 'dark' : 'light'));
+  }
+  function effectiveTheme() {
+    if (state.theme === 'light' || state.theme === 'dark') { return state.theme; }
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
   function setMotion(on) {
     state.motion = on ? 'on' : 'off';
@@ -67,7 +88,14 @@
     try { localStorage.setItem('rk04.admin.motion', state.motion); } catch (e) {}
   }
 
-  var VIEWS = ['queue', 'evidence', 'providers'];
+  var VIEWS = ['queue', 'evidence', 'providers', 'config', 'notifications'];
+
+  // STORY-NFR-006: announce view/lang/theme changes to screen readers
+  function announce(msg) {
+    var node = document.getElementById('sr-live');
+    if (node) { node.textContent = msg; }
+  }
+
   function route() {
     var raw = (location.hash || '#queue').replace('#', '');
     var v = VIEWS.indexOf(raw) === -1 ? 'queue' : raw;
@@ -80,7 +108,10 @@
     if (v === 'queue') { renderQueue(); }
     if (v === 'evidence') { renderEvidence(); }
     if (v === 'providers') { renderProviders(); }
+    if (v === 'config') { renderConfig(); }
+    if (v === 'notifications') { renderNotifications(); }
     window.scrollTo({ top: 0, behavior: 'auto' });
+    announce('View: ' + v);
   }
 
   /* ---------------------------------------------------------------------
@@ -91,6 +122,8 @@
     if (state.tab === 'queue') { renderQueue(); }
     if (state.tab === 'evidence') { renderEvidence(); }
     if (state.tab === 'providers') { renderProviders(); }
+    if (state.tab === 'config') { renderConfig(); }
+    if (state.tab === 'notifications') { renderNotifications(); }
   }
 
   function permissionCallout() {
@@ -107,7 +140,8 @@
       '<section class="a-head">' +
         '<span class="kicker">' + esc(T('nav.admin')) + '</span>' +
         '<h1 class="display">' + esc(T('admin.title')) + '</h1>' +
-      '</section>' + permissionCallout() + queueBody();
+      '</section>' + permissionCallout() + queueBody() +
+      (state.bulkConfirmed ? '<div class="callout" style="margin-top:14px;border-color:var(--positive);color:var(--positive)">✓ ' + esc(T('admin.bulk.done')) + '</div>' : '');
   }
 
   function queueBody() {
@@ -116,28 +150,37 @@
       { k: 'standard', target: T('admin.standardTarget') },
       { k: 'appeal', target: T('admin.appealTarget') }
     ];
+    // STORY-MOD-002: moderation queue lanes (critical/standard/appeals)
     var sel = RK.moderation.cases.filter(function (c) { return c.id === state.selCase; })[0];
 
     return '<div class="p-grid"><div>' +
       '<p class="note" style="margin-bottom:18px">' + esc(T('admin.threshold')) + '</p>' +
+      // STORY-ADMIN-002: bulk preview modal toolbar
+      bulkToolbar() +
       lanes.map(function (lane) {
         var list = RK.moderation.cases.filter(function (c) { return c.lane === lane.k; });
         if (!list.length) { return ''; }
         return '<div class="lane">' +
-          '<div class="lane-head"><h3>' + esc(T(lane.k === 'appeal' ? 'admin.appeals' : 'admin.' + lane.k)) + '</h3>' +
-            '<span class="target">' + esc(lane.target) + '</span></div>' +
+          '<div class="lane-head"><h2>' + esc(T(lane.k === 'appeal' ? 'admin.appeals' : 'admin.' + lane.k)) + '</h2>' +
+            '<span class="target">· ' + esc(lane.target) + '</span></div>' +
           list.map(function (c) {
-            return '<button class="case" type="button" data-case="' + c.id + '" aria-pressed="' + (state.selCase === c.id) + '">' +
-              '<span><span class="id">' + esc(c.id) + '</span>' +
-                '<span class="age">' + esc(T('admin.age')) + ' ' + bn(c.ageHours) + esc(T('admin.hours')) + '</span></span>' +
-              '<span><h4>' + esc(L(c.summary)) + '</h4>' +
-                '<span class="case-flags">' +
-                  badge('plain', T('target.' + c.targetKind)) +
-                  badge(c.autoHidden ? 'danger' : 'plain', c.autoHidden ? T('admin.autoHidden') : T('admin.stillVisible')) +
-                  (c.reports ? badge('plain', bn(c.reports) + ' ' + T('admin.reports')) : '') +
-                  (c.coordinated ? badge('warn', T('admin.coordinated')) : '') +
-                '</span></span>' +
-              '<span></span></button>';
+            var checked = !!state.bulkSelected[c.id];
+            return '<div class="case-row" style="display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;border-bottom:1px solid var(--rule);padding-block:6px">' +
+              '<label style="display:flex;align-items:center;justify-content:center;height:34px">' +
+                '<input type="checkbox" data-bulk-check="' + esc(c.id) + '"' + (checked ? ' checked' : '') + ' aria-label="' + esc(T('admin.bulk.select')) + ' ' + esc(c.id) + '">' +
+              '</label>' +
+              '<button class="case" type="button" data-case="' + c.id + '" aria-pressed="' + (state.selCase === c.id) + '" style="border-bottom:0;padding-block:8px">' +
+                '<span><span class="id">' + esc(c.id) + '</span>' +
+                  '<span class="age">' + esc(T('admin.age')) + ' ' + bn(c.ageHours) + esc(T('admin.hours')) + '</span></span>' +
+                '<span><h4>' + esc(L(c.summary)) + '</h4>' +
+                  '<span class="case-flags">' +
+                    badge('plain', T('target.' + c.targetKind)) +
+                    badge(c.autoHidden ? 'danger' : 'plain', c.autoHidden ? T('admin.autoHidden') : T('admin.stillVisible')) +
+                    (c.reports ? badge('plain', bn(c.reports) + ' ' + T('admin.reports')) : '') +
+                    (c.coordinated ? badge('warn', T('admin.coordinated')) : '') +
+                  '</span></span>' +
+                '<span></span></button>' +
+            '</div>';
           }).join('') +
         '</div>';
       }).join('') +
@@ -145,8 +188,10 @@
       '<aside class="p-side">' + (sel ? caseDetail(sel) : '') + '</aside></div>';
   }
 
+  // STORY-MOD-003: enforcement lifecycle split (warn/restrict/suspend/ban)
   function caseDetail(c) {
-    var actions = ['warn', 'redact', 'removeFile', 'lock', 'hide', 'remove', 'restrict', 'none'];
+    var actions = ['warn', 'restrict', 'suspend', 'ban', 'redact', 'removeFile', 'lock', 'hide', 'remove', 'none'];
+    var isSA = state.role === 'Super Admin';
     return '<section class="panel">' +
       '<span class="kicker">' + esc(T('admin.case')) + ' ' + esc(c.id) + '</span>' +
       '<h2 style="font-size:17px;font-weight:600;letter-spacing:-.012em">' + esc(L(c.summary)) + '</h2>' +
@@ -164,10 +209,15 @@
       '<div class="sub">' +
         '<h4 class="sub-head">' + esc(T('admin.permissions')) + '</h4>' +
         '<div class="restricted"><b>' + esc(T('admin.reporterMasked')) + '</b>' +
-          '<span>' + esc(T('admin.reporterNote')) + '</span></div>' +
+          '<span>' + esc(T('admin.reporterNote')) + '</span>' +
+          (isSA ? '<button class="btn small" type="button" style="margin-top:8px;justify-self:start">' + esc(T('admin.reveal.audited')) + '</button>' : '') +
+        '</div>' +
         (c.targetKind === 'evidence' ? '<div class="restricted" style="margin-top:8px"><b>' + esc(T('admin.evidenceGated')) + '</b>' +
           '<span>' + esc(T('admin.evidenceGateNote')) + '</span>' +
-          '<button class="btn small ghost" type="button" style="margin-top:8px;justify-self:start">' + esc(T('admin.requestAccess')) + '</button></div>' : '') +
+          (isSA
+            ? '<button class="btn small" type="button" style="margin-top:8px;justify-self:start">' + esc(T('admin.reveal.audited')) + '</button>'
+            : '<button class="btn small ghost" type="button" style="margin-top:8px;justify-self:start">' + esc(T('admin.requestAccess')) + '</button>') +
+          '</div>' : '') +
       '</div>' +
 
       '<div class="sub">' +
@@ -196,11 +246,14 @@
         '<button class="btn block" type="button" id="mod-commit" style="margin-top:14px">' + esc(T('admin.commit')) + '</button>' +
         (state.done ? '<div class="callout" style="margin-top:12px;border-color:var(--positive);color:var(--positive)">✓ ' + esc(T('admin.recorded')) + '</div>' : '') +
       '</div>' +
+
+      auditTimeline(c) +
     '</section>';
   }
 
   /* ----- Evidence quarantine ----------------------------------------- */
 
+  // STORY-EVID-003: custody/retention pipeline renderer (panel only, no actionable controls)
   function renderEvidence() {
     var host = $('#view-evidence');
     if (!host) { return; }
@@ -236,6 +289,7 @@
 
   /* ----- Providers & claims ------------------------------------------- */
 
+  // STORY-DIR-002: admin providers view with pending claims + duplicate merge
   function renderProviders() {
     var host = $('#view-providers');
     if (!host) { return; }
@@ -308,6 +362,223 @@
       '</section>';
   }
 
+  /* ----- Role switcher (masthead chip) -------------------------------- */
+
+  // STORY-ADMIN-001: role switcher demo control
+  var ROLE_ORDER = ['Super Admin', 'Admin', 'Moderator'];
+  function roleKey(role) {
+    if (role === 'Super Admin') { return 'sa'; }
+    if (role === 'Moderator') { return 'mod'; }
+    return 'admin';
+  }
+  function setRole(role) {
+    if (ROLE_ORDER.indexOf(role) === -1) { return; }
+    state.role = role;
+    try { localStorage.setItem('rk04.admin.role', role); } catch (e) {}
+    var btn = $('#role');
+    if (btn) {
+      var span = btn.querySelector('span');
+      if (span) { span.textContent = role === 'Super Admin' ? 'SA' : role === 'Admin' ? 'Ad' : 'Mo'; }
+      btn.setAttribute('title', role + ' — ' + T('admin.act.cycleTip'));
+      btn.setAttribute('aria-pressed', String(role === 'Super Admin'));
+    }
+    /* Mutate the prototype's permission surface so the role change is
+       visible without code branching: Super Admin sees the reveal
+       buttons; everyone else sees the existing restricted boxes. */
+    RK.moderation.permissions.reporterIdentity  = (role === 'Super Admin');
+    RK.moderation.permissions.originalEvidence  = (role === 'Super Admin');
+    renderAll();
+  }
+
+  /* ----- #config view (versioned runtime configuration) -------------- */
+
+  // STORY-ADMIN-001: versioned runtime configuration + capability matrix
+  function loadConfig() {
+    try {
+      var raw = localStorage.getItem('rk04.admin.config');
+      if (!raw) { return Object.assign({}, RK.moderation.thresholds); }
+      var parsed = JSON.parse(raw);
+      return Object.assign({}, RK.moderation.thresholds, parsed);
+    } catch (e) {
+      return Object.assign({}, RK.moderation.thresholds);
+    }
+  }
+  function saveConfig(cfg) {
+    try { localStorage.setItem('rk04.admin.config', JSON.stringify(cfg)); } catch (e) {}
+  }
+  function renderConfig() {
+    var host = $('#view-config');
+    if (!host) { return; }
+    var cfg = loadConfig();
+    var matrix = {
+      sa:    { reports: true,  actions: true,  identity: true,  originalEvidence: true  },
+      admin: { reports: true,  actions: true,  identity: false, originalEvidence: false },
+      mod:   { reports: true,  actions: true,  identity: false, originalEvidence: false }
+    };
+    var yes = '✓';
+    var no  = '—';
+    function row(roleKey) {
+      var r = matrix[roleKey];
+      return '<tr>' +
+        '<th>' + esc(T('admin.config.role.' + roleKey)) + '</th>' +
+        '<td>' + (r.reports ? yes : no) + '</td>' +
+        '<td>' + (r.actions ? yes : no) + '</td>' +
+        '<td>' + (r.identity ? yes : no) + '</td>' +
+        '<td>' + (r.originalEvidence ? yes : no) + '</td>' +
+      '</tr>';
+    }
+    host.innerHTML =
+      '<section class="a-head">' +
+        '<span class="kicker">' + esc(T('admin.tab.config')) + '</span>' +
+        '<h1 class="display">' + esc(T('admin.config.title')) + '</h1>' +
+      '</section>' + permissionCallout() +
+      '<section class="panel">' +
+        '<div class="sub">' +
+          '<h4 class="sub-head">' + esc(T('admin.config.thresholds')) + '</h4>' +
+          '<div class="field" style="margin-top:8px"><label>' + esc(T('admin.config.threshold.five')) + '</label>' +
+            '<input id="cfg-five" type="number" min="2" max="50" value="' + esc(cfg.fiveAccountHide) + '"></div>' +
+          '<div class="field" style="margin-top:8px"><label>' + esc(T('admin.config.threshold.criticalHours')) + '</label>' +
+            '<input id="cfg-critical" type="number" min="1" max="168" value="' + esc(cfg.criticalHours) + '"></div>' +
+          '<div class="field" style="margin-top:8px"><label>' + esc(T('admin.config.threshold.standardDays')) + '</label>' +
+            '<input id="cfg-standard" type="number" min="1" max="30" value="' + esc(cfg.standardDays) + '"></div>' +
+        '</div>' +
+        '<div class="sub">' +
+          '<h4 class="sub-head">' + esc(T('admin.config.retention')) + '</h4>' +
+          '<div class="field" style="margin-top:8px"><label>' + esc(T('admin.config.retention.defaultDays')) + '</label>' +
+            '<input id="cfg-retdef" type="number" min="1" max="3650" value="' + esc(cfg.retentionDefaultDays) + '"></div>' +
+          '<div class="field" style="margin-top:8px"><label>' + esc(T('admin.config.retention.maxDays')) + '</label>' +
+            '<input id="cfg-retmax" type="number" min="1" max="36500" value="' + esc(cfg.retentionMaxDays) + '"></div>' +
+        '</div>' +
+        '<div class="sub">' +
+          '<h4 class="sub-head">' + esc(T('admin.config.roles')) + '</h4>' +
+          '<p class="note" style="margin-bottom:8px">' + esc(T('admin.role.current')) + ': <b>' + esc(state.role) + '</b></p>' +
+          '<table class="kv"><thead><tr>' +
+            '<th></th>' +
+            '<th>' + esc(T('admin.config.cap.reports')) + '</th>' +
+            '<th>' + esc(T('admin.config.cap.actions')) + '</th>' +
+            '<th>' + esc(T('admin.config.cap.identity')) + '</th>' +
+            '<th>' + esc(T('admin.config.cap.originalEvidence')) + '</th>' +
+          '</tr></thead><tbody>' +
+            row('sa') + row('admin') + row('mod') +
+          '</tbody></table>' +
+        '</div>' +
+      '</section>';
+    ['five', 'critical', 'standard', 'retdef', 'retmax'].forEach(function (k) {
+      var el = document.getElementById('cfg-' + k);
+      if (!el) { return; }
+      el.addEventListener('change', function () {
+        cfg = loadConfig();
+        if (k === 'five')     { cfg.fiveAccountHide    = parseInt(el.value, 10) || 5; }
+        if (k === 'critical') { cfg.criticalHours      = parseInt(el.value, 10) || 24; }
+        if (k === 'standard') { cfg.standardDays       = parseInt(el.value, 10) || 3; }
+        if (k === 'retdef')   { cfg.retentionDefaultDays = parseInt(el.value, 10) || 90; }
+        if (k === 'retmax')   { cfg.retentionMaxDays     = parseInt(el.value, 10) || 3650; }
+        saveConfig(cfg);
+      });
+    });
+  }
+
+  /* ----- #notifications view ----------------------------------------- */
+
+  // STORY-NOTIF-001: notification triage surface
+  function renderNotifications() {
+    var host = $('#view-notifications');
+    if (!host) { return; }
+    var list = (RK.moderation.notifications || []);
+    host.innerHTML =
+      '<section class="a-head">' +
+        '<span class="kicker">' + esc(T('admin.tab.notifications')) + '</span>' +
+        '<h1 class="display">' + esc(T('admin.notif.title')) + '</h1>' +
+      '</section>' + permissionCallout() +
+      '<section class="panel">' +
+        (list.length ? list.map(function (n) {
+          return '<div class="sub">' +
+            '<div class="q-head"><b>' + esc(L(n.target)) + '</b>' +
+              '<span class="size">' + esc(L(n.when)) + '</span>' +
+              badge('plain', T('admin.notif.kind.' + n.kind)) +
+            '</div>' +
+            '<p class="note" style="margin-top:6px">' + esc(L(n.text)) + '</p>' +
+            '<div class="mine-actions" style="margin-top:10px">' +
+              '<button class="btn small ghost" type="button">' + esc(T('admin.notif.action.open')) + '</button>' +
+              '<button class="btn small" type="button">' + esc(T('admin.notif.action.ack')) + '</button>' +
+            '</div>' +
+          '</div>';
+        }).join('') : '<p class="note">' + esc(T('admin.bulk.empty')) + '</p>') +
+      '</section>';
+  }
+
+  /* ----- Relative time formatter (audit timeline) -------------------- */
+
+  // STORY-NFR-009: audit timeline list
+  function relTime(min) {
+    if (min < 60) { return bn(min) + ' ' + T('admin.timeline.timeAgo'); }
+    var h = Math.floor(min / 60);
+    if (h < 24) { return bn(h) + ' h ' + T('admin.timeline.timeAgo'); }
+    var d = Math.floor(h / 24);
+    return bn(d) + ' d ' + T('admin.timeline.timeAgo');
+  }
+  function auditTimeline(c) {
+    var events = RK.moderation.auditLog || [];
+    var rows = events.filter(function (e) { return e.case === c.id; })
+                     .sort(function (a, b) { return a.timeMin - b.timeMin; })
+                     .slice(-10)
+                     .reverse();
+    if (!rows.length) { return ''; }
+    return '<div class="sub">' +
+      '<h4 class="sub-head">' + esc(T('admin.timeline.recent')) + '</h4>' +
+      '<ol style="list-style:none;padding:0;margin:0">' + rows.map(function (e) {
+        return '<li style="display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule)">' +
+          '<span class="id" style="font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)">' + esc(relTime(e.timeMin)) + '</span>' +
+          '<span style="font-size:13px"><b>' + esc(e.action) + '</b> · ' + esc(e.actor) + ' · <span class="note">' + esc(c.id) + '</span></span>' +
+          '<span class="note" style="font-size:11px">' + esc(e.targetId) + '</span>' +
+        '</li>';
+      }).join('') + '</ol>' +
+    '</div>';
+  }
+
+  /* ----- Bulk-preview toolbar (queue view) --------------------------- */
+
+  // STORY-ADMIN-002: bulk preview modal toolbar
+  function bulkToolbar() {
+    var n = Object.keys(state.bulkSelected).filter(function (k) { return state.bulkSelected[k]; }).length;
+    return '<div class="sub" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px">' +
+      '<span class="kicker" style="margin:0">' + esc(T('admin.bulk.toolbar')) + '</span>' +
+      '<button class="btn small ghost" type="button" data-bulk="selectCritical">' + esc(T('admin.bulk.selectCritical')) + '</button>' +
+      '<button class="btn small' + (n ? '' : ' ghost') + '" type="button" data-bulk="preview"' + (n ? '' : ' disabled aria-disabled="true"') + '>' +
+        esc(T('admin.bulk.preview')) + ' (' + bn(n) + ')' +
+      '</button>' +
+    '</div>';
+  }
+  function openBulkSheet() {
+    var ids = Object.keys(state.bulkSelected).filter(function (k) { return state.bulkSelected[k]; });
+    var cases = RK.moderation.cases.filter(function (c) { return ids.indexOf(c.id) !== -1; });
+    var body = cases.length ? cases.map(function (c) {
+      return '<div class="sub">' +
+        '<div class="q-head"><b>' + esc(c.id) + '</b>' +
+          badge('plain', T('target.' + c.targetKind)) +
+          '<span class="size">· ' + esc(T('admin.' + c.lane)) + '</span>' +
+        '</div>' +
+        '<p class="note" style="margin-top:4px">' + esc(L(c.summary)) + '</p>' +
+      '</div>';
+    }).join('') : '<p class="note">' + esc(T('admin.bulk.empty')) + '</p>';
+    var overlay = $('#overlay');
+    var sheetBody = $('#sheet-body');
+    var sheetTitle = $('#sheet-title');
+    if (!overlay || !sheetBody) { return; }
+    sheetTitle.textContent = T('admin.bulk.preview') + ' (' + ids.length + ')';
+    sheetBody.innerHTML =
+      body +
+      '<div class="mine-actions" style="margin-top:16px;justify-content:flex-end">' +
+        '<button class="btn small ghost" type="button" id="bulk-cancel">' + esc(T('admin.bulk.cancel')) + '</button>' +
+        '<button class="btn small" type="button" id="bulk-confirm">' + esc(T('admin.bulk.confirm')) + '</button>' +
+      '</div>';
+    overlay.hidden = false;
+  }
+  function closeBulkSheet() {
+    var overlay = $('#overlay');
+    if (overlay) { overlay.hidden = true; }
+  }
+
   /* ---------------------------------------------------------------------
      Events
      ------------------------------------------------------------------- */
@@ -320,9 +591,43 @@
     if (e.target.closest('#mod-commit')) { state.done = true; renderQueue(); return; }
     if (e.target.closest('#lang')) { setLang(state.lang === 'bn' ? 'en' : 'bn'); return; }
     if (e.target.closest('#theme')) {
-      var next = state.theme === 'dark' ? 'light' : state.theme === 'light' ? null : 'dark';
-      setTheme(next);
-      e.target.closest('#theme').setAttribute('aria-pressed', String(next === 'dark'));
+      /* One click flips between light and dark. If the user has never
+         picked, the current state is whatever the OS says — flip to
+         the opposite, then remember it. */
+      setTheme(effectiveTheme() === 'dark' ? 'light' : 'dark');
+      return;
+    }
+    if (e.target.closest('#role')) {
+      var idx = ROLE_ORDER.indexOf(state.role);
+      setRole(ROLE_ORDER[(idx + 1) % ROLE_ORDER.length]);
+      return;
+    }
+    if ((el = e.target.closest('[data-bulk]'))) {
+      var cmd = el.getAttribute('data-bulk');
+      if (cmd === 'selectCritical') {
+        RK.moderation.cases.filter(function (c) { return c.lane === 'critical'; })
+          .forEach(function (c) { state.bulkSelected[c.id] = true; });
+        renderQueue();
+        return;
+      }
+      if (cmd === 'preview') { openBulkSheet(); return; }
+    }
+    if ((el = e.target.closest('[data-bulk-check]'))) {
+      var id = el.getAttribute('data-bulk-check');
+      state.bulkSelected[id] = !!el.checked;
+      renderQueue();
+      return;
+    }
+    if (e.target.closest('#bulk-confirm')) {
+      state.bulkConfirmed = true;
+      closeBulkSheet();
+      var live = $('#sr-live');
+      if (live) { live.textContent = T('admin.bulk.done'); }
+      renderQueue();
+      return;
+    }
+    if (e.target.closest('#bulk-cancel') || e.target.closest('#sheet-close')) {
+      closeBulkSheet();
       return;
     }
   });
@@ -340,6 +645,8 @@
       if (lang === 'bn' || lang === 'en') { state.lang = lang; }
       var theme = localStorage.getItem('rk04.admin.theme');
       if (theme === 'dark' || theme === 'light') { state.theme = theme; }
+      var role = localStorage.getItem('rk04.admin.role');
+      if (ROLE_ORDER.indexOf(role) !== -1) { state.role = role; }
     } catch (e) {}
 
     if (state.lang === 'bn') {
@@ -348,6 +655,16 @@
       if (lbtn) { lbtn.setAttribute('aria-pressed', 'true'); lbtn.querySelector('span').textContent = 'A'; }
     }
     if (state.theme) { document.documentElement.setAttribute('data-theme', state.theme); }
+    /* Sync the theme button icon + aria-pressed with whatever is
+       actually visible (could be system default, not user-picked). */
+    var tbtn = $('#theme');
+    if (tbtn) {
+      tbtn.setAttribute('aria-pressed', String(effectiveTheme() === 'dark'));
+      var tspan = tbtn.querySelector('span');
+      if (tspan) { tspan.textContent = effectiveTheme() === 'dark' ? '☾' : '☀'; }
+    }
+    /* Sync the role chip + permissions surface */
+    setRole(state.role);
 
     /* Wire the admin tab buttons */
     VIEWS.forEach(function (v) {

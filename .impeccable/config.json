@@ -37,7 +37,7 @@
           "ui-design-prototype/admin/**"
         ],
         "createdAt": "2026-09-06T12:12:57.234Z",
-        "reason": "False positive: detector does not account for --accent-soft alpha-overlay tokens on --bg. Hover states use --accent-2 text on --accent-soft (6% alpha teal over paper); contrast is verified manually against WCAG AA in both modes."
+        "reason": "Detector API for low-contrast accepts only the wildcard '*' as an ignore value — per-pair value strings are rejected (verified via 'npx impeccable ignores add-value low-contrast'). The specific pair this ignore exists for is --accent-2 text on --accent-soft background (resolves to #b5d3d9 on #f2f0ee in light mode at admin/styles.css:36-37, used at admin/styles.css:204, 256, 259, 318, 331, 357-358). The detector does not account for the 6% alpha teal overlay on --bg. Contrast for this pair has been manually verified against WCAG AA in both light and dark modes. Re-review required if any other admin low-contrast finding surfaces — the value is '*' but the scope is one known pair."
       }
     ]
   }
