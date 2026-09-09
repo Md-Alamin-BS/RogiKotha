@@ -56,20 +56,35 @@ The product must not look like, sound like, or behave like:
 
 ## Design references
 
-The two live directions:
+Two artefacts are live:
+
+- **04b Quiet Clinic (minimal pass)** *(selected via FD-027, 2026-09-06)* —
+  the patient UI. Paper base, teal-gray accent, hairline rules, no decorative
+  linework, no atmospheric veil, no panel shadow. Calm carried by shape (radii,
+  pills, circles) rather than by a contrasting typeface.
+- **The staff console** *(FD-030, 2026-09-08)* — its own surface system,
+  **Chart Tray**, no longer sharing 04b's tokens. Four planes — sunken, page,
+  raised, overlay — where elevation encodes agency: below the page means
+  read-only, raised means workable, one solid accent fill is the primary
+  action. Chosen from three shell studies (A Chart Tray, B Ink Ledger,
+  C Signal Ward).
+
+The directions 04b was chosen against are archived under
+`ui-design-prototype/.archive/`, runnable but no longer live:
 
 - **03 Luminous Editorial** — warm earth tones, terracotta anchor, editorial
-  reading measure, provenance in the margin. Carries the moderation console.
+  reading measure, provenance in the margin. It carried a moderation console of
+  its own; the console that shipped is the standalone one above. Archived per
+  FD-029, 2026-09-08.
 - **04 Quiet Clinic (warm variant)** — oat + muted teal + sage + taupe, coral
-  held for emergencies only, opaque surfaces, no glass anywhere.
-- **04b Quiet Clinic (minimal pass)** *(selected via FD-027, 2026-09-06)* —
-  paper base, teal-gray accent, hairline rules, no decorative linework, no
-  atmospheric veil, no panel shadow. Calm carried by shape (radii, pills,
-  circles) rather than by a contrasting typeface.
+  held for emergencies only, opaque surfaces, no glass anywhere. Archived per
+  FD-029, 2026-09-08.
+- **01**, **02**, **04c**, **04d** and **05** were archived earlier, and the
+  three admin shell studies sit at `.archive/admin-shell-studies/`.
 
-All three rebuild the type scale for Bengali and drop the cap. All three honour
-`prefers-reduced-motion` and `body[data-motion="off"]` with every state still
-reachable.
+Every patient direction rebuilds the type scale for Bengali and drops the cap.
+All of them, and the console, honour `prefers-reduced-motion` and
+`body[data-motion="off"]` with every state still reachable.
 
 ## Hard rules (from PRD/BRD + founder decisions)
 
@@ -101,8 +116,11 @@ reachable.
 - Static HTML/CSS prototype is the current state (no Next.js workspace yet —
   see `docs/status/current-status.md`).
 - No backend, no auth, no real evidence storage, no real moderation service.
-- The runnable gallery at `http://localhost:4173/ui-design-prototype/` is the
-  founder's tool for choosing the final direction.
+- The runnable gallery at `ui-design-prototype/index.html` lists what is live —
+  the 04b patient prototype and the staff console — and nothing else. The
+  direction is chosen, so the gallery is a record rather than a picker. Serve
+  the repo with `npm start` (port 8137) or the folder with
+  `python -m http.server 4173`.
 - `docs/architecture/` carries the future spine, but it is not yet wired to
   code. Trim work is on the static prototype.
 - Node 24.x is available locally for tooling; the prototype itself is
@@ -112,8 +130,8 @@ reachable.
 
 When an AI coding agent is asked to change something in this product:
 
-1. Honor the brief. Pin the design direction (currently 04b) and do not
-   redirect toward the agent's taste.
+1. Honor the brief. Pin the design direction — 04b in the patient UI, Chart
+   Tray in the staff console — and do not redirect toward the agent's taste.
 2. Refinement preserves incumbent identity, behavior, copy, and everything
    outside scope. Ask before replacing factual copy or adding claims.
 3. Bengali and English must both still work after the change. Test the Bangla
@@ -129,6 +147,6 @@ When an AI coding agent is asked to change something in this product:
 - `DESIGN.md` — the visual system in the format Impeccable consumes
 - `docs/RogiKotha_PRD_v1.0.docx` — full product requirements
 - `docs/RogiKotha_BRD_v1.0.docx` — business requirements
-- `docs/status/decision-log.md` — founder decisions, FD-001 through FD-028
+- `docs/status/decision-log.md` — founder decisions, FD-001 through FD-030
 - `docs/design/design-comparison.md` — Gate 3 scorecard + FD-027 selection
 - `ui-design-prototype/README.md` — the runnable prototype itself

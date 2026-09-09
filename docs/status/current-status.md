@@ -1,8 +1,8 @@
 # RogiKotha current status
 
-**As of:** 2026-08-30  
-**Phase:** Gates 1–3 planning package complete; Gate 4 runnable concepts not started  
-**Overall state:** Final architecture, dependency baseline, requirement traceability, implementation backlog, model policy, UX contracts, validation strategy and worktree-safe plan are present. A self-contained Gate 4 execution prompt and current component-source research now direct five complete design concepts with light/dark modes, public UI first and admin second. No application code or production dependency has been added.
+**As of:** 2026-09-08  
+**Phase:** Gate 4 delivered and a direction selected; production build not started  
+**Overall state:** The Gates 1–3 planning package stands. Gate 4 was executed: five directions were built and compared, and FD-027 (2026-09-06) selected **Concept 04b — Quiet Clinic (minimal pass)** as the implementation direction, with FD-028 narrowing the live gallery to 03, 04 and 04b. On 2026-09-08 directions 03 and 04 were archived in turn (FD-029): `ui-design-prototype/concepts/` now holds Concept 04b alone, and the gallery lists only what is live. Concepts 01, 02, 03, 04, 04c, 04d and 05 all remain inspectable under `ui-design-prototype/.archive/`. The staff console at `ui-design-prototype/admin/` was rebuilt on the same date onto its own surface system, *Chart Tray* (FD-030). Live story coverage is tracked in [`09-coverage-matrix.md`](../planning/09-coverage-matrix.md). The prototype is a static HTML/CSS/JS design artifact — no build step, no framework, no backend — and per [`rogikotha-dev-spec.md`](../design/rogikotha-dev-spec.md) it is the source of truth for the visual system, not a production codebase. No production application code or dependency has been added.
 
 ## Completed outcomes
 
@@ -16,6 +16,9 @@
 - Current official-source component research and a self-contained Gate 4 implementation handoff covering five concepts, light/dark modes, public-first sequencing, the admin matrix, safety boundaries and completion evidence.
 - Validation strategy, third-party component register, design-comparison scaffold and worktree-safe execution plan.
 - Sequential architecture rubric, source-fidelity and divergence/security reviews; clear findings were applied. Automated spine lint passed.
+- Three staff-console shell studies — A *Chart Tray*, B *Ink Ledger*, C *Signal Ward* — built and compared on 2026-09-08 (FD-030); A was chosen and ported into `ui-design-prototype/admin/`. All three are kept at `ui-design-prototype/.archive/admin-shell-studies/` as the record of how that decision was made.
+- Staff console rebuilt on the Chart Tray surface system: four planes — sunken, page, raised, overlay — where elevation encodes agency, so below the page means read-only, raised means workable, and one solid accent fill is the primary action. Lanes became trays. The five identical unlabelled `<button>` pills became a grouped, iconed, counted top nav (Casework / Oversight) with a breadcrumb and `aria-current`, and a bottom tab bar below 760px. A docked **Record decision** commit button was added — the console previously offered ten option buttons, a textarea and no way to submit anything.
+- Measured against the pass it replaces: the page-to-tray surface step went from 1.042:1 to 1.098:1 in light and from 1.055:1 to 1.179:1 in dark; air across a lane boundary went from 1.58:1 to 6.5:1 against the gap between rows; selection is now stronger than hover rather than weaker; badge and button are separated by fill band, height (20px against 34px) and radius (4px against 9px), ending the inversion in which the read-only `.count` rendered heavier than the interactive `.opt`; meta text inside a well went from 3.64:1, below AA, to 4.92:1.
 
 ## Binding planning artifacts
 
@@ -37,18 +40,32 @@
 - Local Markdown links: pass across `docs`, zero broken targets.
 - Legacy project/language-positioning scan: clean after founder correction.
 - YAML semantic parser: pass with a one-off standards-compliant `js-yaml` parse; structural/reference checks also passed.
+- Staff-console behaviour (2026-09-08): a jsdom harness boots the redesigned console and passes 33 of 33 checks.
+- Staff-console contrast (2026-09-08): a contrast pass over `ui-design-prototype/admin/styles.css` clears every text pair and every surface step in both themes.
+- Link resolution after the 03/04 archive moves: the gallery, `gallery.css` and `README.md` carry no reference to an archived concept directory.
+- The committed checks under `tools/` — `npm run check` — still read Concept 04b only. The console harness and the console contrast pass were run separately against `ui-design-prototype/admin/` and are not yet part of that run.
+
+**Not verified.** Nothing about the redesigned staff console has been seen rendering. No screenshots were taken of the ported console, and the bottom tab bar below 760px has not been observed in a browser. jsdom does not lay out or paint, so the 33 checks prove DOM and behaviour, not visual result; the contrast figures are computed from the tokens as they ship, not sampled from pixels.
 
 ## Not started
 
 - No Next.js workspace, dependency lockfile, database schema, service, UI route, synthetic fixture implementation, container topology or deployment.
-- No runnable Gate 4 design concept or screenshots; the execution prompt is ready for the implementation agent.
+- No comparison screenshots under `docs/design/screenshots/`, no directly-selectable demo state matrix, and no per-concept admin consoles — Gate 4 brief deliverables that the FD-027/FD-028 selection concluded without.
 - No real authentication, production backend, evidence storage/processing, moderation service or analytics.
-- No winning concept has been chosen.
+- No Gate 4 validation record: `validation-log.md` still ends at V-027 (2026-08-30), so the Gate 4 matrix required by `10-validation-strategy.md` has not been run or recorded.
 
 ## Next executable gate
 
-Execute the [Gate 4 dummy UI prompt](../handoffs/GATE4_DUMMY_UI_AGENT_PROMPT.md). The implementation agent must first reconcile older three-concept planning/backlog references with FD-025, then build and validate all five public/user concepts in light/dark before beginning the corresponding admin panels. Stop after comparable concepts and validation evidence for founder selection. Production backend work remains separately gated.
+Gate 4 is closed by FD-027/FD-028. Three things gate what follows:
+
+1. **Record or waive the Gate 4 validation matrix.** `10-validation-strategy.md:72` says a concept with a critical accessibility, privacy, synthetic-data or trust-language issue cannot be selected until fixed — 04b was selected without that matrix being run.
+2. **Reconcile the prototype architecture.** `09-frontend-prototype-plan.md` specifies `apps/web/design-lab/` with `packages/contracts/` and `packages/ui/`; what was built is the standalone `ui-design-prototype/` tree. ADR-0010 and ARCHITECTURE-SPINE AD-11 assume the former.
+3. **See the console.** The Chart Tray port is verified by harness and by arithmetic, not by eye. A browser pass — light and dark, both locales, and the sub-760px tab bar — is owed before the console counts as delivered.
+
+A fourth item needs a product call rather than a gate: with 03 and 04 archived, a first-time reader of the live gallery no longer sees three side-by-side directions, which is what STORY-PROT-002 asks for. The requirement was met historically and the directions remain in `.archive/`; whether the story stays Partial is a decision, not a build task.
+
+Production backend work remains separately gated.
 
 ## Worktree note
 
-Pre-existing changes to `AGENTS.md`, `README.md` and deletion of `install.log` remain outside this planning package and were preserved. No commit has been made.
+The pre-existing changes to `AGENTS.md` and `README.md` and the deletion of `install.log` were preserved and have since been committed with the planning package. The prototype is committed through `1dc17be` (2026-09-07). The 2026-09-08 work — the 03/04 archive moves, the Chart Tray console, the shell studies and the `tools/` checks — is still uncommitted; it is grouped for commit in [`pending-changes-inventory.md`](pending-changes-inventory.md), whose groups A–F are now closed against the commits that took them.

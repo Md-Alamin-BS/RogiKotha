@@ -76,7 +76,7 @@ Every PRD requirement ID appears below and maps to at least one story and one va
 | FR-EVD-007 | Evidence-processing administration | STORY-ADMIN-002 | Admin authorization/queue tests |
 | FR-COM-001 | Text comments, warned links, flat replies, mentions | STORY-COM-001 | Sanitization/component/E2E |
 | FR-COM-002 | Advice warning/report path without classifier | STORY-COM-001, STORY-MOD-001 | Copy/report/manual-state tests |
-| FR-COM-003 | Comment edit/delete/moderation | STORY-COM-001, STORY-MOD-002 | Authorization/tombstone tests |
+| FR-COM-003 | Comment edit/delete/moderation — see [Known ID collision](#known-id-collision-fr-com-003) | STORY-COM-001, STORY-MOD-002 | Authorization/tombstone tests |
 | FR-REA-001 | Like/dislike reactions and identity rule | STORY-COM-002 | Idempotency/persona tests |
 | FR-REA-002 | Reaction counts/lists and privacy | STORY-COM-002, STORY-IDENT-001 | Projection/linkage tests |
 | FR-MOD-001 | Report content/reasons | STORY-MOD-001 | E2E + authorization |
@@ -138,6 +138,44 @@ Every PRD requirement ID appears below and maps to at least one story and one va
 | FD-010, FD-018 | STORY-ADMIN-001 and UX contracts |
 | FD-014 | STORY-REV-001 |
 | FD-024 | STORY-I18N-001 and every UI story |
+
+## Known ID collision (FR-COM-003)
+
+**Status: open, deliberately not renumbered.**
+
+`FR-COM-003` means two different things in two authoritative places:
+
+| Source | What FR-COM-003 means there |
+|---|---|
+| PRD v1.0 ¶355–356 | *"Emergency language triggers a non-blocking banner: call 999 for immediate danger … use 16263 for non-emergency health guidance …"* — priority **Must** |
+| This matrix (row above) | Comment edit / delete / moderation — which the PRD itself calls **FR-EDIT-005** |
+
+**Consequence.** The PRD's emergency-banner requirement currently has no row in
+this matrix, no owning story in `08-product-backlog.md`, and no task in
+`backlog.yaml`. It dropped out of the plan by ID reuse, not by decision. What
+survives in the prototype is the static `#emergency` page — a destination a user
+navigates to, which is *not* the same thing as language-triggered detection.
+
+**Why it is not fixed here.** Renumbering changes the "100 functional + 12
+non-functional = 112" count asserted at the top of this file and re-verified by
+validation **V-023**, and `FR-COM-003` is referenced by STORY-COM-001 and
+STORY-MOD-002. A unilateral renumber would silently invalidate those checks.
+This note is deliberately outside the requirement table so no ID counter reads
+it as a 113th requirement.
+
+**The decision needed (founder).** Either:
+
+1. **Restore the PRD meaning** — return `FR-COM-003` to the emergency banner,
+   re-home comment edit/delete to `FR-EDIT-005` as the PRD names it, and update
+   V-023's expected counts and both story references; or
+2. **Formally retire it** — record a founder decision that the automatic
+   emergency-language banner is out of scope, so the static `#emergency` page is
+   the whole of the requirement. Note this interacts with **FD-009/FD-017**,
+   which forbid automated *dangerous-advice* classification but say nothing
+   about emergency-language detection.
+
+Until one is chosen, treat any "FR-COM-003 is covered" claim as covering only
+comment edit/delete.
 
 ## Coverage verdict
 

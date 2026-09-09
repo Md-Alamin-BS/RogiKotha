@@ -149,7 +149,7 @@ Sources: FR-EVD-001-007, FR-FILE-001-009; PRD section 7.2.
 Sources: FR-COM-001-003, FR-REA-001-002, FR-USER-003.
 
 - Phase 1 comments are text with warned external links, flat replies, and mentions. Attachments, deep nesting, and private messaging are later scope.
-- Medical discussion carries a persistent disclaimer. Dangerous advice is warned and reviewed; the configurable ability to weaken this behaviour is challenged in CQ-08.
+- Medical discussion carries a persistent disclaimer. Dangerous advice is warned and reviewed; the configurable ability to weaken this behaviour is challenged in CQ-08. ⚠ The PRD's `FR-COM-003` (¶355–356) — an emergency-language banner offering 999 / 16263 — is not represented in this baseline; its ID was reused for comment edit/delete. See [Known ID collision](06-requirement-traceability-matrix.md#known-id-collision-fr-com-003). Note this is distinct from FD-009/FD-017, which forbid automated dangerous-advice classification.
 - Confirmed accounts can Like/Dislike reviews/comments, change reaction, and view public lists.
 - Reactions are engagement only and appear on content, public activity, and the user's dashboard.
 - Identity behaviour across anonymous reviews, reaction lists, and public profiles requires clarification (CQ-04).

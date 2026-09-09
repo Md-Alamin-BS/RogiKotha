@@ -5,15 +5,15 @@ UX contracts: [DESIGN.md](ux/DESIGN.md) and [EXPERIENCE.md](ux/EXPERIENCE.md)
 
 > **Selected direction (FD-027, 2026-09-06):** Concept 04b Quiet Clinic (minimal pass) is the chosen design direction. Source prototype at `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/` (runnable at `http://localhost:4173/ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/`). Frontend and backend implementation are built from this direction.
 >
-> **Historical note (superseded):** FD-026 (also 2026-09-06) initially picked Concept 04 — Quiet Clinic (the warm variant). FD-027 supersedes FD-026 and selects the minimal pass instead. FD-026's warm variant (oat + muted teal, serif headings) remains in the live gallery at `ui-design-prototype/concepts/concept-04-quiet-clinic/` as a comparison reference.
+> **Historical note (superseded):** FD-026 (also 2026-09-06) initially picked Concept 04 — Quiet Clinic (the warm variant). FD-027 supersedes FD-026 and selects the minimal pass instead. FD-026's warm variant (oat + muted teal, serif headings) was kept in the gallery as a comparison reference until 2026-09-08; it is now archived at `ui-design-prototype/.archive/concept-04-quiet-clinic/`.
 >
-> **Gate 4 founder override (FD-025):** Five directions explored; FD-027 picks 04b; 03 and 04 remain comparison references in the live gallery; 04c and 04d are archived per FD-028 (2026-09-06). Follow the [Gate 4 execution prompt](../handoffs/GATE4_DUMMY_UI_AGENT_PROMPT.md) where it does not conflict with FD-027 and FD-028.
+> **Gate 4 founder override (FD-025):** Five directions explored; FD-027 picks 04b; 04c and 04d are archived per FD-028 (2026-09-06), and 03 and 04 followed per FD-029 (2026-09-08), leaving 04b as the only patient direction in the live gallery. Follow the [Gate 4 execution prompt](../handoffs/GATE4_DUMMY_UI_AGENT_PROMPT.md) where it does not conflict with FD-027 and FD-028.
 >
 > **Motion on 04b:** Motion on 04b is CSS-only (5 primitives); killed by the in-app motion-off toggle and `prefers-reduced-motion`.
 
 ## Outcome
 
-Build one maintainable Next.js prototype with shared domain contracts, deterministic synthetic services, and accessible primitives, then render the **Concept 04b Quiet Clinic (minimal pass)** route composition as the selected direction (FD-027, 2026-09-06). Concept 03 Luminous Editorial is also rendered for runnable comparison under FD-025; Concept 04 (warm Quiet Clinic) remains in the live gallery as the warm-vs-minimal comparator; Concepts 04c (Editorial) and 04d (Modern SaaS) are archived per FD-028 (2026-09-06) since 04b was chosen, with their source in `ui-design-prototype/.archive/`. The prototype is a public read-only USD 0 demo: no real credentials, writes, uploads, patient documents, analytics, or production API.
+Build one maintainable Next.js prototype with shared domain contracts, deterministic synthetic services, and accessible primitives, then render the **Concept 04b Quiet Clinic (minimal pass)** route composition as the selected direction (FD-027, 2026-09-06). Every other direction built under FD-025 — 01, 02, 03, 04, 04c, 04d, 05 — now sits in `ui-design-prototype/.archive/`: 04c and 04d per FD-028 (2026-09-06), then 03 (Luminous Editorial) and 04 (warm Quiet Clinic) on 2026-09-08, once the editorial reference and the warm-vs-minimal comparison were no longer needed. What is live is 04b and the staff console. The prototype is a public read-only USD 0 demo: no real credentials, writes, uploads, patient documents, analytics, or production API.
 
 ## Design principles
 
@@ -38,7 +38,7 @@ These are pattern categories, not permission to copy components. Every adapted e
 
 ## Three concept briefs (historical Gate 3)
 
-> **Historical note.** These three concept briefs are the Gate 3 starting points. FD-027 selects Concept A as the implementation direction; per FD-027, "Concept A" now means the 04b Quiet Clinic (minimal pass) variant, not the original "Calm Clinical Trust" reading. Concept B (Narrative Patient Stories) and Concept C (Structured Clarity) are not implemented; their wireframes remain in `ux/wireframes/.archive/` for historical reference. The Gate 4 prototype adds two surviving live comparison directions — 03 (Luminous Editorial) and 04 (warm Quiet Clinic, FD-026) — alongside the chosen 04b; 04c (Editorial) and 04d (Modern SaaS) were side-by-side comparators during the FD-027 walkthrough and are archived per FD-028; see `design-comparison.md`.
+> **Historical note.** These three concept briefs are the Gate 3 starting points. FD-027 selects Concept A as the implementation direction; per FD-027, "Concept A" now means the 04b Quiet Clinic (minimal pass) variant, not the original "Calm Clinical Trust" reading. Concept B (Narrative Patient Stories) and Concept C (Structured Clarity) are not implemented; their wireframes remain in `ux/wireframes/.archive/` for historical reference. The Gate 4 prototype also built 03 (Luminous Editorial) and 04 (warm Quiet Clinic, FD-026) as comparison directions alongside the chosen 04b, and 04c (Editorial) and 04d (Modern SaaS) as side-by-side comparators during the FD-027 walkthrough; all four are now archived — 04c and 04d per FD-028, 03 and 04 on 2026-09-08 — leaving 04b as the only patient direction in the live gallery. See `design-comparison.md`.
 
 | Dimension | A — Calm Clinical Trust *(→ 04b minimal pass)* | B — Narrative Patient Stories *(not implemented)* | C — Structured Clarity *(not implemented)* |
 |---|---|---|---|
@@ -59,6 +59,49 @@ FD-027 selects Concept A → Concept 04b (minimal pass). Comparison criteria wer
 Each concept implements the same route contract under `/design-lab/concept-{a|b|c}`: home, search, no results, doctor, facility/branch, condition/tag, review, timeline, evidence viewer, quick/detailed wizards, provider submission, claim, registration/sign-in simulation, user profile, dashboard, notifications, report, emergency/advice warnings, and admin overview/moderation/evidence/config examples. Hidden, deleted, tombstone, empty, loading, error, permission-denied, long-content and limited-data states are addressable with a demo-state query/control.
 
 ## Shared prototype architecture
+
+> **Reconciled 2026-09-07.** The Next.js layout below was the plan; it was never
+> built. Gate 4 was delivered as a standalone static tree with no build step, no
+> framework and no package workspace. The **as-built** layout is authoritative
+> for anyone reading the prototype today; the planned layout is kept because
+> ADR-0010 and ARCHITECTURE-SPINE AD-11 still reason about it, and because the
+> production `apps/web` build is expected to adopt it.
+
+**As built** (authoritative for the prototype):
+
+```text
+ui-design-prototype/
+  index.html                      # gallery + hash-route index
+  gallery.css
+  shared/rogikotha-data.js        # fixtures, i18n dictionary, lookups, search
+  concepts/
+    concept-04b-quiet-clinic-minimal/   # FD-027 selected direction — the only live one
+  admin/                          # staff console, on its own Chart Tray surface system
+  .archive/                       # 01, 02, 03, 04, 04c, 04d, 05 + the three admin shell studies
+tools/
+  coverage.mjs                    # story <-> prototype coverage regenerator
+  i18n-audit.mjs                  # missing/unused i18n key audit
+```
+
+The concept is a self-contained `index.html` + `styles.css` + `app.js` using
+hash routes (`#discover`, `#results`, …), sharing only `shared/rogikotha-data.js`.
+There is one admin console, not one per concept.
+
+The staff console does **not** inherit 04b's tokens. It was redesigned onto its
+own surface system, **Chart Tray**: four planes — sunken, page, raised, overlay
+— where elevation encodes agency. Below the page means read-only (audit log,
+evidence viewer), on the page is ground, raised is workable content (lane trays,
+the detail tray), and one solid accent fill is the single next action. Lanes
+became trays; badge and button are separated by fill band, height (20 px vs
+34 px) and radius (4 px vs 9 px) rather than by colour alone; and a docked
+"Record decision" commit button was added, since the console that exists to
+record a moderation decision previously had no way to finish the job. Dark-mode
+surface steps are roughly 1.7× the light steps. The three shell studies that
+produced it — A "Chart Tray", B "Ink Ledger", C "Signal Ward" — are archived at
+`ui-design-prototype/.archive/admin-shell-studies/`; A was chosen and ported
+into the console. `ux/DESIGN.md` remains the patient-side contract only.
+
+**Planned for production `apps/web`** (not built at Gate 4):
 
 ```text
 apps/web/
@@ -82,8 +125,8 @@ Include fictional Bangladesh-focused doctors, facilities/branches and locations;
 ## Wireframe handoff
 
 - [Concept A wireframes](ux/wireframes/concept-a.md)
-- [Concept B wireframes](ux/wireframes/concept-b.md)
-- [Concept C wireframes](ux/wireframes/concept-c.md)
+- [Concept B wireframes](ux/wireframes/.archive/concept-b.md) — archived, historical reference
+- [Concept C wireframes](ux/wireframes/.archive/concept-c.md) — archived, historical reference
 
 Wireframes cover the same search → profile → review/timeline/evidence journey and Quick Review on desktop and mobile. All other surfaces are spine-defined; Gate 4 may add a visual reference only when composition remains ambiguous.
 

@@ -250,7 +250,7 @@ Task suffix `-A` normally owns domain/contracts/data or shared behavior; `-B` ow
 #### STORY-COM-001 — Comments, flat replies, mentions and advice warning
 
 - **Persona / need / value:** Confirmed user needs contextual discussion with a clear boundary against uncertain medical advice.
-- **Sources:** FR-COM-001–003; FD-009/017. **In:** text, warned external links, one reply level, mentions, edits/deletes/tombstones, persistent warning/report route. **Out:** attachments, DMs, automated classification.
+- **Sources:** FR-COM-001–003; FD-009/017. ⚠ `FR-COM-003` is ambiguous — the PRD (¶355–356) uses it for the emergency-language banner, the traceability matrix uses it for comment edit/delete. This story covers only the comment edit/delete meaning. See [Known ID collision](06-requirement-traceability-matrix.md#known-id-collision-fr-com-003). **In:** text, warned external links, one reply level, mentions, edits/deletes/tombstones, persistent warning/report route. **Out:** attachments, DMs, automated classification.
 - **Dependencies / assumptions:** AUTH-001, REV-001. **Security/privacy:** sanitize links/text; blocking and anonymous linkage respected. **Accessibility:** warning persistent but non-modal; mention suggestions keyboard usable.
 - **Acceptance:** **Given** a user composes a comment, **when** they encounter the warning, **then** they can continue without classification or professional verification and can report unsafe/misleading advice; deleted context tombstones only when needed.
 - **Tests/data/states:** domain, component, E2E, security, a11y; safe/unsafe-looking text without automated judgments. **Agents/complexity:** M1; L. **Tasks:** TASK-COM-001-A/B, VALIDATE-COM-001.

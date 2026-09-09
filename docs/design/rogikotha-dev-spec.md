@@ -5,9 +5,13 @@
 > `ui-design-prototype/` directory (the runnable artifact).
 >
 > **This is the only RogiKotha prototype.** Concept 04b Quiet Clinic
-> (minimal pass) is the selected direction per FD-027 (2026-09-06). Concepts
-> 03 and 04 are kept as live comparators in the gallery, not as candidates
-> for production.
+> (minimal pass) is the selected direction per FD-027 (2026-09-06) and the
+> only patient direction still in `concepts/`. Concepts 01, 02, 03, 04, 04c,
+> 04d and 05 are kept in `ui-design-prototype/.archive/` as the record of how
+> 04b was arrived at, not as candidates for production — 04c and 04d archived
+> per FD-028, 03 and 04 per FD-029 (2026-09-08). The staff console in
+> `ui-design-prototype/admin/` belongs to the same prototype but is a separate
+> portal on its own surface system — see **Staff console** below.
 
 ## What this prototype is and isn't
 
@@ -25,30 +29,38 @@ moderation flow simulates what production would do.
 
 ```
 ui-design-prototype/
-├── index.html                 ← gallery (shows 03, 04, 04b side by side)
+├── index.html                 ← gallery (04b and the staff console)
+├── gallery.css
 ├── shared/
 │   └── rogikotha-data.js      ← SINGLE SOURCE OF TRUTH for doctors, conditions,
-│                                facilities, reviews, evidence, i18n strings
+│                                facilities, reviews, evidence, moderation,
+│                                i18n strings — read by 04b and by admin/
 ├── concepts/
-│   ├── concept-03-luminous-editorial/
-│   ├── concept-04-quiet-clinic/
-│   ├── concept-04b-quiet-clinic-minimal/   ← SELECTED (FD-027)
-│   │   ├── index.html
-│   │   ├── styles.css
-│   │   └── app.js
-│   └── .archive/              ← retired directions
+│   └── concept-04b-quiet-clinic-minimal/   ← SELECTED (FD-027)
+│       ├── index.html
+│       ├── styles.css
+│       └── app.js
+├── admin/                     ← staff console, Chart Tray surfaces
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
+├── .archive/                  ← retired directions + the admin shell studies
 └── README.md
 ```
 
-The two live comparators (03, 04) share the data file and copy the 04b
-CSS/JS skeleton, then diverge on visual tokens and a few layout choices.
-Editing 04b is the canonical path; the others exist for founder review.
+Editing 04b is the canonical path for the patient UI. The archived directions
+read the same data file and copy an earlier CSS/JS skeleton, then diverge on
+visual tokens and a few layout choices; they are kept as the design record,
+not for review. The staff console shares the data file and nothing else — its
+own stylesheet, its own tokens, its own surface system.
 
 ## How to run it
 
 Open `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/index.html`
 directly in a browser — no server, no build. The shared data file is loaded
-with a relative `<script src>`.
+with a relative `<script src>`. The staff console is
+`ui-design-prototype/admin/index.html`; `ui-design-prototype/index.html` is the
+gallery and links both.
 
 For local development with `npx impeccable detect` and `npx impeccable audit`,
 the `.claude/skills/impeccable/` skill is already installed under the repo root.
@@ -146,8 +158,9 @@ calls a render fn or `renderAll()`.
 
 ## Visual system — what's available as CSS
 
+This section is 04b's system; the staff console has its own, described below.
 All tokens are declared in `:root` (light) and `:root[data-theme="dark"]`
-(dark) in `styles.css`. The 04b override block at line ~1060 redefines
+(dark) in 04b's `styles.css`. The 04b override block at line ~1060 redefines
 the shared component tokens — never edit `:root` directly in 04b, edit
 the override block.
 
@@ -160,6 +173,59 @@ Radii: `--r-sm` (10), `--r-md` (16), `--r-lg` (22). Pills: `999px`.
 Type: `--serif` (round display), `--sans` (UI), `--bangla` (Bengali),
 `--mono` (counts). Spacing: inner panel `clamp(18, 2.8vw, 30)px`,
 outer main `clamp(18, 3.5vw, 40)px`.
+
+## Staff console (`admin/`) — Chart Tray
+
+Adopted per FD-030 (2026-09-08). The moderation console is a separate portal,
+not a view of 04b. It loads
+`shared/rogikotha-data.js` for `RK.moderation` and takes nothing else from the
+patient side: its own `styles.css`, its own token set, no patient chrome, and
+`<meta name="robots" content="noindex">` in the head. Routes are `#queue`,
+`#evidence`, `#providers`, `#notifications`, `#config`.
+
+Its surface system is **Chart Tray**, and its one rule is that elevation
+encodes agency — a moderator can tell what is workable from what is read-only
+before reading a word:
+
+| Plane | Token | Means |
+|---|---|---|
+| Sunken | `--surface-sunken` | Read-only — audit timeline, evidence viewer |
+| Page | `--surface-page` | Ground |
+| Raised | `--surface-raised` | Workable — lane trays, the case tray |
+| Overlay | `--surface-overlay` | Sheets, over `--overlay-scrim` |
+
+Solid `--accent` is spent in three places only: one primary fill, the 3px
+selection flag, and focus rings. It is never a text colour. Badges and buttons
+are kept apart by fill band (`--fill-badge` for read-only, `--fill-secondary`
+for pressable), height and radius, so a count can never render heavier than a
+control. Radius encodes size class, descending — `--r-plane` (14), `--r-well`
+(10), `--r-control` (9), `--r-badge` (4) — and `999px` survives only on the
+count pill, which makes full-round a unique signal. Spacing is six steps
+(`--sp-1`…`--sp-6`: 4/8/12/24/40/64), type four sizes (`--fs-1`…`--fs-4`:
+11.5/13.5/17/22).
+
+Dark mode is not the light ramp re-tinted: the surface steps are roughly 1.7×
+the light steps, because a tint that reads on paper all but vanishes on
+near-black. Check both modes when touching a plane.
+
+Two structures here have no equivalent in the earlier pass:
+
+- **The dock.** A solid-accent **Record decision** button (`#mod-commit`,
+  `admin.commit`) at the foot of the case tray. The console previously had ten
+  option buttons, a textarea, and no submit — the page that exists to record a
+  moderation decision had no way to finish the job.
+- **Grouped navigation.** `NAV_GROUPS` in `app.js` renders Casework (queue,
+  evidence, providers) and Oversight (notifications, config) as iconed items
+  carrying waiting counts, with a breadcrumb above the view; the queue count
+  goes urgent while anything sits in the critical lane. Under 760px the same
+  groups render as a bottom tab bar. It replaces five identical unlabelled
+  pills.
+
+Chart Tray was variant A of three shell studies — A Chart Tray (surface-led),
+B Ink Ledger (type-led), C Signal Ward (colour-led) — built over the same
+markup and the same records. All three are kept at
+`ui-design-prototype/.archive/admin-shell-studies/`; `docs/design/design-comparison.md`
+records what each was testing and what each cost.
 
 ## Accessibility — what the detector already enforces
 
@@ -209,9 +275,13 @@ moderation actions.
 
 ## Audit and polish
 
-`/impeccable detect` runs the detector (3 pre-existing baseline warnings
-about Inter font, dark-glow on `.search-shell`, body overflow-clip — all
-inherited from the shared layer; safe to ignore for 04b).
+`/impeccable detect` runs the detector. The historical baseline warnings
+were dark-glow on `.search-shell` and body overflow-clip, inherited from the
+shared layer. The third — the Inter font warning — was **not** inherited: 04b
+declared `Inter` first in its own `--sans` override while the prototype ships
+no webfonts, so the name never resolved. `--sans` now matches the compact-UI
+stack named in `docs/planning/ux/DESIGN.md` (Segoe UI Variable Display →
+Segoe UI → system-ui) and the warning is gone.
 `/impeccable audit` is a five-dimension review (accessibility, performance,
 responsive, theming, implementation integrity) the design team ran on
 2026-09-06 — see `docs/planning/research/impeccable-audit-2026-09-06/`.
@@ -222,14 +292,15 @@ files when run with `--no-advisory`.
 
 ## Known gaps before production
 
-These are documented in the audit and intentionally deferred:
+The table below was written before the fixes landed. Every row has since
+been resolved or found not to apply to 04b; it is kept as a record.
 
-| ID | Sev | Issue |
-|---|---|---|
-| P0 | Touch targets < 44×44 in coarse-pointer view | Bump `.ctl`, `.tabs a`, `.sheet-close`, `.chip` etc. |
-| P1 | RAF loop on `opacity: 0` canvas | Gate `Field.start()` on a `data-field="on"` attribute or remove |
-| P2 | Body font-size in px (not rem) | Convert to `1rem` for proportional scaling |
-| P2 | Brand-mark palette drift (coral in 04b) | Override `--hue-a` / `--hue-b` in 04b `:root` block |
+| ID | Sev | Issue | Status |
+|---|---|---|---|
+| P0 | Touch targets < 44×44 in coarse-pointer view | Resolved — the `@media (pointer: coarse)` block sets 44px minimums on `.ctl`, `.tabs a`, `.sheet-close`, `.chip`, `.btn`, `.opt`, `.seg button`. `.tray-chip button` stays 32×32 by design. |
+| P1 | RAF loop on `opacity: 0` canvas | Not applicable to 04b — the concept has no `requestAnimationFrame` loop and no `Field` canvas. |
+| P2 | Body font-size in px (not rem) | Resolved — the 04b block sets `body { font-size: 1rem }`, overriding the shared layer's `16.5px`. |
+| P2 | Brand-mark palette drift (coral in 04b) | Resolved — the 04b `:root` block overrides `--hue-a: 190` / `--hue-b: 200`. |
 | P3 | Dark-mode block duplication | Extract to a single selector list |
 
 See `docs/planning/research/impeccable-audit-2026-09-06/research.md` for

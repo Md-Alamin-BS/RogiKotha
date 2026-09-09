@@ -1,6 +1,6 @@
 # Design comparison and selection
 
-Status: Selected direction confirmed. Concept 04b Quiet Clinic (minimal pass) chosen via FD-027 (2026-09-06), supersedes FD-026.
+Status: Selected direction confirmed. Concept 04b Quiet Clinic (minimal pass) chosen via FD-027 (2026-09-06), supersedes FD-026. The staff console is a separate comparison with its own outcome — variant A, Chart Tray, of three admin shell studies.
 
 ## Selected direction
 
@@ -16,20 +16,36 @@ Rationale (from FD-027):
 
 ## Five-direction comparison (FD-025)
 
-The Gate 4 founder override (FD-025) required five materially different, complete design concepts. All five were built; their current status reflects FD-025's "five-direction comparison" scope together with the FD-028 archive decision (which narrowed the live gallery to the three surviving directions):
+The Gate 4 founder override (FD-025) required five materially different, complete design concepts. All five were built; their current status reflects FD-025's "five-direction comparison" scope together with the archive passes that followed it — FD-028 (2026-09-06) narrowed the live gallery to three directions, and on 2026-09-08 Concepts 03 and 04 were archived as well, leaving 04b as the only patient direction in `ui-design-prototype/concepts/`:
 
 | # | Direction | Status |
 |---|---|---|
 | 01 | Bioluminescent Depth | Archived (`ui-design-prototype/.archive/concept-01-bioluminescent-depth/`) |
 | 02 | Editorial Futurism | Archived (`ui-design-prototype/.archive/concept-02-editorial-futurism/`) |
-| 03 | Luminous Editorial | Live in gallery (`ui-design-prototype/concepts/concept-03-luminous-editorial/`); kept as the editorial reference |
-| 04 | Quiet Clinic (warm variant) | Live in gallery as comparison reference (`ui-design-prototype/concepts/concept-04-quiet-clinic/`); the FD-026 pick, superseded by FD-027 in favour of the minimal pass; kept as the warm-vs-minimal comparator |
-| 04b | **Quiet Clinic (minimal pass)** | **Selected via FD-027 (2026-09-06); chosen implementation of Concept A. Source prototype:** `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/`, runnable at `http://localhost:4173/ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/` |
+| 03 | Luminous Editorial | Archived (`ui-design-prototype/.archive/concept-03-luminous-editorial/`); the editorial reference through the FD-027 and FD-028 walkthroughs, archived from the live gallery on 2026-09-08 |
+| 04 | Quiet Clinic (warm variant) | Archived (`ui-design-prototype/.archive/concept-04-quiet-clinic/`); the FD-026 pick, superseded by FD-027 in favour of the minimal pass; served as the warm-vs-minimal comparator until it was archived on 2026-09-08 (FD-029) |
+| 04b | **Quiet Clinic (minimal pass)** | **Selected via FD-027 (2026-09-06); chosen implementation of Concept A, and the only direction left in `concepts/`. Source prototype:** `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/`, runnable at `http://localhost:4173/ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/` |
 | 04c | Quiet Clinic (Editorial sibling) | Archived (`ui-design-prototype/.archive/concept-04c-quiet-clinic-editorial/`); built for side-by-side comparison with 04b during the FD-027 walkthrough; per FD-028 (2026-09-06), moved to archive once 04b was chosen |
 | 04d | Quiet Clinic (Modern SaaS sibling) | Archived (`ui-design-prototype/.archive/concept-04d-quiet-clinic-saas/`); built for side-by-side comparison with 04b during the FD-027 walkthrough; per FD-028 (2026-09-06), moved to archive once 04b was chosen |
 | 05 | Operator Console | Archived (`ui-design-prototype/.archive/concept-05-operator-console/`) |
 
-The runnable gallery at `http://localhost:4173/ui-design-prototype/` surfaces three directions: **03 Luminous Editorial** (the editorial reference), **04 Quiet Clinic warm** (the warm-vs-minimal comparator), and **04b Quiet Clinic (minimal pass)** (the chosen implementation). 04c and 04d were side-by-side comparators during the FD-027 walkthrough and are archived under `ui-design-prototype/.archive/`; they remain inspectable for any future revisit but are no longer part of the live side-by-side.
+The runnable gallery at `http://localhost:4173/ui-design-prototype/` now surfaces two artefacts rather than a side-by-side of directions: **04b Quiet Clinic (minimal pass)**, the chosen patient direction, and the **staff console** at `ui-design-prototype/admin/`. Every other direction — 01, 02, 03, 04, 04c, 04d and 05 — sits under `ui-design-prototype/.archive/`. They remain inspectable for any future revisit, and they are the record of how 04b was arrived at, but none of them is live and none is a candidate for production.
+
+## Staff console shell studies (A / B / C)
+
+The staff console was rebuilt on its own surface system instead of inheriting 04b's tokens. Three complete shells were built over the same markup and the same fictional records, each answering the same four measured faults through a different primary mechanism: a surface ramp roughly half the strength of every shipped system (light page→card 1.042:1 against Primer's 1.065 and Polaris's 1.129, with a light-mode-sized step used in dark mode), gaps that did not group (lane boundary vs row gap at 1.58×, then cancelled by an identical hairline on both), a type ramp narrower than one type step (89% of text runs inside a 3.0px band), and no visible difference between a badge and a button (36 pill-shaped objects in the queue, 29 of them not interactive, the read-only one rendering heavier).
+
+| Variant | Primary mechanism | Status |
+|---|---|---|
+| A | **Chart Tray** — surface planes | **Chosen; ported into `ui-design-prototype/admin/`.** Source study archived at `ui-design-prototype/.archive/admin-shell-studies/variant-a.html` |
+| B | Ink Ledger — type and ink density | Archived (`ui-design-prototype/.archive/admin-shell-studies/variant-b.html`); badges lose their box entirely, a 2.24× type ramp, best under forced-colors — but it leans on a font stack the prototype does not ship, and Bengali's weight ladder collapses on Nirmala UI |
+| C | Signal Ward — chroma budget | Archived (`ui-design-prototype/.archive/admin-shell-studies/variant-c.html`); severity rides on fill inversion, glyph and rail width rather than hue, since red and amber collide under deuteranopia at every legible pair — but it is the loudest of the three and the easiest to break |
+
+The side-by-side write-up, including the full comparison table, is at `ui-design-prototype/.archive/admin-shell-studies/index.html`.
+
+Chart Tray's one rule is that **elevation encodes agency**. Four planes — sunken, page, raised, overlay — carry the structure that hairlines used to: below the page means you cannot act on it (the audit timeline, the evidence viewer), on the page is ground, raised is workable content (the lane trays, the case tray), and one solid accent fill is the thing to do next. Each lane becomes a tray, which took hairlines from about nineteen per screen to eight. Badges and buttons are separated by fill band, height and radius, so a read-only count can no longer render heavier than a control. A docked **Record decision** button commits the moderation decision — the previous pass had ten option buttons, a textarea and no submit anywhere. Dark-mode surface steps are roughly 1.7× the light steps, because a tint that reads on paper all but vanishes on near-black; the cost is that light mode is the weaker of the two modes, and that the system dies in forced-colors, where backgrounds are stripped.
+
+The console's five identical unlabelled nav pills were replaced at the same time by a grouped, iconed, counted top nav — Casework (queue, evidence, providers) and Oversight (notifications, config) — with a breadcrumb above the view and a bottom tab bar under 760px.
 
 ## Per-criterion scorecard (superseded)
 
