@@ -19,3 +19,103 @@ Both scripts are read-only on the repo and write nothing to disk.
   local viewer table.
 - After editing `backlog.yaml` or the coverage matrix: `node tools/coverage.mjs`
   to confirm the curated rollup still matches the prototype annotations.
+
+## `proof-check.mjs`
+
+Verifies the `file:line anchor` proof citations in
+`docs/planning/09-coverage-matrix.md`. The anchor is authoritative; the line
+number is derived and maintained by the tool.
+
+```
+node tools/proof-check.mjs          # verify (exit 1 on a broken citation)
+node tools/proof-check.mjs --fix    # re-resolve drifted line numbers
+```
+
+`coverage.mjs` only checks that a cited *file* exists, so line drift used to
+pass silently. Run this after any edit that shifts lines in the prototype.
+
+## `smoke.mjs`
+
+Drives Concept 04b in a real DOM (jsdom) and clicks through the journeys the
+coverage matrix claims are Done — replies, comment edit/delete/tombstone,
+reactions, bookmarks, draft delete/restore, the public profile, and the
+language switch.
+
+```
+npm install          # once — jsdom is the only dependency
+npm run smoke
+```
+
+It exists because "the file parses" and "the button works" are different
+claims, and the matrix makes the second one. Every control it exercises was at
+some point rendered but dead. Exits non-zero on failure; skips cleanly (exit 0)
+if jsdom is absent, so a fresh clone is never blocked.
+
+**jsdom is not a browser.** It does not lay out or paint, so this proves
+behaviour and DOM state — not visual rendering, real screen-reader output, or
+zoom/reflow. Those still need a human with a browser.
+
+## `contrast.mjs`
+
+Computes WCAG contrast from the 04b tokens as they ship, with no browser and no
+dependencies. Exits non-zero if a **text** pair falls below 4.5:1.
+
+```
+npm run contrast
+```
+
+The hairline rules are reported but never fail the run — they are decorative
+dividers and hover cues, not the sole means of identifying a control, so WCAG
+1.4.11 does not apply. This tool caught `--ink-faint` shipping at 4.05:1 while
+the docs claimed AA.
+
+## Running everything
+
+```
+npm run check
+```
+
+Runs coverage, i18n, proof-check, contrast and smoke in order.
+
+## `serve.mjs`
+
+Tiny dependency-free static server for the prototype.
+
+```
+npm start        # http://localhost:8137  (PORT env var to change)
+```
+
+Prints the gallery, patient and admin URLs. The prototype opens fine from
+`file://` too, but a server keeps hash routes and `localStorage` origins
+behaving as they will in production. GET/HEAD only, read-only, no cache.
+
+## `sync-tokens.mjs`
+
+Generates `ui-design-prototype/shared/tokens.css` from the Concept 04b token
+blocks in the patient stylesheet — light, dark, semantic role hooks and the
+light-mode schemes. The staff console loads that file before its own
+stylesheet, so both apps share one palette, type stack, rules and surface
+tiers. The patient stylesheet is the only thing you edit.
+
+```
+npm run tokens         # regenerate after editing the patient tokens
+npm run tokens:check   # part of npm run check — fails if tokens.css is stale
+```
+
+## `bangla-metrics.mjs`
+
+Static guard against Bengali clipping. Bengali vowel signs and the matra sit
+above the ascender line, so Latin-tight leading crops them and a fixed-height
+box crops them. This checks that every heading leading is raised under
+`[data-lang="bn"]`, and that no rule pairs a fixed `height` with a `font-size`.
+
+```
+npm run bangla     # part of npm run check
+```
+
+It caught the staff console scoping `--lh-ui` and `--lh-prose` to Bengali but
+not `--lh-tight` — which every `h1`-`h4` uses — clipping the queue lane heads
+(জরুরি / সাধারণ / আপিল), plus four boxes sized for Latin only.
+
+A rule whose box holds a glyph or numeral rather than words opts out with
+`/* bangla-ok: <why> */` in its body.

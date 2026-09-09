@@ -1,0 +1,24 @@
+{
+  "name": "rogikotha-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Repo checks for the RogiKotha design prototype. Not the product; the prototype itself ships no dependencies and needs no build step.",
+  "scripts": {
+    "check": "node tools/sync-tokens.mjs --check && node tools/coverage.mjs && node tools/i18n-audit.mjs && node tools/proof-check.mjs && node tools/contrast.mjs && node tools/bangla-metrics.mjs && node tools/smoke.mjs",
+    "coverage": "node tools/coverage.mjs",
+    "i18n": "node tools/i18n-audit.mjs",
+    "proofs": "node tools/proof-check.mjs",
+    "proofs:fix": "node tools/proof-check.mjs --fix",
+    "contrast": "node tools/contrast.mjs",
+    "smoke": "node tools/smoke.mjs",
+    "start": "node tools/serve.mjs",
+    "proofs:anchor": "node tools/proof-check.mjs --anchor",
+    "tokens": "node tools/sync-tokens.mjs",
+    "tokens:check": "node tools/sync-tokens.mjs --check",
+    "bangla": "node tools/bangla-metrics.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^27.0.0"
+  }
+}
