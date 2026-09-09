@@ -6,6 +6,7 @@
 <!-- STORY-PROT-002: admin console is noindex -->
 <meta name="robots" content="noindex">
 <title>RogiKotha — Staff console</title>
+<link rel="stylesheet" href="../shared/tokens.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body data-view="queue">
@@ -37,6 +38,11 @@
   </a>
   <span class="staff-badge" data-i18n="admin.staffOnly"></span><span class="staff-meta" aria-hidden="true">·</span>
 
+  <!-- Primary navigation. Grouped (Casework / Oversight), iconed, and
+       counted, so a moderator can see how much is waiting without
+       clicking in. Filled by renderNav() in app.js. -->
+  <nav class="bar-nav" id="topnav" aria-label="Console sections"></nav>
+
   <div class="controls">
     <button type="button" id="lang"   class="ctl" data-i18n="a11y.lang"   data-i18n-attr="title" aria-pressed="false"><span>অ</span></button>
     <button type="button" id="theme"  class="ctl" data-i18n="a11y.theme"  data-i18n-attr="title"><span>◐</span></button>
@@ -49,29 +55,29 @@
 <div class="progress" aria-hidden="true"><i></i></div>
 
 <main id="main">
-  <!-- STORY-NFR-006: aria-live for dynamic regions -->
-  <div id="sr-live" class="sr-only" aria-live="polite" role="status"></div>
-  <div class="admin-tabs">
-    <button type="button" data-admin="queue" data-i18n="admin.tab.queue"></button>
-    <button type="button" data-admin="evidence" data-i18n="admin.tab.evidence"></button>
-    <button type="button" data-admin="providers" data-i18n="admin.tab.providers"></button>
-    <button type="button" data-admin="config" data-i18n="admin.tab.config"></button>
-    <button type="button" data-admin="notifications" data-i18n="admin.tab.notifications"></button>
+  <div class="wrap">
+    <!-- STORY-NFR-006: aria-live for dynamic regions -->
+    <div id="sr-live" class="sr-only" aria-live="polite" role="status"></div>
+    <p class="crumbs" id="crumbs"></p>
+    <section class="view" id="view-queue"></section>
+    <section class="view" id="view-evidence" hidden></section>
+    <section class="view" id="view-providers" hidden></section>
+    <!-- STORY-ADMIN-001: versioned runtime configuration + capability matrix -->
+    <section class="view" id="view-config" hidden></section>
+    <!-- STORY-NOTIF-001: notification triage surface -->
+    <section class="view" id="view-notifications" hidden></section>
   </div>
-  <section class="view" id="view-queue"></section>
-  <section class="view" id="view-evidence" hidden></section>
-  <section class="view" id="view-providers" hidden></section>
-  <!-- STORY-ADMIN-001: versioned runtime configuration + capability matrix -->
-  <section class="view" id="view-config" hidden></section>
-  <!-- STORY-NOTIF-001: notification triage surface -->
-  <section class="view" id="view-notifications" hidden></section>
 </main>
+
+<!-- Under 760px the top nav becomes a bottom tab bar, which is where a
+     thumb actually is. Filled by renderTabBar() in app.js. -->
+<nav class="tabbar" id="tabbar" aria-label="Console sections"></nav>
 
 <div class="overlay" id="overlay" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
     <header class="sheet-head">
       <h2 id="sheet-title"></h2>
-      <button type="button" class="sheet-close" id="sheet-close" aria-label="Close">✕</button>
+      <button type="button" class="sheet-close" id="sheet-close" aria-label="Close" data-i18n="a11y.close" data-i18n-attr="aria-label">✕</button>
     </header>
     <div class="sheet-body" id="sheet-body"></div>
   </div>

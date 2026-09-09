@@ -34,19 +34,22 @@
    * ------------------------------------------------------------- */
   var strings = {
     'brand.name':            { en: 'RogiKotha', bn: 'রোগীকথা' },
-    'brand.tagline':         { en: 'Patient-reported treatment accounts', bn: 'রোগীর বলা চিকিৎসা অভিজ্ঞতা' },
+    'brand.tagline':         { en: 'Patient-reported treatment experiences', bn: 'রোগীর বলা চিকিৎসা অভিজ্ঞতা' },
 
     'demo.banner':           { en: 'Design exploration — fictional records, not a real service', bn: 'ডিজাইন এক্সপ্লোরেশন — কাল্পনিক তথ্য, প্রকৃত সেবা নয়' },
 
     'nav.discover':          { en: 'Discover', bn: 'খুঁজুন' },
     'nav.results':           { en: 'Results', bn: 'ফলাফল' },
-    'nav.profile':           { en: 'Doctor', bn: 'ডাক্তার' },
-    'nav.compose':           { en: 'Write an account', bn: 'অভিজ্ঞতা লিখুন' },
+    'nav.profile':           { en: 'Doctors', bn: 'ডাক্তারেরা' },
+    'nav.compose':           { en: 'Share your experience', bn: 'অভিজ্ঞতা লিখুন' },
 
     'a11y.skip':             { en: 'Skip to main content', bn: 'মূল অংশে যান' },
     'a11y.lang':             { en: 'Switch interface language', bn: 'ইন্টারফেসের ভাষা বদলান' },
     'a11y.theme':            { en: 'Switch light or dark mode', bn: 'আলো বা অন্ধকার মোড বদলান' },
     'a11y.motion':           { en: 'Reduce animation', bn: 'অ্যানিমেশন কমান' },
+    'a11y.screens':          { en: 'Screens', bn: 'স্ক্রিন' },
+    'a11y.close':            { en: 'Close', bn: 'বন্ধ করুন' },
+    'a11y.siteSections':     { en: 'Site sections', bn: 'সাইটের অংশ' },
     'a11y.call':             { en: 'Tap to call', bn: 'কল করতে ট্যাপ করুন' },
 
     'search.label':          { en: 'Search a doctor, condition, symptom, treatment or facility', bn: 'ডাক্তার, রোগ, উপসর্গ, চিকিৎসা বা হাসপাতাল খুঁজুন' },
@@ -58,15 +61,15 @@
     'search.keepOriginal':   { en: 'Search the exact words instead', bn: 'হুবহু আপনার লেখা শব্দ খুঁজুন' },
 
     'hero.title':            { en: 'Read what patients actually went through.', bn: 'রোগীরা আসলে কী অভিজ্ঞতার মধ্য দিয়ে গেছেন, পড়ুন।' },
-    'hero.body':             { en: 'RogiKotha collects first-hand accounts of a single treatment episode — the symptoms, the diagnosis, the medicines, what happened next. Not scores. Not a ranking of doctors. Stories, with their dates and their limits shown honestly.', bn: 'রোগীকথা একটি নির্দিষ্ট চিকিৎসা-পর্বের প্রত্যক্ষ বিবরণ জমা রাখে — উপসর্গ, রোগ নির্ণয়, ওষুধ, তারপর কী হলো। কোনো নম্বর নয়। ডাক্তারের কোনো ক্রম নয়। শুধু অভিজ্ঞতা, তারিখসহ, সীমাবদ্ধতাসহ।' },
-    'hero.cta':              { en: 'Share your experience', bn: 'আপনার অভিজ্ঞতা জানান' },
-    'hero.browse':           { en: 'Browse accounts', bn: 'অভিজ্ঞতা দেখুন' },
+    'hero.body':             { en: 'RogiKotha collects first-hand experiences of a single treatment episode — the symptoms, the diagnosis, the medicines, what happened next. Not scores. Not a ranking of doctors. Stories, with their dates and their limits shown honestly.', bn: 'রোগীকথা একটি নির্দিষ্ট চিকিৎসা-পর্বের প্রত্যক্ষ অভিজ্ঞতা জমা রাখে — উপসর্গ, রোগ নির্ণয়, ওষুধ, তারপর কী হলো। কোনো নম্বর নয়। ডাক্তারের কোনো ক্রম নয়। শুধু অভিজ্ঞতা, তারিখসহ, সীমাবদ্ধতাসহ।' },
+    'hero.cta':              { en: 'Share your experience', bn: 'অভিজ্ঞতা লিখুন' },
+    'hero.browse':           { en: 'Browse experiences', bn: 'অভিজ্ঞতা দেখুন' },
 
     'how.title':             { en: 'How this works', bn: 'এটি যেভাবে কাজ করে' },
-    'how.1.t':               { en: 'One episode, one account', bn: 'এক পর্ব, এক বিবরণ' },
-    'how.1.b':               { en: 'Each account covers a single course of treatment for a single condition — not a verdict on a doctor.', bn: 'প্রতিটি বিবরণ একটি রোগের একটি চিকিৎসা-পর্ব নিয়ে — ডাক্তারের বিষয়ে চূড়ান্ত রায় নয়।' },
+    'how.1.t':               { en: 'One episode, one experience', bn: 'এক পর্ব, এক অভিজ্ঞতা' },
+    'how.1.b':               { en: 'Each experience covers a single course of treatment for a single condition — not a verdict on a doctor.', bn: 'প্রতিটি অভিজ্ঞতা একটি রোগের একটি চিকিৎসা-পর্ব নিয়ে — ডাক্তারের বিষয়ে চূড়ান্ত রায় নয়।' },
     'how.2.t':               { en: 'No scores, ever', bn: 'কোনো নম্বর নেই' },
-    'how.2.b':               { en: 'We never calculate a quality score or rank doctors best-to-worst. You read the accounts and decide.', bn: 'আমরা কখনো মান-নম্বর হিসাব করি না বা ডাক্তারদের ভালো-মন্দ ক্রমে সাজাই না। আপনি পড়ে সিদ্ধান্ত নেবেন।' },
+    'how.2.b':               { en: 'We never calculate a quality score or rank doctors best-to-worst. You read the experiences and decide.', bn: 'আমরা কখনো মান-নম্বর হিসাব করি না বা ডাক্তারদের ভালো-মন্দ ক্রমে সাজাই না। আপনি পড়ে সিদ্ধান্ত নেবেন।' },
     'how.3.t':               { en: 'Documents are not validated', bn: 'কাগজপত্র যাচাই করা হয় না' },
     'how.3.b':               { en: 'People may attach reports. We check them for safety and privacy — never for medical correctness.', bn: 'অনেকে রিপোর্ট যুক্ত করেন। আমরা নিরাপত্তা ও গোপনীয়তা দেখি — চিকিৎসাগত সঠিকতা কখনো নয়।' },
 
@@ -84,53 +87,53 @@
     'emergview.poison':      { en: 'Poison information centre', bn: 'বিষক্রিয়া তথ্য কেন্দ্র' },
 
     'aboutview.title':       { en: 'About RogiKotha', bn: 'রোগীকথা সম্পর্কে' },
-    'aboutview.intro':       { en: 'RogiKotha is a place where patients publish first-hand accounts of doctors, hospitals and clinics in Bangladesh. It is not a medical service, not a directory of paid listings, and not a place to ask for medical advice.', bn: 'রোগীকথা এমন একটি জায়গা যেখানে রোগীরা বাংলাদেশের ডাক্তার, হাসপাতাল ও ক্লিনিক সম্পর্কে নিজের অভিজ্ঞতা প্রকাশ করেন। এটি চিকিৎসা সেবা নয়, পেইড তালিকার ডিরেক্টরি নয়, এবং চিকিৎসা পরামর্শের জায়গা নয়।' },
-    'aboutview.modTitle':    { en: 'How accounts are moderated', bn: 'বিবরণ কীভাবে মডারেট করা হয়' },
-    'aboutview.modBody':     { en: 'Before publication, every account runs through five safety checks: duplicate detection, third-party name detection, attachment redaction, medical-advice detection, and emergency detection. None of these judge your story. They only check whether the account could harm you, someone else, or someone reading it. If a check fails, you are asked to fix it; nothing is published without your confirmation.', bn: 'প্রকাশের আগে, প্রতিটি বিবরণ পাঁচটি নিরাপত্তা যাচাইয়ের মধ্যে দিয়ে যায়: সদৃশ সনাক্তকরণ, তৃতীয় পক্ষের নাম সনাক্তকরণ, সংযুক্তি সম্পাদনা, চিকিৎসা পরামর্শ সনাক্তকরণ, এবং জরুরি অবস্থা সনাক্তকরণ। এগুলো আপনার লেখার বিষয়ে কোনো রায় দেয় না। শুধু যাচাই করে বিবরণটি আপনার, অন্য কারো, বা পড়ুয়াদের ক্ষতি করতে পারে কিনা। কোনো যাচাই ব্যর্থ হলে আপনাকে সংশোধন করতে বলা হয়; আপনার সম্মতি ছাড়া কিছু প্রকাশ হয় না।' },
+    'aboutview.intro':       { en: 'RogiKotha is a place where patients publish first-hand experiences of doctors, hospitals and clinics in Bangladesh. It is not a medical service, not a directory of paid listings, and not a place to ask for medical advice.', bn: 'রোগীকথা এমন একটি জায়গা যেখানে রোগীরা বাংলাদেশের ডাক্তার, হাসপাতাল ও ক্লিনিক সম্পর্কে নিজের অভিজ্ঞতা প্রকাশ করেন। এটি চিকিৎসা সেবা নয়, পেইড তালিকার ডিরেক্টরি নয়, এবং চিকিৎসা পরামর্শের জায়গা নয়।' },
+    'aboutview.modTitle':    { en: 'How experiences are moderated', bn: 'অভিজ্ঞতা কীভাবে মডারেট করা হয়' },
+    'aboutview.modBody':     { en: 'Before publication your experience runs through automated checks for duplicates, and for private details, spam and threatening language in the text. Files are scanned for malware and converted to a safe format. None of these judge your story or decide whether your care was good or bad. Nothing is published without your confirmation. After publication, unsafe advice is handled by people — readers report it and a moderator reviews it. Nothing is classified automatically.', bn: 'প্রকাশের আগে আপনার অভিজ্ঞতায় স্বয়ংক্রিয় কিছু যাচাই চলে: একই অভিজ্ঞতা আগে জমা পড়েছে কিনা, এবং লেখায় ব্যক্তিগত তথ্য, স্প্যাম বা হুমকিমূলক ভাষা আছে কিনা। ফাইলগুলো ম্যালওয্য়ারের জন্য স্ক্যান করা হয় এবং নিরাপদ ফরম্যাটে রূপান্তর করা হয়। এগুলোর কোনোটিই আপনার লেখার বিচার করে না, বা আপনার চিকিৎসা ভালো নাকি খারাপ তা ঠিক করে না। আপনার সম্মতি ছাড়া কিছুই প্রকাশ হয় না। প্রকাশের পর অনিরাপদ পরামর্শের বিষয়টি মানুষ দেখে — পাঠকেরা রিপোর্ট করেন এবং একজন মডারেটর পর্যালোচনা করেন। কিছুই স্বয়ংক্রিয়ভাবে চিহ্নিত হয় না।' },
     'aboutview.reviewerTitle': { en: 'What a reviewer label means', bn: 'রিভিউয়ার লেবেলের অর্থ কী' },
-    'aboutview.reviewerBody': { en: 'When a doctor reads an account and confirms the medical facts in it, their confirmation is shown as a reviewer label — for example "Verified by a registered BMDC doctor". This does not mean the doctor agrees with the patient\'s feelings, only that the medical record described in the account is consistent with the consultation as the doctor remembers it. Reviewer labels never override the patient\'s account.', bn: 'যখন কোনো ডাক্তার কোনো বিবরণ পড়েন এবং এতে বর্ণিত চিকিৎসাগত তথ্য নিশ্চিত করেন, তখন তাঁর নিশ্চিতকরণ একটি রিভিউয়ার লেবেল হিসেবে দেখানো হয় — যেমন "BMDC-নিবন্ধিত ডাক্তার দ্বারা যাচাইকৃত"। এর মানে এই নয় যে ডাক্তার রোগীর অনুভূতির সাথে একমত, শুধু এই যে বিবরণে বর্ণিত চিকিৎসাগত রেকর্ড ডাক্তারের স্মৃতিতে থাকা পরামর্শের সাথে সামঞ্জস্যপূর্ণ। রিভিউয়ার লেবেল কখনো রোগীর বিবরণকে ওভাররাইড করে না।' },
+    'aboutview.reviewerBody': { en: 'A reviewer label is the label chosen by the person who wrote the experience, for their own experience — for example “Wrong diagnosis” or “Second opinion differed”. It is their claim, not our finding. RogiKotha does not check whether it is medically correct, and no doctor confirms it on our behalf. Labels are always shown as words written by the reviewer.', bn: 'রিভিউয়ার লেবেল হলো যিনি অভিজ্ঞতাটি লিখেছেন, তিনি নিজের অভিজ্ঞতার জন্য যে লেবেল বেছে নিয়েছেন — যেমন “ভুল রোগনির্ণয়” বা “দ্বিতীয় মতামত ভিন্ন ছিল”। এটি তাঁর দাবি, আমাদের সিদ্ধান্ত নয়। রোগীকথা যাচাই করে না এটি চিকিৎসাগতভাবে সঠিক কিনা, এবং আমাদের পক্ষ থেকে কোনো ডাক্তার এটি নিশ্চিত করেন না। লেবেল সবসময় রিভিউয়ারের নিজের কথা হিসেবেই দেখানো হয়।' },
     'aboutview.privacyTitle': { en: 'Privacy and identity', bn: 'গোপনীয়তা ও পরিচয়' },
-    'aboutview.privacyBody':  { en: 'You can write under your real name, a pseudonym, or anonymously. You decide which one. If you write under a pseudonym, your real name is never stored with the account. If you upload documents, names and phone numbers of third parties are redacted automatically before publication.', bn: 'আপনি আসল নামে, ছদ্মনামে, বা নামহীনভাবে লিখতে পারেন। সিদ্ধান্ত আপনার। ছদ্মনামে লিখলে আপনার আসল নাম বিবরণের সাথে সংরক্ষিত হয় না। কাগজপত্র আপলোড করলে তৃতীয় পক্ষের নাম ও ফোন নম্বর প্রকাশের আগে স্বয়ংক্রিয়ভাবে সম্পাদিত হয়।' },
+    'aboutview.privacyBody':  { en: 'You can write under your real name, a pseudonym, or anonymously. You decide which one. If you write under a pseudonym, your real name is never stored with the experience. If you upload documents, you black out private details yourself before publishing and confirm you have done so — RogiKotha does not detect or remove them for you.', bn: 'আপনি আসল নামে, ছদ্মনামে, বা নামহীনভাবে লিখতে পারেন। সিদ্ধান্ত আপনার। ছদ্মনামে লিখলে আপনার আসল নাম অভিজ্ঞতার সাথে সংরক্ষিত হয় না। কাগজপত্র আপলোড করলে প্রকাশের আগে ব্যক্তিগত তথ্য আপনি নিজেই ঢেকে দেন এবং নিশ্চিত করেন যে ঢেকেছেন — রোগীকথা সেগুলো নিজে খুঁজে বের করে বা মুছে দেয় না।' },
     'aboutview.limitsTitle':  { en: 'What this is not', bn: 'এটি যা নয়' },
-    'aboutview.limitsBody':   { en: 'RogiKotha does not diagnose, does not verify whether a treatment was correct, and does not decide whether care was negligent. Accounts are patient reports — they tell you what one person experienced, not what will happen to you. If you are deciding what to do about a health problem, talk to a qualified clinician, not to this site.', bn: 'রোগীকথা রোগ নির্ণয় করে না, চিকিৎসা সঠিক হয়েছে কিনা তা যাচাই করে না, এবং অবহেলা হয়েছে কিনা তা নির্ধারণ করে না। বিবরণগুলো রোগীর প্রতিবেদন — একজনের অভিজ্ঞতা বলে, আপনার কী হবে তা নয়। স্বাস্থ্য সমস্যা নিয়ে কী করবেন সেই সিদ্ধান্ত নিতে হলে যোগ্য চিকিৎসকের সাথে কথা বলুন, এই সাইটের সাথে নয়।' },
+    'aboutview.limitsBody':   { en: 'RogiKotha does not diagnose, does not verify whether a treatment was correct, and does not decide whether care was negligent. Accounts are patient reports — they tell you what one person experienced, not what will happen to you. If you are deciding what to do about a health problem, talk to a qualified clinician, not to this site.', bn: 'রোগীকথা রোগ নির্ণয় করে না, চিকিৎসা সঠিক হয়েছে কিনা তা যাচাই করে না, এবং অবহেলা হয়েছে কিনা তা নির্ধারণ করে না। অভিজ্ঞতাগুলো রোগীর প্রতিবেদন — একজনের অভিজ্ঞতা বলে, আপনার কী হবে তা নয়। স্বাস্থ্য সমস্যা নিয়ে কী করবেন সেই সিদ্ধান্ত নিতে হলে যোগ্য চিকিৎসকের সাথে কথা বলুন, এই সাইটের সাথে নয়।' },
     'aboutview.contact':      { en: 'Contact and feedback', bn: 'যোগাযোগ ও মতামত' },
     'aboutview.contactBody':  { en: 'Email: hello@rogikotha.example (this is a design exploration — the address is not monitored). For real emergencies, do not use this site.', bn: 'ইমেইল: hello@rogikotha.example (এটি একটি ডিজাইন এক্সপ্লোরেশন — এই ঠিকানা পর্যবেক্ষণ করা হয় না)। প্রকৃত জরুরি অবস্থায় এই সাইট ব্যবহার করবেন না।' },
     'aboutview.lastReviewed': { en: 'Methodology last reviewed 21 August 2026', bn: 'পদ্ধতি সর্বশেষ পর্যালোচিত ২১ আগস্ট ২০২৬' },
 
-    'disclaimer.short':      { en: 'Patient-reported accounts. Not medical advice.', bn: 'রোগীর বলা অভিজ্ঞতা। চিকিৎসা পরামর্শ নয়।' },
+    'disclaimer.short':      { en: 'Patient-reported experiences. Not medical advice.', bn: 'রোগীর বলা অভিজ্ঞতা। চিকিৎসা পরামর্শ নয়।' },
     'disclaimer.long':       { en: 'Everything below is written by members of the public about their own or a witnessed experience. RogiKotha does not diagnose, does not verify clinical correctness, and does not decide whether care was negligent. Do not change or delay treatment based on what you read here.', bn: 'নিচের সবকিছু সাধারণ মানুষের লেখা — নিজের বা প্রত্যক্ষ করা অভিজ্ঞতা। রোগীকথা রোগ নির্ণয় করে না, চিকিৎসার সঠিকতা যাচাই করে না, এবং অবহেলা হয়েছে কি না তা নির্ধারণ করে না। এখানে যা পড়ছেন তার ভিত্তিতে চিকিৎসা বদলাবেন বা দেরি করবেন না।' },
 
     'filter.title':          { en: 'Narrow these results', bn: 'ফলাফল সীমিত করুন' },
     'filter.specialty':      { en: 'Specialty', bn: 'বিশেষত্ব' },
     'filter.condition':      { en: 'Condition', bn: 'রোগ' },
     'filter.location':       { en: 'Location', bn: 'এলাকা' },
-    'filter.sentiment':      { en: 'Account sentiment', bn: 'বিবরণের ধরন' },
+    'filter.sentiment':      { en: 'Experience sentiment', bn: 'অভিজ্ঞতার ধরন' },
     'filter.outcome':        { en: 'Reported outcome', bn: 'জানানো ফলাফল' },
     'filter.evidence':       { en: 'Documents', bn: 'কাগজপত্র' },
     'filter.gender':         { en: 'Doctor gender', bn: 'ডাক্তারের লিঙ্গ' },
     'filter.language':       { en: 'Consultation language', bn: 'পরামর্শের ভাষা' },
     'filter.clear':          { en: 'Clear all', bn: 'সব মুছুন' },
     'filter.any':            { en: 'Any', bn: 'যেকোনো' },
-    'filter.note':           { en: 'Filtering changes which accounts you see. It never reorders doctors by how positive they are.', bn: 'ফিল্টার বদলায় আপনি কোন বিবরণগুলো দেখবেন। ইতিবাচকতার ভিত্তিতে ডাক্তারদের ক্রম কখনো বদলায় না।' },
+    'filter.note':           { en: 'Filtering changes which experiences you see. It never reorders doctors by how positive they are.', bn: 'ফিল্টার বদলায় আপনি কোন অভিজ্ঞতাগুলো দেখবেন। ইতিবাচকতার ভিত্তিতে ডাক্তারদের ক্রম কখনো বদলায় না।' },
 
     'sort.label':            { en: 'Order', bn: 'ক্রম' },
     'sort.relevance':        { en: 'Relevance', bn: 'প্রাসঙ্গিকতা' },
-    'sort.volume':           { en: 'Most accounts', bn: 'সবচেয়ে বেশি বিবরণ' },
+    'sort.volume':           { en: 'Most experiences', bn: 'সবচেয়ে বেশি অভিজ্ঞতা' },
     'sort.recent':           { en: 'Most recent', bn: 'সবচেয়ে সাম্প্রতিক' },
     'sort.why':              { en: 'Why can’t I sort by best?', bn: 'সেরা অনুযায়ী সাজানো যায় না কেন?' },
     'sort.whyBody':          { en: 'Because RogiKotha does not measure “best”. Ordering by sentiment would turn patient stories into a score, which is exactly what this platform refuses to do.', bn: 'কারণ রোগীকথা “সেরা” মাপে না। ইতিবাচকতা অনুযায়ী সাজালে রোগীর অভিজ্ঞতা একটি নম্বরে পরিণত হতো — যা এই প্ল্যাটফর্ম করে না।' },
 
     'results.count':         { en: 'doctors match', bn: 'জন ডাক্তার মিলেছে' },
     'results.none':          { en: 'Nothing matched yet', bn: 'এখনো কিছু মেলেনি' },
-    'results.noneBody':      { en: 'The directory starts empty and grows only as people write accounts. Try a broader term, or be the first to write about this doctor.', bn: 'তালিকাটি খালি অবস্থায় শুরু হয় এবং মানুষ লিখলেই বাড়ে। আরও সাধারণ শব্দ দিয়ে দেখুন, অথবা এই ডাক্তার সম্পর্কে প্রথম আপনিই লিখুন।' },
+    'results.noneBody':      { en: 'The directory starts empty and grows only as people write experiences. Try a broader term, or be the first to write about this doctor.', bn: 'তালিকাটি খালি অবস্থায় শুরু হয় এবং মানুষ লিখলেই বাড়ে। আরও সাধারণ শব্দ দিয়ে দেখুন, অথবা এই ডাক্তার সম্পর্কে প্রথম আপনিই লিখুন।' },
 
     'label.limitedData':     { en: 'Limited data', bn: 'সীমিত তথ্য' },
-    'label.limitedDataWhy':  { en: 'Fewer than 5 accounts. Too few to show a pattern — read them individually.', bn: '৫টির কম বিবরণ। ধরন বোঝার মতো যথেষ্ট নয় — আলাদা করে পড়ুন।' },
+    'label.limitedDataWhy':  { en: 'Fewer than 5 experiences. Too few to show a pattern — read them individually.', bn: '৫টির কম অভিজ্ঞতা। ধরন বোঝার মতো যথেষ্ট নয় — আলাদা করে পড়ুন।' },
     'label.notVerified':     { en: 'Registration not verified', bn: 'রেজিস্ট্রেশন যাচাই করা হয়নি' },
     'label.notVerifiedWhy':  { en: 'RogiKotha does not yet check BMDC registration. This profile was submitted by the community.', bn: 'রোগীকথা এখনো বিএমডিসি রেজিস্ট্রেশন যাচাই করে না। এই প্রোফাইল সম্প্রদায়ের জমা দেওয়া।' },
     'label.notProvided':     { en: 'Not provided', bn: 'জানানো হয়নি' },
     'label.noDocuments':     { en: 'No documents', bn: 'কোনো কাগজপত্র নেই' },
-    'label.reviewerLabel':   { en: 'Reviewer’s label', bn: 'বিবরণদাতার দেওয়া তকমা' },
+    'label.reviewerLabel':   { en: 'Reviewer’s label', bn: 'যিনি লিখেছেন, তাঁর দেওয়া তকমা' },
     'label.reviewerLabelWhy':{ en: 'This is the author’s own claim. RogiKotha has not checked it and takes no position on it.', bn: 'এটি লেখকের নিজের দাবি। রোগীকথা এটি যাচাই করেনি এবং এ বিষয়ে কোনো অবস্থান নেয় না।' },
     'label.edited':          { en: 'Edited', bn: 'সম্পাদিত' },
     'label.followUp':        { en: 'Follow-up', bn: 'পরবর্তী অবস্থা' },
@@ -141,7 +144,7 @@
     'prov.admin':            { en: 'Admin checked', bn: 'অ্যাডমিন যাচাই করেছে' },
 
     'evidence.status':       { en: 'Documents attached — not medically validated', bn: 'কাগজপত্র যুক্ত — চিকিৎসাগতভাবে যাচাই করা হয়নি' },
-    'evidence.notice':       { en: 'Uploaded by the person who wrote this account. Privacy has not been independently checked. You are seeing a processed copy; the original is never public.', bn: 'যিনি এই বিবরণ লিখেছেন তিনিই আপলোড করেছেন। গোপনীয়তা স্বাধীনভাবে যাচাই করা হয়নি। আপনি একটি প্রক্রিয়াকৃত কপি দেখছেন; মূল ফাইল কখনো প্রকাশ্য নয়।' },
+    'evidence.notice':       { en: 'Uploaded by the person who wrote this experience. Privacy has not been independently checked. You are seeing a processed copy; the original is never public.', bn: 'যিনি এই অভিজ্ঞতা লিখেছেন তিনিই আপলোড করেছেন। গোপনীয়তা স্বাধীনভাবে যাচাই করা হয়নি। আপনি একটি প্রক্রিয়াকৃত কপি দেখছেন; মূল ফাইল কখনো প্রকাশ্য নয়।' },
     'evidence.group.reviewed':  { en: 'Reviewed treatment', bn: 'যে চিকিৎসার বিবরণ' },
     'evidence.group.later':     { en: 'Later or alternative treatment', bn: 'পরবর্তী বা বিকল্প চিকিৎসা' },
     'evidence.group.outcome':   { en: 'Outcome / follow-up', bn: 'ফলাফল / পরবর্তী অবস্থা' },
@@ -152,7 +155,7 @@
     'sentiment.negative':    { en: 'Negative', bn: 'নেতিবাচক' },
     'sentiment.title':       { en: 'How authors described the episode', bn: 'লেখকেরা পর্বটিকে যেভাবে বর্ণনা করেছেন' },
     'sentiment.of':          { en: 'of', bn: 'এর মধ্যে' },
-    'sentiment.accounts':    { en: 'accounts', bn: 'টি বিবরণ' },
+    'sentiment.accounts':    { en: 'patient experiences', bn: 'জনের অভিজ্ঞতা' },
 
     'outcome.helped':        { en: 'Helped', bn: 'উপকার হয়েছে' },
     'outcome.none':          { en: 'No improvement', bn: 'উন্নতি হয়নি' },
@@ -163,9 +166,9 @@
 
     'profile.about':         { en: 'About', bn: 'পরিচিতি' },
     'profile.chambers':      { en: 'Practice locations', bn: 'চেম্বার' },
-    'profile.accounts':      { en: 'Patient accounts', bn: 'রোগীর বিবরণ' },
+    'profile.accounts':      { en: 'Patient experiences', bn: 'রোগীর অভিজ্ঞতা' },
     'profile.conditions':    { en: 'Conditions people wrote about', bn: 'যেসব রোগ নিয়ে লেখা হয়েছে' },
-    'profile.byCondition':   { en: 'Choose a condition to see only those accounts', bn: 'নির্দিষ্ট রোগের বিবরণ দেখতে সেটি বাছুন' },
+    'profile.byCondition':   { en: 'Choose a condition to see only those experiences', bn: 'নির্দিষ্ট রোগের অভিজ্ঞতা দেখতে সেটি বাছুন' },
     'profile.allConditions': { en: 'All conditions', bn: 'সব রোগ' },
     'profile.bmdc':          { en: 'BMDC number', bn: 'বিএমডিসি নম্বর' },
     'profile.specialty':     { en: 'Specialty', bn: 'বিশেষত্ব' },
@@ -177,7 +180,7 @@
 
     'review.relationship':   { en: 'Written by', bn: 'লিখেছেন' },
     'review.episodeDate':    { en: 'Treatment period', bn: 'চিকিৎসার সময়' },
-    'review.readFull':       { en: 'Read the full account', bn: 'পুরো বিবরণ পড়ুন' },
+    'review.readFull':       { en: 'Read in full', bn: 'পুরো অভিজ্ঞতা পড়ুন' },
     'review.tags':           { en: 'Tags', bn: 'ট্যাগ' },
     'review.helpful':        { en: 'Like', bn: 'পছন্দ' },
     'review.notHelpful':     { en: 'Dislike', bn: 'অপছন্দ' },
@@ -185,9 +188,9 @@
     'review.report':         { en: 'Report', bn: 'রিপোর্ট' },
     'review.comments':       { en: 'Comments', bn: 'মন্তব্য' },
 
-    'compose.title':         { en: 'Write your account', bn: 'আপনার বিবরণ লিখুন' },
-    'compose.intro':         { en: 'One account describes one course of treatment for one condition. Take as much or as little space as you need.', bn: 'একটি বিবরণ একটি রোগের একটি চিকিৎসা-পর্ব নিয়ে। যতটা প্রয়োজন ততটাই লিখুন।' },
-    'compose.mode.quick':    { en: 'Quick account', bn: 'সংক্ষিপ্ত বিবরণ' },
+    'compose.title':         { en: 'Share your experience', bn: 'আপনার অভিজ্ঞতা লিখুন' },
+    'compose.intro':         { en: 'One experience describes one course of treatment for one condition. Take as much or as little space as you need.', bn: 'একটি অভিজ্ঞতা একটি রোগের একটি চিকিৎসা-পর্ব নিয়ে। যতটা প্রয়োজন ততটাই লিখুন।' },
+    'compose.mode.quick':    { en: 'Short version', bn: 'সংক্ষিপ্ত সংস্করণ' },
     'compose.mode.quickHint':{ en: 'A few sentences. Four fields.', bn: 'কয়েকটি বাক্য। চারটি ঘর।' },
     'compose.mode.detailed': { en: 'Detailed timeline', bn: 'বিস্তারিত সময়রেখা' },
     'compose.mode.detailedHint': { en: 'Symptoms, diagnosis, treatment, what happened next.', bn: 'উপসর্গ, রোগ নির্ণয়, চিকিৎসা, তারপর কী হলো।' },
@@ -195,7 +198,7 @@
     'compose.of':            { en: 'of', bn: '/' },
     'compose.doctor':        { en: 'Which doctor?', bn: 'কোন ডাক্তার?' },
     'compose.doctorMissing': { en: 'Can’t find them? Add a doctor', bn: 'খুঁজে পাচ্ছেন না? ডাক্তার যোগ করুন' },
-    'compose.doctorMissingNote': { en: 'A new profile is checked for duplicates and obvious abuse before it appears. Your account stays a private draft until then.', bn: 'নতুন প্রোফাইল প্রকাশের আগে ডুপ্লিকেট ও অপব্যবহার যাচাই করা হয়। ততক্ষণ আপনার বিবরণ ব্যক্তিগত খসড়া হিসেবে থাকে।' },
+    'compose.doctorMissingNote': { en: 'A new profile is checked for duplicates and obvious abuse before it appears. Your draft stays private until then.', bn: 'নতুন প্রোফাইল প্রকাশের আগে ডুপ্লিকেট ও অপব্যবহার যাচাই করা হয়। ততক্ষণ আপনার অভিজ্ঞতা ব্যক্তিগত খসড়া হিসেবে থাকে।' },
     'compose.relationship':  { en: 'Your relationship to the patient', bn: 'রোগীর সঙ্গে আপনার সম্পর্ক' },
     'compose.period':        { en: 'When was the treatment?', bn: 'চিকিৎসা কখন হয়েছিল?' },
     'compose.periodNote':    { en: 'Only the month and year are shown publicly.', bn: 'প্রকাশ্যে শুধু মাস ও বছর দেখানো হয়।' },
@@ -205,7 +208,7 @@
     'compose.diagnosis':     { en: 'What you were told was wrong', bn: 'আপনাকে যা বলা হয়েছিল' },
     'compose.treatment':     { en: 'Treatment, tests and medicines', bn: 'চিকিৎসা, পরীক্ষা ও ওষুধ' },
     'compose.after':         { en: 'What happened afterwards', bn: 'তারপর কী হলো' },
-    'compose.tags':          { en: 'Tag the condition', bn: 'রোগ ট্যাগ করুন' },
+    'compose.tags':          { en: 'Tag the health topic', bn: 'বিষয় ট্যাগ করুন' },
     'compose.tagsRequired':  { en: 'Add at least one tag, or choose “Not sure”.', bn: 'অন্তত একটি ট্যাগ দিন, অথবা “নিশ্চিত নই” বাছুন।' },
     'compose.notSure':       { en: 'Not sure', bn: 'নিশ্চিত নই' },
     'compose.tagGroup.symptom':   { en: 'Symptoms', bn: 'উপসর্গ' },
@@ -223,17 +226,17 @@
     'compose.identity.anon': { en: 'Anonymous', bn: 'নাম প্রকাশ না করে' },
     'compose.identity.anonNote': { en: 'Anonymous hides your name from readers. It is not absolute anonymity — your account and contact details remain private but known to us, and can be required by law.', bn: 'অ্যানোনিমাস পাঠকের কাছ থেকে আপনার নাম আড়াল করে। এটি সম্পূর্ণ পরিচয়হীনতা নয় — আপনার অ্যাকাউন্ট ও যোগাযোগের তথ্য গোপন থাকলেও আমাদের জানা, এবং আইনগতভাবে চাওয়া হতে পারে।' },
     'compose.evidence':      { en: 'Attach documents', bn: 'কাগজপত্র যুক্ত করুন' },
-    'compose.evidenceOptional': { en: 'Entirely optional. An account without documents is just as valid.', bn: 'সম্পূর্ণ ঐচ্ছিক। কাগজপত্র ছাড়া বিবরণও সমান গ্রহণযোগ্য।' },
+    'compose.evidenceOptional': { en: 'Entirely optional. An experience without documents is just as valid.', bn: 'সম্পূর্ণ ঐচ্ছিক। কাগজপত্র ছাড়া অভিজ্ঞতাও সমান গ্রহণযোগ্য।' },
     'compose.redact':        { en: 'Hide private details before you upload', bn: 'আপলোডের আগে ব্যক্তিগত তথ্য ঢাকুন' },
     'compose.redactBody':    { en: 'Cover the patient name and photo, phone numbers, address, national ID, hospital record numbers, QR codes and signatures. Keep the doctor and facility details visible.', bn: 'রোগীর নাম ও ছবি, ফোন নম্বর, ঠিকানা, জাতীয় পরিচয়পত্র, হাসপাতালের রেকর্ড নম্বর, কিউআর কোড ও স্বাক্ষর ঢেকে দিন। ডাক্তার ও হাসপাতালের তথ্য দেখা যাক।' },
     'compose.redactTool':    { en: 'Draw over anything private', bn: 'ব্যক্তিগত অংশের উপর আঁকুন' },
     'compose.preview':       { en: 'Preview as readers will see it', bn: 'পাঠক যেভাবে দেখবেন' },
-    'compose.publish':       { en: 'Publish account', bn: 'বিবরণ প্রকাশ করুন' },
+    'compose.publish':       { en: 'Publish', bn: 'অভিজ্ঞতা প্রকাশ করুন' },
     'compose.saveDraft':     { en: 'Save draft', bn: 'খসড়া রাখুন' },
     'compose.confirmTitle':  { en: 'Before you publish', bn: 'প্রকাশের আগে' },
-    'compose.confirm1':      { en: 'This is my own experience or one I witnessed directly, and it is honest.', bn: 'এটি আমার নিজের বা আমার প্রত্যক্ষ করা অভিজ্ঞতা, এবং এটি সত্য।' },
+    'compose.confirm1':      { en: 'This happened to me, or I witnessed it directly, and it is honest.', bn: 'এটি আমার নিজের বা আমার প্রত্যক্ষ করা অভিজ্ঞতা, এবং এটি সত্য।' },
     'compose.confirm2':      { en: 'I have removed private details about other people from anything I attached.', bn: 'আমি যা যুক্ত করেছি তা থেকে অন্যদের ব্যক্তিগত তথ্য সরিয়েছি।' },
-    'compose.confirm3':      { en: 'I understand this is my account of what happened, not a medical finding.', bn: 'আমি বুঝি এটি আমার বলা ঘটনা, কোনো চিকিৎসাগত সিদ্ধান্ত নয়।' },
+    'compose.confirm3':      { en: 'I understand this is my own telling of what happened, not a medical finding.', bn: 'আমি বুঝি এটি আমার বলা ঘটনা, কোনো চিকিৎসাগত সিদ্ধান্ত নয়।' },
     'compose.age':           { en: 'I am 18 or older', bn: 'আমার বয়স ১৮ বা তার বেশি' },
     'compose.publishedNote': { en: 'Your words publish immediately after automated safety checks. Any documents stay private until they finish processing.', bn: 'স্বয়ংক্রিয় নিরাপত্তা যাচাইয়ের পরপরই আপনার লেখা প্রকাশ হবে। কাগজপত্র প্রক্রিয়াকরণ শেষ না হওয়া পর্যন্ত ব্যক্তিগত থাকবে।' },
     'compose.required':      { en: 'Required', bn: 'আবশ্যক' },
@@ -252,21 +255,50 @@
     'concept.back':          { en: 'All three directions', bn: 'তিনটি ধারা' },
 
     /* ---- navigation added for the fuller screen set ---- */
-    'target.account':        { en: 'Account', bn: 'বিবরণ' },
+    'target.account':        { en: 'Experience', bn: 'অভিজ্ঞতা' },
     'target.comment':        { en: 'Comment', bn: 'মন্তব্য' },
     'target.evidence':       { en: 'Document', bn: 'কাগজপত্র' },
     'target.profile':        { en: 'Profile', bn: 'প্রোফাইল' },
 
-    'nav.account':           { en: 'Account', bn: 'বিবরণ' },
-    'nav.condition':         { en: 'Condition', bn: 'রোগ' },
+    'nav.account':           { en: 'Experiences', bn: 'অভিজ্ঞতা' },
+    'nav.condition':         { en: 'Health topics', bn: 'রোগ ও স্বাস্থ্য' },
     'nav.facility':          { en: 'Facility', bn: 'হাসপাতাল' },
+    /* Index pages. Slugs are plural so trimming an id lands on the index. */
+    'profile.kicker':        { en: 'Doctor', bn: 'ডাক্তার' },
+    'facility.kicker':       { en: 'Hospital or clinic', bn: 'হাসপাতাল বা ক্লিনিক' },
+    /* STORY-PROT-001 demo controls. Previously hardcoded English, which
+       broke bilingual parity in the one panel that explains the demo. */
+    'demo.title':            { en: 'Demo controls', bn: 'ডেমো নিয়ন্ত্রণ' },
+    'demo.roleNote':         { en: 'The simulated role changes what the contribution screens tell you. Nothing here signs you in — production would require a confirmed account.', bn: 'সিমুলেটেড ভূমিকা বদলালে অবদানের পর্দাগুলো আপনাকে কী বলে তা বদলায়। এখানে কোনো সাইন-ইন হয় না — প্রকৃত সেবায় নিশ্চিত করা অ্যাকাউন্ট লাগত।' },
+    'demo.role.reader':      { en: 'Reader', bn: 'পাঠক' },
+    'demo.role.contributor': { en: 'Contributor', bn: 'লেখক' },
+    'demo.role.moderator':   { en: 'Moderator', bn: 'মডারেটর' },
+    'demo.scheme':           { en: 'Light-mode colour scheme (compare)', bn: 'লাইট মোডের রঙের ধরন (তুলনা)' },
+    'demo.scheme.current':   { en: 'Current', bn: 'বর্তমান' },
+    'demo.scheme.a':         { en: 'Scheme A', bn: 'ধরন A' },
+    'demo.scheme.b':         { en: 'Scheme B', bn: 'ধরন B' },
+    'demo.scheme.c':         { en: 'Scheme C', bn: 'ধরন C' },
+    'demo.reset':            { en: 'Reset demo', bn: 'ডেমো রিসেট' },
+    'demo.close':            { en: 'Close', bn: 'বন্ধ' },
+    /* EXPERIENCE.md:115 — the demo must explain simulated sign-in at the
+       point of contributing, not only in a hidden drawer. */
+    'write.signinTitle':     { en: 'You are reading as a signed-out visitor', bn: 'আপনি সাইন-ইন না করা অবস্থায় পড়ছেন' },
+    'write.signinBody':      { en: 'In production you would need a confirmed account and an age confirmation before publishing. In this demo you can fill the form and preview it — nothing is saved or sent. Switch the demo role to Contributor to see it without this notice.', bn: 'প্রকৃত সেবায় প্রকাশের আগে নিশ্চিত করা অ্যাকাউন্ট ও বয়সের নিশ্চিতকরণ লাগত। এই ডেমোতে আপনি ফর্ম পূরণ ও প্রিভিউ দেখতে পারেন — কিছুই সংরক্ষণ বা পাঠানো হয় না। এই নোটিশ ছাড়া দেখতে ডেমো ভূমিকা লেখক-এ বদলান।' },
+    'nav.viewDoctor':        { en: 'View doctor', bn: 'ডাক্তার দেখুন' },
+    'nav.viewFacility':      { en: 'View hospital', bn: 'হাসপাতাল দেখুন' },
+    'index.doctorsNote':     { en: 'Every doctor patients have written about. Listed alphabetically — never ranked, and never scored.', bn: 'রোগীরা যেসব ডাক্তারকে নিয়ে লিখেছেন, সবাই। বর্ণানুক্রমে সাজানো — কোনো ক্রম বা স্কোর নেই।' },
+    'index.facilitiesNote':  { en: 'Hospitals, clinics and diagnostic centres people have written about, with their branches.', bn: 'মানুষ যেসব হাসপাতাল, ক্লিনিক ও ডায়াগনস্টিক সেন্টার নিয়ে লিখেছেন, শাখাসহ।' },
+    'index.topicsNote':      { en: 'Every health topic in the directory, including those nobody has written about yet.', bn: 'ডিরেক্টরির প্রতিটি বিষয়, যেগুলো নিয়ে এখনো কেউ লেখেননি সেগুলোসহ।' },
+    'index.experiencesNote': { en: 'The most recent patient experiences across every doctor and hospital.', bn: 'সব ডাক্তার ও হাসপাতাল মিলিয়ে সাম্প্রতিক রোগীর অভিজ্ঞতা।' },
+    'index.emptyTopic':      { en: 'No one has written about this yet.', bn: 'এখনো কেউ এটি নিয়ে লেখেননি।' },
+    'index.beFirst':         { en: 'Be the first to write about it', bn: 'প্রথম হয়ে লিখুন' },
     'nav.facilities':        { en: 'Hospitals & clinics', bn: 'হাসপাতাল ও ক্লিনিক' },
-    'nav.mine':              { en: 'My contributions', bn: 'আমার লেখা' },
+    'nav.mine':              { en: 'My writing', bn: 'আমার লেখা' },
     'nav.admin':             { en: 'Moderation', bn: 'মডারেশন' },
     'nav.emergency':         { en: 'Emergency help', bn: 'জরুরি সাহায্য' },
     'nav.about':             { en: 'About & methodology', bn: 'সম্পর্কে ও পদ্ধতি' },
 
-    'discover.browse':       { en: 'Browse by condition', bn: 'রোগ অনুযায়ী দেখুন' },
+    'discover.browse':       { en: 'Browse by health topic', bn: 'বিষয় অনুযায়ী দেখুন' },
     'discover.browseNote':   { en: 'People usually arrive with a condition in mind, not a doctor’s name.', bn: 'মানুষ সাধারণত ডাক্তারের নাম নয়, রোগ নিয়েই আসেন।' },
     'discover.facilities':   { en: 'Looking for a hospital or diagnostic centre?', bn: 'হাসপাতাল বা ডায়াগনস্টিক সেন্টার খুঁজছেন?' },
 
@@ -274,30 +306,64 @@
     'results.tabFacilities': { en: 'Facilities', bn: 'হাসপাতাল' },
 
     /* ---- account detail ---- */
-    'account.writtenBy':     { en: 'Written by', bn: 'লিখেছেন' },
-    'account.otherAccounts': { en: 'other accounts by this author', bn: 'এই লেখকের অন্যান্য বিবরণ' },
-    'account.identityMode':  { en: 'Shown as', bn: 'যেভাবে দেখানো হচ্ছে' },
-    'account.timeline':      { en: 'How this unfolded', bn: 'যেভাবে ঘটেছে' },
-    'account.episode':       { en: 'Treatment episode', bn: 'চিকিৎসা-পর্ব' },
-    'account.currentStatus': { en: 'Most recent status', bn: 'সর্বশেষ অবস্থা' },
-    'account.currentNote':   { en: 'The newest update is the current one. Older updates stay in place so the story still reads in order.', bn: 'সর্বশেষ আপডেটটিই বর্তমান। পুরোনো আপডেটগুলো থেকে যায়, যাতে ঘটনাক্রম বোঝা যায়।' },
-    'account.laterCare':     { en: 'Care received elsewhere afterwards', bn: 'পরে অন্য জায়গায় নেওয়া চিকিৎসা' },
-    'account.laterCareNote': { en: 'Written by the same author. Naming a later doctor here does not create a review for them and does not change their summaries.', bn: 'একই লেখকের লেখা। এখানে পরবর্তী ডাক্তারের নাম থাকলেই তাঁর জন্য কোনো রিভিউ তৈরি হয় না বা তাঁর সারাংশ বদলায় না।' },
-    'account.discussion':    { en: 'Discussion', bn: 'আলোচনা' },
-    'account.commentBox':    { en: 'Add a comment', bn: 'মন্তব্য যোগ করুন' },
-    'account.commentHint':   { en: 'Be specific about your own experience. This is not the place for medical instructions.', bn: 'নিজের অভিজ্ঞতা স্পষ্টভাবে লিখুন। এখানে চিকিৎসার নির্দেশনা দেওয়ার জায়গা নয়।' },
-    'account.commentPost':   { en: 'Post comment', bn: 'মন্তব্য দিন' },
-    'account.linkWarning':   { en: 'External link — RogiKotha has not checked where this goes.', bn: 'বাইরের লিংক — রোগীকথা এটি কোথায় যায় তা যাচাই করেনি।' },
-    'account.dangerWarning': { en: 'This comment describes changing or stopping treatment. Do not act on it without your own doctor. A moderator has been asked to review it.', bn: 'এই মন্তব্যে চিকিৎসা বদলানো বা বন্ধ করার কথা আছে। নিজের ডাক্তারের পরামর্শ ছাড়া এটি অনুসরণ করবেন না। একজন মডারেটরকে দেখতে বলা হয়েছে।' },
-    'account.providerHere':  { en: 'Claimed this profile', bn: 'এই প্রোফাইলের দাবিদার' },
-    'account.providerNote':  { en: 'A doctor who has claimed their profile takes part like any other member. They get no special reply channel and cannot edit or remove this account.', bn: 'যে ডাক্তার নিজের প্রোফাইল দাবি করেছেন তিনি অন্য সবার মতোই অংশ নেন। তাঁর জন্য আলাদা উত্তরের ব্যবস্থা নেই, এবং তিনি এই বিবরণ সম্পাদনা বা মুছতে পারেন না।' },
-    'account.relatedCond':   { en: 'Other people who wrote about this condition', bn: 'এই রোগ নিয়ে অন্যদের লেখা' },
-    'account.relatedDoc':    { en: 'Other accounts about this doctor', bn: 'এই ডাক্তার সম্পর্কে অন্যান্য বিবরণ' },
-    'account.relatedNote':   { en: 'Different people, different episodes. Read a few before drawing any conclusion.', bn: 'ভিন্ন মানুষ, ভিন্ন পর্ব। সিদ্ধান্তে আসার আগে কয়েকটি পড়ুন।' },
-    'account.bookmark':      { en: 'Save', bn: 'সংরক্ষণ' },
-    'account.bookmarkNote':  { en: 'Saved items are private to you.', bn: 'সংরক্ষিত জিনিস শুধু আপনিই দেখবেন।' },
-    'account.openEvidence':  { en: 'View processed copy', bn: 'প্রক্রিয়াকৃত কপি দেখুন' },
-    'account.evidenceOnly':  { en: 'You are seeing a processed copy. The original file is never public and is deleted after 90 days.', bn: 'আপনি একটি প্রক্রিয়াকৃত কপি দেখছেন। মূল ফাইল কখনো প্রকাশ্য নয় এবং ৯০ দিন পর মুছে ফেলা হয়।' },
+    /* Byline component. The name is rendered at body size in full ink; the
+       identity mode is a labelled chip, never colour alone (WCAG 1.4.1). */
+    'byline.identity.real':  { en: 'Real name', bn: 'আসল নাম' },
+    'byline.identity.pseudo':{ en: 'Username', bn: 'ইউজারনেম' },
+    'byline.anonSentence':   { en: 'Written anonymously', bn: 'নাম প্রকাশ না করে লেখা' },
+    'byline.otherBy':        { en: 'Other experiences by {name}', bn: '{name}-এর অন্যান্য অভিজ্ঞতা' },
+    'byline.published':      { en: 'Published', bn: 'প্রকাশিত' },
+    'byline.commentBy':      { en: 'Comment by', bn: 'মন্তব্য করেছেন' },
+    'byline.yourIdentity':   { en: 'Published as', bn: 'প্রকাশ হয়েছে' },
+    'experience.writtenBy':     { en: 'Written by', bn: 'লিখেছেন' },
+    'experience.otherAccounts': { en: 'other experiences by this author', bn: 'এই লেখকের অন্যান্য অভিজ্ঞতা' },
+    'experience.identityMode':  { en: 'Shown as', bn: 'যেভাবে দেখানো হচ্ছে' },
+    'experience.timeline':      { en: 'How this unfolded', bn: 'যেভাবে ঘটেছে' },
+    'experience.episode':       { en: 'Treatment episode', bn: 'চিকিৎসা-পর্ব' },
+    'experience.currentStatus': { en: 'Most recent status', bn: 'সর্বশেষ অবস্থা' },
+    'experience.currentNote':   { en: 'The newest update is the current one. Older updates stay in place so the story still reads in order.', bn: 'সর্বশেষ আপডেটটিই বর্তমান। পুরোনো আপডেটগুলো থেকে যায়, যাতে ঘটনাক্রম বোঝা যায়।' },
+    'experience.laterCare':     { en: 'Care received elsewhere afterwards', bn: 'পরে অন্য জায়গায় নেওয়া চিকিৎসা' },
+    'experience.laterCareNote': { en: 'Written by the same author. Naming a later doctor here does not create a review for them and does not change their summaries.', bn: 'একই লেখকের লেখা। এখানে পরবর্তী ডাক্তারের নাম থাকলেই তাঁর জন্য কোনো রিভিউ তৈরি হয় না বা তাঁর সারাংশ বদলায় না।' },
+    'experience.discussion':    { en: 'Discussion', bn: 'আলোচনা' },
+    'experience.commentBox':    { en: 'Add a comment', bn: 'মন্তব্য যোগ করুন' },
+    'experience.commentHint':   { en: 'Be specific about your own experience. This is not the place for medical instructions.', bn: 'নিজের অভিজ্ঞতা স্পষ্টভাবে লিখুন। এখানে চিকিৎসার নির্দেশনা দেওয়ার জায়গা নয়।' },
+    'experience.commentPost':   { en: 'Post comment', bn: 'মন্তব্য দিন' },
+    'experience.linkWarning':   { en: 'External link — RogiKotha has not checked where this goes.', bn: 'বাইরের লিংক — রোগীকথা এটি কোথায় যায় তা যাচাই করেনি।' },
+    'experience.dangerWarning': { en: 'This comment describes changing or stopping treatment. Do not act on it without your own doctor. A moderator has been asked to review it.', bn: 'এই মন্তব্যে চিকিৎসা বদলানো বা বন্ধ করার কথা আছে। নিজের ডাক্তারের পরামর্শ ছাড়া এটি অনুসরণ করবেন না। একজন মডারেটরকে দেখতে বলা হয়েছে।' },
+    'experience.providerHere':  { en: 'Claimed this profile', bn: 'এই প্রোফাইলের দাবিদার' },
+    'experience.providerNote':  { en: 'A doctor who has claimed their profile takes part like any other member. They get no special reply channel and cannot edit or remove this experience.', bn: 'যে ডাক্তার নিজের প্রোফাইল দাবি করেছেন তিনি অন্য সবার মতোই অংশ নেন। তাঁর জন্য আলাদা উত্তরের ব্যবস্থা নেই, এবং তিনি এই অভিজ্ঞতা সম্পাদনা বা মুছতে পারেন না।' },
+    'experience.relatedCond':   { en: 'Other people who wrote about this condition', bn: 'এই রোগ নিয়ে অন্যদের লেখা' },
+    'experience.relatedDoc':    { en: 'Other experiences about this doctor', bn: 'এই ডাক্তার সম্পর্কে অন্যান্য অভিজ্ঞতা' },
+    'experience.relatedNote':   { en: 'Different people, different episodes. Read a few before drawing any conclusion.', bn: 'ভিন্ন মানুষ, ভিন্ন পর্ব। সিদ্ধান্তে আসার আগে কয়েকটি পড়ুন।' },
+    'experience.bookmark':      { en: 'Save', bn: 'সংরক্ষণ' },
+    'experience.bookmarked':    { en: 'Saved', bn: 'সংরক্ষিত' },
+    /* STORY-COM-001 — one reply level, no threads inside threads. */
+    'experience.reply':         { en: 'Reply', bn: 'উত্তর দিন' },
+    'experience.replyCancel':   { en: 'Cancel reply', bn: 'উত্তর বাতিল' },
+    'experience.replyingTo':    { en: 'Replying to', bn: 'উত্তর দিচ্ছেন' },
+    /* FR-COM-003 / STORY-COM-001 — comment edit, delete, tombstone. */
+    'experience.editComment':   { en: 'Edit', bn: 'সম্পাদনা' },
+    'experience.deleteComment': { en: 'Delete', bn: 'মুছুন' },
+    'experience.saveComment':   { en: 'Save changes', bn: 'পরিবর্তন সংরক্ষণ' },
+    'experience.cancelEdit':    { en: 'Cancel', bn: 'বাতিল' },
+    'experience.edited':        { en: 'edited', bn: 'সম্পাদিত' },
+    'experience.commentGone':   { en: 'This comment was deleted by its author.', bn: 'এই মন্তব্যটি লেখক মুছে ফেলেছেন।' },
+    'experience.commentGoneWhy':{ en: 'The replies below it are kept, so the conversation still makes sense.', bn: 'এর নিচের উত্তরগুলো রাখা হয়েছে, যাতে আলোচনাটি বোধগম্য থাকে।' },
+    'experience.ownComment':    { en: 'Your comment', bn: 'আপনার মন্তব্য' },
+    'experience.replyLevel':    { en: 'Replies go one level deep. A reply cannot be replied to.', bn: 'উত্তর এক স্তর পর্যন্ত যায়। উত্তরের উত্তর দেওয়া যায় না।' },
+    /* STORY-USER-001 — public profile projection. */
+    'person.kicker':         { en: 'Public profile', bn: 'প্রকাশ্য প্রোফাইল' },
+    'person.contributions':  { en: 'Public experiences', bn: 'প্রকাশ্য অভিজ্ঞতা' },
+    'person.comments':       { en: 'Public comments', bn: 'প্রকাশ্য মন্তব্য' },
+    'person.empty':          { en: 'Nothing public yet.', bn: 'এখনো প্রকাশ্য কিছু নেই।' },
+    'person.allowlist':      { en: 'What appears here', bn: 'এখানে যা দেখা যায়' },
+    'person.allowlistNote':  { en: 'Only experiences published under this name are listed. Anonymous experiences are never linked to a profile, even when the same person wrote them. Drafts, saved items and notifications are private and never appear here.', bn: 'শুধু এই নামে প্রকাশিত অভিজ্ঞতাগুলোই এখানে থাকে। নামহীন অভিজ্ঞতা কখনো কোনো প্রোফাইলের সাথে যুক্ত হয় না, একই ব্যক্তি লিখলেও নয়। খসড়া, সংরক্ষিত জিনিস ও বিজ্ঞপ্তি ব্যক্তিগত — এখানে কখনো দেখা যায় না।' },
+    'person.noindex':        { en: 'This page asks search engines not to index it.', bn: 'এই পাতা সার্চ ইঞ্জিনকে ইনডেক্স না করতে বলে।' },
+    'person.viewPublic':     { en: 'View your public profile', bn: 'আপনার প্রকাশ্য প্রোফাইল দেখুন' },
+    'person.viewOf':         { en: 'View public profile', bn: 'প্রকাশ্য প্রোফাইল দেখুন' },
+    'experience.bookmarkNote':  { en: 'Saved items are private to you.', bn: 'সংরক্ষিত জিনিস শুধু আপনিই দেখবেন।' },
+    'experience.openEvidence':  { en: 'View processed copy', bn: 'প্রক্রিয়াকৃত কপি দেখুন' },
+    'experience.evidenceOnly':  { en: 'You are seeing a processed copy. The original file is never public and is deleted after 90 days.', bn: 'আপনি একটি প্রক্রিয়াকৃত কপি দেখছেন। মূল ফাইল কখনো প্রকাশ্য নয় এবং ৯০ দিন পর মুছে ফেলা হয়।' },
 
     /* ---- report + appeal ---- */
     'report.title':          { en: 'Report this', bn: 'এটি রিপোর্ট করুন' },
@@ -306,7 +372,7 @@
     'report.threat':         { en: 'Threat or harassment', bn: 'হুমকি বা হয়রানি' },
     'report.unsafeFile':     { en: 'Unsafe or wrong file', bn: 'অনিরাপদ বা ভুল ফাইল' },
     'report.factual':        { en: 'I disagree with what it says', bn: 'এতে যা বলা হয়েছে আমি একমত নই' },
-    'report.factualNote':    { en: 'Disagreement alone does not remove an account. It normally stays visible while a moderator looks at it.', bn: 'শুধু দ্বিমত থাকলেই বিবরণ সরানো হয় না। মডারেটর দেখার সময়ও সাধারণত এটি দৃশ্যমান থাকে।' },
+    'report.factualNote':    { en: 'Disagreement alone does not remove an experience. It normally stays visible while a moderator looks at it.', bn: 'শুধু দ্বিমত থাকলেই অভিজ্ঞতা সরানো হয় না। মডারেটর দেখার সময়ও সাধারণত এটি দৃশ্যমান থাকে।' },
     'report.spam':           { en: 'Spam or duplicate', bn: 'স্প্যাম বা ডুপ্লিকেট' },
     'report.impersonation':  { en: 'Impersonation', bn: 'ছদ্মপরিচয়' },
     'report.dangerous':      { en: 'Dangerous medical instruction', bn: 'বিপজ্জনক চিকিৎসা নির্দেশনা' },
@@ -315,9 +381,9 @@
     'report.evidenceNote':   { en: 'Only moderators see this. It never becomes public.', bn: 'শুধু মডারেটররা এটি দেখবেন। এটি কখনো প্রকাশ্য হয় না।' },
     'report.identityNote':   { en: 'Your name is never shown to the person you are reporting.', bn: 'যাঁকে রিপোর্ট করছেন তাঁকে আপনার নাম কখনো দেখানো হয় না।' },
     'report.submit':         { en: 'Send report', bn: 'রিপোর্ট পাঠান' },
-    'report.sent':           { en: 'Report sent. You will be told the outcome, without private enforcement details.', bn: 'রিপোর্ট পাঠানো হয়েছে। ফলাফল আপনাকে জানানো হবে, তবে ব্যবস্থার ব্যক্তিগত বিবরণ ছাড়া।' },
+    'report.sent':           { en: 'Report sent. You will be told the outcome, without private enforcement details.', bn: 'রিপোর্ট পাঠানো হয়েছে। ফলাফল আপনাকে জানানো হবে, তবে ব্যবস্থার ব্যক্তিগত অভিজ্ঞতা ছাড়া।' },
 
-    'appeal.title':          { en: 'A decision was made about your account', bn: 'আপনার বিবরণ নিয়ে একটি সিদ্ধান্ত হয়েছে' },
+    'appeal.title':          { en: 'A decision was made about your experience', bn: 'আপনার অভিজ্ঞতা নিয়ে একটি সিদ্ধান্ত হয়েছে' },
     'appeal.action':         { en: 'What happened', bn: 'যা হয়েছে' },
     'appeal.policyReason':   { en: 'The rule applied', bn: 'যে নিয়ম প্রয়োগ হয়েছে' },
     'appeal.noReporter':     { en: 'We do not tell you who reported it.', bn: 'কে রিপোর্ট করেছে তা আমরা জানাই না।' },
@@ -327,7 +393,7 @@
     'appeal.sent':           { en: 'Appeal received. A different reviewer will look at it and write you a new reason.', bn: 'আপিল পাওয়া গেছে। ভিন্ন একজন পর্যালোচক এটি দেখে আপনাকে নতুন কারণ জানাবেন।' },
 
     /* ---- my contributions ---- */
-    'mine.title':            { en: 'My contributions', bn: 'আমার লেখা' },
+    'mine.title':            { en: 'My writing', bn: 'আমার লেখা অভিজ্ঞতা' },
     'mine.published':        { en: 'Published', bn: 'প্রকাশিত' },
     'mine.drafts':           { en: 'Drafts', bn: 'খসড়া' },
     'mine.bookmarks':        { en: 'Saved', bn: 'সংরক্ষিত' },
@@ -335,7 +401,7 @@
     'mine.edit':             { en: 'Edit', bn: 'সম্পাদনা' },
     'mine.addFollowUp':      { en: 'Add an update', bn: 'আপডেট যোগ করুন' },
     'mine.delete':           { en: 'Delete', bn: 'মুছুন' },
-    'mine.deleteNote':       { en: 'Deleted accounts leave the summaries immediately. You can restore yours for 30 days.', bn: 'মুছে ফেলা বিবরণ সঙ্গে সঙ্গে সারাংশ থেকে সরে যায়। ৩০ দিনের মধ্যে আপনি সেটি ফিরিয়ে আনতে পারবেন।' },
+    'mine.deleteNote':       { en: 'Deleted experiences leave the summaries immediately. You can restore yours for 30 days.', bn: 'মুছে ফেলা অভিজ্ঞতা সঙ্গে সঙ্গে সারাংশ থেকে সরে যায়। ৩০ দিনের মধ্যে আপনি সেটি ফিরিয়ে আনতে পারবেন।' },
     'mine.draftNote':        { en: 'Drafts are encrypted and are removed after 30 days if you do not finish them.', bn: 'খসড়া এনক্রিপ্টেড থাকে; ৩০ দিনে শেষ না করলে মুছে যায়।' },
     'mine.draftExpires':     { en: 'expires in', bn: 'মেয়াদ শেষ' },
     'mine.days':             { en: 'days', bn: 'দিনে' },
@@ -343,26 +409,28 @@
     'mine.notifNote':        { en: 'Notifications are kept for 90 days.', bn: 'বিজ্ঞপ্তি ৯০ দিন রাখা হয়।' },
     'mine.empty':            { en: 'Nothing here yet.', bn: 'এখানে এখনো কিছু নেই।' },
     'mine.continue':         { en: 'Continue writing', bn: 'লেখা চালিয়ে যান' },
+    'mine.deleted':          { en: 'Deleted — removed from the summaries', bn: 'মুছে ফেলা — সারাংশ থেকে সরানো' },
+    'mine.restore':          { en: 'Restore', bn: 'ফিরিয়ে আনুন' },
 
     /* ---- condition page ---- */
     'condition.alsoCalled':  { en: 'Also written as', bn: 'যেভাবেও লেখা হয়' },
-    'condition.acrossAll':   { en: 'Across every account tagged with this condition', bn: 'এই রোগের ট্যাগ থাকা সব বিবরণ মিলিয়ে' },
+    'condition.acrossAll':   { en: 'Across every experience tagged with this condition', bn: 'এই রোগের ট্যাগ থাকা সব অভিজ্ঞতা মিলিয়ে' },
     'condition.medicines':   { en: 'Medicines people mentioned', bn: 'যেসব ওষুধের কথা এসেছে' },
     'condition.treatments':  { en: 'Treatments people mentioned', bn: 'যেসব চিকিৎসার কথা এসেছে' },
     'condition.symptoms':    { en: 'Symptoms people described', bn: 'যেসব উপসর্গের কথা এসেছে' },
     'condition.mentionNote': { en: 'Counted from what authors wrote. This is not a treatment guideline and not a recommendation.', bn: 'লেখকেরা যা লিখেছেন তা থেকে গোনা। এটি চিকিৎসার নির্দেশিকা নয়, কোনো সুপারিশও নয়।' },
     'condition.doctors':     { en: 'Doctors people wrote about', bn: 'যেসব ডাক্তার নিয়ে লেখা হয়েছে' },
     'condition.facilities':  { en: 'Facilities mentioned', bn: 'যেসব হাসপাতালের কথা এসেছে' },
-    'condition.accounts':    { en: 'Accounts about this condition', bn: 'এই রোগ নিয়ে বিবরণ' },
+    'condition.accounts':    { en: 'Experiences about this health topic', bn: 'এই রোগ নিয়ে অভিজ্ঞতা' },
     'condition.provisional': { en: 'Submitted wording, not yet mapped', bn: 'জমা দেওয়া শব্দ, এখনো মেলানো হয়নি' },
     'condition.provNote':    { en: 'People write in Bangla, English and Banglish. Wording we have not mapped yet is kept exactly as submitted and stays searchable.', bn: 'মানুষ বাংলা, ইংরেজি ও বাংলিশে লেখেন। যেসব শব্দ এখনো মেলানো হয়নি তা হুবহু রাখা হয় এবং খোঁজা যায়।' },
 
     'condition.treatedAt':      { en: 'Where this condition is treated', bn: 'এই রোগ যেখানে চিকিৎসা হয়' },
-    'condition.treatedAtNote':  { en: 'Districts, areas and hospitals pulled from the accounts above. Where someone actually went, not a directory.', bn: 'উপরের বিবরণগুলো থেকে নেওয়া জেলা, এলাকা ও হাসপাতাল। কেউ প্রকৃতপক্ষে কোথায় গেছেন সেটি — ডিরেক্টরি নয়।' },
+    'condition.treatedAtNote':  { en: 'Districts, areas and hospitals pulled from the experiences above. Where someone actually went, not a directory.', bn: 'উপরের অভিজ্ঞতাগুলো থেকে নেওয়া জেলা, এলাকা ও হাসপাতাল। কেউ প্রকৃতপক্ষে কোথায় গেছেন সেটি — ডিরেক্টরি নয়।' },
     'condition.districts':      { en: 'Districts', bn: 'জেলা' },
     'condition.areas':          { en: 'Areas', bn: 'এলাকা' },
     'condition.hospitals':      { en: 'Hospitals & chambers', bn: 'হাসপাতাল ও চেম্বার' },
-    'condition.noGeo':          { en: 'Not enough location data yet — accounts don\'t always name the place.', bn: 'এখনো পর্যাপ্ত অবস্থানের তথ্য নেই — বিবরণে সবসময় জায়গার নাম থাকে না।' },
+    'condition.noGeo':          { en: 'Not enough location data yet — experiences don\'t always name the place.', bn: 'এখনো পর্যাপ্ত অবস্থানের তথ্য নেই — অভিজ্ঞতায় সবসময় জায়গার নাম থাকে না।' },
     'condition.specialtyTag':   { en: 'Usually seen by', bn: 'সাধারণত যাওয়া হয়' },
 
     /* ---- facilities ---- */
@@ -375,7 +443,7 @@
     'facility.criteria':     { en: 'What visitors described', bn: 'যাঁরা গিয়েছেন তাঁরা যা বলেছেন' },
     'facility.doctorsHere':  { en: 'Doctors who practise here', bn: 'যেসব ডাক্তার এখানে বসেন' },
     'facility.doctorsNote':  { en: 'Listed for convenience only. A facility’s service record says nothing about these doctors.', bn: 'শুধু সুবিধার জন্য তালিকা। প্রতিষ্ঠানের সেবার রেকর্ড এই ডাক্তারদের সম্পর্কে কিছু বলে না।' },
-    'facility.accounts':     { en: 'Visit accounts', bn: 'যাওয়ার অভিজ্ঞতা' },
+    'facility.accounts':     { en: 'Visits', bn: 'যাওয়ার অভিজ্ঞতা' },
     'facility.write':        { en: 'Describe your visit', bn: 'আপনার অভিজ্ঞতা লিখুন' },
 
     'crit.staff':            { en: 'Staff behaviour', bn: 'কর্মীদের ব্যবহার' },
@@ -410,7 +478,7 @@
     'compose.addSpecialty':  { en: 'Specialty', bn: 'বিশেষত্ব' },
     'compose.addChamber':    { en: 'Where they see patients', bn: 'কোথায় রোগী দেখেন' },
     'compose.addSubmit':     { en: 'Submit for review', bn: 'যাচাইয়ের জন্য পাঠান' },
-    'compose.addPending':    { en: 'Submitted. An administrator checks it for duplicates and obvious abuse before it appears. Your account stays a private draft until then.', bn: 'জমা হয়েছে। প্রকাশের আগে অ্যাডমিন ডুপ্লিকেট ও স্পষ্ট অপব্যবহার যাচাই করবেন। ততক্ষণ আপনার বিবরণ ব্যক্তিগত খসড়া থাকবে।' },
+    'compose.addPending':    { en: 'Submitted. An administrator checks it for duplicates and obvious abuse before it appears. Your experience stays a private draft until then.', bn: 'জমা হয়েছে। প্রকাশের আগে অ্যাডমিন ডুপ্লিকেট ও স্পষ্ট অপব্যবহার যাচাই করবেন। ততক্ষণ আপনার অভিজ্ঞতা ব্যক্তিগত খসড়া থাকবে।' },
 
     'compose.safety':        { en: 'Automatic checks', bn: 'স্বয়ংক্রিয় যাচাই' },
     'compose.safetyNote':    { en: 'Run before anything is published. These are not judgements about your story.', bn: 'প্রকাশের আগে চালানো হয়। এগুলো আপনার লেখার বিষয়ে কোনো রায় নয়।' },
@@ -420,7 +488,7 @@
     'compose.safetyEmerg':   { en: 'You mentioned something urgent', bn: 'আপনি জরুরি কিছু উল্লেখ করেছেন' },
     'compose.safetyEmergFix':{ en: 'If this is happening now, call 999. You can still publish — this does not block you.', bn: 'এটি এখন ঘটে থাকলে ৯৯৯-এ কল করুন। আপনি প্রকাশ করতে পারবেন — এটি আটকায় না।' },
     'compose.safetyDup':     { en: 'You already wrote about this doctor for this condition', bn: 'এই ডাক্তারের এই রোগ নিয়ে আপনি আগেই লিখেছেন' },
-    'compose.safetyDupFix':  { en: 'A second account is only for a different condition or a different treatment episode. Add an update to the first one instead?', bn: 'দ্বিতীয় বিবরণ কেবল ভিন্ন রোগ বা ভিন্ন চিকিৎসা-পর্বের জন্য। বরং আগেরটিতে একটি আপডেট যোগ করবেন?' },
+    'compose.safetyDupFix':  { en: 'A second experience is only for a different condition or a different treatment episode. Add an update to the first one instead?', bn: 'দ্বিতীয় অভিজ্ঞতা কেবল ভিন্ন রোগ বা ভিন্ন চিকিৎসা-পর্বের জন্য। বরং আগেরটিতে একটি আপডেট যোগ করবেন?' },
     'compose.fixNow':        { en: 'Fix it', bn: 'ঠিক করুন' },
     'compose.ignore':        { en: 'Leave as it is', bn: 'যেমন আছে থাক' },
 
@@ -440,7 +508,7 @@
 
     'profile.claimThis':     { en: 'Is this you?', bn: 'এটি কি আপনি?' },
     'profile.claimNote':     { en: 'Doctors can claim their profile and correct the facts. Claiming does not verify BMDC registration and gives no control over what patients wrote.', bn: 'ডাক্তারেরা নিজের প্রোফাইল দাবি করে তথ্য সংশোধন করতে পারেন। দাবি করলে বিএমডিসি রেজিস্ট্রেশন যাচাই হয় না, এবং রোগীদের লেখার উপর কোনো নিয়ন্ত্রণও আসে না।' },
-    'profile.filterAccounts':{ en: 'Filter these accounts', bn: 'এই বিবরণগুলো ছাঁকুন' },
+    'profile.filterAccounts':{ en: 'Filter these experiences', bn: 'এই অভিজ্ঞতাগুলো ছাঁকুন' },
     'profile.hasDocuments':  { en: 'Has documents', bn: 'কাগজপত্র আছে' },
     'profile.breakdown':     { en: 'By condition', bn: 'রোগ অনুযায়ী' },
     'profile.facilities':    { en: 'Where they practise', bn: 'যেখানে বসেন' },
@@ -502,7 +570,7 @@
     'admin.pl.published':    { en: 'Public copy ready', bn: 'প্রকাশ্য কপি প্রস্তুত' },
     'admin.failClosed':      { en: 'Scanner unavailable — failed closed', bn: 'স্ক্যানার পাওয়া যায়নি — আটকে দেওয়া হয়েছে' },
     'admin.failClosedNote':  { en: 'When scanning cannot run, the file is held. It is never published on the assumption that it is probably fine.', bn: 'স্ক্যান করা না গেলে ফাইল আটকে রাখা হয়। “সম্ভবত ঠিক আছে” ধরে নিয়ে কখনো প্রকাশ করা হয় না।' },
-    'admin.textStays':       { en: 'The written account stayed public throughout. Only the file was held.', bn: 'লেখাটি সারাক্ষণ প্রকাশ্য ছিল। শুধু ফাইলটি আটকে ছিল।' },
+    'admin.textStays':       { en: 'The written experience stayed public throughout. Only the file was held.', bn: 'লেখাটি সারাক্ষণ প্রকাশ্য ছিল। শুধু ফাইলটি আটকে ছিল।' },
     'admin.retention':       { en: 'Original deleted after 90 days', bn: 'মূল ফাইল ৯০ দিন পর মুছে যায়' },
     'admin.legalHold':       { en: 'Legal hold', bn: 'আইনি হোল্ড' },
     'admin.legalHoldNote':   { en: 'Retention is suspended and the item is hidden publicly while preserved.', bn: 'মেয়াদ স্থগিত থাকে এবং সংরক্ষিত অবস্থায় জিনিসটি প্রকাশ্যে লুকানো থাকে।' },
@@ -511,9 +579,15 @@
     'admin.newProfileNote':  { en: 'Check for duplicates and obvious abuse. This is not registration verification.', bn: 'ডুপ্লিকেট ও স্পষ্ট অপব্যবহার দেখুন। এটি রেজিস্ট্রেশন যাচাই নয়।' },
     'admin.possibleDup':     { en: 'Possible duplicate of', bn: 'সম্ভাব্য ডুপ্লিকেট' },
     'admin.merge':           { en: 'Merge into canonical', bn: 'মূল প্রোফাইলে মিলিয়ে দিন' },
-    'admin.mergeNote':       { en: 'Accounts, tags, chambers and claims move across. The old address redirects and the change is audited.', bn: 'বিবরণ, ট্যাগ, চেম্বার ও দাবি স্থানান্তর হয়। পুরোনো ঠিকানা রিডাইরেক্ট হয় এবং পরিবর্তন অডিট হয়।' },
+    'admin.mergeNote':       { en: 'Experiences, tags, chambers and claims move across. The old address redirects and the change is audited.', bn: 'অভিজ্ঞতা, ট্যাগ, চেম্বার ও দাবি স্থানান্তর হয়। পুরোনো ঠিকানা রিডাইরেক্ট হয় এবং পরিবর্তন অডিট হয়।' },
     'admin.approve':         { en: 'Approve', bn: 'অনুমোদন' },
     'admin.reject':          { en: 'Reject', bn: 'বাতিল' },
+    'admin.done.approved':   { en: 'Approved — written to the audit log', bn: 'অনুমোদিত — অডিট লগে লেখা হয়েছে' },
+    'admin.done.rejected':   { en: 'Rejected — written to the audit log', bn: 'বাতিল — অডিট লগে লেখা হয়েছে' },
+    'admin.done.merged':     { en: 'Merged — written to the audit log', bn: 'মিলিয়ে দেওয়া হয়েছে — অডিট লগে লেখা হয়েছে' },
+    'admin.done.revealed':   { en: 'Revealed — your name and reason are in the audit log', bn: 'প্রকাশ করা হয়েছে — আপনার নাম ও কারণ অডিট লগে আছে' },
+    'admin.done.requested':  { en: 'Access requested — logged for approval', bn: 'প্রবেশের অনুরোধ — অনুমোদনের জন্য লগ করা হয়েছে' },
+    'admin.done.acked':      { en: 'Acknowledged', bn: 'গৃহীত' },
     'admin.claims':          { en: 'Claim requests', bn: 'দাবির অনুরোধ' },
     'admin.protectedFields': { en: 'Protected field changes', bn: 'সুরক্ষিত তথ্যের পরিবর্তন' },
     'admin.protectedNote':   { en: 'Identity, BMDC number, degrees and specialty need approval. Operational details do not.', bn: 'পরিচয়, বিএমডিসি নম্বর, ডিগ্রি ও বিশেষত্ব অনুমোদন লাগে। কার্যক্রমের তথ্যে লাগে না।' },
@@ -718,7 +792,12 @@
     { id: 'c4', name: { en: 'Eczema', bn: 'একজিমা' }, aliases: ['eczema', 'একজিমা', 'chulkani'] },
     { id: 'c5', name: { en: 'Frozen shoulder', bn: 'ফ্রোজেন শোল্ডার' }, aliases: ['shoulder pain', 'কাঁধে ব্যথা'] },
     { id: 'c6', name: { en: 'Irritable bowel syndrome', bn: 'আইবিএস' }, aliases: ['ibs', 'পেটের সমস্যা'] },
-    { id: 'c7', name: { en: 'Typhoid fever', bn: 'টাইফয়েড জ্বর' }, aliases: ['typhoid', 'টাইফয়েড'] }
+    { id: 'c7', name: { en: 'Typhoid fever', bn: 'টাইফয়েড জ্বর' }, aliases: ['typhoid', 'টাইফয়েড'] },
+    /* Deliberately has no experiences written about it. The Discover tile
+       grid filters topics down to those with at least one, so an empty
+       topic is invisible there; the #topics index lists it and offers the
+       'be the first' path. Without this row that difference is untestable. */
+    { id: 'c8', name: { en: 'Gastric ulcer', bn: 'গ্যাস্ট্রিক আলসার' }, aliases: ['ulcer', 'গ্যাস্ট্রিক', 'gastric'] }
   ];
 
   /* Accounts. `body` fields are written the way people actually write —
@@ -1066,6 +1145,22 @@
    * link, one a comment that trips the dangerous-instruction warning.
    * ------------------------------------------------------------- */
   var comments = [
+    /* The demo user's own comments on r1, so comment edit/delete/tombstone
+       (FR-COM-003, STORY-COM-001) is demonstrable on load. k8 has a reply
+       (k9), so deleting it must leave a tombstone; k10 has none and is
+       removed outright. */
+    { id: 'k8', reviewId: 'r1', author: { en: 'shirin_88', bn: 'shirin_88' }, identity: 'pseudo',
+      when: { en: 'June 2026', bn: 'জুন ২০২৬' }, likes: 3,
+      body: { en: 'To be clear about my own case: the timing change was her suggestion, not mine, and she checked my readings for six weeks before we kept it.', bn: 'নিজের ক্ষেত্রে পরিষ্কার করে বলি: সময় বদলানোর পরামর্শ উনিই দিয়েছিলেন, আমি নই, এবং রাখার আগে ছয় সপ্তাহ আমার রিডিং দেখেছেন।' } },
+
+    { id: 'k9', reviewId: 'r1', parentId: 'k8', author: { en: 'nadia_k', bn: 'nadia_k' }, identity: 'pseudo',
+      when: { en: 'June 2026', bn: 'জুন ২০২৬' }, likes: 2,
+      body: { en: 'Six weeks of checking is the part my own doctor skipped. Useful to know it can be done properly.', bn: 'ছয় সপ্তাহ ধরে দেখার অংশটাই আমার ডাক্তার বাদ দিয়েছিলেন। এটা ঠিকভাবে করা যায় জেনে ভালো লাগল।' } },
+
+    { id: 'k10', reviewId: 'r1', author: { en: 'shirin_88', bn: 'shirin_88' }, identity: 'pseudo',
+      when: { en: 'July 2026', bn: 'জুলাই ২০২৬' }, likes: 0,
+      body: { en: 'Adding one thing I forgot: the clinic sent a reminder the day before each follow-up.', bn: 'একটা কথা ভুলে গিয়েছিলাম: প্রতিটি ফলো-আপের আগের দিন ক্লিনিক থেকে মনে করিয়ে দেওয়া হতো।' } },
+
     { id: 'k1', reviewId: 'r1', author: { en: 'rumana_h', bn: 'rumana_h' }, identity: 'pseudo',
       when: { en: 'May 2026', bn: 'মে ২০২৬' }, likes: 7,
       body: { en: 'The timing thing happened to me too. Nobody had ever asked when I took the tablet, only whether I took it.', bn: 'সময়ের ব্যাপারটা আমার সঙ্গেও হয়েছে। কেউ কখনো জিজ্ঞেস করেনি আমি কখন ট্যাবলেট খাই, শুধু খাই কি না তাই জিজ্ঞেস করেছে।' } },
@@ -1142,11 +1237,11 @@
     bookmarks: ['r6', 'r9'],
     notifications: [
       { id: 'n1', kind: 'evidence', when: { en: '2 days ago', bn: '২ দিন আগে' }, unread: true,
-        text: { en: 'Your HbA1c result finished processing and is now attached to your account.', bn: 'আপনার HbA1c ফলাফলের প্রক্রিয়াকরণ শেষ হয়েছে এবং এটি এখন আপনার বিবরণে যুক্ত।' } },
+        text: { en: 'Your HbA1c result finished processing and is now attached to your experience.', bn: 'আপনার HbA1c ফলাফলের প্রক্রিয়াকরণ শেষ হয়েছে এবং এটি এখন আপনার অভিজ্ঞতায় যুক্ত।' } },
       { id: 'n2', kind: 'discussion', when: { en: '5 days ago', bn: '৫ দিন আগে' }, unread: true,
-        text: { en: 'Dr. Farhana Rahman commented on your account. Claimed profiles take part like any other member.', bn: 'ডা. ফারহানা রহমান আপনার বিবরণে মন্তব্য করেছেন। দাবিকৃত প্রোফাইল অন্য সবার মতোই অংশ নেয়।' } },
+        text: { en: 'Dr. Farhana Rahman commented on your experience. Claimed profiles take part like any other member.', bn: 'ডা. ফারহানা রহমান আপনার অভিজ্ঞতায় মন্তব্য করেছেন। দাবিকৃত প্রোফাইল অন্য সবার মতোই অংশ নেয়।' } },
       { id: 'n3', kind: 'moderation', when: { en: '1 week ago', bn: '১ সপ্তাহ আগে' }, unread: false,
-        text: { en: 'A comment on your account was hidden for giving dangerous medical instructions. Your account was not affected.', bn: 'বিপজ্জনক চিকিৎসা নির্দেশনা দেওয়ার কারণে আপনার বিবরণের একটি মন্তব্য লুকানো হয়েছে। আপনার বিবরণে কোনো প্রভাব পড়েনি।' } },
+        text: { en: 'A comment on your experience was hidden for giving dangerous medical instructions. Your experience was not affected.', bn: 'বিপজ্জনক চিকিৎসা নির্দেশনা দেওয়ার কারণে আপনার অভিজ্ঞতার একটি মন্তব্য লুকানো হয়েছে। আপনার অভিজ্ঞতায় কোনো প্রভাব পড়েনি।' } },
       { id: 'n4', kind: 'security', when: { en: '2 weeks ago', bn: '২ সপ্তাহ আগে' }, unread: false,
         text: { en: 'New sign-in from a device in Dhaka. If this was not you, change your password.', bn: 'ঢাকার একটি ডিভাইস থেকে নতুন সাইন-ইন। এটি আপনি না হলে পাসওয়ার্ড বদলান।' } },
       { id: 'n5', kind: 'draft', when: { en: '3 weeks ago', bn: '৩ সপ্তাহ আগে' }, unread: false,
@@ -1209,7 +1304,7 @@
         targetKind: 'comment', targetId: 'k3', reviewId: 'r1',
         reasons: ['dangerous', 'spam'],
         summary: { en: 'Comment tells readers to stop prescribed tablets and use a herbal mix instead.', bn: 'মন্তব্যে পাঠকদের নির্ধারিত ট্যাবলেট বন্ধ করে হারবাল মিশ্রণ খেতে বলা হয়েছে।' },
-        note: { en: 'Dangerous instruction. Default policy keeps it visible with a strong warning and priority review; it was hidden here because the account also matched spam signals.', bn: 'বিপজ্জনক নির্দেশনা। ডিফল্ট নীতিতে এটি কড়া সতর্কতাসহ দৃশ্যমান থাকে ও অগ্রাধিকারে দেখা হয়; এখানে স্প্যামের লক্ষণ মেলায় লুকানো হয়েছে।' } },
+        note: { en: 'Dangerous instruction. Default policy keeps it visible with a strong warning and priority review; it was hidden here because the experience also matched spam signals.', bn: 'বিপজ্জনক নির্দেশনা। ডিফল্ট নীতিতে এটি কড়া সতর্কতাসহ দৃশ্যমান থাকে ও অগ্রাধিকারে দেখা হয়; এখানে স্প্যামের লক্ষণ মেলায় লুকানো হয়েছে।' } },
 
       { id: 'MOD-2038', lane: 'critical', ageHours: 9, reports: 1, autoHidden: true,
         targetKind: 'evidence', targetId: 'e6', reviewId: 'r8',
@@ -1220,8 +1315,8 @@
       { id: 'MOD-2033', lane: 'standard', ageHours: 41, reports: 6, autoHidden: false, coordinated: true,
         targetKind: 'account', targetId: 'r8', reviewId: 'r8',
         reasons: ['factual', 'factual', 'impersonation'],
-        summary: { en: 'Author says a steroid cream was the wrong choice. Six reports disagree with the account.', bn: 'লেখক বলছেন স্টেরয়েড ক্রিম ভুল ছিল। ছয়টি রিপোর্ট বিবরণটির সঙ্গে দ্বিমত।' },
-        note: { en: 'A factual disagreement is not grounds for removal. It stays public while under review. Five of the six reporting accounts were created in the same week.', bn: 'বিষয়গত দ্বিমত সরানোর কারণ নয়। পর্যালোচনার সময়ও এটি প্রকাশ্য থাকে। ছয়টির মধ্যে পাঁচটি রিপোর্টকারী অ্যাকাউন্ট একই সপ্তাহে তৈরি।' } },
+        summary: { en: 'Author says a steroid cream was the wrong choice. Six reports disagree with the experience.', bn: 'লেখক বলছেন স্টেরয়েড ক্রিম ভুল ছিল। ছয়টি রিপোর্ট অভিজ্ঞতাটির সঙ্গে দ্বিমত।' },
+        note: { en: 'A factual disagreement is not grounds for removal. It stays public while under review. Five of the six reporting experiences were created in the same week.', bn: 'বিষয়গত দ্বিমত সরানোর কারণ নয়। পর্যালোচনার সময়ও এটি প্রকাশ্য থাকে। ছয়টির মধ্যে পাঁচটি রিপোর্টকারী অ্যাকাউন্ট একই সপ্তাহে তৈরি।' } },
 
       { id: 'MOD-2029', lane: 'standard', ageHours: 62, reports: 1, autoHidden: false,
         targetKind: 'profile', targetId: 'd3',
@@ -1232,7 +1327,7 @@
       { id: 'MOD-2011', lane: 'appeal', ageHours: 96, reports: 0, autoHidden: false,
         targetKind: 'account', targetId: 'r4', reviewId: 'r4',
         reasons: [],
-        appealText: { en: 'My account was hidden for naming a medicine. I only described what I was actually given and what happened to me. I did not tell anyone else what to take.', bn: 'ওষুধের নাম লেখার কারণে আমার বিবরণ লুকানো হয়েছে। আমি শুধু আমাকে যা দেওয়া হয়েছিল এবং আমার যা হয়েছে তাই লিখেছি। কাউকে কিছু খেতে বলিনি।' },
+        appealText: { en: 'My experience was hidden for naming a medicine. I only described what I was actually given and what happened to me. I did not tell anyone else what to take.', bn: 'ওষুধের নাম লেখার কারণে আমার অভিজ্ঞতা লুকানো হয়েছে। আমি শুধু আমাকে যা দেওয়া হয়েছিল এবং আমার যা হয়েছে তাই লিখেছি। কাউকে কিছু খেতে বলিনি।' },
         summary: { en: 'Author appeals a temporary hide.', bn: 'লেখক সাময়িক লুকানোর বিরুদ্ধে আপিল করেছেন।' },
         note: { en: 'Appeals get a fresh review by someone who did not take the original decision, and a newly written reason.', bn: 'আপিল নতুন করে দেখেন এমন কেউ যিনি আগের সিদ্ধান্ত নেননি, এবং নতুন করে কারণ লেখা হয়।' } }
     ],
@@ -1266,7 +1361,7 @@
       ],
       claims: [
         { id: 'C-58', doctorId: 'd5', method: { en: 'Verified through the chamber phone number listed publicly', bn: 'প্রকাশ্যে দেওয়া চেম্বারের ফোন নম্বর দিয়ে যাচাই' },
-          note: { en: 'Claiming is independent of BMDC verification and grants no control over patient accounts.', bn: 'দাবি করা বিএমডিসি যাচাই থেকে আলাদা এবং রোগীদের বিবরণে কোনো নিয়ন্ত্রণ দেয় না।' } }
+          note: { en: 'Claiming is independent of BMDC verification and grants no control over patient experiences.', bn: 'দাবি করা বিএমডিসি যাচাই থেকে আলাদা এবং রোগীদের অভিজ্ঞতায় কোনো নিয়ন্ত্রণ দেয় না।' } }
       ],
       fieldChanges: [
         { id: 'F-77', doctorId: 'd1', field: { en: 'Specialty', bn: 'বিশেষত্ব' },
@@ -1528,7 +1623,7 @@
     });
   }
 
-  /* Anonymous accounts are never linked to each other, even though they
+  /* Anonymous experiences are never linked to each other, even though they
      share a stable alias behind the scenes. */
   function accountsByAuthor(review) {
     if (!review || review.identity === 'anon') { return []; }

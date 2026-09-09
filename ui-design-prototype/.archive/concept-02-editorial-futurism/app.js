@@ -628,7 +628,7 @@
     /* Sections 1–13, in the order a reader needs them. */
     host.innerHTML =
       '<section class="a-head">' +
-        '<span class="kicker">' + esc(T('account.episode')) + ' · ' + esc(P(c.name)) + '</span>' +
+        '<span class="kicker">' + esc(T('experience.episode')) + ' · ' + esc(P(c.name)) + '</span>' +
         '<h1 class="a-title display">' + esc(P(r.title)) + '</h1>' +
         '<div class="a-flags">' +
           badge(r.sentiment, T('sentiment.' + r.sentiment)) +
@@ -647,52 +647,52 @@
 
           '<p class="story story-lead">' + esc(P(r.body)) + '</p>' +
 
-          (r.timeline ? '<h2 class="section-head">' + esc(T('account.timeline')) + '</h2>' +
+          (r.timeline ? '<h2 class="section-head">' + esc(T('experience.timeline')) + '</h2>' +
             '<ul class="chapters">' + r.timeline.map(function (t) {
               return '<li><span class="k">' + esc(T(CHAPTER_KEYS[t.k] || 'review.readFull')) + '</span>' +
                 '<p>' + esc(L(t)) + '</p></li>';
             }).join('') + '</ul>' : '') +
 
           (chain.length ? '<h2 class="section-head">' + esc(T('label.followUp')) + '</h2>' +
-            '<p class="note">' + esc(T('account.currentNote')) + '</p>' +
+            '<p class="note">' + esc(T('experience.currentNote')) + '</p>' +
             '<ul class="spine">' + chain.map(function (fu, i) {
               var isCurrent = i === chain.length - 1;
               return '<li class="' + (isCurrent ? 'current' : '') + '">' +
-                '<span class="when">' + esc(P(fu.date)) + (isCurrent ? ' · ' + esc(T('account.currentStatus')) : '') + '</span>' +
+                '<span class="when">' + esc(P(fu.date)) + (isCurrent ? ' · ' + esc(T('experience.currentStatus')) : '') + '</span>' +
                 '<p>' + esc(L(fu)) + '</p></li>';
             }).join('') + '</ul>' : '') +
 
-          (later ? '<h2 class="section-head">' + esc(T('account.laterCare')) + '</h2>' +
+          (later ? '<h2 class="section-head">' + esc(T('experience.laterCare')) + '</h2>' +
             '<div class="callout"><b>' + esc(P(later.provider)) + '</b>' + esc(L(later)) + '</div>' +
-            '<p class="note" style="margin-top:10px">' + esc(T('account.laterCareNote')) + '</p>' : '') +
+            '<p class="note" style="margin-top:10px">' + esc(T('experience.laterCareNote')) + '</p>' : '') +
 
           evidenceSection(r) +
 
-          '<h2 class="section-head">' + esc(T('account.discussion')) + ' <span style="font-weight:400;font-size:.6em;color:var(--ink-faint)">' + bn(thread.length) + '</span></h2>' +
-          '<p class="note">' + esc(T('account.providerNote')) + '</p>' +
+          '<h2 class="section-head">' + esc(T('experience.discussion')) + ' <span style="font-weight:400;font-size:.6em;color:var(--ink-faint)">' + bn(thread.length) + '</span></h2>' +
+          '<p class="note">' + esc(T('experience.providerNote')) + '</p>' +
           '<div>' + (thread.length ? thread.map(commentHtml).join('') : '<p class="note">' + esc(T('mine.empty')) + '</p>') + '</div>' +
 
           '<div class="composer-box">' +
-            '<label class="sr-only" for="new-comment">' + esc(T('account.commentBox')) + '</label>' +
-            '<textarea id="new-comment" placeholder="' + esc(T('account.commentBox')) + '"></textarea>' +
-            '<p class="note" style="margin:8px 0">' + esc(T('account.commentHint')) + '</p>' +
-            '<button class="btn small" type="button">' + esc(T('account.commentPost')) + '</button>' +
+            '<label class="sr-only" for="new-comment">' + esc(T('experience.commentBox')) + '</label>' +
+            '<textarea id="new-comment" placeholder="' + esc(T('experience.commentBox')) + '"></textarea>' +
+            '<p class="note" style="margin:8px 0">' + esc(T('experience.commentHint')) + '</p>' +
+            '<button class="btn small" type="button">' + esc(T('experience.commentPost')) + '</button>' +
           '</div>' +
 
           '<div class="reactions">' +
             reactBtn(r.id + ':up', T('review.helpful'), r.likes) +
             reactBtn(r.id + ':down', T('review.notHelpful'), r.dislikes) +
             '<button class="react" type="button" data-report="account:' + r.id + '">' + esc(T('review.report')) + '</button>' +
-            '<button class="react" type="button">' + esc(T('account.bookmark')) + '</button>' +
+            '<button class="react" type="button">' + esc(T('experience.bookmark')) + '</button>' +
           '</div>' +
           '<p class="note" style="margin-top:10px">' + esc(T('review.reactionNote')) + '</p>' +
 
-          '<h2 class="section-head">' + esc(T('account.relatedCond')) + '</h2>' +
-          '<p class="note" style="margin-bottom:14px">' + esc(T('account.relatedNote')) + '</p>' +
+          '<h2 class="section-head">' + esc(T('experience.relatedCond')) + '</h2>' +
+          '<p class="note" style="margin-bottom:14px">' + esc(T('experience.relatedNote')) + '</p>' +
           (related.length ? '<div class="related-grid">' + related.map(relatedCard).join('') + '</div>'
             : '<p class="note">' + esc(T('mine.empty')) + '</p>') +
 
-          (sameDoctor.length ? '<h2 class="section-head">' + esc(T('account.relatedDoc')) + '</h2>' +
+          (sameDoctor.length ? '<h2 class="section-head">' + esc(T('experience.relatedDoc')) + '</h2>' +
             '<div class="related-grid">' + sameDoctor.map(relatedCard).join('') + '</div>' : '') +
 
           '<div class="callout warn" style="margin-top:26px">' + esc(T('disclaimer.long')) + '</div>' +
@@ -701,8 +701,8 @@
         /* The margin: provenance, dates, identity and warnings sit beside
            the story rather than interrupting it. */
         '<aside class="a-margin">' +
-          '<div><span class="k">' + esc(T('account.writtenBy')) + '</span><span class="v">' + esc(T('rel.' + r.relationship)) + '</span></div>' +
-          '<div><span class="k">' + esc(T('account.identityMode')) + '</span><span class="v">' + esc(P(r.author)) + '</span>' +
+          '<div><span class="k">' + esc(T('experience.writtenBy')) + '</span><span class="v">' + esc(T('rel.' + r.relationship)) + '</span></div>' +
+          '<div><span class="k">' + esc(T('experience.identityMode')) + '</span><span class="v">' + esc(P(r.author)) + '</span>' +
             (r.identity === 'anon' ? '<br><span>' + esc(T('compose.identity.anonNote')) + '</span>' : '') + '</div>' +
           '<div><span class="k">' + esc(T('review.episodeDate')) + '</span><span class="v">' + esc(P(r.period)) + '</span></div>' +
           '<div><span class="k">' + esc(state.lang === 'bn' ? 'প্রকাশ' : 'Published') + '</span><span class="v">' + esc(P(r.posted)) + '</span></div>' +
@@ -714,7 +714,7 @@
           '<div><span class="k">' + esc(T('review.tags')) + '</span>' +
             '<span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">' +
             r.tags.map(function (t) { return '<span class="tag">' + esc(L(t)) + '</span>'; }).join('') + '</span></div>' +
-          (others.length ? '<div><span class="k">' + esc(T('account.otherAccounts')) + '</span>' +
+          (others.length ? '<div><span class="k">' + esc(T('experience.otherAccounts')) + '</span>' +
             others.map(function (o) {
               return '<button class="link-btn" type="button" data-account="' + o.id + '" style="display:block;text-align:start">' + esc(P(o.title)) + '</button>';
             }).join('') + '</div>' : '') +
@@ -745,7 +745,7 @@
               (e.state === 'failed'
                 ? esc(P(e.failReason)) + ' ' + esc(T('ev.failNote'))
                 : bn(e.pages) + ' ' + esc(state.lang === 'bn' ? 'পাতা' : 'pages')) + '</span>' +
-            (e.state === 'failed' ? '' : '<button class="btn small ghost" type="button">' + esc(T('account.openEvidence')) + '</button>') +
+            (e.state === 'failed' ? '' : '<button class="btn small ghost" type="button">' + esc(T('experience.openEvidence')) + '</button>') +
           '</div>';
         }).join('') + '</div>';
     }).join('');
@@ -753,7 +753,7 @@
     return '<h2 class="section-head">' + esc(T('filter.evidence')) + '</h2>' +
       '<div class="callout warn"><b>' + esc(T('evidence.status')) + '</b>' + esc(T('evidence.notice')) + '</div>' +
       '<div class="ev-groups" style="margin-top:12px">' + groups + '</div>' +
-      '<p class="note" style="margin-top:10px">' + esc(T('account.evidenceOnly')) + '</p>';
+      '<p class="note" style="margin-top:10px">' + esc(T('experience.evidenceOnly')) + '</p>';
   }
 
   function commentHtml(k) {
@@ -766,12 +766,12 @@
     return '<article class="comment ' + (k.dangerous ? 'flagged' : '') + '">' +
       '<div class="comment-head">' +
         '<span class="name">' + esc(P(k.author)) + '</span>' +
-        (k.providerFor ? badge('plain', T('account.providerHere')) : '') +
+        (k.providerFor ? badge('plain', T('experience.providerHere')) : '') +
         '<span>' + esc(P(k.when)) + '</span>' +
       '</div>' +
-      (k.dangerous ? '<div class="callout danger" style="margin-bottom:10px"><b>⚠ ' + esc(T('report.dangerous')) + '</b>' + esc(T('account.dangerWarning')) + '</div>' : '') +
+      (k.dangerous ? '<div class="callout danger" style="margin-bottom:10px"><b>⚠ ' + esc(T('report.dangerous')) + '</b>' + esc(T('experience.dangerWarning')) + '</div>' : '') +
       '<p>' + body + '</p>' +
-      (k.link ? '<p class="note" style="margin-top:8px">⚠ ' + esc(T('account.linkWarning')) + ' <code>' + esc(k.link) + '</code></p>' : '') +
+      (k.link ? '<p class="note" style="margin-top:8px">⚠ ' + esc(T('experience.linkWarning')) + ' <code>' + esc(k.link) + '</code></p>' : '') +
       '<div class="comment-actions">' +
         '<button class="link-btn" type="button">' + esc(T('review.helpful')) + ' ' + bn(k.likes || 0) + '</button>' +
         '<button class="link-btn" type="button" data-report="comment:' + k.id + '">' + esc(T('review.report')) + '</button>' +

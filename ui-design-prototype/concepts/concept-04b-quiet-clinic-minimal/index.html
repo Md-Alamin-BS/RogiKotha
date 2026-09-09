@@ -17,6 +17,8 @@
       document.documentElement.setAttribute('lang', l);
       document.documentElement.setAttribute('data-lang', l);
     }
+    var sc = localStorage.getItem('rk04.scheme');
+    if (sc) { document.documentElement.setAttribute('data-scheme', sc); }
   } catch (e) {}
 })();
 </script>
@@ -35,37 +37,47 @@
     </span>
   </a>
 
-  <nav class="tabs" aria-label="Screens">
-    <a href="#discover"  data-nav="discover"  data-i18n="nav.discover"></a>
-    <a href="#results"   data-nav="results"   data-i18n="nav.results"></a>
-    <a href="#profile"   data-nav="profile"   data-i18n="nav.profile"></a>
-    <a href="#account"   data-nav="account"   data-i18n="nav.account"></a>
-    <a href="#condition" data-nav="condition" data-i18n="nav.condition"></a>
-    <a href="#facility"  data-nav="facility"  data-i18n="nav.facility"></a>
-    <a href="#compose"   data-nav="compose"   data-i18n="nav.compose"></a>
-    <a href="#mine"      data-nav="mine"      data-i18n="nav.mine"></a>
+  <nav class="tabs" aria-label="Screens" data-i18n="a11y.screens" data-i18n-attr="aria-label">
+    <a href="#discover"    data-nav="discover"    data-i18n="nav.discover"></a>
+    <a href="#doctors"     data-nav="doctors"     data-i18n="nav.profile"></a>
+    <a href="#facilities"  data-nav="facilities"  data-i18n="nav.facilities"></a>
+    <a href="#topics"      data-nav="topics"      data-i18n="nav.condition"></a>
+    <a href="#experiences" data-nav="experiences" data-i18n="nav.account"></a>
+    <a href="#me"          data-nav="mine"        data-i18n="nav.mine"></a>
   </nav>
+
+  <!-- The write action is an action, not a destination, so it is a button and
+       not a seventh tab. One accent-filled control in the whole chrome
+       (GOV.UK: a page has one main call to action). -->
+  <a class="btn cta-write" href="#write" data-nav="compose" data-i18n="nav.compose"></a>
 
   <div class="controls">
     <button type="button" id="lang"   class="ctl" data-i18n="a11y.lang"   data-i18n-attr="title" aria-pressed="false"><span>অ</span></button>
     <button type="button" id="theme"  class="ctl" data-i18n="a11y.theme"  data-i18n-attr="title"><span>◐</span></button>
     <button type="button" id="motion" class="ctl" data-i18n="a11y.motion" data-i18n-attr="title" aria-pressed="false"><span>◌</span></button>
     <!-- STORY-PROT-001: role + reset demo controls -->
-    <button type="button" id="demo" class="ctl" title="Demo controls"><span>◇</span></button>
+    <button type="button" id="demo" class="ctl" data-i18n="demo.title" data-i18n-attr="title"><span>◇</span></button>
     <a class="ctl" href="../../index.html" data-i18n="concept.back" data-i18n-attr="title"><span>⌘</span></a>
   </div>
 
   <!-- STORY-PROT-001: demo controls panel (hidden until activated) -->
   <div id="demo-panel" class="panel" hidden style="position:fixed;top:64px;right:16px;z-index:60;width:280px;padding:16px 18px">
-    <h4 class="sub-head" style="border-top:0;padding-top:0;margin:0 0 10px">Demo controls</h4>
-    <p class="note" style="margin:0 0 10px">Simulated role gates what you see. Production would sign in with confirmed email + identity check.</p>
+    <h4 class="sub-head" data-i18n="demo.title"></h4>
+    <p class="note" style="margin:0 0 10px" data-i18n="demo.roleNote"></p>
     <div class="opt-row" style="margin-bottom:14px">
-      <button class="opt" type="button" data-role="reader" aria-pressed="true">Reader</button>
-      <button class="opt" type="button" data-role="contributor" aria-pressed="false">Contributor</button>
-      <button class="opt" type="button" data-role="moderator" aria-pressed="false">Moderator</button>
+      <button class="opt" type="button" data-role="reader"      aria-pressed="true"  data-i18n="demo.role.reader"></button>
+      <button class="opt" type="button" data-role="contributor" aria-pressed="false" data-i18n="demo.role.contributor"></button>
+      <button class="opt" type="button" data-role="moderator"   aria-pressed="false" data-i18n="demo.role.moderator"></button>
     </div>
-    <button class="btn small" type="button" id="demo-reset">Reset demo</button>
-    <button class="link-btn" type="button" id="demo-close" style="margin-left:8px">Close</button>
+    <p class="note" style="margin:0 0 6px" data-i18n="demo.scheme"></p>
+    <div class="opt-row" style="margin-bottom:14px">
+      <button class="opt" type="button" data-scheme-pick=""  aria-pressed="true"  data-i18n="demo.scheme.current"></button>
+      <button class="opt" type="button" data-scheme-pick="a" aria-pressed="false" data-i18n="demo.scheme.a"></button>
+      <button class="opt" type="button" data-scheme-pick="b" aria-pressed="false" data-i18n="demo.scheme.b"></button>
+      <button class="opt" type="button" data-scheme-pick="c" aria-pressed="false" data-i18n="demo.scheme.c"></button>
+    </div>
+    <button class="btn small" type="button" id="demo-reset" data-i18n="demo.reset"></button>
+    <button class="link-btn" type="button" id="demo-close" style="margin-left:8px" data-i18n="demo.close"></button>
   </div>
 </header>
 
@@ -76,12 +88,21 @@
   <div id="sr-live" class="sr-only" aria-live="polite" role="status"></div>
   <section class="view" id="view-discover"></section>
   <section class="view" id="view-results"   hidden></section>
+  <!-- Browsable indexes. The search results view lists doctors and facilities
+       too, but only once you have searched; these are the front doors. -->
+  <section class="view" id="view-doctors"       hidden></section>
+  <section class="view" id="view-facilities"    hidden></section>
+  <section class="view" id="view-topics"        hidden></section>
+  <section class="view" id="view-experiences"   hidden></section>
+  <section class="view" id="view-saved"         hidden></section>
+  <section class="view" id="view-notifications" hidden></section>
   <section class="view" id="view-profile"   hidden></section>
   <section class="view" id="view-account"   hidden></section>
   <section class="view" id="view-condition" hidden></section>
   <section class="view" id="view-facility"  hidden></section>
   <section class="view" id="view-compose"   hidden></section>
   <section class="view" id="view-mine"      hidden></section>
+  <section class="view" id="view-person"    hidden></section>
   <section class="view" id="view-emergency" hidden></section>
   <section class="view" id="view-about"     hidden></section>
 </main>
@@ -103,14 +124,14 @@
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
     <header class="sheet-head">
       <h2 id="sheet-title"></h2>
-      <button type="button" class="sheet-close" id="sheet-close" aria-label="Close">✕</button>
+      <button type="button" class="sheet-close" id="sheet-close" aria-label="Close" data-i18n="a11y.close" data-i18n-attr="aria-label">✕</button>
     </header>
     <div class="sheet-body" id="sheet-body"></div>
   </div>
 </div>
 
 <footer class="colophon">
-  <nav class="foot-nav" aria-label="Site sections">
+  <nav class="foot-nav" aria-label="Site sections" data-i18n="a11y.siteSections" data-i18n-attr="aria-label">
     <a href="#emergency" data-i18n="nav.emergency"></a>
     <a href="#about"     data-i18n="nav.about"></a>
   </nav>

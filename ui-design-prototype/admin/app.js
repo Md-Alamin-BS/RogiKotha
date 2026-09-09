@@ -25,7 +25,11 @@
     done: false,
     role: 'Admin',
     bulkSelected: {},
-    bulkConfirmed: false
+    bulkConfirmed: false,
+    /* Demo-local staff decisions. Nothing leaves the page. */
+    decisions: {},   /* itemId -> 'approved' | 'rejected' | 'merged' */
+    revealed: {},    /* gate key -> 'revealed' | 'requested' */
+    acked: {}        /* notification key -> true */
   };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -42,6 +46,14 @@
   function bn(n) {
     if (state.lang !== 'bn') { return String(n); }
     return String(n).replace(/[0-9]/g, function (d) { return '০১২৩৪৫৬৭৮৯'[+d]; });
+  }
+
+  /* A decided item shows its outcome and the audit promise instead of
+     offering the action again. */
+  function decided(id) { return state.decisions[id]; }
+  function decisionNote(id) {
+    return '<p class="note" style="margin-top:10px;color:var(--positive)">✓ ' +
+      esc(T('admin.done.' + state.decisions[id])) + '</p>';
   }
 
   function badge(cls, text) { return '<span class="badge ' + cls + '">' + esc(text) + '</span>'; }
@@ -90,6 +102,124 @@
 
   var VIEWS = ['queue', 'evidence', 'providers', 'config', 'notifications'];
 
+  /* ---------------------------------------------------------------------
+     Navigation
+
+     The console used to navigate by five identical pills: no icons, no
+     grouping, no counts, and <button> rather than <a>, so there was no
+     middle-click, no open-in-new-tab and no aria-current. The grouping
+     below carries real meaning — queue / evidence / providers are things
+     you WORK, notifications / config are things you OVERSEE — and the
+     counts say how much is waiting without making anyone click in.
+     ------------------------------------------------------------------- */
+
+  var ICONS = {
+    inbox:  '<path d="M4 13h4l1.6 2.6h4.8L16 13h4"/><path d="M6 4h12l3 9v7H3v-7z"/>',
+    shield: '<path d="M12 3.2 19 6v5.8c0 4-2.8 7-7 9-4.2-2-7-5-7-9V6z"/><path d="m9 12 2.2 2.2L15.4 10"/>',
+    idcard: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h4M6.2 16.2c.9-1.8 4.7-1.8 5.6 0"/>',
+    bell:   '<path d="M18.5 16.5V11a6.5 6.5 0 1 0-13 0v5.5L4 18.5h16z"/><path d="M10 21.5h4"/>',
+    sliders:'<path d="M4 7.5h9M17.5 7.5H20M4 16.5h3.5M12 16.5h8"/><circle cx="15" cy="7.5" r="2.4"/><circle cx="9.5" cy="16.5" r="2.4"/>'
+  };
+  function icon(name) {
+    return '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" ' +
+      'fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" ' +
+      'stroke-linejoin="round">' + (ICONS[name] || '') + '</svg>';
+  }
+
+  var NAV_GROUPS = [
+    { label: { en: 'Casework', bn: 'কেসের কাজ' }, items: [
+      { id: 'queue',    icon: 'inbox',  key: 'admin.tab.queue' },
+      { id: 'evidence', icon: 'shield', key: 'admin.tab.evidence' },
+      { id: 'providers',icon: 'idcard', key: 'admin.tab.providers' }
+    ] },
+    { label: { en: 'Oversight', bn: 'তদারকি' }, items: [
+      { id: 'notifications', icon: 'bell',    key: 'admin.tab.notifications' },
+      { id: 'config',        icon: 'sliders', key: 'admin.tab.config' }
+    ] }
+  ];
+
+  function navCounts() {
+    var m = RK.moderation;
+    return {
+      queue:         m.cases.length,
+      critical:      m.cases.filter(function (c) { return c.lane === 'critical'; }).length,
+      evidence:      m.quarantine.filter(function (q) { return q.stage !== 'published'; }).length,
+      providers:     m.providers.pending.length + (m.providers.claims || []).length,
+      notifications: (m.notifications || []).filter(function (n, i) { return !state.acked['n' + i]; }).length,
+      config:        0
+    };
+  }
+  function navItemById(id) {
+    for (var g = 0; g < NAV_GROUPS.length; g++) {
+      for (var i = 0; i < NAV_GROUPS[g].items.length; i++) {
+        if (NAV_GROUPS[g].items[i].id === id) { return NAV_GROUPS[g].items[i]; }
+      }
+    }
+    return NAV_GROUPS[0].items[0];
+  }
+  function navGroupOf(id) {
+    for (var g = 0; g < NAV_GROUPS.length; g++) {
+      for (var i = 0; i < NAV_GROUPS[g].items.length; i++) {
+        if (NAV_GROUPS[g].items[i].id === id) { return NAV_GROUPS[g].label; }
+      }
+    }
+    return NAV_GROUPS[0].label;
+  }
+
+  function renderNav() {
+    var host = $('#topnav');
+    if (!host) { return; }
+    var c = navCounts();
+    var html = '';
+    NAV_GROUPS.forEach(function (g, gi) {
+      if (gi) { html += '<span class="nav-sep" aria-hidden="true"></span>'; }
+      html += g.items.map(function (it) {
+        var n = c[it.id];
+        /* The queue badge goes urgent when anything sits in the critical
+           lane — the one count on this screen that carries a deadline. */
+        var urgent = it.id === 'queue' && c.critical > 0;
+        return '<a class="top-item" href="#' + it.id + '" data-admin="' + it.id + '"' +
+          (state.tab === it.id ? ' aria-current="page"' : '') + '>' +
+          icon(it.icon) + '<span>' + esc(T(it.key)) + '</span>' +
+          (n ? '<span class="count' + (urgent ? ' urgent' : '') + '">' + bn(n) + '</span>' : '') +
+        '</a>';
+      }).join('');
+    });
+    host.innerHTML = html;
+  }
+
+  function renderTabBar() {
+    var host = $('#tabbar');
+    if (!host) { return; }
+    var c = navCounts();
+    /* Iterate the nav groups, not VIEWS — VIEWS is route order (…config,
+       notifications) and would put the tab bar out of step with the top
+       nav, which is grouped Casework then Oversight. */
+    var order = NAV_GROUPS.reduce(function (all, g) { return all.concat(g.items); }, []);
+    host.innerHTML = order.map(function (it) {
+      var id = it.id;
+      var n = c[id];
+      var urgent = id === 'queue' && c.critical > 0;
+      return '<a class="tab-item" href="#' + id + '" data-admin="' + id + '"' +
+        (state.tab === id ? ' aria-current="page"' : '') + '>' +
+        icon(it.icon) +
+        (n ? '<span class="tab-dot' + (urgent ? ' urgent' : '') + '">' + bn(n) + '</span>' : '') +
+        '<span>' + esc(T(it.key).split(' ')[0]) + '</span>' +
+      '</a>';
+    }).join('');
+  }
+
+  function renderCrumbs() {
+    var host = $('#crumbs');
+    if (!host) { return; }
+    host.innerHTML =
+      '<span>' + esc(T('admin.portal')) + '</span>' +
+      '<span class="sep" aria-hidden="true">/</span>' +
+      '<span>' + esc(L(navGroupOf(state.tab))) + '</span>' +
+      '<span class="sep" aria-hidden="true">/</span>' +
+      '<b>' + esc(T(navItemById(state.tab).key)) + '</b>';
+  }
+
   // STORY-NFR-006: announce view/lang/theme changes to screen readers
   function announce(msg) {
     var node = document.getElementById('sr-live');
@@ -102,9 +232,9 @@
     state.tab = v;
     document.body.setAttribute('data-view', v);
     VIEWS.forEach(function (n) { var el = $('#view-' + n); if (el) { el.hidden = (n !== v); } });
-    $$('.admin-tabs button').forEach(function (b) {
-      b.setAttribute('aria-pressed', String(b.getAttribute('data-admin') === v));
-    });
+    renderNav();
+    renderTabBar();
+    renderCrumbs();
     if (v === 'queue') { renderQueue(); }
     if (v === 'evidence') { renderEvidence(); }
     if (v === 'providers') { renderProviders(); }
@@ -119,6 +249,9 @@
      ------------------------------------------------------------------- */
 
   function renderAll() {
+    renderNav();
+    renderTabBar();
+    renderCrumbs();
     if (state.tab === 'queue') { renderQueue(); }
     if (state.tab === 'evidence') { renderEvidence(); }
     if (state.tab === 'providers') { renderProviders(); }
@@ -138,8 +271,7 @@
     if (!host) { return; }
     host.innerHTML =
       '<section class="a-head">' +
-        '<span class="kicker">' + esc(T('nav.admin')) + '</span>' +
-        '<h1 class="display">' + esc(T('admin.title')) + '</h1>' +
+        '<h1 class="display">' + esc(T('admin.tab.queue')) + '</h1>' +
       '</section>' + permissionCallout() + queueBody() +
       (state.bulkConfirmed ? '<div class="callout" style="margin-top:14px;border-color:var(--positive);color:var(--positive)">✓ ' + esc(T('admin.bulk.done')) + '</div>' : '');
   }
@@ -160,16 +292,21 @@
       lanes.map(function (lane) {
         var list = RK.moderation.cases.filter(function (c) { return c.lane === lane.k; });
         if (!list.length) { return ''; }
-        return '<div class="lane">' +
+        /* Each lane is its own TRAY — a rectangle on the raised plane with
+           40px of page colour between it and the next. The lane heading no
+           longer carries a rule, because a group boundary must not use the
+           same mark as the rows inside it. */
+        return '<div class="lane" data-tier="' + esc(lane.k) + '">' +
           '<div class="lane-head"><h2>' + esc(T(lane.k === 'appeal' ? 'admin.appeals' : 'admin.' + lane.k)) + '</h2>' +
-            '<span class="target">· ' + esc(lane.target) + '</span></div>' +
+            '<span class="lane-count">' + bn(list.length) + '</span>' +
+            '<span class="target">' + esc(lane.target) + '</span></div>' +
           list.map(function (c) {
             var checked = !!state.bulkSelected[c.id];
-            return '<div class="case-row" style="display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;border-bottom:1px solid var(--rule);padding-block:6px">' +
-              '<label style="display:flex;align-items:center;justify-content:center;height:34px">' +
+            return '<div class="case-row">' +
+              '<label style="display:flex;align-items:center;justify-content:center">' +
                 '<input type="checkbox" data-bulk-check="' + esc(c.id) + '"' + (checked ? ' checked' : '') + ' aria-label="' + esc(T('admin.bulk.select')) + ' ' + esc(c.id) + '">' +
               '</label>' +
-              '<button class="case" type="button" data-case="' + c.id + '" aria-pressed="' + (state.selCase === c.id) + '" style="border-bottom:0;padding-block:8px">' +
+              '<button class="case" type="button" data-case="' + c.id + '" aria-pressed="' + (state.selCase === c.id) + '">' +
                 '<span><span class="id">' + esc(c.id) + '</span>' +
                   '<span class="age">' + esc(T('admin.age')) + ' ' + bn(c.ageHours) + esc(T('admin.hours')) + '</span></span>' +
                 '<span><h4>' + esc(L(c.summary)) + '</h4>' +
@@ -210,13 +347,17 @@
         '<h4 class="sub-head">' + esc(T('admin.permissions')) + '</h4>' +
         '<div class="restricted"><b>' + esc(T('admin.reporterMasked')) + '</b>' +
           '<span>' + esc(T('admin.reporterNote')) + '</span>' +
-          (isSA ? '<button class="btn small" type="button" style="margin-top:8px;justify-self:start">' + esc(T('admin.reveal.audited')) + '</button>' : '') +
+          (isSA ? (state.revealed['reporter:' + c.id]
+            ? '<span class="note" style="margin-top:8px;color:var(--positive)">✓ ' + esc(T('admin.done.revealed')) + '</span>'
+            : '<button class="btn small" type="button" style="margin-top:8px;justify-self:start" data-reveal="reporter:' + c.id + '">' + esc(T('admin.reveal.audited')) + '</button>') : '') +
         '</div>' +
         (c.targetKind === 'evidence' ? '<div class="restricted" style="margin-top:8px"><b>' + esc(T('admin.evidenceGated')) + '</b>' +
           '<span>' + esc(T('admin.evidenceGateNote')) + '</span>' +
-          (isSA
-            ? '<button class="btn small" type="button" style="margin-top:8px;justify-self:start">' + esc(T('admin.reveal.audited')) + '</button>'
-            : '<button class="btn small ghost" type="button" style="margin-top:8px;justify-self:start">' + esc(T('admin.requestAccess')) + '</button>') +
+          (state.revealed['evidence:' + c.id]
+            ? '<span class="note" style="margin-top:8px;color:var(--positive)">✓ ' + esc(T('admin.done.' + state.revealed['evidence:' + c.id])) + '</span>'
+            : isSA
+              ? '<button class="btn small" type="button" style="margin-top:8px;justify-self:start" data-reveal="evidence:' + c.id + '">' + esc(T('admin.reveal.audited')) + '</button>'
+              : '<button class="btn small ghost" type="button" style="margin-top:8px;justify-self:start" data-request="evidence:' + c.id + '">' + esc(T('admin.requestAccess')) + '</button>') +
           '</div>' : '') +
       '</div>' +
 
@@ -243,11 +384,26 @@
           '\nreporter_identity=not_accessed' +
           '\noriginal_evidence=not_accessed'
         ) + '</div>' +
-        '<button class="btn block" type="button" id="mod-commit" style="margin-top:14px">' + esc(T('admin.commit')) + '</button>' +
         (state.done ? '<div class="callout" style="margin-top:12px;border-color:var(--positive);color:var(--positive)">✓ ' + esc(T('admin.recorded')) + '</div>' : '') +
       '</div>' +
 
       auditTimeline(c) +
+
+      /* The console had no commit action at all — ten option buttons, a
+         textarea, and no submit, so the page that exists to record a
+         moderation decision had no way to finish the job. One solid
+         accent fill, docked at the foot of the tray: at 8.67:1 against
+         the tray it is the only object besides the plane edges that
+         survives a hard squint. */
+      '<div class="dock">' +
+        /* Name what is about to be committed, not the guidance — the
+           proportionality line is already on screen a few rows above, and
+           repeating it here wasted the one place that can say WHICH case
+           and WHICH action the button will record. */
+        '<span class="note">' + esc(T('admin.case') + ' ' + c.id) +
+          (state.selAction ? ' · <b>' + esc(T('admin.act.' + state.selAction)) + '</b>' : '') + '</span>' +
+        '<button class="btn primary" type="button" id="mod-commit">' + esc(T('admin.commit')) + '</button>' +
+      '</div>' +
     '</section>';
   }
 
@@ -260,11 +416,13 @@
     var steps = ['received', 'validated', 'scanned', 'converted', 'rasterised', 'redacted', 'published'];
     host.innerHTML =
       '<section class="a-head">' +
-        '<span class="kicker">' + esc(T('admin.tab.evidence')) + '</span>' +
         '<h1 class="display">' + esc(T('admin.tab.evidence')) + '</h1>' +
       '</section>' + permissionCallout() +
+      /* This panel states the custody policy; it is not a second copy of
+         the page title, which is what it read as once the a-head kicker
+         was removed. */
       '<section class="panel">' +
-        '<h4 class="sub-head">' + esc(T('admin.tab.evidence')) + '</h4>' +
+        '<h4 class="sub-head">' + esc(T('admin.pipeline')) + '</h4>' +
         '<p class="note">' + esc(T('admin.failClosedNote')) + ' ' + esc(T('admin.retention')) + ' · ' + esc(T('admin.legalHoldNote')) + '</p>' +
       '</section>' +
       RK.moderation.quarantine.map(function (q) {
@@ -296,7 +454,6 @@
     var p = RK.moderation.providers;
     host.innerHTML =
       '<section class="a-head">' +
-        '<span class="kicker">' + esc(T('admin.tab.providers')) + '</span>' +
         '<h1 class="display">' + esc(T('admin.tab.providers')) + '</h1>' +
       '</section>' + permissionCallout() +
       '<section class="panel">' +
@@ -316,11 +473,11 @@
               (dup ? '<tr><th>' + esc(T('admin.possibleDup')) + '</th><td>' + esc(P(dup.name)) + ' — ' + esc(dup.bmdc) + '</td></tr>' : '') +
             '</tbody></table>' +
             '<p class="note" style="margin-top:8px">' + esc(L(x.note)) + '</p>' +
-            '<div class="mine-actions" style="margin-top:10px">' +
-              (dup ? '<button class="btn small" type="button">' + esc(T('admin.merge')) + '</button>'
-                   : '<button class="btn small" type="button">' + esc(T('admin.approve')) + '</button>') +
-              '<button class="btn small ghost" type="button">' + esc(T('admin.reject')) + '</button>' +
-            '</div>' +
+            (decided(x.id) ? decisionNote(x.id) : '<div class="mine-actions" style="margin-top:10px">' +
+              (dup ? '<button class="btn small" type="button" data-decide="' + x.id + ':merged">' + esc(T('admin.merge')) + '</button>'
+                   : '<button class="btn small" type="button" data-decide="' + x.id + ':approved">' + esc(T('admin.approve')) + '</button>') +
+              '<button class="btn small ghost" type="button" data-decide="' + x.id + ':rejected">' + esc(T('admin.reject')) + '</button>' +
+            '</div>') +
             (dup ? '<p class="note" style="margin-top:8px">' + esc(T('admin.mergeNote')) + '</p>' : '') +
           '</div>';
         }).join('') +
@@ -334,10 +491,10 @@
             '<div class="q-head"><b>' + esc(P(d.name)) + '</b><span class="size">' + esc(x.id) + '</span></div>' +
             '<p class="note">' + esc(P(x.method)) + '</p>' +
             '<p class="note" style="margin-top:6px">' + esc(L(x.note)) + '</p>' +
-            '<div class="mine-actions" style="margin-top:10px">' +
-              '<button class="btn small" type="button">' + esc(T('admin.approve')) + '</button>' +
-              '<button class="btn small ghost" type="button">' + esc(T('admin.reject')) + '</button>' +
-            '</div>' +
+            (decided(x.id) ? decisionNote(x.id) : '<div class="mine-actions" style="margin-top:10px">' +
+              '<button class="btn small" type="button" data-decide="' + x.id + ':approved">' + esc(T('admin.approve')) + '</button>' +
+              '<button class="btn small ghost" type="button" data-decide="' + x.id + ':rejected">' + esc(T('admin.reject')) + '</button>' +
+            '</div>') +
           '</div>';
         }).join('') +
       '</section>' +
@@ -353,9 +510,9 @@
             '</div>' +
             '<p class="note">' + esc(P(d.name)) + '</p>' +
             '<div class="audit" style="margin-top:8px">' + esc(T('admin.wasNow')) + '\n' + esc(P(x.from)) + '\n' + esc(P(x.to)) + '</div>' +
-            (x.protected ? '<div class="mine-actions" style="margin-top:10px">' +
-              '<button class="btn small" type="button">' + esc(T('admin.approve')) + '</button>' +
-              '<button class="btn small ghost" type="button">' + esc(T('admin.reject')) + '</button></div>'
+            (x.protected ? (decided(x.id) ? decisionNote(x.id) : '<div class="mine-actions" style="margin-top:10px">' +
+              '<button class="btn small" type="button" data-decide="' + x.id + ':approved">' + esc(T('admin.approve')) + '</button>' +
+              '<button class="btn small ghost" type="button" data-decide="' + x.id + ':rejected">' + esc(T('admin.reject')) + '</button></div>')
               : '<p class="note" style="margin-top:8px;color:var(--positive)">✓ ' + esc(T('admin.protectedNote')) + '</p>') +
           '</div>';
         }).join('') +
@@ -429,7 +586,6 @@
     }
     host.innerHTML =
       '<section class="a-head">' +
-        '<span class="kicker">' + esc(T('admin.tab.config')) + '</span>' +
         '<h1 class="display">' + esc(T('admin.config.title')) + '</h1>' +
       '</section>' + permissionCallout() +
       '<section class="panel">' +
@@ -487,21 +643,23 @@
     var list = (RK.moderation.notifications || []);
     host.innerHTML =
       '<section class="a-head">' +
-        '<span class="kicker">' + esc(T('admin.tab.notifications')) + '</span>' +
         '<h1 class="display">' + esc(T('admin.notif.title')) + '</h1>' +
       '</section>' + permissionCallout() +
       '<section class="panel">' +
-        (list.length ? list.map(function (n) {
+        (list.length ? list.map(function (n, ni) {
+          var nKey = 'n' + ni;
           return '<div class="sub">' +
             '<div class="q-head"><b>' + esc(L(n.target)) + '</b>' +
               '<span class="size">' + esc(L(n.when)) + '</span>' +
               badge('plain', T('admin.notif.kind.' + n.kind)) +
             '</div>' +
             '<p class="note" style="margin-top:6px">' + esc(L(n.text)) + '</p>' +
-            '<div class="mine-actions" style="margin-top:10px">' +
-              '<button class="btn small ghost" type="button">' + esc(T('admin.notif.action.open')) + '</button>' +
-              '<button class="btn small" type="button">' + esc(T('admin.notif.action.ack')) + '</button>' +
-            '</div>' +
+            (state.acked[nKey]
+              ? '<p class="note" style="margin-top:10px;color:var(--positive)">✓ ' + esc(T('admin.done.acked')) + '</p>'
+              : '<div class="mine-actions" style="margin-top:10px">' +
+                '<button class="btn small ghost" type="button" data-admin="queue">' + esc(T('admin.notif.action.open')) + '</button>' +
+                '<button class="btn small" type="button" data-ack="' + nKey + '">' + esc(T('admin.notif.action.ack')) + '</button>' +
+              '</div>') +
           '</div>';
         }).join('') : '<p class="note">' + esc(T('admin.bulk.empty')) + '</p>') +
       '</section>';
@@ -586,6 +744,19 @@
   document.addEventListener('click', function (e) {
     var el;
     if ((el = e.target.closest('[data-admin]'))) { location.hash = '#' + el.getAttribute('data-admin'); return; }
+    if ((el = e.target.closest('[data-decide]'))) {
+      var dParts = el.getAttribute('data-decide').split(':');
+      state.decisions[dParts[0]] = dParts[1]; renderProviders(); return;
+    }
+    if ((el = e.target.closest('[data-reveal]'))) {
+      state.revealed[el.getAttribute('data-reveal')] = 'revealed'; renderQueue(); return;
+    }
+    if ((el = e.target.closest('[data-request]'))) {
+      state.revealed[el.getAttribute('data-request')] = 'requested'; renderQueue(); return;
+    }
+    if ((el = e.target.closest('[data-ack]'))) {
+      state.acked[el.getAttribute('data-ack')] = true; renderNotifications(); return;
+    }
     if ((el = e.target.closest('[data-case]'))) { state.selCase = el.getAttribute('data-case'); state.done = false; renderQueue(); return; }
     if ((el = e.target.closest('[data-action]'))) { state.selAction = el.getAttribute('data-action'); renderQueue(); return; }
     if (e.target.closest('#mod-commit')) { state.done = true; renderQueue(); return; }
@@ -649,8 +820,14 @@
       if (ROLE_ORDER.indexOf(role) !== -1) { state.role = role; }
     } catch (e) {}
 
+    /* Apply the string table on EVERY load, not only when the language is
+       Bengali. Twelve elements in index.html are data-i18n driven — the
+       brand name, the portal label, the staff badge, the skip link, the
+       demo banner, the four control titles, the sheet close label and both
+       colophon lines — and skipping this for English left all of them
+       rendering empty. */
+    RK.applyLang(document, state.lang);
     if (state.lang === 'bn') {
-      RK.applyLang(document, 'bn');
       var lbtn = $('#lang');
       if (lbtn) { lbtn.setAttribute('aria-pressed', 'true'); lbtn.querySelector('span').textContent = 'A'; }
     }
@@ -666,12 +843,9 @@
     /* Sync the role chip + permissions surface */
     setRole(state.role);
 
-    /* Wire the admin tab buttons */
-    VIEWS.forEach(function (v) {
-      var btn = document.querySelector('.admin-tabs button[data-admin="' + v + '"]');
-      if (!btn) { return; }
-      btn.addEventListener('click', function () { location.hash = '#' + v; });
-    });
+    /* Nav items are real anchors now, so they need no wiring: the browser
+       sets the hash, hashchange routes, and middle-click / open-in-new-tab
+       work the way they never did with the old <button> pills. */
 
     route();
   }

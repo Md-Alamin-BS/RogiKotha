@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Signal Ward — colour-led · RogiKotha staff</title>
+<link rel="stylesheet" href="variant-c.css">
+</head>
+<body data-variant="c">
+
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="bar">
+  <a class="bar-brand" href="./index.html">
+    <span class="brand-mark" aria-hidden="true">RK</span>
+    <span class="brand-text">
+      <b data-i18n="brand.name">RogiKotha</b>
+      <i data-i18n="admin.portal">Staff console</i>
+    </span>
+  </a>
+
+  <nav class="bar-nav" id="topnav" aria-label="Console sections"></nav>
+
+  <div class="bar-actions">
+    <div class="searchbox">
+      <label class="sr-only" for="q">Search cases</label>
+      <input type="search" id="q" placeholder="Search cases…" autocomplete="off">
+    </div>
+    <nav class="variant-switch" aria-label="Design variant">
+      <a class="iconbtn" href="variant-a.html#queue" title="Chart Tray — surface-led">A</a>
+      <a class="iconbtn" href="variant-b.html#queue" title="Ink Ledger — type-led">B</a>
+      <a class="iconbtn" href="variant-c.html#queue" aria-current="page" title="Signal Ward — colour-led">C</a>
+    </nav>
+    <button type="button" class="iconbtn" id="lang" aria-label="Switch language"></button>
+    <button type="button" class="iconbtn" id="theme" aria-label="Switch theme"></button>
+    <button type="button" class="iconbtn" id="role" aria-label="Switch role"><span id="role-initials">SA</span></button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+    <header class="page-head">
+      <p class="crumbs" id="crumbs"></p>
+      <h1 class="page-title" id="page-title"></h1>
+      <p class="page-sub" id="page-sub"></p>
+      <p class="banner" id="banner"></p>
+      <div class="subnav" id="subnav" role="tablist"></div>
+    </header>
+    <div class="body" id="body"></div>
+  </div>
+</main>
+
+<nav class="tabbar" id="tabbar" aria-label="Console sections"></nav>
+
+<div id="sr-live" class="sr-only" aria-live="polite" role="status"></div>
+
+<script src="../../shared/rogikotha-data.js"></script>
+<script src="demo-shared.js"></script>
+<script src="variant-shell.js"></script>
+</body>
+</html>

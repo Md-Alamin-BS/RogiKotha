@@ -214,7 +214,7 @@ html[data-lang="bn"] .tabs a { font-family: var(--bangla); }
 .tabs a.staff::before { content: "◆"; margin-inline-end: 5px; font-size: 9px; vertical-align: 1px; }
 
 .controls { display: flex; gap: 5px; }
-.ctl {
+.ctl { /* bangla-ok: a 40px control around a single symbol glyph */
   width: 36px; height: 36px; display: grid; place-items: center;
   border: 1px solid var(--rule); border-radius: 11px;
   background: var(--glass-2); color: var(--ink-soft);
@@ -551,7 +551,7 @@ html[data-lang="bn"] .tray-label { font-family: var(--bangla); letter-spacing: 0
 .tray-items { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
 .tray-chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--sans); font-size: 13px; padding: 6px 8px 6px 14px; border-radius: 999px; background: var(--glass-2); border: 1px solid var(--rule); }
 html[data-lang="bn"] .tray-chip { font-family: var(--bangla); }
-.tray-chip button { border: 0; background: none; color: var(--ink-faint); cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 4px; }
+.tray-chip button { /* bangla-ok: holds the remove glyph only */ border: 0; background: none; color: var(--ink-faint); cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 4px; }
 .tray-chip button:hover { color: var(--negative); }
 .tray-actions { display: flex; gap: 8px; }
 
@@ -827,7 +827,7 @@ html[data-lang="bn"] .check { font-family: var(--bangla); }
   border: 1px solid var(--rule); background: var(--glass-2);
 }
 html[data-lang="bn"] .safety-item { font-family: var(--bangla); }
-.safety-item .mark { font-size: 15px; line-height: 1.2; }
+.safety-item .mark { /* bangla-ok: a check/alert glyph, never words */ font-size: 15px; line-height: 1.2; }
 .safety-item b { display: block; margin-bottom: 3px; color: var(--ink); }
 .safety-item.warn   { border-color: var(--warn-line); background: var(--warn-bg); color: var(--warn-ink); }
 .safety-item.warn b { color: var(--warn-ink); }
@@ -1093,7 +1093,11 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
      reading text borrows a true serif. Heading posture comes from weight
      and tracking, not a contrasting family. */
   --serif: ui-rounded, 'SF Pro Rounded', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --sans: 'Inter', 'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --sans: 'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  /* Restated here (unchanged) so the generated shared/tokens.css carries the
+     full type stack; the staff console has no shared layer to fall back on. */
+  --bangla: 'Noto Sans Bengali', 'Nirmala UI', 'Shonar Bangla', 'Kalpurush', 'SolaimanLipi', sans-serif;
+  --mono: 'Cascadia Mono', ui-monospace, 'SF Mono', Consolas, monospace;
 
   --r-sm: 10px;
   --r-md: 16px;
@@ -1101,25 +1105,32 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
   --measure: 72ch;
 
   /* light — paper & teal-gray */
-  --bg:        hsl(40 14% 98%);
+  --bg:        hsl(40 14% 95%);      /* was 98%: paper page under pure-white cards (NHS grey-5 / Apple grouped-bg recipe, ~1.11:1) */
   --ink:       hsl(200 14% 14%);
   --ink-soft:  hsl(200 8% 34%);
-  --ink-faint: hsl(200 6% 48%);
+  /* 44% not 48%: at 48% this cleared only 4.05:1 on --bg, and --ink-faint
+     carries real text (.note, .denominator, .why, .badge.plain), so it
+     needs 4.5:1 for normal-size text. 44% gives 4.69:1. */
+  --ink-faint: hsl(200 6% 41%);  /* 41% not 44%: 44% fell to 4.08:1 on the darker inset. 41% = 4.53:1 there, 5.45:1 on a panel */
 
   --glass:      hsl(0 0% 100%);
-  --glass-2:    hsl(40 12% 96%);
-  --rule:       hsl(200 14% 14% / 0.07);
-  --rule-hard:  hsl(200 14% 14% / 0.16);
+  --glass-2:    hsl(40 10% 91.5%);   /* was 96%: inset now 1.20:1 against a panel (M3 surface-container-highest is 1.23) */
+  --rule:       hsl(200 14% 14% / 0.22);  /* was 0.07 = 1.14:1, below every system measured. Now 1.55:1 (GOV.UK #cecece 1.57, Radix slate7 1.57) */
+  --rule-hard:  hsl(200 14% 14% / 0.34);  /* was 0.16 = 1.37:1, which is NHS's DEFAULT border. Now 2.03:1 for hover/active (NHS grey-3 2.04) */
+  --rule-strong: hsl(200 14% 14% / 0.50); /* new: 3.13:1 on a panel - the WCAG 1.4.11 floor for a boundary that identifies a control */
+  --input-border: hsl(200 6% 41%);        /* new: 5.45:1 on a panel (NHS grey-1 input border is 5.75) */
+  --keyline:       0 2px 0 var(--rule);      /* NHS nhsuk-card--clickable: a flat bottom edge, zero blur. A keyline, not a shadow */
+  --keyline-hover: 0 2px 0 var(--rule-hard);
   --shadow:     0 1px 1px hsl(200 14% 14% / .03);
 
   --accent:      hsl(190 22% 32%);
   --accent-2:    hsl(190 22% 26%);
-  --accent-soft: hsl(190 22% 32% / 0.06);
+  --accent-soft: hsl(190 22% 32% / 0.10); /* was 0.06 = 1.09:1, invisible as a fill */
   --accent-ink:  hsl(40 14% 98%);
 
   --positive: hsl(160 18% 36%);
-  --mixed:    hsl(36 24% 42%);
-  --negative: hsl(8 36% 46%);
+  --mixed:    hsl(36 24% 38%);   /* was 42%: fell to 3.94:1 on the new inset */
+  --negative: hsl(8 36% 44%);    /* was 46%: 4.63:1 on the new inset */
   --neutral:  hsl(200 6% 80%);
 
   --warn-bg:   hsl(40 30% 95%);
@@ -1151,6 +1162,141 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
   --veil: none;
 }
 
+/* ==========================================================================
+   Semantic role / region hooks.
+
+   Components read these; a colour scheme sets ONLY these. Every default
+   points at the token the component already used, so the current look is
+   reproduced exactly in light and dark (var() resolves at use time).
+   ========================================================================== */
+:root {
+  --eyebrow:       var(--accent);    /* kickers / eyebrows */
+  --rail:          transparent;      /* section-head underline; a scheme may colour it */
+  --byline-accent: var(--ink);       /* the author's name */
+  --display-font:  var(--serif);     /* h1-h4 face; today the rounded body stack */
+  --masthead-bg:   var(--bg);
+  --pagehead-bg:   transparent;      /* .a-head / .index-head */
+  --card-bg:       var(--glass);     /* panels, cards, rows */
+  --aside-bg:      var(--glass-2);   /* .a-margin boxes */
+  --callout-bg:    var(--glass);
+  --field-bg:      var(--glass);
+}
+.kicker { color: var(--eyebrow); }
+.section-head { box-shadow: inset 0 -2px 0 var(--rail); }
+.byline-name { color: var(--byline-accent); }
+h1, h2, h3, h4 { font-family: var(--display-font); }
+.masthead { background: var(--masthead-bg); }
+.a-head, .index-head { background: var(--pagehead-bg); }
+.panel, .doc-entry, .acct, .mine-item { background: var(--card-bg); }
+#view-mine .mine-item { background: var(--glass-2); }   /* keeps the inset tone set earlier */
+.a-margin > div { background: var(--aside-bg); }
+.callout, .callout.warn, .callout.danger { background: var(--callout-bg); }
+.field input[type="text"], .field select, .field textarea { background: var(--field-bg); }
+
+/* ==========================================================================
+   Semantic role / region hooks.
+
+   Components read these; a colour scheme sets ONLY these. Every default
+   points at the token the component already used, and var() resolves at
+   use time, so the current look is reproduced exactly in light and dark.
+   ========================================================================== */
+:root {
+  --eyebrow:         var(--accent);   /* kickers / eyebrows */
+  --rail:            transparent;     /* 2px underline on section heads */
+  --byline-accent:   var(--ink);      /* the author's name */
+  --display-font:    var(--serif);    /* h1-h4 face, Latin */
+  --display-bangla:  var(--bangla);   /* h1-h4 face, Bengali */
+  --masthead-bg:     var(--bg);
+  --pagehead-bg:     transparent;     /* .a-head / .index-head */
+  --card-bg:         var(--glass);    /* panels, cards, rows */
+  --aside-bg:        var(--glass-2);  /* .a-margin boxes */
+  --callout-bg:      var(--glass);
+  --field-bg:        var(--glass);
+}
+.kicker { color: var(--eyebrow); }
+.section-head { box-shadow: inset 0 -2px 0 var(--rail); }
+.byline-name { color: var(--byline-accent); }
+h1, h2, h3, h4 { font-family: var(--display-font); }
+html[data-lang="bn"] :is(h1, h2, h3, h4) { font-family: var(--display-bangla); }
+.masthead { background: var(--masthead-bg); }
+.a-head, .index-head { background: var(--pagehead-bg); }
+.panel, .doc-entry, .acct, .mine-item { background: var(--card-bg); }
+#view-mine .mine-item { background: var(--glass-2); }
+.a-margin > div { background: var(--aside-bg); }
+.callout, .callout.warn, .callout.danger { background: var(--callout-bg); }
+.field input[type="text"], .field select, .field textarea { background: var(--field-bg); }
+
+/* ==========================================================================
+   Light-mode colour SCHEMES (compare in the demo panel).
+
+   Each block recolours LIGHT mode only. They sit after the light base and
+   before the dark blocks: equal specificity, so the later dark blocks win
+   whenever dark is active. Filled from research; every scheme is verified
+   by tools/contrast.mjs (text 4.5:1, control boundaries 3:1).
+   ========================================================================== */
+/* --- A. Tonal regions (NHS / Apple grouped) ----------------------------
+   The page is a cool grey, every card is pure white, and each region KIND
+   gets its own tone: a pale-teal masthead band, a cool aside well, a slate
+   eyebrow distinct from the teal accent. Structure comes from tone steps
+   the way NHS grey-5 -> white and Apple grouped backgrounds do. */
+:root[data-scheme="a"] {
+  --bg:            hsl(200 22% 95%);
+  --glass-2:       hsl(200 16% 91%);
+  --masthead-bg:   hsl(190 30% 90%);
+  --aside-bg:      hsl(200 22% 93%);
+  --callout-bg:    hsl(0 0% 100%);
+  --eyebrow:       hsl(210 32% 36%);
+  --rail:          hsl(190 22% 32%);
+  --byline-accent: hsl(190 22% 26%);
+  --accent-soft:   hsl(190 22% 32% / 0.12);
+}
+:root[data-scheme="a"] .kicker { font-weight: 800; }
+:root[data-scheme="a"] .section-head { padding-bottom: 6px; }
+
+/* --- B. Editorial paper and ink, warm secondary --------------------------
+   Attacks "the fonts all look the same" directly: headings move to a
+   system serif (Georgia / Cambria; Shonar Bangla / Bangla MN for Bengali),
+   body stays in the rounded sans, and a warm terracotta is reserved for
+   ROLES only - eyebrows, section rails, the author's name - so it always
+   means "orientation", never "quality". Teal stays the link colour. */
+:root[data-scheme="b"] {
+  --bg:            hsl(40 24% 95%);
+  --glass-2:       hsl(38 26% 91%);
+  --aside-bg:      hsl(36 30% 92%);
+  --masthead-bg:   hsl(40 26% 97%);
+  --eyebrow:       hsl(14 46% 36%);
+  --rail:          hsl(14 46% 36%);
+  --byline-accent: hsl(14 46% 30%);
+  --display-font:  Georgia, Cambria, 'Times New Roman', 'Noto Serif', serif;
+  --display-bangla: 'Shonar Bangla', 'Bangla MN', 'Noto Serif Bengali', 'Nirmala UI', sans-serif;
+}
+:root[data-scheme="b"] h1, :root[data-scheme="b"] h2, :root[data-scheme="b"] h3, :root[data-scheme="b"] h4 { font-weight: 700; letter-spacing: -.012em; }
+:root[data-scheme="b"] .display { font-weight: 700; letter-spacing: -.015em; }
+:root[data-scheme="b"] .kicker { letter-spacing: .2em; }
+html[data-lang="bn"][data-scheme="b"] :is(h1, h2, h3, h4) { font-weight: 700; }
+html[data-lang="bn"][data-scheme="b"] .display { font-size: clamp(30px, 5.2vw, 60px); }
+
+/* --- C. Tinted surfaces, identity plum (Material 3) ----------------------
+   Neutrals are tinted toward the primary the way Material 3 tints its
+   surface containers, so page / card / well read as one family with real
+   steps, and a second hue - plum - is spent on exactly one meaning: WHO.
+   The author's name, its identity chip and the eyebrows are plum, so the
+   person is findable on every page at a glance. */
+:root[data-scheme="c"] {
+  --bg:            hsl(190 26% 95%);
+  --glass-2:       hsl(190 18% 91%);
+  --aside-bg:      hsl(190 22% 92.5%);
+  --callout-bg:    hsl(190 30% 94%);
+  --masthead-bg:   hsl(0 0% 100%);
+  --eyebrow:       hsl(322 24% 36%);
+  --rail:          hsl(322 24% 36%);
+  --byline-accent: hsl(322 26% 30%);
+  --accent-soft:   hsl(190 26% 32% / 0.12);
+}
+:root[data-scheme="c"] .masthead { border-top: 3px solid var(--accent); }
+:root[data-scheme="c"] .byline-id[data-identity="real"], :root[data-scheme="c"] .byline-id[data-identity="pseudo"] { border-color: var(--byline-accent); color: var(--byline-accent); }
+:root[data-scheme="c"] .byline-av { border-color: var(--byline-accent); }
+
 /* Dark theme tokens — single source of truth.
    Previously this block was duplicated between @media system-pref and
    :root[data-theme="dark"]; both paths now point at the same body via
@@ -1166,12 +1312,16 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
     --bg:        hsl(200 14% 8%);
     --ink:       hsl(40 14% 94%);
     --ink-soft:  hsl(200 6% 72%);
-    --ink-faint: hsl(200 6% 56%);
+    --ink-faint: hsl(200 6% 58%);  /* 58% not 56%: 56% gave only 4.28:1 on the dark aside well */
 
     --glass:      hsl(200 12% 12%);
-    --glass-2:    hsl(200 10% 16%);
-    --rule:       hsl(40 14% 94% / 0.08);
-    --rule-hard:  hsl(40 14% 94% / 0.20);
+    --glass-2:    hsl(200 10% 17.5%);   /* was 16%: inset now >=1.18:1 vs panel */
+    --rule:       hsl(40 14% 94% / 0.16);  /* was 0.08 = 1.24:1; dividers must sit in the 1.5-2.1 band */
+    --rule-hard:  hsl(40 14% 94% / 0.25);  /* was 0.20 = 1.83:1; hover edge >=2:1 */
+    --rule-strong: hsl(40 14% 94% / 0.38); /* 1.4.11 boundary, >=3:1 on a panel */
+    --input-border: hsl(200 8% 52%);        /* solid, text-grade like NHS grey-1 */
+    --keyline:       0 2px 0 var(--rule);
+    --keyline-hover: 0 2px 0 var(--rule-hard);
     --shadow:     0 1px 1px hsl(0 0% 0% / .25);
 
     --accent:      hsl(190 32% 70%);
@@ -1211,11 +1361,15 @@ body[data-motion="off"] .progress i { width: 100%; transform: none; }
   --bg:        hsl(200 14% 8%);
   --ink:       hsl(40 14% 94%);
   --ink-soft:  hsl(200 6% 72%);
-  --ink-faint: hsl(200 6% 56%);
+  --ink-faint: hsl(200 6% 58%);  /* 58% not 56%: 56% gave only 4.28:1 on the dark aside well */
   --glass:      hsl(200 12% 12%);
-  --glass-2:    hsl(200 10% 16%);
-  --rule:       hsl(40 14% 94% / 0.08);
-  --rule-hard:  hsl(40 14% 94% / 0.20);
+  --glass-2:    hsl(200 10% 17.5%);   /* was 16%: inset now >=1.18:1 vs panel */
+  --rule:       hsl(40 14% 94% / 0.16);  /* was 0.08 = 1.24:1; dividers must sit in the 1.5-2.1 band */
+  --rule-hard:  hsl(40 14% 94% / 0.25);  /* was 0.20 = 1.83:1; hover edge >=2:1 */
+    --rule-strong: hsl(40 14% 94% / 0.38); /* 1.4.11 boundary, >=3:1 on a panel */
+    --input-border: hsl(200 8% 52%);        /* solid, text-grade like NHS grey-1 */
+    --keyline:       0 2px 0 var(--rule);
+    --keyline-hover: 0 2px 0 var(--rule-hard);
   --shadow:     0 1px 1px hsl(0 0% 0% / .25);
   --accent:      hsl(190 32% 70%);
   --accent-2:    hsl(190 32% 78%);
@@ -1291,10 +1445,27 @@ main { padding: clamp(28px, 4vw, 56px) clamp(20px, 4vw, 56px) 120px; }
    for posture — the minimal pass removes the serif/sans contrast because
    the contrast was the loudest thing about the warm variant. */
 .display {
-  font-family: var(--sans); font-weight: 700;
+  font-family: var(--serif); font-weight: 700;
   letter-spacing: -.022em; line-height: 1.08;
 }
 html[data-lang="bn"] .display { line-height: 1.34; letter-spacing: 0; }
+/* STORY-COM-001 — one reply level. The indent is the only depth cue and
+   there is no rule for a second level, because a second level cannot
+   exist. Collapses on narrow screens so long Bangla lines keep their
+   measure. */
+/* A deleted comment that still has replies keeps its slot so the thread
+   reads, but loses all emphasis - it is a gap, not a contribution. */
+.comment.tombstone { background: transparent; border-style: dashed; }
+.comment.tombstone > .note { margin: 0; }
+.comment-replies { margin: 12px 0 0 0; padding-inline-start: 18px; border-inline-start: 2px solid var(--rule); display: grid; gap: 10px; }
+.comment-replies .comment { background: var(--glass-2); }
+.reply-box { margin-top: 12px; }
+@media (max-width: 720px) { .comment-replies { padding-inline-start: 10px; } }
+
+/* ux/DESIGN.md:164 — one continuous voice: headings share the body's
+   rounded stack. Compact UI text stays in --sans (Segoe UI Variable
+   Display), which is what the same line specifies. */
+h1, h2, h3, h4 { font-family: var(--serif); }
 .story-lead::first-letter { float: none; font-size: inherit; padding: 0; color: inherit; font-weight: inherit; line-height: inherit; }
 .story { font-family: var(--serif); font-size: 16.5px; line-height: 1.78; }
 html[data-lang="bn"] .story { font-family: var(--bangla); line-height: 2.02; }
@@ -1329,7 +1500,7 @@ html[data-lang="bn"] .story { font-family: var(--bangla); line-height: 2.02; }
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--neutral); opacity: .9;
 }
-.cap b { font-size: 22px; font-weight: 600; line-height: 1.1; letter-spacing: -.015em; color: var(--ink); }
+.cap b { /* bangla-ok: a numeral; 1.25 clears Bengali digits at 22px */ font-size: 22px; font-weight: 600; line-height: 1.25; letter-spacing: -.015em; color: var(--ink); } /* Bengali numerals */
 html[data-lang="bn"] .cap b { font-size: 21px; }
 .cap em { font-style: normal; font-size: 12px; color: var(--ink-faint); }
 .cap.c-positive::before, .cap.c-good::before { background: var(--positive); }
@@ -1386,7 +1557,7 @@ html[data-lang="bn"] .emerg-head p { font-family: var(--bangla); font-size: 16.5
   color: var(--danger-ink);
 }
 html[data-lang="bn"] .emerg-card .k { font-family: var(--bangla); text-transform: none; font-size: 13.5px; letter-spacing: 0; }
-.emerg-card .num {
+.emerg-card .num { /* bangla-ok: a phone number set large; 1.05 clears digits */
   font-family: var(--sans); font-weight: 700;
   font-size: clamp(28px, 3.6vw, 36px);
   line-height: 1.05; letter-spacing: -.02em;
@@ -1541,6 +1712,237 @@ html[data-lang="bn"] .mini-row > span > .mini-loc { font-family: var(--bangla); 
   .pl-name { font-size: 13.5px; }
   .pl-loc { font-size: 12px; }
   .pl-n { font-size: 12.5px; }
+}
+
+/* ==========================================================================
+   Index pages + workspace repair (Concept 04b)
+
+   Two problems solved here:
+
+   1. The browsable indexes (#doctors, #facilities, #topics, #experiences)
+      needed a shared head + list rhythm, reusing the existing card
+      renderers so a card looks identical in Browse and in Search.
+
+   2. #view-mine was the only view in the app with no view-scoped block.
+      About has `#view-about .panel`, Emergency has `#view-emergency .panel`,
+      Mine had nothing - so it inherited generic rules that did not fit and
+      leaned on eight inline `style=` patches instead. Each rule below
+      replaces one of those patches.
+   ========================================================================== */
+
+/* --- names: linked vs deliberately not linked ---------------------------
+   WCAG 1.4.1 - colour is not the only signal: a linked name also carries an
+   underline on hover/focus and stays a real <button> in the tab order.
+   NN/g's rule that link colour is reserved for links is why an anonymous
+   author is rendered in --ink-faint and never in --accent: an accent-tinted
+   name that does nothing is a false affordance, and on this product a name
+   is the highest-stakes thing a reader can click. */
+.name-link {
+  color: var(--accent); font: inherit; padding: 0; border: 0; background: none;
+  cursor: pointer; text-align: inherit; text-decoration: none;
+  border-radius: 2px;
+}
+.name-link:hover, .name-link:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
+.name-anon { color: var(--ink-faint); font-style: normal; }
+
+/* A card title is now the primary link, so the button must inherit the
+   heading's type rather than shrink to button type. */
+h3 > .name-link, h4 > .name-link { font: inherit; color: var(--ink); display: inline; }
+h3 > .name-link:hover, h3 > .name-link:focus-visible { color: var(--accent); }
+
+/* --- byline: the person who wrote this ---------------------------------
+   Every reference product (Care Opinion, Medium, Substack, Trustpilot,
+   Airbnb) renders the author at or near body size in FULL ink while the
+   rest of the byline is gray, and puts it BEFORE the content. Here the
+   name was 12.5px in the same accent as the doctor link, and on phones it
+   sat after the story, the comments and the disclaimer. Identity mode is
+   carried by avatar glyph + chip border style + chip text, never colour. */
+.byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0;
+  font-family: var(--sans); font-size: 13px; color: var(--ink-faint); }
+html[data-lang="bn"] .byline { font-family: var(--bangla); font-size: 14px; }
+.byline-av { flex: none; width: 40px; height: 40px; border-radius: 50%; display: inline-grid; place-items: center;
+  font-size: 14px; font-weight: 700; letter-spacing: .02em; line-height: 1.4;
+  /* bangla-ok: the circle is geometry, but initials() renders the Bengali
+     name, so the leading is 1.4 — 19.6px inside a 40px disc. */
+  background: var(--glass-2); border: 1px solid var(--rule-hard); color: var(--ink); }
+.byline-av[data-identity="pseudo"] { border-style: dashed; border-color: var(--rule-hard); }
+.byline-av[data-identity="anon"]   { background: var(--ink-faint); border: 0; color: var(--glass); }
+.byline-lede { font-weight: 500; }
+.byline-name { font: inherit; font-size: 16px; font-weight: 650; color: var(--ink);
+  background: none; border: 0; padding: 0; cursor: pointer; text-decoration: none; border-radius: 2px; }
+html[data-lang="bn"] .byline-name { font-size: 17px; }
+button.byline-name:hover, button.byline-name:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
+span.byline-name { cursor: default; color: var(--ink-soft); font-weight: 600; }   /* anonymous: not a control */
+.byline-id { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--rule-hard); color: var(--ink-soft); white-space: nowrap; }
+html[data-lang="bn"] .byline-id { font-size: 13px; }
+.byline-id[data-identity="pseudo"] { border-style: dashed; }
+.byline-id[data-identity="anon"]   { border: 0; background: var(--glass-2); color: var(--ink-faint); }
+.byline-rel, .byline-when { font-weight: 400; }
+.byline--lead { margin: 12px 0 16px; gap: 8px 12px; }
+.byline--lead .byline-av { /* bangla-ok: geometry, leading inherited from .byline-av */ width: 44px; height: 44px; font-size: 15px; }
+.byline--lead .byline-name { font-size: 18px; }
+html[data-lang="bn"] .byline--lead .byline-name { font-size: 19px; }
+.byline--comment { gap: 4px 8px; }
+.byline--comment .byline-av { /* bangla-ok: geometry, leading inherited from .byline-av */ width: 28px; height: 28px; font-size: 11px; }
+.byline--comment .byline-name { font-size: 14px; }
+html[data-lang="bn"] .byline--comment .byline-name { font-size: 15px; }
+.acct .byline { margin: 4px 0 8px; }
+
+/* --- callouts: NHS inset-text form -----------------------------------
+   The warn/danger tints (hsl(40 30% 95%), hsl(8 36% 96%)) sit at 1.00:1
+   against the darker page, so a callout on the page vanished. NHS carries
+   the meaning on one left keyline instead of a fill; the ink colours are
+   already >=4.5:1, so they double as a >3:1 keyline. */
+.callout { background: var(--glass); border: 1px solid var(--rule); border-left: 4px solid var(--rule-strong); }
+.callout.warn   { background: var(--glass); border-color: var(--rule); border-left-color: var(--warn-ink); }
+.callout.danger { background: var(--glass); border-color: var(--rule); border-left-color: var(--danger-ink); }
+
+/* --- form controls: WCAG 1.4.11 wants a 3:1 boundary; --rule is 1.55 --- */
+.field input[type="text"], .field select, .field textarea { border-color: var(--input-border); background: var(--glass); }
+.field :is(input, select, textarea):focus-visible { border-color: var(--accent); }
+
+/* --- shared: a real button row, replacing ad-hoc inline flex ------------- */
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* --- the write CTA: the only accent-filled control in the chrome --------- */
+.cta-write { flex: none; white-space: nowrap; align-self: center; }
+html[data-lang="bn"] .cta-write { font-family: var(--bangla); }
+@media (max-width: 720px) {
+  /* On narrow screens the masthead stacks; the CTA spans it so it stays the
+     obvious primary action rather than a stray pill. */
+  .cta-write { width: 100%; justify-content: center; margin-top: 4px; }
+}
+
+/* --- index pages -------------------------------------------------------- */
+.index-head { margin-bottom: 20px; }
+.index-head .display { margin-bottom: 10px; }
+.index-head .lead {
+  font-family: var(--sans); font-size: 16px; color: var(--ink-soft);
+  max-width: 62ch; margin: 0;
+}
+html[data-lang="bn"] .index-head .lead { font-family: var(--bangla); font-size: 17px; line-height: 1.85; }
+.count-line { margin: 0 0 18px; }
+.index-list { display: grid; gap: 10px; }
+
+/* --- compact list cards (directory + search results) ---------------------
+   The card carried a 70px avatar, an h3 up to 25px, five badges, two
+   buttons and a FULL capsule distribution (22px numerals) in a 270px side
+   column - then a double gap between cards. On phones the capsules dropped
+   below, taller still. This is the same card at list density: the title is
+   the link, the numbers stay separate and count-labelled (no score), just
+   inline and small. */
+.doc-entry { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px 16px; padding: 14px 16px; }
+.doc-av { width: 48px; height: 48px; }
+.doc-entry h3 { font-size: clamp(19px, 1.9vw, 21px); margin: 0 0 2px; line-height: 1.25; }
+/* 1.25 undercuts the 1.45 the Bengali heading rule sets, and this is a
+   doctor NAME - restore the taller box for Bengali. */
+html[data-lang="bn"] .doc-entry h3 { line-height: 1.45; } /* 1.2-1.3x body: NHS card title is 1.37x, GOV.UK heading-m 1.26x */
+.doc-sub { font-size: 14px; margin: 0 0 4px; color: var(--ink-soft); } /* meta step: 14px --ink-soft, not 13px one shade off body */
+.doc-treats { font-family: var(--sans); font-size: 12.5px; color: var(--ink-faint); margin: 0 0 8px; }
+html[data-lang="bn"] .doc-treats { font-family: var(--bangla); font-size: 13px; }
+.doc-flags { margin-bottom: 0; }
+.doc-side { display: grid; gap: 8px; justify-items: end; align-content: start; }
+.dist.compact { display: grid; gap: 6px; justify-items: end; }
+.dist.compact .denominator { margin: 0; }
+.capsules.compact { gap: 6px; margin: 0; justify-content: flex-end; }
+.capsules.compact .cap {
+  flex: none; min-width: 0; display: inline-flex; align-items: baseline; gap: 5px;
+  padding: 4px 10px; border-radius: 999px;
+}
+.capsules.compact .cap b { font-size: 13.5px; }
+.capsules.compact .cap em { font-size: 11.5px; }
+.capsules.compact .cap::before { display: none; }
+/* .index-list already spaces the cards; the shared-layer sibling margin
+   doubled it. */
+.index-list .doc-entry + .doc-entry { margin-top: 0; }
+/* A card is a distinct plane at rest, not only on hover. Before this the
+   shared layer set background:transparent / border:transparent and only the
+   :hover rule painted it white. Keyline = NHS nhsuk-card--clickable, flat,
+   zero blur - it is an edge, not the panel shadow FD-027 rejected. */
+.doc-entry { background: var(--glass); border: 1px solid var(--rule); box-shadow: var(--keyline); }
+.doc-entry:hover { background: var(--glass); border-color: var(--rule-hard); box-shadow: var(--keyline-hover); transform: none; }
+.doc-entry:active { transform: translateY(2px); box-shadow: none; }
+.acct, .mine-item, .related-card, .browse-card { box-shadow: var(--keyline); }
+.related-card:hover, .browse-card:hover { box-shadow: var(--keyline-hover); }
+/* Capsules are a boundary the reader inspects; resting edge moves up one
+   step, hover to the 3:1 tier. */
+.cap { border-color: var(--rule-hard); }
+.cap:hover { border-color: var(--rule-strong); }
+@media (max-width: 1040px) {
+  .doc-entry { grid-template-columns: 48px minmax(0, 1fr); }
+  .doc-av { width: 48px; height: 48px; }
+  .doc-side { grid-column: 1 / -1; justify-items: start; }
+  .dist.compact { justify-items: start; }
+  .capsules.compact { justify-content: flex-start; }
+}
+@media (max-width: 720px) {
+  .doc-entry { grid-template-columns: 44px minmax(0, 1fr); padding: 12px 14px; }
+  .doc-av { width: 44px; height: 44px; }
+}
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+
+/* --- #mine: the section titles ------------------------------------------
+   `.sub-head` was used in the markup and defined in no stylesheet, so these
+   headings rendered at h4 default size - visually indistinguishable from
+   body text. */
+.sub-head {
+  font-family: var(--sans); font-size: 17px; font-weight: 700;
+  letter-spacing: -.01em; color: var(--ink); margin: 0 0 10px;
+}
+html[data-lang="bn"] .sub-head { font-family: var(--bangla); font-size: 18px; letter-spacing: 0; }
+
+/* --- #mine: scoped layout ----------------------------------------------- */
+#view-mine .a-head, #view-saved .index-head, #view-notifications .index-head { margin-bottom: 16px; }
+#view-mine .a-head .display { margin-bottom: 10px; }
+
+/* The bottom three sections used `<section class="sub">`, and `.sub` has no
+   standalone rule - `<section>` has no default margin, so the gap between
+   them was literally 0px. Scoped, because a bare `.sub {}` would leak onto
+   the eight `<p class="sub">` hints in the compose view. */
+#view-mine > .sub {
+  margin-bottom: 20px; padding: clamp(22px, 3.2vw, 32px);
+  background: var(--glass); border: 1px solid var(--rule); border-radius: var(--r-lg);
+}
+#view-mine > .sub:last-child { margin-bottom: 0; }
+
+/* Cards sat on a panel of the same pure white, separated by a 7%-alpha
+   hairline - effectively invisible. Drop the item to the inset tone. */
+#view-mine .mine-item { background: var(--glass-2); }
+
+/* `.row-flags` is styled only as `.acct .row-flags`, so inside `.mine-item`
+   the badges had no gap and were concatenated without whitespace. */
+.mine-item .row-flags { display: flex; flex-wrap: wrap; gap: 7px; }
+
+/* `.mine-item` is a grid with gap:10px, but its `<p>` children also carry
+   `margin: 0 0 1em`, which stacked on top of the gap. */
+.mine-item > p { margin: 0; }
+.mine-item .excerpt { color: var(--ink-soft); font-size: 15.5px; }
+.mine-item:last-child { margin-bottom: 0; }
+
+/* The workspace sub-nav (My writing / Saved / Notifications). */
+.mine-subtabs { margin-top: 0; }
+
+/* `.notif:first-child { border-top: 0 }` could never match, because an
+   intro `<p>` was always the panel's first child. */
+.notif { border-top: 0; }
+.notif + .notif { border-top: 1px solid var(--rule); }
+
+/* --- responsive: no media query covered Mine at all --------------------- */
+@media (max-width: 720px) {
+  .mine-item { padding: 16px; }
+  /* Four ghost buttons in ~234px of content width wrapped to 3-4 rows. */
+  .mine-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .mine-tabs::-webkit-scrollbar { display: none; }
+  .index-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 420px) {
+  .index-grid { grid-template-columns: 1fr; }
+}
+@media (pointer: coarse) {
+  /* `.tabs a`, `.chip`, `.opt` and `.seg button` were all in the 44px list;
+     `.mine-tabs button` was missed, so it stayed ~40px. */
+  .mine-tabs button { min-height: 44px; padding-block: 12px; }
 }
 
 /* ==========================================================================
@@ -1760,7 +2162,7 @@ html[data-lang="bn"] .viewer-page .row { font-family: var(--bangla); }
 .viewer-page .table > span.h {
   background: var(--glass-2); color: var(--ink); font-weight: 650;
 }
-.viewer-page .seal {
+.viewer-page .seal { /* bangla-ok: the synthetic-document stamp, English by rule */
   position: absolute; right: 56px; bottom: 56px;
   width: 86px; height: 86px; border-radius: 50%;
   border: 2px solid color-mix(in oklab, var(--warn-line) 70%, transparent);
@@ -1816,5 +2218,5 @@ html[data-lang="bn"] .viewer-controls .vdownload { font-family: var(--bangla); }
   .viewer-stage { padding: 14px; }
   .viewer-page { width: 100%; padding: 28px 24px; }
   .viewer-page .row { grid-template-columns: 100px 1fr; }
-  .viewer-page .seal { width: 64px; height: 64px; right: 22px; bottom: 22px; font-size: 8px; }
+  .viewer-page .seal { /* bangla-ok: geometry, the responsive variant of the stamp */ width: 64px; height: 64px; right: 22px; bottom: 22px; font-size: 8px; }
 }

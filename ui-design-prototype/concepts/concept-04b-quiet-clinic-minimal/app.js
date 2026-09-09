@@ -25,7 +25,18 @@
     ignoredChecks: [],
     published: false,
     mineTab: 'published',
-    reactions: {}
+    reactions: {},
+    /* Demo-local simulation state. Nothing leaves the page. */
+    bookmarks: null,        /* seeded from the fixture on first use */
+    comments: {},           /* reviewId -> comments added in this session */
+    commentLikes: {},       /* commentId -> boolean */
+    removedPublished: [],   /* STORY-REV-003 tombstones */
+    removedDrafts: [],
+    replyTo: null,          /* STORY-COM-001: open reply composer */
+    editingComment: null,   /* FR-COM-003: open comment editor */
+    commentEdits: {},       /* commentId -> edited text */
+    commentDeleted: [],     /* commentId -> deleted by its author */
+    personId: null          /* STORY-USER-001: public profile handle */
   };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -59,6 +70,21 @@
     renderAll();
     announce('Language: ' + (lang === 'bn' ? 'Bengali' : 'English'));
   }
+  /* Light-mode colour SCHEME, orthogonal to light/dark. A scheme only
+     recolours light mode: its CSS block sits after the light base and
+     before the dark blocks, so dark still wins. Persisted like the theme,
+     restored before first paint by the head script in index.html. */
+  function setScheme(s) {
+    s = s || '';
+    if (s) { document.documentElement.setAttribute('data-scheme', s); }
+    else { document.documentElement.removeAttribute('data-scheme'); }
+    try { localStorage.setItem('rk04.scheme', s); } catch (e) {}
+    $$('[data-scheme-pick]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-scheme-pick') === s));
+    });
+  }
+  try { setScheme(localStorage.getItem('rk04.scheme') || ''); } catch (e) {}
+
   function setTheme(theme) {
     state.theme = theme;
     if (theme) { document.documentElement.setAttribute('data-theme', theme); }
@@ -83,7 +109,62 @@
     return state.motion === 'on' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
-  var VIEWS = ['discover', 'results', 'profile', 'account', 'condition', 'facility', 'compose', 'mine', 'emergency', 'about'];
+  var VIEWS = ['discover', 'results', 'doctors', 'profile', 'experiences', 'account',
+               'topics', 'condition', 'facilities', 'facility', 'compose',
+               'mine', 'saved', 'notifications', 'person', 'emergency', 'about'];
+
+  /* ---------------------------------------------------------------------
+     Routing: URL slug <-> internal view name.
+
+     The slug is what the reader sees and types; the view name is what the
+     render functions are called. Keeping them separate means the URLs can
+     read correctly ("#doctors/d1") without renaming every internal
+     identifier, and one table stays the single source of truth.
+
+     Slugs are plural so they are hackable: trimming "#doctors/d1" gives
+     "#doctors", which is a real index page (NN/g, "URL as UI").
+     Slugs stay in Latin script in both languages - a percent-encoded
+     Bengali slug is unusable once pasted into WhatsApp or Messenger.
+     --------------------------------------------------------------------- */
+  var ROUTES = {
+    discover:      { view: 'discover' },
+    search:        { view: 'results' },
+    doctors:       { view: 'doctors',      detail: 'profile',   id: 'doctorId' },
+    facilities:    { view: 'facilities',   detail: 'facility',  id: 'facilityId' },
+    topics:        { view: 'topics',       detail: 'condition', id: 'conditionId' },
+    experiences:   { view: 'experiences',  detail: 'account',   id: 'accountId' },
+    write:         { view: 'compose' },
+    me:            { view: 'mine' },
+    saved:         { view: 'saved' },
+    notifications: { view: 'notifications' },
+    authors:       { view: 'person',       detail: 'person',    id: 'personId' },
+    emergency:     { view: 'emergency' },
+    about:         { view: 'about' }
+  };
+
+  /* view name -> the slug that addresses it, so go('profile/d1') still works
+     from every existing call site and lands on "#doctors/d1". */
+  var VIEW_SLUG = {};
+  Object.keys(ROUTES).forEach(function (slug) {
+    var r = ROUTES[slug];
+    VIEW_SLUG[r.view] = slug;
+    if (r.detail) { VIEW_SLUG[r.detail] = slug; }
+  });
+
+  /* Hashes that shipped before the rename. Kept so existing links, open tabs
+     and the gallery route index do not break. */
+  var LEGACY_SLUG = {
+    results: 'search', profile: 'doctors', account: 'experiences',
+    condition: 'topics', facility: 'facilities', compose: 'write',
+    mine: 'me', person: 'authors'
+  };
+
+  /* Browser tab / history / bookmark title. WCAG 2.4.2 asks for a
+     descriptive title; the unique part leads because tabs, bookmark lists
+     and alt-tab all truncate from the right. */
+  function setTitle(text) {
+    document.title = text ? text + ' — RogiKotha' : T('brand.name') + ' — ' + T('brand.tagline');
+  }
 
   // STORY-NFR-006: announce view/lang/theme changes to screen readers
   function announce(msg) {
@@ -99,15 +180,23 @@
   }
 
   function route() {
-    var raw = (location.hash || '#discover').replace('#', '');
+    var raw = (location.hash || '#discover').replace('#', '').replace(/^\//, '');
     var parts = raw.split('/');
-    var v = parts[0];
-    if (VIEWS.indexOf(v) === -1) { v = 'discover'; }
-    if (parts[1]) {
-      if (v === 'profile') { state.doctorId = parts[1]; }
-      if (v === 'account') { state.accountId = parts[1]; }
-      if (v === 'condition') { state.conditionId = parts[1]; }
-      if (v === 'facility') { state.facilityId = parts[1]; }
+    var slug = parts[0];
+
+    /* Redirect a pre-rename hash to its new home so old links keep working. */
+    if (LEGACY_SLUG[slug]) {
+      location.replace('#' + LEGACY_SLUG[slug] + (parts[1] ? '/' + parts[1] : ''));
+      return;
+    }
+
+    var def = ROUTES[slug];
+    if (!def) { def = ROUTES.discover; slug = 'discover'; }
+
+    /* An id segment selects the detail view; without one we show the index. */
+    var v = (parts[1] && def.detail) ? def.detail : def.view;
+    if (parts[1] && def.id) {
+      state[def.id] = def.id === 'personId' ? decodeURIComponent(parts[1]) : parts[1];
     }
     document.body.setAttribute('data-view', v);
     VIEWS.forEach(function (n) { var el = $('#view-' + n); if (el) { el.hidden = (n !== v); } });
@@ -119,11 +208,59 @@
     if (v === 'account') { renderAccount(); }
     if (v === 'condition') { renderCondition(); }
     if (v === 'facility') { renderFacility(); }
+    if (v === 'person') { renderPerson(); }
+    if (v === 'doctors') { renderDoctorIndex(); }
+    if (v === 'facilities') { renderFacilityIndex(); }
+    if (v === 'topics') { renderTopicIndex(); }
+    if (v === 'experiences') { renderExperienceIndex(); }
+    if (v === 'saved') { renderSaved(); }
+    if (v === 'notifications') { renderNotifications(); }
     $('#tray').hidden = !(v === 'results' && state.compare.length);
+    setTitle(titleForView(v));
     window.scrollTo({ top: 0, behavior: motionAllowed() ? 'smooth' : 'auto' });
     announce('View: ' + v);
   }
+
+  /* The title's first segment is the page's own H1, so the tab, the history
+     entry and the heading all say the same thing. */
+  function titleForView(v) {
+    switch (v) {
+      case 'discover':      return '';
+      case 'results':       return (state.query ? state.query + ' — ' : '') + T('nav.results');
+      case 'doctors':       return T('nav.profile');
+      case 'profile':       return (RK.doctorById(state.doctorId) || {}).name ? P(RK.doctorById(state.doctorId).name) : T('nav.profile');
+      case 'facilities':    return T('nav.facilities');
+      case 'facility':      return (RK.facilityById(state.facilityId) || {}).name ? P(RK.facilityById(state.facilityId).name) : T('nav.facilities');
+      case 'topics':        return T('nav.condition');
+      case 'condition':     return conditionName(state.conditionId) || T('nav.condition');
+      case 'experiences':   return T('nav.account');
+      case 'account': {
+        var rv = RK.reviewById(state.accountId);
+        if (!rv || !rv.title) { return T('nav.account'); }
+        /* Medium/Substack put the author in the tab title too. */
+        return P(rv.title) + (rv.author && rv.identity !== 'anon' ? ' \u2014 ' + T('experience.writtenBy') + ' ' + P(rv.author) : '');
+      }
+      case 'compose':       return T('nav.compose');
+      case 'mine':          return T('nav.mine');
+      case 'saved':         return T('mine.bookmarks');
+      case 'notifications': return T('mine.notifications');
+      case 'person':        return state.personId || T('person.kicker');
+      case 'emergency':     return T('nav.emergency');
+      case 'about':         return T('nav.about');
+      default:              return '';
+    }
+  }
+  function conditionName(id) {
+    var c = RK.conditions.filter(function (x) { return x.id === id; })[0];
+    return c ? P(c.name) : '';
+  }
+
+  /* Call sites pass an internal view name ("profile/d1"); this maps it to the
+     public slug so links and the address bar stay in one vocabulary. */
   function go(path) {
+    var parts = String(path).split('/');
+    var slug = VIEW_SLUG[parts[0]] || parts[0];
+    path = slug + (parts[1] ? '/' + parts.slice(1).join('/') : '');
     if (location.hash === '#' + path) { route(); } else { location.hash = '#' + path; }
   }
 
@@ -146,7 +283,7 @@
      rule is a second reading of the same numbers and can be deleted
      without losing anything. */
   // STORY-REV-004: narrative sentiment distribution block (no combined score)
-  function distBlock(dist, keys, prefix, title) {
+  function distBlock(dist, keys, prefix, title, compact) {
     if (dist.empty) { return '<p class="denominator">' + esc(T('label.notProvided')) + '</p>'; }
 
     var plain = keys.map(function (k) { return dist.counts[k] + ' ' + T(prefix + k).toLowerCase(); }).join(', ') +
@@ -161,6 +298,14 @@
         '<em>' + esc(T(prefix + k)) + '</em></span>';
     }).join('');
 
+    if (compact) {
+      /* List cards: denominator first, capsules inline. Every capsule still
+         states its own count, so the row cannot be read as a single score. */
+      return '<div class="dist compact">' +
+        '<span class="denominator">' + bn(dist.total) + ' ' + esc(T('sentiment.accounts')) + '</span>' +
+        '<div class="capsules compact" role="img" aria-label="' + esc(plain) + '">' + caps + '</div>' +
+      '</div>';
+    }
     return '<div class="dist">' +
       '<div class="capsules" role="img" aria-label="' + esc(plain) + '">' + caps + '</div>' +
       '<p class="denominator">' + esc(T('sentiment.of')) + ' ' + bn(dist.total) + ' ' +
@@ -169,8 +314,8 @@
     '</div>';
   }
 
-  function sentimentBlock(list) {
-    return distBlock(RK.sentimentOf(list), RK.SENTIMENTS, 'sentiment.', T('sentiment.title'));
+  function sentimentBlock(list, compact) {
+    return distBlock(RK.sentimentOf(list), RK.SENTIMENTS, 'sentiment.', T('sentiment.title'), compact);
   }
 
   function outcomeBlock(list) {
@@ -296,6 +441,89 @@
       '<div>' + RK.reviews.slice(0, 4).map(accountRow).join('') + '</div>';
   }
 
+  /* ---------------------------------------------------------------------
+     Name rendering.
+
+     Two rules, enforced here so no call site can forget them:
+
+     1. A name is a link only when it resolves to a page that exists.
+        EXPERIENCE.md:57 - "the title is the primary link".
+     2. An anonymous author is NEVER a link and never carries the accent
+        colour. WCAG 1.4.1: colour must not be the only signal, and link
+        colour is reserved for links, so an accent-tinted name that does
+        nothing is a false affordance. ADR-0008 forbids the linkage itself.
+
+     Before this helper existed the anon guard lived in accountRow() only,
+     and the facility-review row simply printed every author unlinked -
+     safe by omission, not by rule.
+     --------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------
+     byline(subject, variant, opts) - THE ONLY place an author is rendered.
+
+     Before this there were two divergent paths (a helper and an inline copy
+     in accountRow), the name sat at 12.5px in the same accent as the doctor
+     link, real-name and pseudonym produced identical markup, and on phones
+     the author appeared after the story, the comments and the disclaimer.
+
+     Every reference product (Care Opinion, Medium, Substack, Trustpilot,
+     Airbnb) renders the author at or near body size in FULL ink while the
+     rest of the byline is gray, and puts it BEFORE the content. Identity
+     mode is carried by avatar glyph + chip border style + chip TEXT, so it
+     survives greyscale and WCAG 1.4.1. Anonymous is never a control and
+     never accent-coloured (ADR-0008).
+
+     variant: 'row' (list), 'lead' (detail head), 'comment', 'mine'
+     opts.when   - a date string to append
+     opts.static - emit no control (inside a <button>, or a preview)
+     --------------------------------------------------------------------- */
+  function initials(r) {
+    var n = (P(r.author) || '').replace(/^(Dr\.?|\u09a1\u09be\.?)\s+/, '');
+    if (r.identity === 'pseudo') { return '@' + n.charAt(0); }
+    var parts = n.split(/\s+/).filter(Boolean);
+    return (parts[0] || '').charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '');
+  }
+  function byline(r, variant, opts) {
+    opts = opts || {};
+    if (!r || !r.author) { return ''; }
+    var id = r.identity || 'pseudo';
+    var anon = id === 'anon';
+    var tag = opts.static ? 'span' : 'p';
+    var av = '<span class="byline-av" data-identity="' + id + '" aria-hidden="true">' +
+      (anon ? '\u2014' : esc(initials(r))) + '</span>';
+    var lede = '', name;
+    if (anon) {
+      name = '<span class="byline-name">' + esc(T('byline.anonSentence')) + '</span>';
+    } else {
+      var ledeKey = variant === 'comment' ? 'byline.commentBy'
+                  : variant === 'mine'    ? 'byline.yourIdentity'
+                  : 'experience.writtenBy';
+      lede = '<span class="byline-lede">' + esc(T(ledeKey)) + '</span>';
+      name = opts.static
+        ? '<span class="byline-name">' + esc(P(r.author)) + '</span>'
+        : '<button class="byline-name" type="button" data-person="' + esc(r.author.en) +
+          '" aria-label="' + esc(T('byline.otherBy').replace('{name}', P(r.author))) + '">' + esc(P(r.author)) + '</button>';
+    }
+    var chip = '<span class="byline-id" data-identity="' + id + '">' +
+      esc(anon ? T('compose.identity.anon') : T('byline.identity.' + id)) + '</span>';
+    var rel = (r.relationship && variant !== 'comment')
+      ? '<span class="byline-rel">' + esc(T('rel.' + r.relationship)) + '</span>' : '';
+    var when = '';
+    if (variant === 'comment' && r.when) { when = '<span class="byline-when">' + esc(P(r.when)) + '</span>'; }
+    else if (opts.when) { when = '<time class="byline-when">' + esc(opts.when) + '</time>'; }
+    return '<' + tag + ' class="byline' + (variant ? ' byline--' + variant : '') + '">' +
+      av + lede + name + chip + rel + when + '</' + tag + '>';
+  }
+  function doctorLink(d) {
+    if (!d) { return ''; }
+    return '<button class="link-btn name-link" type="button" data-doctor="' + d.id +
+      '" title="' + esc(T('nav.viewDoctor')) + '">' + esc(P(d.name)) + '</button>';
+  }
+  function facilityLink(f, label) {
+    if (!f) { return ''; }
+    return '<button class="link-btn name-link" type="button" data-facility="' + f.id +
+      '" title="' + esc(T('nav.viewFacility')) + '">' + esc(label || P(f.name)) + '</button>';
+  }
+
   function accountRow(r) {
     var d = RK.doctorById(r.doctorId);
     var c = RK.conditionById(r.conditionId);
@@ -308,9 +536,12 @@
         (ev ? badge('warn', bn(ev) + ' ' + (state.lang === 'bn' ? 'কাগজপত্র' : 'documents')) : badge('plain', T('label.noDocuments'))) +
       '</div>' +
       '<h3>' + esc(P(r.title)) + '</h3>' +
-      '<p class="who"><span>' + esc(T('rel.' + r.relationship)) + '</span><span>' + esc(P(r.author)) + '</span>' +
-        '<span>' + esc(T('review.episodeDate')) + ': ' + esc(P(r.period)) + '</span>' +
-        '<span>' + esc(P(d.name)) + '</span></p>' +
+      /* The byline is the row's second line, under the title (M3 leading-
+         avatar list item). The doctor moves to its own meta line below in
+         accent, which is what removes the author/doctor ambiguity. */
+      byline(r, 'row') +
+      '<p class="who"><span>' + esc(T('review.episodeDate')) + ': ' + esc(P(r.period)) + '</span>' +
+        '<span>' + doctorLink(d) + '</span></p>' +
       '<p class="excerpt">' + esc(P(r.body).slice(0, 190)) + '…</p>' +
       '<button class="btn small ghost" type="button" data-account="' + r.id + '">' + esc(T('review.readFull')) + '</button>' +
     '</article>';
@@ -385,21 +616,20 @@
     var pinned = state.compare.indexOf(d.id) !== -1;
     var conds = RK.conditionsFor(d.id).slice(0, 3);
     return '<div class="doc-entry" role="group">' +
-      '<span class="doc-av">' + RK.avatar(d.name.en, d.accent, 70) + '</span>' +
+      '<span class="doc-av">' + RK.avatar(d.name.en, d.accent, 48) + '</span>' +
       '<span>' +
-        '<h3>' + esc(P(d.name)) + '</h3>' +
+        '<h3>' + doctorLink(d) + '</h3>' +
         '<p class="doc-sub">' + esc(P(d.specialty)) + ' · ' + esc(P(d.area)) + ', ' + esc(P(d.city)) + '</p>' +
+        (conds.length ? '<p class="doc-treats">' + conds.map(function (c) { return esc(P(c.condition.name)) + ' (' + bn(c.count) + ')'; }).join(' · ') + '</p>' : '') +
         '<span class="doc-flags">' + notVerified() +
           (docCount(d.id) ? badge('plain', bn(docCount(d.id)) + ' ' + (state.lang === 'bn' ? 'কাগজপত্র' : 'documents')) : badge('plain', T('label.noDocuments'))) +
-          conds.map(function (c) { return '<span class="tag">' + esc(P(c.condition.name)) + ' (' + bn(c.count) + ')</span>'; }).join('') +
-        '</span>' +
-        '<span class="entry-actions">' +
-          '<button class="btn small" type="button" data-doctor="' + d.id + '">' + esc(T('nav.profile')) + '</button>' +
-          '<button class="btn small ghost" type="button" data-pin="' + d.id + '">' +
-            esc(pinned ? T('compare.remove') : T('compare.add')) + '</button>' +
         '</span>' +
       '</span>' +
-      '<span>' + sentimentBlock(RK.reviewsFor(d.id)) + '</span>' +
+      '<span class="doc-side">' +
+        sentimentBlock(RK.reviewsFor(d.id), true) +
+        '<button class="btn small ghost" type="button" data-pin="' + d.id + '">' +
+          esc(pinned ? T('compare.remove') : T('compare.add')) + '</button>' +
+      '</span>' +
     '</div>';
   }
 
@@ -407,19 +637,16 @@
     var list = RK.facilityReviewsFor(f.id);
     var dist = RK.criteriaDist(list, 'overall');
     return '<div class="doc-entry" role="group">' +
-      '<span class="doc-av">' + RK.avatar(f.name.en + f.id, f.accent, 70) + '</span>' +
+      '<span class="doc-av">' + RK.avatar(f.name.en + f.id, f.accent, 48) + '</span>' +
       '<span>' +
-        '<h3>' + esc(P(f.name)) + (f.branch ? ' <span style="font-weight:400">— ' + esc(P(f.branch)) + '</span>' : '') + '</h3>' +
+        '<h3>' + facilityLink(f, P(f.name) + (f.branch ? ' — ' + P(f.branch) : '')) + '</h3>' +
         '<p class="doc-sub">' + esc(T('facility.type.' + f.type)) + ' · ' + esc(P(f.area)) + ', ' + esc(P(f.city)) + '</p>' +
         '<span class="doc-flags">' +
           badge('plain', bn(list.length) + ' ' + T('sentiment.accounts')) +
           (f.parent ? badge('plain', T('facility.parent') + ' ' + P(f.parent)) : '') +
         '</span>' +
-        '<span class="entry-actions">' +
-          '<button class="btn small" type="button" data-facility="' + f.id + '">' + esc(T('nav.facility')) + '</button>' +
-        '</span>' +
       '</span>' +
-      '<span>' + distBlock(dist, RK.CRIT_VALUES, 'crit.', T('crit.overall')) + '</span>' +
+      '<span class="doc-side">' + distBlock(dist, RK.CRIT_VALUES, 'crit.', T('crit.overall'), true) + '</span>' +
     '</div>';
   }
 
@@ -474,7 +701,7 @@
         '<div class="p-hero">' +
           '<span class="p-av">' + RK.avatar(d.name.en, d.accent, 118) + '</span>' +
           '<div>' +
-            '<span class="kicker">' + esc(T('nav.profile')) + '</span>' +
+            '<span class="kicker">' + esc(T('profile.kicker')) + '</span>' +
             '<h1>' + esc(P(d.name)) + '</h1>' +
             '<p class="p-spec">' + esc(P(d.specialty)) + ' · ' + esc(P(d.area)) + ', ' + esc(P(d.city)) + '</p>' +
             '<div class="p-flags">' + notVerified() +
@@ -584,7 +811,13 @@
     var c = RK.conditionById(r.conditionId);
     var chain = RK.followUpsFor(r.id);
     var later = RK.laterCareFor(r.id);
-    var thread = RK.commentsFor(r.id);
+    var thread = RK.commentsFor(r.id).concat(state.comments[r.id] || []);
+    /* STORY-COM-001: exactly one reply level. Top-level comments carry
+       their replies; a reply never carries children of its own. */
+    var topLevel = thread.filter(function (c) { return !c.parentId; });
+    var repliesOf = function (id) {
+      return thread.filter(function (c) { return c.parentId === id; });
+    };
     var others = RK.accountsByAuthor(r);
     var related = RK.relatedByCondition(r.conditionId, r.id);
     var sameDoctor = RK.reviewsFor(r.doctorId).filter(function (x) { return x.id !== r.id; });
@@ -592,8 +825,12 @@
     /* Sections 1–13, in the order a reader needs them. */
     host.innerHTML =
       '<section class="a-head">' +
-        '<span class="kicker">' + esc(T('account.episode')) + ' · ' + esc(P(c.name)) + '</span>' +
+        '<span class="kicker">' + esc(T('experience.episode')) + ' · ' + esc(P(c.name)) + '</span>' +
         '<h1 class="a-title display">' + esc(P(r.title)) + '</h1>' +
+        /* Directly under the title, above the story - on every viewport.
+           Previously the only attribution lived in the aside, which is
+           second in DOM order, so on phones it came after the comments. */
+        byline(r, 'lead', { when: P(r.posted) }) +
         '<div class="a-flags">' +
           badge(r.sentiment, T('sentiment.' + r.sentiment)) +
           badge('plain', T('outcome.' + r.outcome)) +
@@ -612,52 +849,56 @@
           '<p class="story story-lead">' + esc(P(r.body)) + '</p>' +
 
           // STORY-REV-002: detailed treatment timeline chapters
-          (r.timeline ? '<h2 class="section-head">' + esc(T('account.timeline')) + '</h2>' +
+          (r.timeline ? '<h2 class="section-head">' + esc(T('experience.timeline')) + '</h2>' +
             '<ul class="chapters">' + r.timeline.map(function (t) {
               return '<li><span class="k">' + esc(T(CHAPTER_KEYS[t.k] || 'review.readFull')) + '</span>' +
                 '<p>' + esc(L(t)) + '</p></li>';
             }).join('') + '</ul>' : '') +
 
           (chain.length ? '<h2 class="section-head">' + esc(T('label.followUp')) + '</h2>' +
-            '<p class="note">' + esc(T('account.currentNote')) + '</p>' +
+            '<p class="note">' + esc(T('experience.currentNote')) + '</p>' +
             '<ul class="spine">' + chain.map(function (fu, i) {
               var isCurrent = i === chain.length - 1;
               return '<li class="' + (isCurrent ? 'current' : '') + '">' +
-                '<span class="when">' + esc(P(fu.date)) + (isCurrent ? ' · ' + esc(T('account.currentStatus')) : '') + '</span>' +
+                '<span class="when">' + esc(P(fu.date)) + (isCurrent ? ' · ' + esc(T('experience.currentStatus')) : '') + '</span>' +
                 '<p>' + esc(L(fu)) + '</p></li>';
             }).join('') + '</ul>' : '') +
 
-          (later ? '<h2 class="section-head">' + esc(T('account.laterCare')) + '</h2>' +
+          (later ? '<h2 class="section-head">' + esc(T('experience.laterCare')) + '</h2>' +
             '<div class="callout"><b>' + esc(P(later.provider)) + '</b>' + esc(L(later)) + '</div>' +
-            '<p class="note" style="margin-top:10px">' + esc(T('account.laterCareNote')) + '</p>' : '') +
+            '<p class="note" style="margin-top:10px">' + esc(T('experience.laterCareNote')) + '</p>' : '') +
 
           evidenceSection(r) +
 
-          '<h2 class="section-head">' + esc(T('account.discussion')) + ' <span style="font-weight:400;font-size:.6em;color:var(--ink-faint)">' + bn(thread.length) + '</span></h2>' +
-          '<p class="note">' + esc(T('account.providerNote')) + '</p>' +
-          '<div>' + (thread.length ? thread.map(commentHtml).join('') : '<p class="note">' + esc(T('mine.empty')) + '</p>') + '</div>' +
+          '<h2 class="section-head">' + esc(T('experience.discussion')) + ' <span style="font-weight:400;font-size:.6em;color:var(--ink-faint)">' + bn(thread.length) + '</span></h2>' +
+          '<p class="note">' + esc(T('experience.providerNote')) + '</p>' +
+          '<div>' + (topLevel.length
+            ? topLevel.map(function (c) { return commentHtml(c, repliesOf(c.id)); }).join('')
+            : '<p class="note">' + esc(T('mine.empty')) + '</p>') + '</div>' +
+          '<p class="note">' + esc(T('experience.replyLevel')) + '</p>' +
 
           '<div class="composer-box">' +
-            '<label class="sr-only" for="new-comment">' + esc(T('account.commentBox')) + '</label>' +
-            '<textarea id="new-comment" placeholder="' + esc(T('account.commentBox')) + '"></textarea>' +
-            '<p class="note" style="margin:8px 0">' + esc(T('account.commentHint')) + '</p>' +
-            '<button class="btn small" type="button">' + esc(T('account.commentPost')) + '</button>' +
+            '<label class="sr-only" for="new-comment">' + esc(T('experience.commentBox')) + '</label>' +
+            '<textarea id="new-comment" placeholder="' + esc(T('experience.commentBox')) + '"></textarea>' +
+            '<p class="note" style="margin:8px 0">' + esc(T('experience.commentHint')) + '</p>' +
+            '<button class="btn small" type="button" data-post-comment="' + r.id + '">' + esc(T('experience.commentPost')) + '</button>' +
           '</div>' +
 
           '<div class="reactions">' +
             reactBtn(r.id + ':up', T('review.helpful'), r.likes) +
             reactBtn(r.id + ':down', T('review.notHelpful'), r.dislikes) +
             '<button class="react" type="button" data-report="account:' + r.id + '">' + esc(T('review.report')) + '</button>' +
-            '<button class="react" type="button">' + esc(T('account.bookmark')) + '</button>' +
+            '<button class="react" type="button" data-bookmark="' + r.id + '" aria-pressed="' + isBookmarked(r.id) + '">' +
+              esc(T(isBookmarked(r.id) ? 'experience.bookmarked' : 'experience.bookmark')) + '</button>' +
           '</div>' +
           '<p class="note" style="margin-top:10px">' + esc(T('review.reactionNote')) + '</p>' +
 
-          '<h2 class="section-head">' + esc(T('account.relatedCond')) + '</h2>' +
-          '<p class="note" style="margin-bottom:14px">' + esc(T('account.relatedNote')) + '</p>' +
+          '<h2 class="section-head">' + esc(T('experience.relatedCond')) + '</h2>' +
+          '<p class="note" style="margin-bottom:14px">' + esc(T('experience.relatedNote')) + '</p>' +
           (related.length ? '<div class="related-grid">' + related.map(relatedCard).join('') + '</div>'
             : '<p class="note">' + esc(T('mine.empty')) + '</p>') +
 
-          (sameDoctor.length ? '<h2 class="section-head">' + esc(T('account.relatedDoc')) + '</h2>' +
+          (sameDoctor.length ? '<h2 class="section-head">' + esc(T('experience.relatedDoc')) + '</h2>' +
             '<div class="related-grid">' + sameDoctor.map(relatedCard).join('') + '</div>' : '') +
 
           '<div class="callout warn" style="margin-top:26px">' + esc(T('disclaimer.long')) + '</div>' +
@@ -666,12 +907,15 @@
         /* The margin: provenance, dates, identity and warnings sit beside
            the story rather than interrupting it. */
         '<aside class="a-margin">' +
-          '<div><span class="k">' + esc(T('account.writtenBy')) + '</span><span class="v">' + esc(T('rel.' + r.relationship)) + '</span></div>' +
-          '<div><span class="k">' + esc(T('account.identityMode')) + '</span><span class="v">' + esc(P(r.author)) + '</span>' +
-            (r.identity === 'anon' ? '<br><span>' + esc(T('compose.identity.anonNote')) + '</span>' : '') + '</div>' +
+          /* "Written by" used to label the RELATIONSHIP and "Shown as" the
+             name. The lead byline now carries both; only the anonymity
+             caveat stays here. */
+          (r.identity === 'anon'
+            ? '<div><span class="k">' + esc(T('compose.identity.anon')) + '</span><span class="v">' + esc(T('compose.identity.anonNote')) + '</span></div>'
+            : '') +
           '<div><span class="k">' + esc(T('review.episodeDate')) + '</span><span class="v">' + esc(P(r.period)) + '</span></div>' +
           '<div><span class="k">' + esc(state.lang === 'bn' ? 'প্রকাশ' : 'Published') + '</span><span class="v">' + esc(P(r.posted)) + '</span></div>' +
-          '<div><span class="k">' + esc(T('nav.profile')) + '</span>' +
+          '<div><span class="k">' + esc(T('profile.kicker')) + '</span>' +
             '<button class="link-btn" type="button" data-doctor="' + d.id + '">' + esc(P(d.name)) + '</button>' +
             '<br><span>' + esc(T('label.notVerified')) + '</span></div>' +
           '<div><span class="k">' + esc(T('filter.condition')) + '</span>' +
@@ -679,7 +923,7 @@
           '<div><span class="k">' + esc(T('review.tags')) + '</span>' +
             '<span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">' +
             r.tags.map(function (t) { return '<span class="tag">' + esc(L(t)) + '</span>'; }).join('') + '</span></div>' +
-          (others.length ? '<div><span class="k">' + esc(T('account.otherAccounts')) + '</span>' +
+          (others.length ? '<div><span class="k">' + esc(T('experience.otherAccounts')) + '</span>' +
             others.map(function (o) {
               return '<button class="link-btn" type="button" data-account="' + o.id + '" style="display:block;text-align:start">' + esc(P(o.title)) + '</button>';
             }).join('') + '</div>' : '') +
@@ -688,6 +932,14 @@
   }
 
   // STORY-COM-002: like/dislike button, idempotent and anonymous-safe
+  /* Bookmarks are seeded once from the fixture so the button and the
+     Saved tab always agree. STORY-USER-002. */
+  function bookmarks() {
+    if (!state.bookmarks) { state.bookmarks = RK.user.bookmarks.slice(); }
+    return state.bookmarks;
+  }
+  function isBookmarked(id) { return bookmarks().indexOf(id) !== -1; }
+
   function reactBtn(key, label, base) {
     var on = !!state.reactions[key];
     return '<button class="react" type="button" data-react="' + key + '" aria-pressed="' + on + '">' +
@@ -711,7 +963,7 @@
               (e.state === 'failed'
                 ? esc(P(e.failReason)) + ' ' + esc(T('ev.failNote'))
                 : bn(e.pages) + ' ' + esc(state.lang === 'bn' ? 'পাতা' : 'pages')) + '</span>' +
-            (e.state === 'failed' ? '' : '<button class="btn small ghost" type="button" data-view-evidence="' + esc(e.id) + '">' + esc(T('account.openEvidence')) + '</button>') +
+            (e.state === 'failed' ? '' : '<button class="btn small ghost" type="button" data-view-evidence="' + esc(e.id) + '">' + esc(T('experience.openEvidence')) + '</button>') +
           '</div>';
         }).join('') + '</div>';
     }).join('');
@@ -719,31 +971,90 @@
     return '<h2 class="section-head">' + esc(T('filter.evidence')) + '</h2>' +
       '<div class="callout warn"><b>' + esc(T('evidence.status')) + '</b>' + esc(T('evidence.notice')) + '</div>' +
       '<div class="ev-groups" style="margin-top:12px">' + groups + '</div>' +
-      '<p class="note" style="margin-top:10px">' + esc(T('account.evidenceOnly')) + '</p>';
+      '<p class="note" style="margin-top:10px">' + esc(T('experience.evidenceOnly')) + '</p>';
   }
 
   // STORY-COM-001: flat comment thread with mentions + advice warning
-  function commentHtml(k) {
-    var body = esc(L(k));
+  /* FR-COM-003: a user may edit or delete only their own comments.
+     Locally posted comments are authored 'You'; the demo user is
+     RK.user.username in the fixtures. */
+  function ownComment(k) {
+    return k.author && (k.author.en === 'You' || k.author.en === RK.user.username);
+  }
+  function commentBody(k) {
+    return Object.prototype.hasOwnProperty.call(state.commentEdits, k.id)
+      ? state.commentEdits[k.id] : P(k.body);
+  }
+
+  function commentHtml(k, replies, isReply) {
+    /* Comment text lives in k.body ({en,bn}); L(k) read k.en/k.bn and
+       rendered the literal string "undefined". */
+    var body = esc(commentBody(k));
     if (k.mentions) {
       k.mentions.forEach(function (m) {
         body = body.replace('@' + m, '<span class="mention">@' + esc(m) + '</span>');
       });
     }
+    /* Deleted: if replies hang off this comment we must leave a tombstone so
+       the thread still reads; with no replies the comment simply goes.
+       STORY-COM-001: "deleted context tombstones only when needed". */
+    if (state.commentDeleted.indexOf(k.id) !== -1) {
+      if (!(replies && replies.length)) { return ''; }
+      return '<article class="comment tombstone">' +
+        '<p class="note"><b>' + esc(T('experience.commentGone')) + '</b> ' + esc(T('experience.commentGoneWhy')) + '</p>' +
+        '<div class="comment-replies">' + replies.map(function (rp) { return commentHtml(rp, null, true); }).join('') + '</div>' +
+      '</article>';
+    }
+    if (state.editingComment === k.id) {
+      return '<article class="comment">' +
+        '<div class="comment-head">' + byline(k, 'comment') + '</div>' +
+        '<div class="composer-box">' +
+          '<label class="sr-only" for="edit-text">' + esc(T('experience.editComment')) + '</label>' +
+          '<textarea id="edit-text">' + esc(commentBody(k)) + '</textarea>' +
+          '<button class="btn small" type="button" data-save-comment="' + k.id + '">' + esc(T('experience.saveComment')) + '</button> ' +
+          '<button class="btn small ghost" type="button" data-cancel-edit="1">' + esc(T('experience.cancelEdit')) + '</button>' +
+        '</div>' +
+      '</article>';
+    }
     return '<article class="comment ' + (k.dangerous ? 'flagged' : '') + '">' +
       '<div class="comment-head">' +
-        '<span class="name">' + esc(P(k.author)) + '</span>' +
-        (k.providerFor ? badge('plain', T('account.providerHere')) : '') +
+        byline(k, 'comment') +
+        (k.providerFor ? badge('plain', T('experience.providerHere')) : '') +
+        (ownComment(k) ? badge('plain', T('experience.ownComment')) : '') +
+        (state.commentEdits[k.id] !== undefined ? '<span>(' + esc(T('experience.edited')) + ')</span>' : '') +
         '<span>' + esc(P(k.when)) + '</span>' +
       '</div>' +
-      (k.dangerous ? '<div class="callout danger" style="margin-bottom:10px"><b>⚠ ' + esc(T('report.dangerous')) + '</b>' + esc(T('account.dangerWarning')) + '</div>' : '') +
+      (k.dangerous ? '<div class="callout danger" style="margin-bottom:10px"><b>⚠ ' + esc(T('report.dangerous')) + '</b>' + esc(T('experience.dangerWarning')) + '</div>' : '') +
       '<p>' + body + '</p>' +
-      (k.link ? '<p class="note" style="margin-top:8px">⚠ ' + esc(T('account.linkWarning')) + ' <code>' + esc(k.link) + '</code></p>' : '') +
+      (k.link ? '<p class="note" style="margin-top:8px">⚠ ' + esc(T('experience.linkWarning')) + ' <code>' + esc(k.link) + '</code></p>' : '') +
       '<div class="comment-actions">' +
-        '<button class="link-btn" type="button">' + esc(T('review.helpful')) + ' ' + bn(k.likes || 0) + '</button>' +
+        '<button class="link-btn" type="button" data-clike="' + k.id + '" aria-pressed="' + !!state.commentLikes[k.id] + '">' +
+          esc(T('review.helpful')) + ' ' + bn((k.likes || 0) + (state.commentLikes[k.id] ? 1 : 0)) + '</button>' +
+        (isReply ? '' : '<button class="link-btn" type="button" data-reply="' + k.id + '">' + esc(T('experience.reply')) + '</button>') +
+        (ownComment(k)
+          ? '<button class="link-btn" type="button" data-edit-comment="' + k.id + '">' + esc(T('experience.editComment')) + '</button>' +
+            '<button class="link-btn" type="button" data-del-comment="' + k.id + '">' + esc(T('experience.deleteComment')) + '</button>'
+          : '') +
         '<button class="link-btn" type="button" data-report="comment:' + k.id + '">' + esc(T('review.report')) + '</button>' +
       '</div>' +
+      (state.replyTo === k.id ? replyBox(k) : '') +
+      ((replies && replies.length)
+        ? '<div class="comment-replies">' + replies.map(function (rp) { return commentHtml(rp, null, true); }).join('') + '</div>'
+        : '') +
     '</article>';
+  }
+
+  /* Inline reply composer, prefilled with the mention so the mention path
+     is exercised. Non-modal, per the story's accessibility note. */
+  function replyBox(k) {
+    return '<div class="composer-box reply-box">' +
+      '<p class="note">' + esc(T('experience.replyingTo')) + ' <b>' + esc(P(k.author)) + '</b></p>' +
+      '<label class="sr-only" for="reply-text">' + esc(T('experience.commentBox')) + '</label>' +
+      '<textarea id="reply-text">@' + esc(P(k.author)) + ' </textarea>' +
+      '<p class="note" style="margin:8px 0">' + esc(T('experience.commentHint')) + '</p>' +
+      '<button class="btn small" type="button" data-post-reply="' + k.id + '">' + esc(T('experience.commentPost')) + '</button> ' +
+      '<button class="btn small ghost" type="button" data-reply-cancel="1">' + esc(T('experience.replyCancel')) + '</button>' +
+    '</div>';
   }
 
   function relatedCard(r) {
@@ -751,6 +1062,9 @@
     return '<button class="related-card" type="button" data-account="' + r.id + '">' +
       badge(r.sentiment, T('sentiment.' + r.sentiment)) +
       '<h4>' + esc(P(r.title)) + '</h4>' +
+      /* Rendered no author at all; the only person named was the doctor.
+         Static: this card is itself a <button>. */
+      byline(r, 'row', { static: true }) +
       '<p>' + esc(P(d.name)) + ' · ' + esc(P(r.period)) + ' · ' + esc(T('outcome.' + r.outcome)) + '</p>' +
     '</button>';
   }
@@ -960,7 +1274,7 @@
                 badge(r.criteria.overall || 'plain', r.criteria.overall ? T('crit.' + r.criteria.overall) : T('label.notProvided')) +
                 badge('plain', T('review.episodeDate') + ': ' + P(r.period)) +
               '</div>' +
-              '<p class="who"><span>' + esc(P(r.author)) + '</span><span>' + esc(P(r.posted)) + '</span></p>' +
+              byline(r, 'row', { when: P(r.posted) }) +
               '<p class="excerpt">' + esc(P(r.body)) + '</p>' +
               '<div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px">' +
                 RK.CRITERIA.filter(function (k) { return r.criteria[k]; }).map(function (k) {
@@ -1057,6 +1371,15 @@
         '<h1 class="display">' + esc(T('compose.title')) + '</h1>' +
         '<p class="lede">' + esc(T('compose.intro')) + '</p>' +
       '</section>' +
+
+      /* EXPERIENCE.md:115 - the demo must explain simulated sign-in at the
+         point of contributing. This is also the only thing state.role gates,
+         which is what makes the demo panel's claim true rather than
+         decorative. */
+      (state.role === 'reader'
+        ? '<div class="callout warn signin-note"><b>' + esc(T('write.signinTitle')) + '</b>' +
+          esc(T('write.signinBody')) + '</div>'
+        : '') +
 
       '<div class="c-modes">' +
         '<button class="c-mode" type="button" data-mode="quick" aria-pressed="' + (!detailed) + '">' +
@@ -1224,10 +1547,17 @@
     var host = $('#preview');
     if (!host) { return; }
     var d = RK.doctorById(state.doctorId);
-    var who = state.composeIdentity === 'anon' ? T('compose.identity.anon')
-      : (state.composeIdentity === 'real' ? (state.lang === 'bn' ? 'আপনার নাম' : 'Your name') : 'shirin_88');
+    /* The one screen where the writer chooses identity mode: show the real
+       byline at real size, not a 12px gray line. */
+    var previewAuthor = {
+      identity: state.composeIdentity, relationship: 'self',
+      author: state.composeIdentity === 'real'
+        ? { en: 'Your name', bn: 'আপনার নাম' }
+        : (state.composeIdentity === 'anon' ? { en: 'Anonymous', bn: 'নাম প্রকাশ না করে' } : { en: 'shirin_88', bn: 'shirin_88' })
+    };
     host.innerHTML =
-      '<p class="denominator" style="margin:0 0 9px">' + esc(who) + ' · ' + esc(P(d.name)) + '</p>' +
+      byline(previewAuthor, 'row', { static: true }) +
+      '<p class="denominator" style="margin:0 0 9px">' + esc(P(d.name)) + '</p>' +
       (state.composeSentiment ? badge(state.composeSentiment, T('sentiment.' + state.composeSentiment)) : badge('plain', T('label.notProvided'))) +
       ' ' + (state.composeOutcome ? badge('plain', T('outcome.' + state.composeOutcome)) : '') +
       '<p style="margin-top:11px;font-size:15px;color:var(--ink-soft)">' +
@@ -1281,30 +1611,46 @@
     if (!host) { return; }
     setNoindex(true);
     var u = RK.user;
-    // STORY-USER-002: dashboard tabs (published / drafts / bookmarks / notifications)
+    /* STORY-USER-002. Saved and Notifications moved to their own routes:
+       "My writing" cannot head a list of other people's writing, and Saved
+       is exactly that. Only the two authored states stay here. */
     var tabs = [
       { k: 'published', n: u.published.length },
-      { k: 'drafts', n: u.drafts.length },
-      { k: 'bookmarks', n: u.bookmarks.length },
-      { k: 'notifications', n: u.notifications.filter(function (n) { return n.unread; }).length }
+      { k: 'drafts', n: u.drafts.length }
     ];
+    if (state.mineTab !== 'published' && state.mineTab !== 'drafts') { state.mineTab = 'published'; }
 
     var body = '';
     if (state.mineTab === 'published') {
       body = u.published.map(function (id) {
         var r = RK.reviewById(id);
         var d = RK.doctorById(r.doctorId);
+        /* STORY-REV-003: deletion leaves a restorable tombstone, it does not
+           silently drop the row. mine.deleteNote promises 30-day restore. */
+        if (state.removedPublished.indexOf(id) !== -1) {
+          return '<article class="mine-item">' +
+            '<div class="row-flags">' + badge('warn', T('mine.deleted')) + '</div>' +
+            '<h3>' + esc(P(r.title)) + '</h3>' +
+            '<p class="note">' + esc(T('mine.deleteNote')) + '</p>' +
+            '<div class="mine-actions">' +
+              '<button class="btn small ghost" type="button" data-restore-pub="' + id + '">' + esc(T('mine.restore')) + '</button>' +
+            '</div>' +
+          '</article>';
+        }
         return '<article class="mine-item">' +
           '<div class="row-flags">' + badge(r.sentiment, T('sentiment.' + r.sentiment)) +
             badge('plain', T('outcome.' + r.outcome)) +
             badge('plain', bn(RK.followUpsFor(r.id).length) + ' ' + T('label.followUp').toLowerCase()) + '</div>' +
           '<h3>' + esc(P(r.title)) + '</h3>' +
-          '<p class="note">' + esc(P(d.name)) + ' · ' + esc(P(r.period)) + ' · ' + esc(P(r.posted)) + '</p>' +
+          /* The author could not see how their own experience was
+             attributed (real name / username / anonymous). */
+          byline(r, 'mine') +
+          '<p class="note">' + doctorLink(d) + ' · ' + esc(P(r.period)) + ' · ' + esc(P(r.posted)) + '</p>' +
           '<div class="mine-actions">' +
             '<button class="btn small ghost" type="button" data-account="' + r.id + '">' + esc(T('review.readFull')) + '</button>' +
-            '<button class="btn small ghost" type="button">' + esc(T('mine.edit')) + '</button>' +
-            '<button class="btn small ghost" type="button">' + esc(T('mine.addFollowUp')) + '</button>' +
-            '<button class="btn small ghost" type="button">' + esc(T('mine.delete')) + '</button>' +
+            '<button class="btn small ghost" type="button" data-goto="compose">' + esc(T('mine.edit')) + '</button>' +
+            '<button class="btn small ghost" type="button" data-goto="compose">' + esc(T('mine.addFollowUp')) + '</button>' +
+            '<button class="btn small ghost" type="button" data-del-pub="' + r.id + '">' + esc(T('mine.delete')) + '</button>' +
           '</div>' +
           '<p class="note">' + esc(T('mine.deleteNote')) + '</p>' +
         '</article>';
@@ -1312,7 +1658,7 @@
     } else if (state.mineTab === 'drafts') {
       // STORY-REV-003: drafts tab with 30-day expiration note
       body = '<p class="note" style="margin-bottom:14px">' + esc(T('mine.draftNote')) + '</p>' +
-        u.drafts.map(function (dr) {
+        u.drafts.filter(function (dr) { return state.removedDrafts.indexOf(dr.id) === -1; }).map(function (dr) {
           return '<article class="mine-item">' +
             '<div class="row-flags">' +
               badge(dr.expiresInDays <= 7 ? 'warn' : 'plain', T('mine.draftExpires') + ' ' + bn(dr.expiresInDays) + ' ' + T('mine.days')) +
@@ -1322,31 +1668,24 @@
             '<p class="excerpt">' + esc(P(dr.excerpt)) + '</p>' +
             '<div class="mine-actions">' +
               '<button class="btn small" type="button" data-goto="compose">' + esc(T('mine.continue')) + '</button>' +
-              '<button class="btn small ghost" type="button">' + esc(T('mine.delete')) + '</button>' +
+              '<button class="btn small ghost" type="button" data-del-draft="' + dr.id + '">' + esc(T('mine.delete')) + '</button>' +
             '</div>' +
           '</article>';
         }).join('');
-    } else if (state.mineTab === 'bookmarks') {
-      body = '<p class="note" style="margin-bottom:14px">' + esc(T('mine.bookmarkNote')) + '</p>' +
-        u.bookmarks.map(function (id) { return accountRow(RK.reviewById(id)); }).join('');
-    } else {
-      // STORY-NOTIF-001: in-app notifications feed (mine tab)
-      body = '<p class="note" style="margin-bottom:14px">' + esc(T('mine.notifNote')) + '</p>' +
-        u.notifications.map(function (n) {
-          return '<div class="notif ' + (n.unread ? 'unread' : '') + '">' +
-            '<span class="dot" aria-hidden="true"></span>' +
-            '<span>' + esc(L(n.text)) + '<span class="when">' + esc(P(n.when)) + '</span></span></div>';
-        }).join('');
     }
+    /* Saved (#saved) and Notifications (#notifications) now render in
+       renderSaved() / renderNotifications(). */
 
     host.innerHTML =
       '<section class="a-head">' +
         '<span class="kicker">' + esc(P(RK.user.display)) + ' · ' + esc(RK.user.username) + '</span>' +
         '<h1 class="display">' + esc(T('mine.title')) + '</h1>' +
+        '<div class="btn-row"><button class="btn small ghost" type="button" data-person="' + esc(RK.user.username) + '">' + esc(T('person.viewPublic')) + '</button></div>' +
         '<p class="note">' + esc(P(RK.user.joined)) + '</p>' +
       '</section>' +
+      workspaceNav('mine') +
       '<section class="panel">' +
-        '<div class="mine-tabs">' + tabs.map(function (t) {
+        '<div class="mine-tabs mine-subtabs">' + tabs.map(function (t) {
           return '<button type="button" data-mine="' + t.k + '" aria-pressed="' + (state.mineTab === t.k) + '">' +
             esc(T('mine.' + t.k)) + '<span class="count">' + bn(t.n) + '</span></button>';
         }).join('') + '</div>' +
@@ -1390,6 +1729,163 @@
      9 · Emergency — Bangladesh national emergency contacts
      ===================================================================== */
 
+  /* STORY-USER-001 — public profile projection.
+     Allowlist: accounts published under this display name, and comments
+     written under it. Anonymous accounts are excluded by construction;
+     drafts, bookmarks and notifications never appear. Page is noindex. */
+  /* ---------------------------------------------------------------------
+     Browsable indexes.
+
+     The search results view already lists doctors and facilities once you
+     have searched. These are the front doors for someone who does not yet
+     know what to search for, and they are deliberately unranked: the order
+     is alphabetical, never by volume or sentiment, so the list itself
+     cannot be read as a league table.
+     --------------------------------------------------------------------- */
+  function indexHead(kicker, title, note) {
+    return '<section class="a-head index-head">' +
+      '<span class="kicker">' + esc(kicker) + '</span>' +
+      '<h1 class="display">' + esc(title) + '</h1>' +
+      '<p class="lead">' + esc(note) + '</p>' +
+    '</section>';
+  }
+  function byName(a, b) { return P(a.name).localeCompare(P(b.name)); }
+
+  function renderDoctorIndex() {
+    var host = $('#view-doctors');
+    if (!host) { return; }
+    setNoindex(false);
+    var list = RK.doctors.slice().sort(byName);
+    host.innerHTML =
+      indexHead(T('nav.discover'), T('nav.profile'), T('index.doctorsNote')) +
+      '<p class="note count-line">' + bn(list.length) + ' · ' + esc(T('nav.profile')) + '</p>' +
+      '<div class="index-list">' + list.map(doctorEntry).join('') + '</div>';
+  }
+
+  function renderFacilityIndex() {
+    var host = $('#view-facilities');
+    if (!host) { return; }
+    setNoindex(false);
+    var list = RK.facilities.slice().sort(byName);
+    host.innerHTML =
+      indexHead(T('nav.discover'), T('nav.facilities'), T('index.facilitiesNote')) +
+      '<p class="note count-line">' + bn(list.length) + ' · ' + esc(T('nav.facilities')) + '</p>' +
+      '<div class="index-list">' + list.map(facilityEntry).join('') + '</div>';
+  }
+
+  /* Unlike the Discover tile grid, this lists EVERY topic including the ones
+     with nothing written about them yet - an empty topic is the strongest
+     invitation to write, and hiding it hides the gap. */
+  function renderTopicIndex() {
+    var host = $('#view-topics');
+    if (!host) { return; }
+    setNoindex(false);
+    var list = RK.conditions.slice().sort(byName);
+    host.innerHTML =
+      indexHead(T('nav.discover'), T('nav.condition'), T('index.topicsNote')) +
+      '<p class="note count-line">' + bn(list.length) + ' · ' + esc(T('nav.condition')) + '</p>' +
+      '<div class="index-grid">' + list.map(function (c) {
+        var n = RK.conditionAccounts(c.id).length;
+        return '<button class="browse-card" type="button" data-condition="' + c.id + '">' +
+          '<b>' + esc(P(c.name)) + '</b>' +
+          '<span>' + (n
+            ? bn(n) + ' ' + esc(T('sentiment.accounts'))
+            : esc(T('index.emptyTopic'))) + '</span>' +
+        '</button>';
+      }).join('') + '</div>';
+  }
+
+  function renderExperienceIndex() {
+    var host = $('#view-experiences');
+    if (!host) { return; }
+    setNoindex(false);
+    var list = RK.reviews.slice();
+    host.innerHTML =
+      indexHead(T('nav.discover'), T('nav.account'), T('index.experiencesNote')) +
+      '<p class="note count-line">' + bn(list.length) + ' ' + esc(T('sentiment.accounts')) + '</p>' +
+      '<div class="index-list">' + list.map(accountRow).join('') + '</div>';
+  }
+
+  /* Split out of the workspace: "My writing" cannot head a list of other
+     people's writing, and Saved holds exactly that. */
+  function renderSaved() {
+    var host = $('#view-saved');
+    if (!host) { return; }
+    setNoindex(true);
+    var ids = bookmarks();
+    host.innerHTML =
+      indexHead(T('nav.mine'), T('mine.bookmarks'), T('mine.bookmarkNote')) +
+      workspaceNav('saved') +
+      (ids.length
+        ? '<div class="index-list">' + ids.map(function (id) { return accountRow(RK.reviewById(id)); }).join('') + '</div>'
+        : '<p class="note">' + esc(T('mine.empty')) + '</p>');
+  }
+
+  function renderNotifications() {
+    var host = $('#view-notifications');
+    if (!host) { return; }
+    setNoindex(true);
+    var list = RK.user.notifications || [];
+    host.innerHTML =
+      indexHead(T('nav.mine'), T('mine.notifications'), T('mine.notifNote')) +
+      workspaceNav('notifications') +
+      (list.length
+        ? '<section class="panel">' + list.map(function (n) {
+            return '<div class="notif' + (n.unread ? ' unread' : '') + '">' +
+              '<span class="dot" aria-hidden="true"></span>' +
+              '<span>' + esc(L(n.text)) + '<span class="when">' + esc(L(n.when)) + '</span></span>' +
+            '</div>';
+          }).join('') + '</section>'
+        : '<p class="note">' + esc(T('mine.empty')) + '</p>');
+  }
+
+  /* Shared sub-navigation for the three workspace pages. */
+  function workspaceNav(current) {
+    var items = [['mine', 'nav.mine'], ['saved', 'mine.bookmarks'], ['notifications', 'mine.notifications']];
+    return '<nav class="mine-tabs" aria-label="' + esc(T('nav.mine')) + '">' +
+      items.map(function (it) {
+        return '<button type="button" data-goto="' + it[0] + '" aria-pressed="' +
+          (it[0] === current) + '">' + esc(T(it[1])) + '</button>';
+      }).join('') + '</nav>';
+  }
+
+  function renderPerson() {
+    var host = $('#view-person');
+    if (!host) { return; }
+    setNoindex(true);
+    var who = state.personId || '';
+    var accounts = RK.reviews.filter(function (r) {
+      return r.identity !== 'anon' && r.author.en === who;
+    });
+    var said = RK.comments.filter(function (c) {
+      return c.author && c.author.en === who;
+    });
+    /* Use the author's bilingual form, not the raw handle from the URL, so a
+       real name reads in Bengali on the Bengali page. */
+    var sample = accounts[0] || said[0] || null;
+    var shownName = sample ? P(sample.author) : who;
+    host.innerHTML =
+      '<section class="about-head">' +
+        '<span class="kicker">' + esc(T('person.kicker')) + '</span>' +
+        '<h1 class="display">' + esc(shownName) + '</h1>' +
+        (sample ? '<p class="byline"><span class="byline-id" data-identity="' + esc(sample.identity) + '">' +
+          esc(T('byline.identity.' + sample.identity)) + '</span></p>' : '') +
+        '<p class="lead">' + esc(T('person.noindex')) + '</p>' +
+      '</section>' +
+      '<section class="panel" style="margin-bottom:20px">' +
+        '<h2 class="sub-head">' + esc(T('person.allowlist')) + '</h2>' +
+        '<p class="note">' + esc(T('person.allowlistNote')) + '</p>' +
+      '</section>' +
+      '<h2 class="section-head">' + esc(T('person.contributions')) + ' <span style="font-weight:400;font-size:.6em;color:var(--ink-faint)">' + bn(accounts.length) + '</span></h2>' +
+      (accounts.length
+        ? '<div>' + accounts.map(accountRow).join('') + '</div>'
+        : '<p class="note">' + esc(T('person.empty')) + '</p>') +
+      '<h2 class="section-head">' + esc(T('person.comments')) + ' <span style="font-weight:400;font-size:.6em;color:var(--ink-faint)">' + bn(said.length) + '</span></h2>' +
+      (said.length
+        ? '<div>' + said.map(function (c) { return commentHtml(c, null, true); }).join('') + '</div>'
+        : '<p class="note">' + esc(T('person.empty')) + '</p>');
+  }
+
   function renderEmergency() {
     var host = $('#view-emergency');
     if (!host) { return; }
@@ -1415,7 +1911,10 @@
             '<span class="cta">' + esc(T('a11y.call')) + '</span>' +
           '</a>';
         }).join('') +
-        '<a class="panel emerg-card bmdc" href="https://www.bmdc.org.bd" target="_blank" rel="noopener">' +
+        /* verify.bmdc.org.bd is the registration-lookup portal. The general
+           site (www.bmdc.org.bd) does not let you check a number, and the
+           copy here promises exactly that. Source: 03-research-report.md. */
+        '<a class="panel emerg-card bmdc" href="https://verify.bmdc.org.bd/" target="_blank" rel="noopener">' +
           '<span class="k">' + esc(T('emergview.bmdc')) + '</span>' +
           '<span class="num">BMDC</span>' +
           '<span class="cta">' + esc(T('emergview.bmdcBody')) + '</span>' +
@@ -1958,7 +2457,7 @@
           RK.conditionsFor(id).map(function (c) {
             return '<tr><td>' + esc(P(c.condition.name)) + '</td><td>' + bn(c.count) + '</td></tr>';
           }).join('') + '</tbody></table>' +
-        '<button class="btn small ghost block" type="button" data-doctor="' + id + '" style="margin-top:12px">' + esc(T('nav.profile')) + '</button>' +
+        '<button class="btn small ghost block" type="button" data-doctor="' + id + '" style="margin-top:12px">' + esc(T('nav.viewDoctor')) + '</button>' +
       '</div>';
     }).join('');
     openSheet(T('compare.title'),
@@ -2004,7 +2503,12 @@
     renderDiscover(); renderResults(); renderProfile(); renderAccount();
     renderCondition(); renderFacility(); renderCompose(); renderMine();
     renderEmergency(); renderAbout();
+    /* Previously omitted, so switching language on one of these left the page
+       in the old language. */
+    renderPerson(); renderDoctorIndex(); renderFacilityIndex();
+    renderTopicIndex(); renderExperienceIndex(); renderSaved(); renderNotifications();
     renderTray();
+    setTitle(titleForView(document.body.getAttribute('data-view')));
   }
 
   document.addEventListener('click', function (e) {
@@ -2049,8 +2553,92 @@
 
     if ((el = e.target.closest('[data-react]'))) {
       var rk = el.getAttribute('data-react');
-      state.reactions[rk] = !state.reactions[rk];
+      /* FR-REA-001: one current reaction. Selecting one clears the other;
+         clicking the active one clears it entirely. */
+      var rBase = rk.replace(/:(up|down)$/, '');
+      var rNext = !state.reactions[rk];
+      state.reactions[rBase + ':up'] = false;
+      state.reactions[rBase + ':down'] = false;
+      state.reactions[rk] = rNext;
       renderAccount(); return;
+    }
+    if ((el = e.target.closest('[data-person]'))) {
+      go('person/' + encodeURIComponent(el.getAttribute('data-person'))); return;
+    }
+    if ((el = e.target.closest('[data-edit-comment]'))) {
+      state.editingComment = el.getAttribute('data-edit-comment'); state.replyTo = null;
+      renderAccount(); var eb = $('#edit-text'); if (eb) { eb.focus(); } return;
+    }
+    if (e.target.closest('[data-cancel-edit]')) { state.editingComment = null; renderAccount(); return; }
+    if ((el = e.target.closest('[data-save-comment]'))) {
+      var scId = el.getAttribute('data-save-comment');
+      var eBox = $('#edit-text'), eText = eBox && eBox.value.trim();
+      if (!eText) { if (eBox) { eBox.focus(); } return; }
+      state.commentEdits[scId] = eText; state.editingComment = null; renderAccount(); return;
+    }
+    if ((el = e.target.closest('[data-del-comment]'))) {
+      var dcId = el.getAttribute('data-del-comment');
+      if (state.commentDeleted.indexOf(dcId) === -1) { state.commentDeleted.push(dcId); }
+      state.editingComment = null; renderAccount(); return;
+    }
+    if ((el = e.target.closest('[data-reply]'))) {
+      state.replyTo = el.getAttribute('data-reply'); renderAccount();
+      var rb = $('#reply-text'); if (rb) { rb.focus(); rb.selectionStart = rb.value.length; }
+      return;
+    }
+    if (e.target.closest('[data-reply-cancel]')) { state.replyTo = null; renderAccount(); return; }
+    if ((el = e.target.closest('[data-post-reply]'))) {
+      var prParent = el.getAttribute('data-post-reply');
+      var rBox = $('#reply-text'), rText = rBox && rBox.value.trim();
+      if (!rText) { if (rBox) { rBox.focus(); } return; }
+      var rTarget = state.accountId;
+      var mention = rText.match(/^@(\S+)/);
+      state.comments[rTarget] = (state.comments[rTarget] || []).concat([{
+        id: 'local-' + prParent + '-r' + (state.comments[rTarget] || []).length,
+        parentId: prParent,
+        author: { en: 'You', bn: 'আপনি' },
+        identity: 'pseudo',
+        when: { en: 'Just now', bn: 'এইমাত্র' },
+        body: { en: rText, bn: rText },
+        mentions: mention ? [mention[1]] : [],
+        likes: 0
+      }]);
+      state.replyTo = null; renderAccount(); return;
+    }
+    if ((el = e.target.closest('[data-bookmark]'))) {
+      var bId = el.getAttribute('data-bookmark'), bList = bookmarks(), bAt = bList.indexOf(bId);
+      if (bAt === -1) { bList.push(bId); } else { bList.splice(bAt, 1); }
+      renderAccount(); return;
+    }
+    if ((el = e.target.closest('[data-post-comment]'))) {
+      var pcId = el.getAttribute('data-post-comment');
+      var box = $('#new-comment'), text = box && box.value.trim();
+      if (!text) { if (box) { box.focus(); } return; }
+      state.comments[pcId] = (state.comments[pcId] || []).concat([{
+        id: 'local-' + pcId + '-' + (state.comments[pcId] || []).length,
+        author: { en: 'You', bn: 'আপনি' },
+        identity: 'pseudo',
+        when: { en: 'Just now', bn: 'এইমাত্র' },
+        body: { en: text, bn: text },
+        likes: 0
+      }]);
+      renderAccount(); return;
+    }
+    if ((el = e.target.closest('[data-clike]'))) {
+      var clId = el.getAttribute('data-clike');
+      state.commentLikes[clId] = !state.commentLikes[clId];
+      renderAccount(); return;
+    }
+    if ((el = e.target.closest('[data-del-pub]'))) {
+      state.removedPublished.push(el.getAttribute('data-del-pub')); renderMine(); return;
+    }
+    if ((el = e.target.closest('[data-restore-pub]'))) {
+      var rId = el.getAttribute('data-restore-pub'), rAt = state.removedPublished.indexOf(rId);
+      if (rAt !== -1) { state.removedPublished.splice(rAt, 1); }
+      renderMine(); return;
+    }
+    if ((el = e.target.closest('[data-del-draft]'))) {
+      state.removedDrafts.push(el.getAttribute('data-del-draft')); renderMine(); return;
     }
     if ((el = e.target.closest('[data-report]'))) { openReport(el.getAttribute('data-report')); return; }
     if (e.target.closest('#rep-send')) { openSheet(T('report.title'), '<p>' + esc(T('report.sent')) + '</p>'); return; }
@@ -2148,6 +2736,7 @@
     if (e.target.closest('#sheet-close') || e.target.id === 'overlay') { closeSheet(); return; }
 
     if (e.target.closest('#lang')) { setLang(state.lang === 'en' ? 'bn' : 'en'); return; }
+    if ((el = e.target.closest('[data-scheme-pick]'))) { setScheme(el.getAttribute('data-scheme-pick')); return; }
     if (e.target.closest('#theme')) { setTheme(currentIsDark() ? 'light' : 'dark'); return; }
     if (e.target.closest('#motion')) { setMotion(state.motion !== 'on'); return; }
     // STORY-PROT-001: demo controls panel (role + reset)
@@ -2155,6 +2744,7 @@
     if (e.target.closest('#demo-close')) { var pc = $('#demo-panel'); if (pc) { pc.hidden = true; } return; }
     if ((el = e.target.closest('[data-role]'))) {
       state.role = el.getAttribute('data-role');
+      renderCompose();
       try { localStorage.setItem('rk04.role', state.role); } catch (e) {}
       $$('#demo-panel [data-role]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-role') === state.role)); });
       announce('Role: ' + state.role);

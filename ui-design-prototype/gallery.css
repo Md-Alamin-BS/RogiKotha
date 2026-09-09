@@ -151,70 +151,6 @@ kbd { font-family: var(--mono); font-size: .85em; border: 1px solid var(--line);
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
 
-/* ---- direction 03: the merge — glass and type in one frame ---- */
-.t03 {
-  background:
-    radial-gradient(120% 90% at 18% 12%, hsl(20 72% 28%), transparent 62%),
-    radial-gradient(90% 80% at 92% 84%, hsl(34 62% 24%), transparent 60%),
-    hsl(24 24% 9%);
-}
-.c03 .merge { display: grid; align-content: center; padding: 0 12%; gap: 8px; position: relative; }
-.c03 .merge .orb {
-  position: absolute; right: 8%; top: 12%; width: 42%; aspect-ratio: 1; border-radius: 50%;
-  background:
-    radial-gradient(circle at 34% 32%, hsl(28 92% 68%), transparent 58%),
-    radial-gradient(circle at 68% 66%, hsl(14 84% 56%), transparent 60%);
-  filter: blur(10px); animation: pulse 8s ease-in-out infinite;
-}
-.c03 .merge b {
-  position: relative; z-index: 1;
-  font-size: clamp(30px, 6vw, 46px); font-weight: 800; letter-spacing: -.05em;
-  color: hsl(36 32% 94%); line-height: .9;
-}
-.c03 .merge .rule { position: relative; z-index: 1; display: block; height: 4px; width: 58%; background: hsl(18 84% 62%); }
-.c03 .merge .glass {
-  position: absolute; left: 10%; bottom: 14%; width: 46%; height: 26%;
-  border-radius: 10px; border: 1px solid hsl(34 60% 70% / .30); background: hsl(24 30% 24% / .40);
-  backdrop-filter: blur(6px);
-}
-@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
-
-.card.featured { outline: 2px solid var(--accent); outline-offset: -2px; }
-.card.featured .idx { color: var(--accent); }
-
-/* ---- what is in each screen ---- */
-.screens { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
-.screens > div {
-  border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px;
-  background: var(--surface-2);
-}
-.screens b { display: block; font-size: 14.5px; margin-bottom: 5px; }
-.screens span { font-size: 13.2px; color: var(--ink-soft); }
-.screens .hero { grid-column: span 2; border-color: var(--accent); background: var(--accent-soft); }
-.screens .hero b { color: var(--accent); }
-.screens .staff { border-style: dashed; }
-
-@media (max-width: 700px) { .screens .hero { grid-column: auto; } }
-
-/* ---- direction 04: the calm clinic — oat, teal, separate capsules ---- */
-.t04 {
-  background:
-    radial-gradient(84% 60% at 86% 6%, hsl(186 40% 84%), transparent 62%),
-    radial-gradient(76% 56% at 6% 96%, hsl(152 34% 86%), transparent 66%),
-    hsl(45 32% 96%);
-}
-.c04 .clinic { display: grid; align-content: center; justify-items: center; gap: 16px; }
-.c04 .ring {
-  width: 74px; height: 74px; border-radius: 50%;
-  border: 2px solid hsl(186 52% 30% / .55);
-  box-shadow: inset 0 0 0 10px hsl(186 52% 30% / .12);
-}
-.c04 .caps { display: flex; gap: 8px; }
-.c04 .caps i { display: block; height: 26px; border-radius: 999px; }
-.c04 .caps .p { width: 54px; background: hsl(152 38% 34%); }
-.c04 .caps .m { width: 30px; background: hsl(38 70% 40%); }
-.c04 .caps .n { width: 20px; background: hsl(2 52% 48%); }
-
 /* ---- direction 04b: the same clinic, asked to be quieter ----
    Paper base (no warm wash), teal-gray ring, outline-only capsules with a
    status dot in the corner. The mark says "the same shape language, but
@@ -252,10 +188,12 @@ kbd { font-family: var(--mono); font-size: .85em; border: 1px solid var(--line);
 .c04b .idx { letter-spacing: .14em; }
 .c04b .muted { color: var(--ink-faint); font-weight: 520; }
 
-/* Direction 04c (Editorial) and 04d (Modern SaaS) were archived during the
-   side-by-side walkthrough on 2026-09-06 — see docs/status/decision-log.md
-   and ui-design-prototype/.archive/. Their thumbnails live in the archive
-   with their concepts, not on the live gallery. */
+/* Directions 01, 02, 03, 04, 04c and 04d are all archived — 04c and 04d
+   during the side-by-side walkthrough on 2026-09-06, and 03 and 04 on
+   2026-09-08 once 04b was confirmed and the staff console moved to its own
+   surface system. See docs/status/decision-log.md and
+   ui-design-prototype/.archive/. Their thumbnail styles were deleted with
+   their cards rather than left here as dead selectors. */
 
 /* STORY-PROT-002: gallery includes admin entry */
 .tadmin {

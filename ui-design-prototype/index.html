@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RogiKotha — three UI directions</title>
+<title>RogiKotha — UI prototype</title>
 <link rel="stylesheet" href="gallery.css">
 </head>
 <body>
@@ -14,16 +14,17 @@
 
 <header class="head">
   <h1>RogiKotha</h1>
-  <p class="sub">Three directions on the same product.</p>
+  <p class="sub">The chosen direction, and the staff console beside it.</p>
   <p class="lede">
-    Each renders the same fictional records and obeys the same product rules, so what differs
-    between them is <em>only</em> the design. 03 is the warm editorial direction and the only one
-    carrying the moderation console. 04 is the calm clinic — oat and muted teal, serif headings,
-    generous air — built from researched healthcare-identity conventions (FD-026).
-    <b>04b</b> is the chosen implementation direction (FD-027, 2026-09-06): the same clinic
-    posture, expressed more quietly — paper instead of oat, teal-gray instead of teal, hairline
-    rules, smaller radii, no serif/sans contrast, CSS-only motion. Two sibling variants (04c
-    Editorial, 04d Modern SaaS) were explored during the side-by-side and archived.
+    Two artefacts, one design system, the same fictional records and the same product rules.
+    <b>04b Quiet Clinic (minimal)</b> is the chosen patient direction (FD-027, 2026-09-06):
+    paper base, teal-gray accent, hairline rules, small radii, no serif/sans contrast,
+    CSS-only motion. The <b>staff console</b> is a separate portal on its own surface system
+    (<em>Chart Tray</em>): four planes where elevation encodes agency, so a moderator can see
+    what is workable and what is read-only before reading a word.
+    Six earlier patient directions (01, 02, 03, 04, 04c, 04d) and the three admin shell
+    studies that produced Chart Tray are kept in <code>.archive/</code> — the record of how
+    these two were arrived at, not live work.
   </p>
 </header>
 
@@ -45,7 +46,7 @@
           design problem: <em>how do you make a directory feel decisive without a 4.8&nbsp;★?</em>
         </p>
         <p class="note">
-          Each direction answers that question differently. The answer is named on every card below.
+          The answer this product settled on is named on the card below.
         </p>
       </div>
       <aside class="rules">
@@ -66,53 +67,11 @@
     </div>
   </section>
 
-  <h2 class="section-head">The three directions</h2>
+  <h2 class="section-head">What is live</h2>
 
   <div class="grid">
 
-    <article class="card c03 featured">
-      <a class="thumb" href="concepts/concept-03-luminous-editorial/index.html" aria-label="Open Luminous Editorial">
-        <span class="t-bg t03" aria-hidden="true"></span>
-        <span class="t-mark merge" aria-hidden="true">
-          <span class="orb"></span>
-          <b>Aa</b>
-          <span class="rule"></span>
-          <span class="glass"></span>
-        </span>
-      </a>
-      <div class="body">
-        <span class="idx">03 · the merge</span>
-        <h3>Luminous Editorial</h3>
-        <p>02's structure wearing a warmer, simpler skin. The typographic hierarchy, the reading measure for long patient stories and provenance in the margin — over soft depth in bone, clay and espresso.</p>
-        <dl>
-          <dt>Distribution as</dt><dd>Both answers fused: the sentence of counts, with the spectrum as a second reading of the same numbers.</dd>
-          <dt>Material</dt><dd>Warm earth tones — bone and clay in light, espresso in dark — with a terracotta anchor and a sage counterpoint. Simpler than the other two: one accent, two washes, no second hue.</dd>
-          <dt>Screens</dt><dd>8 public <b>+ the moderation console</b>.</dd>
-        </dl>
-        <a class="open" href="concepts/concept-03-luminous-editorial/index.html">Open direction 03</a>
-      </div>
-    </article>
 
-    <article class="card c04">
-      <a class="thumb" href="concepts/concept-04-quiet-clinic/index.html" aria-label="Open Quiet Clinic">
-        <span class="t-bg t04" aria-hidden="true"></span>
-        <span class="t-mark clinic" aria-hidden="true">
-          <span class="ring"></span>
-          <span class="caps"><i class="p"></i><i class="m"></i><i class="n"></i></span>
-        </span>
-      </a>
-      <div class="body">
-        <span class="idx">04</span>
-        <h3>Quiet Clinic</h3>
-        <p>The unhurried consulting room. Oat and muted teal, soft shapes, generous air, and no glass anywhere — tuned for a worried person reading at 11pm rather than for a designer's eye.</p>
-        <dl>
-          <dt>Distribution as</dt><dd>A row of separate capsules, each carrying its own count and label — proportional to each other, never slices of one bar.</dd>
-          <dt>Material</dt><dd>Opaque surfaces, large radii, pill controls, circular avatars, still linework. Serif headings against a sans interface.</dd>
-          <dt>Screens</dt><dd>8 public.</dd>
-        </dl>
-        <a class="open" href="concepts/concept-04-quiet-clinic/index.html">Open direction 04</a>
-      </div>
-    </article>
 
     <article class="card c04b">
       <a class="thumb" href="concepts/concept-04b-quiet-clinic-minimal/index.html" aria-label="Open Quiet Clinic (minimal)">
@@ -129,7 +88,7 @@
         <dl>
           <dt>Distribution as</dt><dd>Same row of separate capsules — but now outline-only, with a small status dot. A tally on a desk, not a painted bar.</dd>
           <dt>Material</dt><dd>Paper base, teal-gray accent, 10/16/22 px radii. Headings in the system rounded sans, weight and tracking carrying the posture.</dd>
-          <dt>Screens</dt><dd>8 public · identical IA and content to 04.</dd>
+          <dt>Screens</dt><dd>8 public.</dd>
         </dl>
         <a class="open" href="concepts/concept-04b-quiet-clinic-minimal/index.html">Open direction 04b</a>
       </div>
@@ -146,11 +105,11 @@
       <div class="body">
         <span class="idx">staff · console</span>
         <h3>Staff console</h3>
-        <p>Separate portal for moderation staff. Bounded actions, audited.</p>
+        <p>Separate portal for moderation staff. Bounded actions, audited. Its own surface system — <em>Chart Tray</em> — where elevation encodes agency.</p>
         <dl>
-          <dt>Scope</dt><dd>Moderation queue, evidence custody, providers and claims. Deliberately separate from the patient UI.</dd>
-          <dt>Material</dt><dd>Same paper + teal-gray tokens as 04b. No patient-side chrome.</dd>
-          <dt>Routes</dt><dd><b>#queue</b>, <b>#evidence</b>, <b>#providers</b>.</dd>
+          <dt>Scope</dt><dd>Moderation queue, evidence custody, providers and claims, notifications and runtime configuration. Deliberately separate from the patient UI.</dd>
+          <dt>Material</dt><dd>Four planes — sunken, page, raised, overlay — so a read-only well and a workable tray are different materials. Grouped nav with waiting counts. No patient-side chrome.</dd>
+          <dt>Routes</dt><dd><b>#queue</b>, <b>#evidence</b>, <b>#providers</b>, <b>#notifications</b>, <b>#config</b>.</dd>
         </dl>
         <a class="open" href="admin/index.html">Open the staff console</a>
       </div>
@@ -169,14 +128,14 @@
       <div><b>Facility</b><span>Nine service criteria with their own distributions, kept structurally separate from any doctor's summaries.</span></div>
       <div><b>Write</b><span>Add-a-doctor panel, live safety checks, the evidence pipeline through quarantine and redaction, draft autosave.</span></div>
       <div><b>Mine</b><span>Published, encrypted drafts with expiry, private bookmarks, notifications, and the appeal path.</span></div>
-      <div class="staff"><b>Moderation — 03 only</b><span>Critical and standard lanes, reporter identity shown as restricted rather than blank, evidence quarantine with the fail-closed path, providers and claims.</span></div>
+      <div class="staff"><b>Moderation — the staff console</b><span>Critical and standard lanes, reporter identity shown as restricted rather than blank, evidence quarantine with the fail-closed path, providers and claims.</span></div>
     </div>
 
-    <h2 style="margin-top:34px">How to compare them</h2>
+    <h2 style="margin-top:34px">How to read it</h2>
     <ol>
       <li>Walk the screens in order. The one that matters most is <b>Account</b> — it is where the product actually lives.</li>
-      <li>Hit the <b>অ</b> button. Bengali has no capitals and needs far more leading, so each direction rebuilds its type scale for the script rather than swapping strings into a Latin one. Numerals switch too. This is where most "beautiful" designs quietly break.</li>
-      <li>Hit <b>◐</b> for the other colour mode, then <b>◌</b> to kill motion. Nothing should become unreadable or disappear.</li>
+      <li>Hit the <b>অ</b> button. Bengali has no capitals and needs far more leading, so the type scale is rebuilt for the script rather than swapping strings into a Latin one. Numerals switch too. This is where most "beautiful" designs quietly break.</li>
+      <li>Hit <b>◐</b> for the other colour mode, then <b>◌</b> to kill motion. Nothing should become unreadable or disappear. In the console, watch the surface steps: dark uses roughly 1.7× the light step, because a tint that works on paper all but vanishes on near-black.</li>
       <li>Narrow the window to phone width. Margins should fold under the text, not vanish.</li>
       <li>Then ask the real question: <em>on the doctor page, do you feel able to decide anything?</em> That is the whole bet of a product with no star ratings.</li>
     </ol>
@@ -195,16 +154,23 @@
       <div>
         <h3>04b · Quiet Clinic (minimal)</h3>
         <ul>
-          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#discover"><code>#discover</code></a></li>
-          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#results"><code>#results</code></a></li>
-          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#profile"><code>#profile</code></a></li>
-          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#account"><code>#account</code></a></li>
-          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#condition"><code>#condition</code></a></li>
-          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#facility"><code>#facility</code></a></li>
-          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#compose"><code>#compose</code></a></li>
-          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#mine"><code>#mine</code></a></li>
-          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#emergency"><code>#emergency</code></a></li>
-          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#about"><code>#about</code></a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#discover"><code>#discover</code> — Discover</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#search"><code>#search</code> — Search results</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#doctors"><code>#doctors</code> — Doctors (index)</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#doctors/d1"><code>#doctors/d1</code> — One doctor</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#facilities"><code>#facilities</code> — Hospitals &amp; clinics (index)</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#facilities/f1"><code>#facilities/f1</code> — One hospital</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#topics"><code>#topics</code> — Health topics (index)</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#topics/c1"><code>#topics/c1</code> — One health topic</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#experiences"><code>#experiences</code> — Patient experiences (index)</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#experiences/r1"><code>#experiences/r1</code> — One experience</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#write"><code>#write</code> — Share your experience</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#me"><code>#me</code> — My writing</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#saved"><code>#saved</code> — Saved</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#notifications"><code>#notifications</code> — Notifications</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#authors/shirin_88"><code>#authors/shirin_88</code> — A contributor profile</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#emergency"><code>#emergency</code> — Emergency help</a></li>
+          <li><a href="concepts/concept-04b-quiet-clinic-minimal/index.html#about"><code>#about</code> — About &amp; methodology</a></li>
         </ul>
       </div>
       <div>
@@ -213,6 +179,8 @@
           <li><a href="admin/index.html#queue"><code>#queue</code></a></li>
           <li><a href="admin/index.html#evidence"><code>#evidence</code></a></li>
           <li><a href="admin/index.html#providers"><code>#providers</code></a></li>
+          <li><a href="admin/index.html#notifications"><code>#notifications</code></a></li>
+          <li><a href="admin/index.html#config"><code>#config</code></a></li>
         </ul>
       </div>
     </div>
@@ -222,9 +190,9 @@
   <p>
     Everything shown is fictional and synthetic. No real doctor, facility, patient, BMDC number or
     document is represented. Provider marks are deterministic generated geometry derived from a name
-    hash — never a photograph or likeness of a person. Three earlier directions are kept in <code>.archive/</code>;
-    04b is a quiet variant of the chosen direction. Every palette here is verified against WCAG AA
-    from the tokens as shipped.
+    hash — never a photograph or likeness of a person. Six earlier patient directions and the three admin shell studies are kept
+    in <code>.archive/</code> as the record of how these two were arrived at. Every palette here is
+    verified against WCAG AA from the tokens as shipped.
   </p>
 </footer>
 
