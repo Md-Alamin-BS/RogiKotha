@@ -218,7 +218,7 @@
     $('#tray').hidden = !(v === 'results' && state.compare.length);
     setTitle(titleForView(v));
     window.scrollTo({ top: 0, behavior: motionAllowed() ? 'smooth' : 'auto' });
-    announce('View: ' + v);
+    announce('View: ' + v); // STORY-NFR-006: dynamic view change announced to #sr-live
   }
 
   /* The title's first segment is the page's own H1, so the tab, the history
@@ -402,7 +402,7 @@
           '</div>' +
           '<aside class="margin-note">' +
             '<span class="k">' + esc(state.lang === 'bn' ? 'সম্পাদকীয় নোট' : 'Editorial note') + '</span>' +
-            '<p>' + esc(T('disclaimer.short')) + '</p>' +
+            '<p>' + esc(T('disclaimer.short')) + '</p>' + // STORY-PLAT-001: short disclaimer (editorial note)
           '</aside>' +
         '</div>' +
       '</section>' +
@@ -564,7 +564,7 @@
         String(res.resolved.matched).toLowerCase() !== String(state.query).toLowerCase()) {
       resolvedNote = esc(P(res.resolved.condition.name)) + ' — ' + esc(T('search.alsoSearched')) +
         ' “' + esc(res.resolved.matched) + '”. <button type="button" class="link-btn" id="keep-exact">' +
-        esc(T('search.keepOriginal')) + '</button>';
+        esc(T('search.keepOriginal')) + '</button>'; // STORY-SRCH-001
     } else if (res.resolved.condition) {
       resolvedNote = esc(P(res.resolved.condition.name)) +
         ' — <button type="button" class="link-btn" data-condition="' + res.resolved.condition.id + '">' +
@@ -590,7 +590,7 @@
           '<span>' + bn(showFacilities ? facs.length : res.doctors.length) + ' ' + esc(T('results.count')) + '</span>' +
           '<label class="sort">' + esc(T('sort.label')) + ' ' +
             '<select id="sort">' +
-              ['relevance', 'volume', 'recent'].map(function (s) {
+              ['relevance', 'volume', 'recent'].map(function (s) { // STORY-SRCH-002
                 return '<option value="' + s + '"' + (state.filters.sort === s ? ' selected' : '') + '>' + esc(T('sort.' + s)) + '</option>';
               }).join('') +
             '</select></label>' +
@@ -855,7 +855,7 @@
                 '<p>' + esc(L(t)) + '</p></li>';
             }).join('') + '</ul>' : '') +
 
-          (chain.length ? '<h2 class="section-head">' + esc(T('label.followUp')) + '</h2>' +
+          (chain.length ? '<h2 class="section-head">' + esc(T('label.followUp')) + '</h2>' + // STORY-REV-003
             '<p class="note">' + esc(T('experience.currentNote')) + '</p>' +
             '<ul class="spine">' + chain.map(function (fu, i) {
               var isCurrent = i === chain.length - 1;
@@ -969,7 +969,7 @@
     }).join('');
 
     return '<h2 class="section-head">' + esc(T('filter.evidence')) + '</h2>' +
-      '<div class="callout warn"><b>' + esc(T('evidence.status')) + '</b>' + esc(T('evidence.notice')) + '</div>' +
+      '<div class="callout warn"><b>' + esc(T('evidence.status')) + '</b>' + esc(T('evidence.notice')) + '</div>' + // STORY-EVID-002: "Documents attached — not medically validated" callout
       '<div class="ev-groups" style="margin-top:12px">' + groups + '</div>' +
       '<p class="note" style="margin-top:10px">' + esc(T('experience.evidenceOnly')) + '</p>';
   }
@@ -1699,7 +1699,7 @@
           '<tr><th>' + esc(T('report.identityNote')) + '</th><td>' + esc(T('appeal.noReporter')) + '</td></tr>' +
         '</tbody></table>' +
         // STORY-MOD-003: appeal entry from mine tab (appeal sheet at app.js:1474-1485)
-        '<button class="btn small" type="button" id="open-appeal" style="margin-top:12px">' + esc(T('appeal.button')) + '</button>' +
+        '<button class="btn small" type="button" id="open-appeal" style="margin-top:12px">' + esc(T('appeal.button')) + '</button>' + // STORY-MOD-003: mine-tab appeal entry
       '</section>' +
       // STORY-USER-002: preferences + feedback + data requests
       '<section class="sub"><h4 class="sub-head">' + esc(T('user2.preferences')) + '</h4>' +
@@ -1711,7 +1711,7 @@
       '<section class="sub"><h4 class="sub-head">' + esc(T('user2.feedback')) + '</h4>' +
         '<p class="note">' + esc(T('user2.feedbackNote')) + '</p>' +
         '<div class="field"><label class="sr-only" for="user-feedback">' + esc(T('user2.feedback')) + '</label>' +
-          '<textarea id="user-feedback" placeholder="' + esc(T('user2.feedbackPh')) + '" style="min-height:90px"></textarea></div>' +
+          '<textarea id="user-feedback" placeholder="' + esc(T('user2.feedbackPh')) + '" style="min-height:90px"></textarea></div>' + // STORY-USER-002: feedback textarea + send button + draft-saved flag
         '<button class="btn small" type="button" id="user-feedback-send">' + esc(T('user2.feedbackSend')) + '</button>' +
         '<span class="saved-flag" id="user-feedback-flag">' + esc(T('compose.draftSaved')) + '</span>' +
       '</section>' +
@@ -1969,7 +1969,7 @@
   /* Local string table for the viewer. The shared file is read-only for
      this work, so these live in the prototype's app.js. They follow the
      same en/bn shape as the shared table. */
-  var VIEWER_STRINGS = {
+  var VIEWER_STRINGS = { // STORY-EVID-002: viewer.* i18n keys
     title:         { en: 'Processed copy', bn: 'প্রক্রিয়াকৃত কপি' },
     notice:        { en: 'Documents attached — not medically validated', bn: 'কাগজপত্র যুক্ত — চিকিৎসাগতভাবে যাচাই করা হয়নি' },
     zoomOut:       { en: 'Zoom out', bn: 'ছোট করুন' },
@@ -2645,7 +2645,7 @@
     if (e.target.closest('#open-appeal')) { openAppeal(); return; }
     if (e.target.closest('#ap-send')) { openSheet(T('appeal.title'), '<p>' + esc(T('appeal.sent')) + '</p>'); return; }
     // STORY-USER-002: feedback + data-request click handlers
-    if (e.target.closest('#user-feedback-send')) {
+    if (e.target.closest('#user-feedback-send')) { // STORY-USER-002: feedback click handler
       var ff = $('#user-feedback-flag');
       if (ff) { ff.classList.add('on'); setTimeout(function () { ff.classList.remove('on'); }, 1800); }
       var ta = $('#user-feedback'); if (ta) { ta.value = ''; }

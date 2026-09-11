@@ -113,6 +113,7 @@
 }
 
 :root[data-theme="dark"] {
+  /* STORY-NFR-AA-HOVER-001: dark-mode ink + glass palette used by every hover surface */
   --bg:        hsl(24 24% 8%);
   --ink:       hsl(36 32% 93%);
   --ink-soft:  hsl(32 16% 74%);
