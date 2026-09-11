@@ -31,9 +31,10 @@ const BACKLOG = join(ROOT, 'docs/planning/backlog.yaml');
 const MATRIX = join(ROOT, 'docs/planning/09-coverage-matrix.md');
 const PROTOTYPE = join(ROOT, 'ui-design-prototype');
 
-// Story ID looks like STORY-FOUND-001, FR-AUTH-001, NFR-006, TASK-FOUND-001-A.
-// Permissive: STORY-[A-Z]+-\d+, FR-[A-Z]+-\d+, NFR-\d+, TASK-[A-Z]+-\d+-?\w*
-const STORY_ID_RE = /\b(?:STORY-[A-Z]+-\d+|FR-[A-Z]+-\d+|NFR-\d+|TASK-[A-Z]+-\d+-?\w*)\b/g;
+// Story ID looks like STORY-FOUND-001, FR-AUTH-001, NFR-006, TASK-FOUND-001-A,
+// STORY-NFR-AA-HOVER-001. Permissive: STORY- with one or more [A-Z] segments
+// (joined by '-') ending in digits; FR- same; NFR-\d+; TASK- same.
+const STORY_ID_RE = /\b(?:STORY-(?:[A-Z]+(?:-[A-Z]+)*)-\d+|FR-[A-Z]+-\d+|NFR-\d+|TASK-[A-Z]+-\d+-?\w*)\b/g;
 
 // ---------- helpers ----------
 
@@ -97,7 +98,7 @@ function parseMatrixRows(md) {
       // Above filter is too lenient; redo cleanly.
       const raw = ln.replace(/^\|/, '').replace(/\|\s*$/, '');
       const parts = raw.split('|').map((s) => s.trim());
-      const idMatch = parts[0] && parts[0].match(/^(STORY-[A-Z]+-\d+)$/);
+      const idMatch = parts[0] && parts[0].match(/^(STORY-(?:[A-Z]+(?:-[A-Z]+)*)-\d+)$/);
       if (!idMatch) continue; // epic header rows or other meta rows
       rows.push({
         story: idMatch[1],
