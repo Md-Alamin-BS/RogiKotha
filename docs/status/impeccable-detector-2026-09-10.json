@@ -1,0 +1,32 @@
+[
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "C:\\Users\\BS01395\\Documents\\GitHub\\rogikotha\\ui-design-prototype\\admin\\index.html",
+    "line": 0,
+    "snippet": ":hover state 1.0:1 (need 4.5:1) — text #9ac3cb on #9ac3cb"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "C:\\Users\\BS01395\\Documents\\GitHub\\rogikotha\\ui-design-prototype\\admin\\styles.css",
+    "line": 343,
+    "snippet": "border-inline-start: 3px solid"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "C:\\Users\\BS01395\\Documents\\GitHub\\rogikotha\\ui-design-prototype\\concepts\\concept-04b-quiet-clinic-minimal\\styles.css",
+    "line": 1797,
+    "snippet": "border-left: 4px solid var(--rule-strong)"
+  }
+]

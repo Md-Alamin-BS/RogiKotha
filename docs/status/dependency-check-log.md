@@ -27,6 +27,32 @@ Rules:
 
 ## Entries
 
+### 2026-09-10
+
+- Scope: Wire `impeccable` CLI into `npm run check` per the
+  Assessment-A critique `2026-09-10T15-30-00Z__admin-console-fd030-hover-contrast-fix.md`
+  recommendation #1. Detector is the only layer that catches static
+  AI-slop patterns the existing contrast/i18n/coverage/proof/smoke
+  matrix does not (e.g. the admin hover-contrast bug surfaced today).
+- Checked: impeccable 4.1.0 (Apache 2.0, by pbakaus, GitHub
+  `pbakaus/impeccable`). npm registry confirms `latest` tag = `4.1.0`.
+  Engine requirement `node >=22.18.0`; project runs Node 24.20.0 LTS
+  (verified via `node --version`). No published npm advisories at
+  adoption time.
+- Findings: 4.1.0 is the current stable. Detector subcommand
+  (`impeccable detect`) runs cleanly on this project (verified by
+  `docs/status/impeccable-detector-2026-09-10.json`). Project-local
+  `.impeccable/config.json` and the existing `ignoreRules`/
+  `ignoreValues` are honoured. Exit code: 0 on clean, 2 on findings,
+  which propagates correctly through `&&` in the `check` script.
+- Decision: Do **not** add `impeccable` to `devDependencies`. The
+  detector is invoked via `npx --yes impeccable detect …` at check
+  time, which downloads to the npm cache on first run and reuses on
+  subsequent runs. This avoids pinning the lockfile to a CLI whose
+  only consumer is the check script — same pattern used for
+  one-shot CLI tools in similar repos. If a future workflow needs
+  pinned reproducibility, switch to a `devDependency` entry then.
+
 ### 2026-08-30
 
 - Scope: Gate 2 architecture and dependency-selection baseline for the first RogiKotha implementation.

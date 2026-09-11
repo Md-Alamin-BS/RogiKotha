@@ -131,3 +131,75 @@ yet (the static prototype has no dependencies by design).
 - `docs/status/impeccable-detector-after-triage.json` — after code fixes
 - `docs/status/impeccable-detector-final.json` — current state (empty)
 - `.impeccable/config.json` — detector config (ignoreRules + ignoreValues + ignoreFiles)
+
+## 2026-09-10 — Moated admin `low-contrast:*` ignore removed
+
+The blanket `low-contrast *` ignore scoped to `ui-design-prototype/admin/**` was
+added 2026-09-06 to suppress the `--accent-2` text on `--accent-soft` background
+pair, which the detector flags but the project's tokens are intentional about
+(matched behind a 6% alpha teal overlay on `--bg`).
+
+The FD-030 Chart Tray surface rebuild of the admin console (2026-09-08)
+deleted `--accent-soft` as an unused token and reduced `--accent-2` to a solid
+primary-button hover fill carrying `--accent-ink` at 8.65:1 — verified by
+`tools/contrast.mjs` on 2026-09-10. The pair the ignore existed for is gone.
+
+`npx impeccable detect ui-design-prototype/admin/ --no-advisory` on 2026-09-10
+returned zero low-contrast findings, so the ignore was removed from
+`.impeccable/config.json`. If a future admin change introduces a low-contrast
+pair, add a precisely-scoped ignore for it (the detector's low-contrast rule
+accepts only the wildcard `*` as a value, so the pair must be re-verified
+manually rather than re-adding a blanket ignore).
+
+## 2026-09-10 — Admin hover/selected-state AA contrast fix + Assessment-A critiques
+
+While running the impeccable detector (`npx impeccable detect ui-design-prototype/
+--no-advisory`) to verify the trimmed config, the static detector surfaced a
+class of issue the contrast matrix (`tools/contrast.mjs`) can't see: 20 sub-AA
+hover states in the admin console (2.14-2.22:1 light, 1.62-1.67:1 dark) on
+`.top-item:hover` and `.case-row:hover`, plus the pre-loaded selected row state
+(state.selCase defaults to MOD-2041).
+
+Root cause: `admin/styles.css:52,57` set `--surface-hover` and
+`--surface-selected` to `var(--accent-soft)` — a 10%-alpha teal fill
+designed for badges and highlights, not for text-bearing surfaces. When laid
+over `--glass-2` (the lane background), the effective colour was too close to
+`--ink` in both schemes.
+
+Two-line fix: remap both to `var(--fill-secondary)` (which equals `var(--glass-2)`,
+already verified to clear AA on `--ink` by `tools/contrast.mjs`). Verified
+post-fix by `tools/hover-probe.mjs`: 0 LOW-contrast hover states in light or
+dark mode (12.44:1 / 11.76:1 on `.top-item`, similar on `.case-row`).
+
+Two Assessment-A critiques authored in this session, following the
+`.impeccable/critique/<timestamp>__<slug>.md` template:
+
+- `2026-09-10T15-30-00Z__admin-console-fd030-hover-contrast-fix.md` — first
+  post-FD-030 audit on the admin console. Scored 36/40 (zero P0/P1/P2,
+  three P3 detector-noise items). Documents the hover bug, the fix, the
+  evidence trail.
+- `2026-09-10T15-35-00Z__concept-04b-quiet-clinic-minimal-revisit.md` —
+  delta against the 2026-09-06 critique. Closes both P2 items (safe-area
+  fixes verified in source + live browser). Scored 31/36 (was 29/36).
+  Three P3 polish items remain, explicitly deferred per the original critique.
+
+Tools added in this session:
+
+- `tools/screenshots.mjs` — captures screenshot via puppeteer-core driving
+  the locally-installed chromium binary. Hard-codes `localhost:8137`, writes
+  to `%TEMP%\rogikotha-screens\`. Six captures in this run: gallery, patient
+  desktop, patient mobile, admin desktop, admin mobile, admin hover-state.
+- `tools/hover-probe.mjs` — hovers every interactive admin element,
+  computes WCAG relative-luminance contrast for hover state, reports LOWs.
+  Reads the prototype's live computed styles, not static CSS — closes the
+  static-detector blind spot on `:hover`.
+- `tools/resolve-token.mjs` — resolves a token's value at runtime, light and
+  dark. Used during bug investigation to confirm `--accent-soft` actually
+  resolves (the original ignore's annotation claimed it was deleted — it
+  wasn't, but the bug was real).
+- `tools/inspect-caserow.mjs` — dumps computed styles + ancestor
+  backgrounds for `.case-row`. Retained for future row-state debugging.
+
+Detector JSON snapshot: `docs/status/impeccable-detector-2026-09-10.json` —
+3 findings, all P3-equivalent (1 hover-state noise from the static
+analyser, 2 intentional side-tab patterns documented in source).
