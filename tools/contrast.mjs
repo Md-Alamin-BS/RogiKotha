@@ -20,6 +20,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
+// STORY-NFR-AA-HOVER-001: static base-state contrast guard (complementary to
+// tools/hover-probe.mjs which exercises the live :hover state in a browser).
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 const css = readFileSync(join(REPO, 'ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/styles.css'), 'utf8');
 

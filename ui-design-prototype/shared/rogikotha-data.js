@@ -1256,7 +1256,7 @@
    * ------------------------------------------------------------- */
   var moderation = {
     permissions: { reports: true, contentActions: true, reporterIdentity: false, originalEvidence: false },
-    thresholds: {
+    thresholds: { // STORY-ADMIN-001: reporting thresholds (five-account hide + SLA windows)
       fiveAccountHide: 5,
       criticalHours: 24,
       standardDays: 3,
@@ -1264,7 +1264,7 @@
       retentionDefaultDays: 90,
       retentionMaxDays: 3650
     },
-    auditLog: [
+    auditLog: [ // STORY-NFR-009: append-only moderation audit log (13 seeded events)
       { id: 'a1', case: 'MOD-2041', action: 'warn',     actor: 'moderator:rashid', timeMin: 8,   targetId: 'k3' },
       { id: 'a2', case: 'MOD-2041', action: 'hide',     actor: 'system:auto',    timeMin: 22,  targetId: 'k3' },
       { id: 'a3', case: 'MOD-2041', action: 'record',   actor: 'moderator:rashid',timeMin: 35,  targetId: 'k3' },
