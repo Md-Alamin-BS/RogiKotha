@@ -253,7 +253,7 @@
     renderTabBar();
     renderCrumbs();
     if (state.tab === 'queue') { renderQueue(); }
-    if (state.tab === 'evidence') { renderEvidence(); }
+    if (state.tab === 'evidence') { renderEvidence(); } // STORY-EVID-003: evidence custody/retention panel dispatch
     if (state.tab === 'providers') { renderProviders(); }
     if (state.tab === 'config') { renderConfig(); }
     if (state.tab === 'notifications') { renderNotifications(); }
@@ -269,10 +269,16 @@
   function renderQueue() {
     var host = $('#view-queue');
     if (!host) { return; }
+    /* The permission callout lives inside the left grid cell (not before it)
+       so the case-detail panel on the right has matching content above its
+       grid row. When the callout was a sibling of `.p-grid`, the right
+       column started at the grid row top while the left column's first
+       text (the threshold note) sat 40–60px lower — visually the right
+       column appeared to "float" above the left. */
     host.innerHTML =
       '<section class="a-head">' +
         '<h1 class="display">' + esc(T('admin.tab.queue')) + '</h1>' +
-      '</section>' + permissionCallout() + queueBody() +
+      '</section>' + queueBody() +
       (state.bulkConfirmed ? '<div class="callout" style="margin-top:14px;border-color:var(--positive);color:var(--positive)">✓ ' + esc(T('admin.bulk.done')) + '</div>' : '');
   }
 
@@ -286,7 +292,8 @@
     var sel = RK.moderation.cases.filter(function (c) { return c.id === state.selCase; })[0];
 
     return '<div class="p-grid"><div>' +
-      '<p class="note" style="margin-bottom:18px">' + esc(T('admin.threshold')) + '</p>' +
+      permissionCallout() +
+      '<p class="note" style="margin-top:14px;margin-bottom:18px">' + esc(T('admin.threshold')) + '</p>' +
       // STORY-ADMIN-002: bulk preview modal toolbar
       bulkToolbar() +
       lanes.map(function (lane) {
@@ -334,7 +341,7 @@
       '<h2 style="font-size:17px;font-weight:600;letter-spacing:-.012em">' + esc(L(c.summary)) + '</h2>' +
       '<p class="note">' + esc(L(c.note)) + '</p>' +
 
-      (c.appealText ? '<div class="callout sub-in"><b>' + esc(T('appeal.text')) + '</b> ' + esc(L(c.appealText)) + '</div>' : '') +
+      (c.appealText ? '<div class="callout sub-in"><b>' + esc(T('appeal.text')) + '</b> ' + esc(L(c.appealText)) + '</div>' : '') + // STORY-MOD-003: appeal text box (case MOD-2011)
 
       (c.reasons && c.reasons.length ? '<div class="sub"><h4 class="sub-head">' + esc(T('admin.reasonsGiven')) + '</h4>' +
         '<div style="display:flex;flex-wrap:wrap;gap:6px">' + c.reasons.map(function (r) {
@@ -522,7 +529,7 @@
   /* ----- Role switcher (masthead chip) -------------------------------- */
 
   // STORY-ADMIN-001: role switcher demo control
-  var ROLE_ORDER = ['Super Admin', 'Admin', 'Moderator'];
+  var ROLE_ORDER = ['Super Admin', 'Admin', 'Moderator']; // STORY-ADMIN-001: role enum
   function roleKey(role) {
     if (role === 'Super Admin') { return 'sa'; }
     if (role === 'Moderator') { return 'mod'; }

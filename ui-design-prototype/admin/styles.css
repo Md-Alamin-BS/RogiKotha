@@ -49,8 +49,12 @@
   --surface-raised:   var(--glass);
   --surface-sunken:   var(--glass-2);
   --surface-overlay:  var(--glass);
-  --surface-hover:    var(--accent-soft);
-  --surface-selected: var(--accent-soft);
+  /* hover surface must be text-grade: --ink on it clears AA in both schemes
+     (verified by tools/hover-probe.mjs on 2026-09-10). --accent-soft is a 10%
+     alpha fill designed for badges & highlights, not text — using it as a
+     hover background was the cause of 20 sub-AA hover states. */
+  --surface-hover:    var(--fill-secondary); /* STORY-NFR-AA-HOVER-001: text-grade surface for hover/selected/pressed */
+  --surface-selected: var(--fill-secondary);
   --border-control:   var(--input-border);
   --fill-badge:       var(--accent-soft);
   --fill-secondary:   var(--glass-2);
@@ -239,7 +243,8 @@ html[data-lang="bn"] .display { font-family: var(--bangla); letter-spacing: 0; }
 .note { font-size: var(--fs-1); color: var(--ink-faint); line-height: var(--lh-prose); margin: 0; }
 
 .p-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--sp-5); align-items: start; }
-.p-side { position: sticky; top: calc(var(--masthead-h) + var(--sp-3)); }
+/* STORY-NFR-LAYOUT-001: two-column grid alignment — sticky was the bug. */
+.p-side { align-self: start; }
 .p-side .panel { margin-top: 0; }
 
 /* ---------- panels and trays ---------- */
@@ -638,7 +643,7 @@ html[data-lang="bn"] .restricted { font-family: var(--bangla); }
 
 @media (max-width: 1080px) {
   .p-grid { grid-template-columns: minmax(0, 1fr); }
-  .p-side { position: static; }
+  .p-side { position: static; } /* STORY-NFR-LAYOUT-001: mobile override becomes a no-op after sticky removed, kept as documentation */
 }
 @media (max-width: 900px) { .controls .searchbox { display: none; } }
 
