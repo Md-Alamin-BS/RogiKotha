@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Repo checks for the RogiKotha design prototype. Not the product; the prototype itself ships no dependencies and needs no build step.",
   "scripts": {
-    "check": "node tools/sync-tokens.mjs --check && node tools/coverage.mjs && node tools/i18n-audit.mjs && node tools/proof-check.mjs && node tools/contrast.mjs && node tools/bangla-metrics.mjs && node tools/smoke.mjs",
+    "check": "node tools/sync-tokens.mjs --check && node tools/coverage.mjs && node tools/i18n-audit.mjs && node tools/proof-check.mjs && node tools/contrast.mjs && node tools/bangla-metrics.mjs && node tools/check-detector.mjs && node tools/hover-probe.mjs && node tools/smoke.mjs",
     "coverage": "node tools/coverage.mjs",
     "i18n": "node tools/i18n-audit.mjs",
     "proofs": "node tools/proof-check.mjs",
@@ -16,9 +16,12 @@
     "proofs:anchor": "node tools/proof-check.mjs --anchor",
     "tokens": "node tools/sync-tokens.mjs",
     "tokens:check": "node tools/sync-tokens.mjs --check",
-    "bangla": "node tools/bangla-metrics.mjs"
+    "bangla": "node tools/bangla-metrics.mjs",
+    "impeccable": "node tools/check-detector.mjs",
+    "hover": "node tools/hover-probe.mjs"
   },
   "devDependencies": {
-    "jsdom": "^27.0.0"
+    "jsdom": "^27.0.0",
+    "puppeteer-core": "^25.10.0"
   }
 }
