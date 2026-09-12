@@ -29,7 +29,21 @@
     /* Demo-local staff decisions. Nothing leaves the page. */
     decisions: {},   /* itemId -> 'approved' | 'rejected' | 'merged' */
     revealed: {},    /* gate key -> 'revealed' | 'requested' */
-    acked: {}        /* notification key -> true */
+    acked: {},       /* notification key -> true */
+    /* STORY-AUTH-001/002: static auth simulation for the staff console.
+       ASSUMPTION(D-001): the console still opens directly on #queue by
+       default, matching every pre-existing route/smoke expectation -
+       staffSignedIn only gates the new #sign-in/#approve-device/#security
+       walkthrough this task adds, not the rest of the console. ISS-023. */
+    staffSignedIn: true,
+    authError: null,
+    deviceTrusted: false,
+    approveToken: false,
+    approveAttempts: 0,
+    revokedDevices: [],
+    securityPasswordChanged: false,
+    stepUpUntil: 0,
+    pendingStepUp: null
   };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -46,6 +60,56 @@
   function bn(n) {
     if (state.lang !== 'bn') { return String(n); }
     return String(n).replace(/[0-9]/g, function (d) { return '০১২৩৪৫৬৭৮৯'[+d]; });
+  }
+
+  /* =====================================================================
+     STORY-AUTH-001/002: shared markup for the staff auth forms.
+     ASSUMPTION(D-001): admin/styles.css has no .link-btn text-button class
+     (only the patient stylesheet does), and the task caps new CSS classes
+     at .field-error and .ctl.account - so secondary text actions here reuse
+     the existing .btn.ghost.small instead of introducing one. ISS-024.
+     ===================================================================== */
+  function authErrMsg(view, name) {
+    var e = state.authError;
+    return (e && e.view === view && e.fields && e.fields[name]) || '';
+  }
+  function authField(view, name, labelKey, type, hintKey, extraAttrs) {
+    var err = authErrMsg(view, name);
+    var fid = 'f-' + view + '-' + name, eid = 'err-' + view + '-' + name;
+    return '<div class="field">' +
+      '<label for="' + fid + '">' + esc(T(labelKey)) + '</label>' +
+      (hintKey ? '<p class="note">' + esc(T(hintKey)) + '</p>' : '') +
+      '<input id="' + fid + '" name="' + name + '" type="' + type + '"' +
+        (err ? ' aria-invalid="true" aria-describedby="' + eid + '"' : '') +
+        (extraAttrs || '') + '>' +
+      (err ? '<p class="field-error" id="' + eid + '">' + esc(err) + '</p>' : '') +
+    '</div>';
+  }
+  function authPasswordField(view, name, labelKey, hintKey) {
+    var err = authErrMsg(view, name);
+    var fid = 'f-' + view + '-' + name, eid = 'err-' + view + '-' + name;
+    return '<div class="field">' +
+      '<label for="' + fid + '">' + esc(T(labelKey)) + '</label>' +
+      (hintKey ? '<p class="note">' + esc(T(hintKey)) + '</p>' : '') +
+      '<input id="' + fid + '" name="' + name + '" type="password"' +
+        (err ? ' aria-invalid="true" aria-describedby="' + eid + '"' : '') + '>' +
+      '<p style="margin-top:6px"><button class="btn ghost small" type="button" data-toggle-pw="' + fid + '" aria-pressed="false">' + esc(T('auth.showPassword')) + '</button></p>' +
+      (err ? '<p class="field-error" id="' + eid + '">' + esc(err) + '</p>' : '') +
+    '</div>';
+  }
+  function authErrorSummary(view) {
+    var e = state.authError;
+    if (!e || e.view !== view || !e.fields) { return ''; }
+    var names = Object.keys(e.fields);
+    if (!names.length) { return ''; }
+    return '<div class="callout warn" id="auth-error-summary-' + view + '" tabindex="-1">' +
+      '<b>' + esc(T('auth.errorSummary')) + '</b>' +
+      '<ul>' + names.map(function (n) { return '<li><a href="#f-' + view + '-' + n + '">' + esc(e.fields[n]) + '</a></li>'; }).join('') + '</ul>' +
+    '</div>';
+  }
+  function focusAuthSummary(view) {
+    var s = $('#auth-error-summary-' + view);
+    if (s) { s.focus(); }
   }
 
   /* A decided item shows its outcome and the audit promise instead of
@@ -100,7 +164,13 @@
     try { localStorage.setItem('rk04.admin.motion', state.motion); } catch (e) {}
   }
 
-  var VIEWS = ['queue', 'evidence', 'providers', 'config', 'notifications'];
+  var VIEWS = ['queue', 'evidence', 'providers', 'config', 'notifications',
+               /* STORY-AUTH-001/002 - not in NAV_GROUPS, not navigation */
+               'signin', 'approve', 'security'];
+  // slug (as it appears in the address bar) -> internal view name, for the
+  // handful of auth routes whose slug differs from the view name; every
+  // other view's slug and name are identical, per the existing route().
+  var ADMIN_AUTH_SLUG = { 'sign-in': 'signin', 'approve-device': 'approve' };
 
   /* ---------------------------------------------------------------------
      Navigation
@@ -228,18 +298,26 @@
 
   function route() {
     var raw = (location.hash || '#queue').replace('#', '');
-    var v = VIEWS.indexOf(raw) === -1 ? 'queue' : raw;
+    var mapped = ADMIN_AUTH_SLUG[raw];
+    var v = mapped || (VIEWS.indexOf(raw) === -1 ? 'queue' : raw);
     state.tab = v;
     document.body.setAttribute('data-view', v);
     VIEWS.forEach(function (n) { var el = $('#view-' + n); if (el) { el.hidden = (n !== v); } });
-    renderNav();
-    renderTabBar();
-    renderCrumbs();
+    // STORY-AUTH-001/002: the auth screens have no console chrome
+    var isAuthView = (v === 'signin' || v === 'approve' || v === 'security');
+    var topnav = $('#topnav'), tabbar = $('#tabbar'), crumbs = $('#crumbs');
+    if (topnav) { topnav.hidden = isAuthView; }
+    if (tabbar) { tabbar.hidden = isAuthView; }
+    if (crumbs) { crumbs.hidden = isAuthView; }
+    if (!isAuthView) { renderNav(); renderTabBar(); renderCrumbs(); }
     if (v === 'queue') { renderQueue(); }
     if (v === 'evidence') { renderEvidence(); }
     if (v === 'providers') { renderProviders(); }
     if (v === 'config') { renderConfig(); }
     if (v === 'notifications') { renderNotifications(); }
+    if (v === 'signin') { renderSignin(); }
+    if (v === 'approve') { renderApprove(); }
+    if (v === 'security') { renderSecurity(); }
     window.scrollTo({ top: 0, behavior: 'auto' });
     announce('View: ' + v);
   }
@@ -257,6 +335,9 @@
     if (state.tab === 'providers') { renderProviders(); }
     if (state.tab === 'config') { renderConfig(); }
     if (state.tab === 'notifications') { renderNotifications(); }
+    // STORY-AUTH-001/002
+    renderSignin(); renderApprove(); renderSecurity();
+    renderStaffAccount();
   }
 
   function permissionCallout() {
@@ -382,7 +463,10 @@
           '\nresult=' + (state.done ? 'recorded' : 'pending') +
           '\nreason=<written above>' +
           '\nreporter_identity=not_accessed' +
-          '\noriginal_evidence=not_accessed'
+          '\noriginal_evidence=not_accessed' +
+          // STORY-AUTH-002: the audit row carries step_up when this action
+          // was gated behind the password recheck (spec §4.4)
+          (state.stepUpUntil > Date.now() ? '\nstep_up=true' : '')
         ) + '</div>' +
         (state.done ? '<div class="callout" style="margin-top:12px;border-color:var(--positive);color:var(--positive)">✓ ' + esc(T('admin.recorded')) + '</div>' : '') +
       '</div>' +
@@ -519,6 +603,146 @@
       '</section>';
   }
 
+  /* =====================================================================
+     STORY-AUTH-001/002: staff auth screens (spec §4). Static simulation
+     only - no real credential check, no real device trust.
+     ===================================================================== */
+
+  // A fixed fictional signed-in staff identity for the account entry, since
+  // the console (unlike the patient prototype) has no notion of "the
+  // current user" beyond the role chip.
+  var STAFF_USER = { en: 'Rahim Uddin', bn: 'রহিম উদ্দিন' };
+  function staffInitials() {
+    var parts = (P(STAFF_USER) || '').split(/\s+/).filter(Boolean);
+    return (parts[0] || '').charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '');
+  }
+
+  // STORY-AUTH-001: renderSignin - non-staff email is refused; anything
+  // else either lands in the queue (trusted device) or goes to approval.
+  function renderSignin() {
+    var host = $('#view-signin');
+    if (!host) { return; }
+    host.innerHTML =
+      '<section class="panel" style="max-width:480px;margin:40px auto">' +
+        '<span class="kicker">' + esc(T('staff.signIn.kicker')) + '</span>' +
+        '<h1 class="display">' + esc(T('staff.signIn.title')) + '</h1>' +
+        authErrorSummary('signin') +
+        '<form id="staff-signin-form" novalidate>' +
+          authField('signin', 'email', 'auth.email', 'email') +
+          authPasswordField('signin', 'password', 'auth.password') +
+          '<button class="btn primary" type="submit" style="margin-top:6px">' + esc(T('staff.signIn.submit')) + '</button>' +
+        '</form>' +
+        '<p class="note" style="margin-top:14px">' + esc(T('staff.signIn.note')) + ' <a href="../index.html">RogiKotha</a></p>' +
+      '</section>';
+  }
+
+  // STORY-AUTH-002: renderApprove - new-device approval (spec §4.2)
+  function renderApprove() {
+    var host = $('#view-approve');
+    if (!host) { return; }
+    var body;
+    if (state.approveToken) {
+      body =
+        '<h1 class="display">' + esc(T('staff.device.recheck')) + '</h1>' +
+        authErrorSummary('approve') +
+        '<form id="staff-approve-form" novalidate>' +
+          authPasswordField('approve', 'password', 'auth.password') +
+          '<button class="btn primary" type="submit" style="margin-top:6px">' + esc(T('staff.device.trust')) + '</button>' +
+        '</form>';
+    } else {
+      body =
+        '<h1 class="display">' + esc(T('staff.device.title')) + '</h1>' +
+        '<p>' + esc(T('staff.device.body')) + '</p>' +
+        '<table class="kv" style="margin-top:14px"><tbody>' +
+          '<tr><th>' + esc(T('auth.security.device')) + '</th><td>Chrome on Windows</td></tr>' +
+          '<tr><th>' + esc(T('auth.security.firstSeen')) + '</th><td>' + esc(state.lang === 'bn' ? 'এইমাত্র' : 'Just now') + '</td></tr>' +
+        '</tbody></table>' +
+        /* ASSUMPTION(D-001): no dedicated dev-only "simulate the emailed
+           approval link" copy exists in spec §5 (§4.2 explicitly says there
+           is no resend button); reusing auth.verify.devInbox for the same
+           reason as the patient verify screen. ISS-021. */
+        '<p style="margin-top:14px"><button class="btn ghost small" type="button" data-approve-simulate="1">' + esc(T('auth.verify.devInbox')) + '</button></p>';
+    }
+    host.innerHTML = '<section class="panel" style="max-width:480px;margin:40px auto">' + body + '</section>';
+  }
+
+  // STORY-AUTH-002: renderSecurity - trusted devices, sessions, password
+  function renderSecurity() {
+    var host = $('#view-security');
+    if (!host) { return; }
+    if (!state.staffSignedIn) {
+      host.innerHTML = '<section class="panel" style="max-width:560px;margin:40px auto">' +
+        '<h1 class="display">' + esc(T('staff.security.title')) + '</h1>' +
+        '<div class="callout warn"><b>' + esc(T('auth.gate.title')) + '</b><p>' + esc(T('auth.gate.body')) + '</p></div>' +
+        '<button class="btn small" type="button" data-goto-admin="sign-in" style="margin-top:14px">' + esc(T('auth.signIn')) + '</button>' +
+      '</section>';
+      return;
+    }
+    var devices = [
+      { idx: 0, label: 'Chrome on Windows', first: '3 Jan 2026', last: state.lang === 'bn' ? 'এইমাত্র' : 'Just now', here: true },
+      { idx: 1, label: 'Edge on Windows', first: '20 Aug 2026', last: '2 Sep 2026', here: false }
+    ].filter(function (dvc) { return state.revokedDevices.indexOf(dvc.idx) === -1; });
+    host.innerHTML =
+      '<section class="panel" style="max-width:640px;margin:40px auto">' +
+        '<h1 class="display">' + esc(T('staff.security.title')) + '</h1>' +
+        '<div class="sub">' +
+          '<h4 class="sub-head">' + esc(T('staff.device.trusted')) + '</h4>' +
+          '<table class="kv"><thead><tr><th>' + esc(T('auth.security.device')) + '</th><th>' + esc(T('auth.security.firstSeen')) + '</th><th>' + esc(T('auth.security.lastSeen')) + '</th><th></th></tr></thead><tbody>' +
+            devices.map(function (dvc) {
+              return '<tr><td>' + esc(dvc.label) + (dvc.here ? ' ' + badge('plain', T('staff.device.thisDevice')) : '') + '</td><td>' + esc(dvc.first) + '</td><td>' + esc(dvc.last) + '</td>' +
+                '<td><button class="btn small ghost" type="button" data-revoke-device="' + dvc.idx + '">' + esc(T('staff.device.revoke')) + '</button></td></tr>';
+            }).join('') +
+          '</tbody></table>' +
+        '</div>' +
+        '<div class="sub" style="margin-top:24px">' +
+          '<h4 class="sub-head">' + esc(T('auth.security.sessions')) + '</h4>' +
+          '<table class="kv"><tbody>' +
+            '<tr><th>Chrome on Windows</th><td>' + esc(T('auth.security.thisDevice')) + '</td></tr>' +
+          '</tbody></table>' +
+        '</div>' +
+        '<div class="sub" style="margin-top:24px">' +
+          '<h4 class="sub-head">' + esc(T('auth.security.password')) + '</h4>' +
+          authErrorSummary('security') +
+          '<form id="staff-password-form" novalidate>' +
+            authPasswordField('security', 'currentPassword', 'auth.security.currentPassword') +
+            authPasswordField('security', 'newPassword', 'auth.reset.newPassword', 'auth.passwordHint') +
+            authPasswordField('security', 'confirmPassword', 'auth.reset.confirmPassword') +
+            '<button class="btn ghost small" type="submit">' + esc(T('auth.security.changePassword')) + '</button>' +
+          '</form>' +
+          (state.securityPasswordChanged ? '<p class="note" style="margin-top:10px;color:var(--positive)">✓ ' + esc(T('auth.security.passwordChanged')) + '</p>' : '') +
+        '</div>' +
+      '</section>';
+  }
+
+  // STORY-AUTH-001: masthead account entry
+  function renderStaffAccount() {
+    var btn = $('#staff-account');
+    if (!btn) { return; }
+    var span = btn.querySelector('span');
+    if (!state.staffSignedIn) {
+      btn.classList.remove('account');
+      btn.title = T('auth.signIn');
+      if (span) { span.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>'; }
+      return;
+    }
+    btn.classList.add('account');
+    btn.title = P(STAFF_USER);
+    if (span) { span.textContent = staffInitials(); }
+  }
+
+  // STORY-AUTH-002: openStepUp - password recheck before a sensitive action
+  // (spec §4.4: config apply/rollback, reporter reveal, evidence access,
+  // retention bulk execute, role changes, account deletion).
+  function openStepUp(onConfirm) {
+    if (state.stepUpUntil > Date.now()) { onConfirm(); return; }
+    state.pendingStepUp = onConfirm;
+    openSheet(T('staff.stepUp.title'),
+      '<p class="note">' + esc(T('staff.stepUp.body')) + '</p>' +
+      '<div class="field"><label for="f-stepup-password">' + esc(T('auth.password')) + '</label>' +
+        '<input id="f-stepup-password" type="password"></div>' +
+      '<button class="btn primary" type="button" id="stepup-confirm">' + esc(T('staff.stepUp.confirm')) + '</button>');
+  }
+
   /* ----- Role switcher (masthead chip) -------------------------------- */
 
   // STORY-ADMIN-001: role switcher demo control
@@ -623,13 +847,17 @@
       var el = document.getElementById('cfg-' + k);
       if (!el) { return; }
       el.addEventListener('change', function () {
-        cfg = loadConfig();
-        if (k === 'five')     { cfg.fiveAccountHide    = parseInt(el.value, 10) || 5; }
-        if (k === 'critical') { cfg.criticalHours      = parseInt(el.value, 10) || 24; }
-        if (k === 'standard') { cfg.standardDays       = parseInt(el.value, 10) || 3; }
-        if (k === 'retdef')   { cfg.retentionDefaultDays = parseInt(el.value, 10) || 90; }
-        if (k === 'retmax')   { cfg.retentionMaxDays     = parseInt(el.value, 10) || 3650; }
-        saveConfig(cfg);
+        // STORY-AUTH-002: config apply is a step-up action (spec §4.4)
+        var newVal = el.value;
+        openStepUp(function () {
+          cfg = loadConfig();
+          if (k === 'five')     { cfg.fiveAccountHide    = parseInt(newVal, 10) || 5; }
+          if (k === 'critical') { cfg.criticalHours      = parseInt(newVal, 10) || 24; }
+          if (k === 'standard') { cfg.standardDays       = parseInt(newVal, 10) || 3; }
+          if (k === 'retdef')   { cfg.retentionDefaultDays = parseInt(newVal, 10) || 90; }
+          if (k === 'retmax')   { cfg.retentionMaxDays     = parseInt(newVal, 10) || 3650; }
+          saveConfig(cfg);
+        });
       });
     });
   }
@@ -707,6 +935,19 @@
       '</button>' +
     '</div>';
   }
+  // STORY-AUTH-001/002: generic sheet opener, reusing the same #overlay
+  // markup as the bulk-action sheet below (closeBulkSheet() closes either).
+  function openSheet(title, bodyHtml) {
+    var overlay = $('#overlay');
+    var sheetBody = $('#sheet-body');
+    var sheetTitle = $('#sheet-title');
+    if (!overlay || !sheetBody || !sheetTitle) { return; }
+    sheetTitle.textContent = title;
+    sheetBody.innerHTML = bodyHtml;
+    overlay.hidden = false;
+    var c = $('#sheet-close');
+    if (c) { c.focus(); }
+  }
   function openBulkSheet() {
     var ids = Object.keys(state.bulkSelected).filter(function (k) { return state.bulkSelected[k]; });
     var cases = RK.moderation.cases.filter(function (c) { return ids.indexOf(c.id) !== -1; });
@@ -749,7 +990,10 @@
       state.decisions[dParts[0]] = dParts[1]; renderProviders(); return;
     }
     if ((el = e.target.closest('[data-reveal]'))) {
-      state.revealed[el.getAttribute('data-reveal')] = 'revealed'; renderQueue(); return;
+      // STORY-AUTH-002: identity/evidence reveal is a step-up action (spec §4.4)
+      var revealKey = el.getAttribute('data-reveal');
+      openStepUp(function () { state.revealed[revealKey] = 'revealed'; renderQueue(); });
+      return;
     }
     if ((el = e.target.closest('[data-request]'))) {
       state.revealed[el.getAttribute('data-request')] = 'requested'; renderQueue(); return;
@@ -799,6 +1043,127 @@
     }
     if (e.target.closest('#bulk-cancel') || e.target.closest('#sheet-close')) {
       closeBulkSheet();
+      return;
+    }
+
+    /* =====================================================================
+       STORY-AUTH-001/002: account entry, device approval, step-up
+       ===================================================================== */
+    if (e.target.closest('#staff-account')) {
+      if (!state.staffSignedIn) { location.hash = '#sign-in'; return; }
+      openSheet(P(STAFF_USER),
+        '<p class="sub"><a href="#security">' + esc(T('staff.security.title')) + '</a></p>' +
+        '<p class="sub" style="margin-top:10px"><button class="btn ghost small" type="button" id="staff-signout">' + esc(T('auth.signOut')) + '</button></p>');
+      return;
+    }
+    if (e.target.closest('#staff-signout')) {
+      state.staffSignedIn = false;
+      closeBulkSheet();
+      renderStaffAccount(); renderSecurity();
+      announce('Signed out');
+      return;
+    }
+    if ((el = e.target.closest('[data-toggle-pw]'))) {
+      var pwEl = document.getElementById(el.getAttribute('data-toggle-pw'));
+      if (pwEl) {
+        var showingPw = pwEl.type === 'text';
+        pwEl.type = showingPw ? 'password' : 'text';
+        el.setAttribute('aria-pressed', String(!showingPw));
+        el.textContent = showingPw ? T('auth.showPassword') : T('auth.hidePassword');
+      }
+      return;
+    }
+    if (e.target.closest('[data-approve-simulate]')) { state.approveToken = true; renderApprove(); return; }
+    if ((el = e.target.closest('[data-goto-admin]'))) { location.hash = '#' + el.getAttribute('data-goto-admin'); return; }
+    if ((el = e.target.closest('[data-revoke-device]'))) {
+      var devIdx = +el.getAttribute('data-revoke-device');
+      state.revokedDevices.push(devIdx);
+      // STORY-AUTH-002/spec §4.3: revoking the current device signs out
+      if (devIdx === 0) {
+        state.deviceTrusted = false;
+        state.staffSignedIn = false;
+        renderStaffAccount();
+        location.hash = '#sign-in';
+        return;
+      }
+      renderSecurity();
+      return;
+    }
+    if (e.target.closest('#stepup-confirm')) {
+      var stepPw = $('#f-stepup-password');
+      if (!stepPw || stepPw.value.length < 10) { if (stepPw) { stepPw.focus(); } return; }
+      state.stepUpUntil = Date.now() + 5 * 60 * 1000;
+      var stepCb = state.pendingStepUp;
+      state.pendingStepUp = null;
+      closeBulkSheet();
+      if (stepCb) { stepCb(); }
+      return;
+    }
+  });
+
+  document.addEventListener('submit', function (e) {
+    // STORY-AUTH-001: staff sign-in - non-staff email is refused (spec §4.1)
+    if (e.target.id === 'staff-signin-form') {
+      e.preventDefault();
+      var email = ($('#f-signin-email').value || '').trim();
+      var pw = $('#f-signin-password').value || '';
+      if (!email || pw.length < 10) {
+        state.authError = { view: 'signin', fields: { password: T('errors.auth.invalidCredentials') } };
+        renderSignin(); focusAuthSummary('signin');
+        return;
+      }
+      // ASSUMPTION(D-001): 'reader@demo' is the fixed fictional non-staff
+      // account the task names; any other address is treated as staff. ISS-025.
+      if (email === 'reader@demo') {
+        state.authError = { view: 'signin', fields: { email: T('staff.notStaff') } };
+        renderSignin(); focusAuthSummary('signin');
+        return;
+      }
+      state.authError = null;
+      state.staffSignedIn = true;
+      renderStaffAccount();
+      location.hash = state.deviceTrusted ? '#queue' : '#approve-device';
+      return;
+    }
+    // STORY-AUTH-002: device approval - password recheck trusts this device
+    if (e.target.id === 'staff-approve-form') {
+      e.preventDefault();
+      var apPw = $('#f-approve-password').value || '';
+      if (apPw.length < 10) {
+        state.approveAttempts++;
+        if (state.approveAttempts >= 3) {
+          state.authError = { view: 'approve', fields: { password: T('errors.auth.tokenInvalid') } };
+        } else {
+          state.authError = { view: 'approve', fields: { password: T('errors.auth.invalidCredentials') } };
+        }
+        renderApprove(); focusAuthSummary('approve');
+        return;
+      }
+      state.authError = null;
+      state.approveAttempts = 0;
+      state.deviceTrusted = true;
+      state.approveToken = false;
+      state.staffSignedIn = true;
+      renderStaffAccount();
+      location.hash = '#queue';
+      return;
+    }
+    // STORY-AUTH-002: security > change password (simulated, no real check)
+    if (e.target.id === 'staff-password-form') {
+      e.preventDefault();
+      var spNew = $('#f-security-newPassword').value || '';
+      var spConfirm = $('#f-security-confirmPassword').value || '';
+      var spFields = {};
+      if (spNew.length < 10) { spFields.newPassword = T('errors.auth.passwordTooShort'); }
+      else if (spNew !== spConfirm) { spFields.confirmPassword = T('auth.reset.mismatch'); }
+      if (Object.keys(spFields).length) {
+        state.authError = { view: 'security', fields: spFields };
+        renderSecurity(); focusAuthSummary('security');
+        return;
+      }
+      state.authError = null;
+      state.securityPasswordChanged = true;
+      renderSecurity();
       return;
     }
   });

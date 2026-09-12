@@ -50,11 +50,19 @@ Slugs stay in Latin script in both languages — a percent-encoded Bengali slug 
 | 04b | `#authors/shirin_88` | A contributor profile. |
 | 04b | `#emergency` | Non-blocking emergency guidance (999, 16263, crisis line). |
 | 04b | `#about` | Five-section product / policy statement. |
+| 04b | `#register` | Create an account: email, password, username, display name, language, age + terms. |
+| 04b | `#sign-in` | Sign in; links to reset and register. |
+| 04b | `#verify-email` | Pending email confirmation, with a dev-only "simulate the link" control. |
+| 04b | `#reset-password` | Request a reset link, then set a new password. |
+| 04b | `#me/security` | Email, password, sessions, sign-out-everywhere, link to your data. |
 | admin | `#queue` | Critical / standard lanes, bounded action chips, audit timeline, the docked commit action. |
 | admin | `#evidence` | Quarantine, retention, holds, custody notes. |
 | admin | `#providers` | Claims, pending submissions, field-change review. |
 | admin | `#notifications` | Notification triage: reports, protected-field changes, identity-reveal requests. |
 | admin | `#config` | Versioned runtime configuration: reporting thresholds, retention defaults, the role and capability matrix. |
+| admin | `#sign-in` | Staff sign-in; a non-staff email is refused here. |
+| admin | `#approve-device` | New-device approval: pending mail notice, then a password recheck to trust the device. |
+| admin | `#security` | Trusted devices (with revoke), sessions, password. |
 
 ## How to run locally
 

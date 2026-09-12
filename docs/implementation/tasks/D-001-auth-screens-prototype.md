@@ -82,22 +82,80 @@ Turn `docs/design/auth-screens-spec.md` into runnable HTML in the static prototy
 
 ## Hard-rule checklist
 
-- [ ] Sign-in controls are never the accent fill in the patient chrome; the Write CTA stays the only one.
-- [ ] Errors carry text, not colour alone; summary + inline.
-- [ ] No "account locked" wording; rate-limit copy only (`errors.auth.rateLimited`).
-- [ ] Anti-enumeration: same screen for new and existing email.
-- [ ] Reading never requires sign-in: every public route still renders signed out.
-- [ ] Both locales: every new string has `bn`; Bengali cap-drop and numerals behave (digits via `bn()`).
-- [ ] Persistent disclaimer and demo marker unchanged.
-- [ ] No emoji as icon (person glyph is inline SVG).
-- [ ] No attribution anywhere.
+- [x] Sign-in controls are never the accent fill in the patient chrome; the Write CTA stays the only one. Evidence: every patient auth submit uses `.btn ghost` — `app.js:2163` (register), `:2193` (sign-in), `:2236` (reset set), `:2244` (reset request); security's password-change submit is `.btn ghost small` (`app.js:2300`). `cta-write` (`index.html:52`) is untouched and remains the only plain `.btn`.
+- [x] Errors carry text, not colour alone; summary + inline. Evidence: `authErrorSummary()` (`app.js:123`) renders a `.callout warn` list of `<a href="#f-<view>-<name>">` links to each field; `authField()`/`authPasswordField()` (`app.js:94`, `:109`) render `<p class="field-error" id="err-<view>-<name>">` with `aria-invalid`/`aria-describedby` on the input. Same pattern in `admin/app.js:76-100`.
+- [x] No "account locked" wording; rate-limit copy only (`errors.auth.rateLimited`). Evidence: `grep -i locked shared/rogikotha-data.js` returns nothing; rate-limit copy exists in the strings table but is not wired to simulated behaviour in D-001 (ISS-032 — deferred to T-101, which has the real attempt counter).
+- [x] Anti-enumeration: same screen for new and existing email. Evidence: `app.js:3359` comment + code — register never branches on whether the email exists, so the identical `#view-verify` pending panel renders every time; proven by `tools/smoke.mjs:99-113` ("register twice with the same email shows the identical pending screen").
+- [x] Reading never requires sign-in: every public route still renders signed out. Evidence: `renderCompose()`'s signed-out branch (`app.js:1465`) renders a callout instead of the form, but every other route (`#discover`, `#doctors`, `#experiences/r1`, …) is untouched by this task and was proven still rendering signed-out in `tools/smoke.mjs` (all the pre-existing index/detail-page assertions ran with `state.session === null` before the register step, per the file's new ordering).
+- [x] Both locales: every new string has `bn`; Bengali cap-drop and numerals behave (digits via `bn()`). Evidence: every key added to `shared/rogikotha-data.js` (lines 676-783) has both `en`/`bn`; `node tools/i18n-audit.mjs` reports `Missing (referenced, undefined): none`; browser walkthrough confirmed Bengali numerals on the security page ("কমপক্ষে ১০ অক্ষর") and full-Bengali auth copy.
+- [x] Persistent disclaimer and demo marker unchanged. Evidence: `git diff -- index.html` touches only the masthead `.controls`, the demo-panel session toggle, and the new `<section>` list — the `<footer class="colophon">` block (disclaimer + demo banner) has zero diff.
+- [x] No emoji as icon (person glyph is inline SVG). Evidence: `app.js:2338` and `admin/app.js:725` — the signed-out account glyph is an inline `<svg>` circle+path, no emoji character anywhere in the new code.
+- [x] No attribution anywhere. Evidence: final commit's author/committer checked with `git log -1 --format='%an <%ae>%n%cn <%ce>%n%B'` before push (see report); no tool/model name or `Co-Authored-By` in any touched file.
 
 ## Hand-off (implementer fills in)
 
 ### What changed
+Added the patient auth screens (`/register`, `/sign-in`, `/verify-email`, `/reset-password`,
+`/me/security`) to Concept 04b, the masthead account entry (signed-out/unverified/verified states),
+and gates on write/react/comment/bookmark/report/claim behind `state.session`. Added the staff
+`#sign-in` / `#approve-device` / `#security` screens and the password-recheck (step-up) sheet to the
+admin console, wired to `[data-reveal]` and the config-threshold changes. Added every `auth.*` /
+`errors.auth.*` / `staff.*` / `email.*` string from spec §5, both languages. Extended
+`tools/smoke.mjs` with a register→verify→gate walkthrough and a second JSDOM instance for the staff
+sign-in→approve→trust flow. Everything is a static simulation: `state.session` (patient) and
+`state.staffSignedIn`/`state.deviceTrusted` (staff) flip in memory only — no network, no real tokens.
+
 ### Not done and why
+- Rate limiting (`errors.auth.rateLimited`) and account-suspended copy ship as strings but are not
+  wired to any simulated counter — the task's own step list only asked for the generic
+  invalid-credentials case on `/sign-in`. See ISS-032; real behaviour is T-101's.
+- "Password must not equal email" (spec §3.1) is not separately enforced — only length is checked,
+  since spec §5 has no distinct copy for that case (ISS-033).
+- The `?token=` URL scheme described in the task file (`#verify-email?token=1`, etc.) was replaced
+  with in-page "simulate" state flags (`state.verifyToken`/`resetToken`/`approveToken`) rather than
+  adding query-string parsing to the router — functionally equivalent for the founder walkthrough
+  (ISS-030).
+- The 360px viewport could not be forced through the available browser-automation tool on this
+  environment (`resize_window` did not change the DOM's effective viewport); verified by code review
+  instead (ISS-037). Desktop width (1280px), Bengali, English, light and dark theme were all walked
+  in the real browser.
+
 ### Questions for the human
+None block this task. Two things worth the founder's eye on walkthrough:
+1. After registering a new demo account, the masthead shows the new identity, but `/me`'s
+   "Published"/"Drafts" content still shows the fixed `shirin_88` fixture (ISS-029) — pre-existing,
+   `renderMine()` was never session-scoped. Cosmetically odd but not a hard-rule violation.
+2. Terms/Privacy links on `/register` point at `#about` (ISS-028) since the prototype has no
+   dedicated policy routes — confirm that's an acceptable stand-in for the walkthrough.
+
 ### Follow-ups
+- T-101 (Better Auth adapter): implement real rate limiting, account suspension, and the
+  password-not-equal-email check.
+- T-102/T-103 (React port): see `docs/implementation/handoffs/D-001.md` for file:line pointers per
+  screen and which behaviours are simulated vs. must become real.
+- Pre-existing `impeccable` findings at `admin/styles.css:339` and
+  `concepts/concept-04b-quiet-clinic-minimal/styles.css:1797` (thick-border anti-pattern, predates
+  this task) are out of D-001's owned paths — flagged for whoever owns those files next (ISS-027).
+
 ### `pnpm check` output summary
 (for this task: `npm run check` and the detector)
+```
+npm run check
+  tokens.css is in sync (16 token blocks)
+  coverage: STORY-AUTH-001 Partial, STORY-AUTH-002 Partial (was Missing/Missing)
+  i18n-audit: Missing (referenced, undefined): none
+  proof-check: 93 correct, 0 drifted, 16 unanchored (pre-existing, unrelated), 0 broken
+  contrast: OK - every text pair clears AA and every 1.4.11 boundary clears 3:1, both modes
+  bangla-metrics: OK
+  smoke: 96/96 passed, Runtime errors: none
+  exit code: 0
+
+npx impeccable detect ui-design-prototype/ --no-advisory
+  2 anti-patterns found — both pre-existing (git blame: commit 46fc261, 2026-09-10),
+  outside D-001's owned paths, not introduced by this task (see ISS-027).
+```
+
 ### Hard-rule evidence
+See the checked boxes above — each cites `file:line` or the smoke test name.
+
+**Run record:** Claude Code · claude-sonnet-5 · effort high · start commit 56ed036 · end commit b5a7035

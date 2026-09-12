@@ -2220,3 +2220,17 @@ html[data-lang="bn"] .viewer-controls .vdownload { font-family: var(--bangla); }
   .viewer-page .row { grid-template-columns: 100px 1fr; }
   .viewer-page .seal { /* bangla-ok: geometry, the responsive variant of the stamp */ width: 64px; height: 64px; right: 22px; bottom: 22px; font-size: 8px; }
 }
+
+/* added: D-001 STORY-AUTH-001/002 auth screens (docs/design/auth-screens-spec.md).
+   Two rules only, per the task's owned-paths note: a field-level error
+   message (paired with aria-invalid/aria-describedby on the control) and a
+   two-letter-initials variant of the existing .ctl masthead control, since
+   .ctl is sized (font-size 14px in a 36px circle) for one symbol glyph. */
+.field .field-error { font-family: var(--sans); font-size: 12.5px; color: var(--warn-ink); font-weight: 600; margin: 4px 0 0; }
+html[data-lang="bn"] .field .field-error { font-family: var(--bangla); }
+.ctl.account { font-size: 12px; font-weight: 700; position: relative; }
+.ctl.account[data-verified="false"]::after {
+  content: ""; position: absolute; top: 1px; right: 1px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--warn-ink); border: 1px solid var(--glass-2);
+}
