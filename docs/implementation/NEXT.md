@@ -8,6 +8,7 @@ _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 ```
 mode: implement
 tasks: T-001, D-001
+recommended: Claude Sonnet 5 or Opus 4.8 · effort high   (T-001 is M1, D-001 is M2)
 ```
 
 ## State of the build

@@ -21,6 +21,22 @@ self-sufficient for running the loop. Where they differ, this file wins in loop 
 1. Identify yourself: tool name (puku-cli, Claude Code, Codex) and the model id your tool reports
    (`/model`, `/status`, session header). If the tool cannot tell you, use the model name the human
    configured and say so. Write it as `TOOL · MODEL · EFFORT` in every record you touch.
+   Compare it with the `recommended:` line in the Queue (§0.4). If you are running a **lower tier**
+   than recommended for an M3 task (auth, identity, evidence, moderation, retention, deletion,
+   hardening), stop and tell the human: "Restart this session with <recommended> and paste the same
+   line." For M0–M2 tasks a lower tier is acceptable; note it in the record and continue.
+
+   Model tiers (from `00-master-plan.md` §7 and `08-agent-prompts.md` §4):
+
+   | Task class | Implement — model · effort | Validate — model · effort |
+   |---|---|---|
+   | M0 mechanical | GPT-5.6 Luna or Claude Haiku 4.5 · `medium` (Sonnet 5 / Opus 4.8 also fine) | Sonnet 5 or Opus 4.8 · `high`, new session |
+   | M1 routine, M2 frontend port | Claude Sonnet 5 or GPT-5.6 Terra or Opus 4.8 · `high` | the other vendor's mid-tier if available, else same tool · `high`, new session |
+   | M3 high-risk | Claude Opus 5 · `xhigh` (or Opus 4.8 at the highest effort the tool offers; GPT-5.6 Sol · `high`) | **other vendor** (GPT-5.6 Sol/Terra · `high`); if impossible, a different model + human approval line |
+   | M4 review | — | Opus 5 or Sol · `high` |
+
+   Class is in each task file's header. When a Queue holds two tasks of different classes, the
+   session runs at the higher one's tier; sub-agents get their own model per task (§1.1).
 2. Read `AGENTS.md`. No tool, model or agent identity in code, comments, docs, commit author, commit
    message or trailers — ever. Check after every commit (step 5.6).
 3. `git fetch origin`.
@@ -34,6 +50,7 @@ self-sufficient for running the loop. Where they differ, this file wins in loop 
    ```
    mode: implement | validate | done
    tasks: T-xxx[, T-yyy]        (one or two task ids; a task may carry a marker: [running] or [ready])
+   recommended: <model> · effort <level>   (for this mode, from the tier table in §0.1)
    ```
    If the Queue is missing or malformed, rebuild it with §4 and continue.
 
@@ -64,7 +81,10 @@ Read `00-master-plan.md` §1–§4 and §7, `01-conventions.md` (all), `04-hando
   previous session may have left partial work).
 - If your tool can run sub-agents (puku-cli sub-agents, Claude Code's Agent tool), start one
   sub-agent per task, each told: "work only inside worktree `../rk-<task>` on branch `<branch>`;
-  follow §1.2 for task `<task>`; do not touch the other worktree". Wait for both.
+  follow §1.2 for task `<task>`; do not touch the other worktree". Give each sub-agent the model
+  its class calls for where the tool allows it (Claude Code: `model: sonnet` for M0–M2, `model: opus`
+  for M3; puku-cli: the agent's `model:` field; otherwise it inherits yours) and tell it the effort
+  to use. Each sub-agent records its own `TOOL · MODEL · EFFORT`. Wait for both.
   If your tool cannot run sub-agents, do the two tasks one after the other, each in its own worktree.
 - The main session never edits code itself when sub-agents are used; it only does §1.3.
 
@@ -115,11 +135,12 @@ Read `00-master-plan.md` §1–§4 and §7, `01-conventions.md` (all), `04-hando
    `loop: queue validate <tasks>`), push `build/demo`. (These files are the only thing the loop
    commits to `build/demo` outside a merge.)
 3. Remove the worktrees you created (`git worktree remove ../rk-<task>`); the branches stay on origin.
-4. Print, as the last thing you say:
+4. Print, as the last thing you say (fill `<model · effort>` from the tier table for the queued
+   tasks' classes — validate column):
 
    ```
    Implemented: <tasks> (<done|partial each>). Questions for you: <list or none>.
-   Open a NEW session and paste:
+   Open a NEW session on <model · effort> (validation of <classes>) and paste:
    Read docs/implementation/LOOP.md and do exactly what it says. Ask me only when it tells you to.
    ```
    (If a parallel lane session is still `[running]`, say instead: "Wait for the Lane <X> session to
@@ -171,11 +192,12 @@ sub-agents, each in its own worktree of the task branch, or one after the other)
    questions for the human, blockers). Append `validated <verdict>` lines to `BUILD-LOG.md`.
    Commit the register files on `build/demo` (`loop: queue implement <tasks>`), push.
 2. Remove your worktrees.
-3. Print, as the last thing you say:
+3. Print, as the last thing you say (fill `<model · effort>` from the tier table — implement
+   column — for the classes of the tasks you just queued):
 
    ```
    Validated: <task: verdict, …>. Merged: <tasks>. Needs your decision: <list or none>.
-   Open a NEW session and paste:
+   Open a NEW session on <model · effort> (implementing <classes>) and paste:
    Read docs/implementation/LOOP.md and do exactly what it says. Ask me only when it tells you to.
    ```
    Then stop.
@@ -200,7 +222,11 @@ and `docs/validation/DEMO-GATES.md`, and stop. Do not print a next prompt.
    "Parallel-safe with" row names the first (or their Owned paths are disjoint), and neither is an
    M3 task that the master plan marks sequential within its domain (T-303→T-304→T-305, T-401→T-403→
    T-404, T-101→T-103/T-104, T-301→T-302). Never queue a task and a task that depends on it together.
-4. If nothing is unblocked but tasks remain, set `mode: implement`, `tasks: none`, and write the
+4. Write the `recommended:` line: the highest tier among the queued tasks' classes, implement
+   column of the §0.1 table (e.g. `recommended: Claude Sonnet 5 or Opus 4.8 · effort high`; for an M3
+   task `recommended: Claude Opus 5 · effort xhigh (or Opus 4.8 at max)`). When you set
+   `mode: validate` (§1.3) use the validate column instead.
+5. If nothing is unblocked but tasks remain, set `mode: implement`, `tasks: none`, and write the
    blocker under "Blockers" with what the human must do. If every task is `merged`, `mode: done`.
 
 ---
