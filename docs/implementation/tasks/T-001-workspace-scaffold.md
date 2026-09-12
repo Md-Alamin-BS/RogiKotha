@@ -225,4 +225,4 @@ fails, exactly where the task file says it will and for no other reason:
   evidence, not attribution, per `04-handoff-and-validation.md` §2) — none found.
 
 Run record: Claude Code · claude-sonnet-5 · effort high · start commit 56ed036 · end commit
-<pending — see final commit of this task branch>.
+2f35801.
