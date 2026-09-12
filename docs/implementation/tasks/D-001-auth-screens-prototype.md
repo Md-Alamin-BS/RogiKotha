@@ -158,4 +158,4 @@ npx impeccable detect ui-design-prototype/ --no-advisory
 ### Hard-rule evidence
 See the checked boxes above — each cites `file:line` or the smoke test name.
 
-**Run record:** Claude Code · claude-sonnet-5 · effort high · start commit 56ed036 · end commit b5a7035
+**Run record:** Claude Code · claude-sonnet-5 · effort high · start commit 56ed036 · end commit a75d7f4
