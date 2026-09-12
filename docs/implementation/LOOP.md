@@ -33,9 +33,15 @@ self-sufficient for running the loop. Where they differ, this file wins in loop 
 
    ```
    mode: implement | validate | done
-   tasks: T-xxx[, T-yyy]        (one or two task ids)
+   tasks: T-xxx[, T-yyy]        (one or two task ids; a task may carry a marker: [running] or [ready])
    ```
    If the Queue is missing or malformed, rebuild it with §4 and continue.
+
+   **Lane-scoped sessions.** If the human's prompt ends with `Lane A` or `Lane B`, you handle only
+   the queued task whose task-file header says that lane (skip tasks marked `[ready]` or
+   `[running]` by another session; mark yours `[running]` in `NEXT.md`, commit and push that one-line
+   change on `build/demo` immediately so the other session sees it). Two lane-scoped sessions may run
+   at the same time in two terminals. Without a lane word, one session handles every queued task.
 5. Confirm git identity: `git config user.name` / `user.email` must be the human's (not
    puku/noreply/bot). If not, stop and ask the human to fix it.
 6. Append to `docs/implementation/BUILD-LOG.md`:
@@ -97,9 +103,13 @@ Read `00-master-plan.md` §1–§4 and §7, `01-conventions.md` (all), `04-hando
 
 ### 1.3 Close the session (main session, after all tasks returned)
 
-1. On `build/demo` (the main checkout): rewrite `NEXT.md` — state of the build in three lines, the
-   Queue set to `mode: validate` with the same task ids, questions for the human (collected from
-   the sub-agents), blockers. Set each task's tracker row in `README.md` §5 to `validating`.
+1. On `build/demo` (the main checkout): `git pull --ff-only origin build/demo` first (a parallel
+   lane session may have pushed). Rewrite `NEXT.md` — state of the build in three lines, questions
+   for the human (collected from the sub-agents), blockers. In the Queue mark your finished tasks
+   `[ready]`. If **every** queued task is now `[ready]`, set `mode: validate` (keep the ids, drop the
+   markers); if another task is still `[running]` in a parallel session, leave `mode: implement` —
+   the next validate turn starts when that session marks its task `[ready]`. Set each finished task's
+   tracker row in `README.md` §5 to `validating`.
    Append `finished (done|partial)` lines to `BUILD-LOG.md` with the model.
 2. Commit these register files on `build/demo` (`git pull --ff-only` first; message
    `loop: queue validate <tasks>`), push `build/demo`. (These files are the only thing the loop
@@ -112,11 +122,15 @@ Read `00-master-plan.md` §1–§4 and §7, `01-conventions.md` (all), `04-hando
    Open a NEW session and paste:
    Read docs/implementation/LOOP.md and do exactly what it says. Ask me only when it tells you to.
    ```
-   Then stop.
+   (If a parallel lane session is still `[running]`, say instead: "Wait for the Lane <X> session to
+   finish, then paste the line above.") Then stop.
 
 ---
 
 ## 2. Mode: validate
+
+If the Queue still has a task marked `[running]`, another session is not finished: say
+"Lane <X> is still running; paste again when it has finished" and stop. Otherwise:
 
 You did not implement these tasks; validate them independently. Read `04-handoff-and-validation.md`
 §3–§4, `01-conventions.md` §3, §5, §6, §10, §13, §14. For each task in the Queue (in parallel with
@@ -193,7 +207,9 @@ and `docs/validation/DEMO-GATES.md`, and stop. Do not print a next prompt.
 
 ## 5. What the human does
 
-- Paste the one-line prompt into a fresh session whenever the previous one printed it. Alternate
+- Paste the one-line prompt into a fresh session whenever the previous one printed it. To run two
+  terminals at once during an implement turn, paste the line ending with `Lane A` in one and
+  `Lane B` in the other; validate turns always use the plain line in one session. Alternate
   tools if you like (Codex for validate sessions gives cross-vendor review on M3 tasks; otherwise
   the same tool is acceptable — the record says so).
 - Answer questions written under "Questions for the human" in `NEXT.md` by editing that file (or
