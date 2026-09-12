@@ -1,5 +1,12 @@
 # Agent and model assignment
 
+> **Update 2026-09-10.** For the local demo build the assignment classes below are superseded by
+> `docs/implementation/00-master-plan.md` §7, backed by
+> `docs/planning/research/model-assignment-2026-09-10/research.md` (current model line-up: Claude
+> Fable 5.1 / Opus 5 / Sonnet 5 / Haiku 4.5 and GPT-5.6 Sol / Terra / Luna, both on flat-rate
+> subscriptions). The task-assignment policy, run-record fields, risk-based requirements and
+> cross-vendor validation rules in this file still apply unchanged.
+
 Status: Gate 2 execution policy  
 Research snapshot: 2026-08-30
 

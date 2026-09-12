@@ -76,12 +76,12 @@ guard). All text content is bilingual `{ en: '…', bn: '…' }`; helpers
 
 | Property | Type | Notes |
 |---|---|---|
-| `RK.doctors` | `Doctor[]` | N = 16. Every doctor has at least one review. |
-| `RK.conditions` | `Condition[]` | N = 10. Cross-linked from reviews. |
-| `RK.facilities` | `Facility[]` | N = 6. Linked from accounts. |
-| `RK.reviews` | `Review[]` | N ≈ 80. Self-reported outcome + sentiment. |
-| `RK.evidence` | `Evidence[]` | N ≈ 40. Linked to reviews, has pipeline state. |
-| `RK.accounts` | `Account[]` | N = 6. Patient personas with conditions & facilities. |
+| `RK.doctors` | `Doctor[]` | N = 6. Every doctor has at least one review. |
+| `RK.conditions` | `Condition[]` | N = 8. Cross-linked from reviews. |
+| `RK.facilities` | `Facility[]` | N = 5 (branches with a parent organisation). Linked from accounts. |
+| `RK.reviews` | `Review[]` | N = 12 (plus `RK.facilityReviews`, N = 8). Self-reported outcome + sentiment. |
+| `RK.evidence` | `Evidence[]` | N = 7. Linked to reviews, has pipeline state. |
+| `RK.user` | `object` | One signed-in persona (`shirin_88`) with drafts, bookmarks and notifications; `RK.comments` N = 10; `RK.moderation` carries cases, quarantine, providers, audit log. |
 | `RK.doctorConditions` | `DoctorCondition[]` | Join table for doctor ↔ condition counts. |
 | `RK.config` | `object` | Emergency numbers, last-verified dates, etc. |
 
@@ -89,7 +89,7 @@ guard). All text content is bilingual `{ en: '…', bn: '…' }`; helpers
 
 - `RK.SENTIMENTS = ['positive', 'mixed', 'negative']` — same order as
   capsules render. Reviewer sentiment from review.
-- `RK.OUTCOMES = ['helped', 'same', 'worsened']` — patient-reported outcome.
+- `RK.OUTCOMES = ['helped', 'none', 'worse', 'uncertain']` — patient-reported outcome.
 
 ### Selectors
 
