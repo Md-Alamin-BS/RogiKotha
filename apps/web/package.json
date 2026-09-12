@@ -1,0 +1,25 @@
+{
+  "name": "@rogikotha/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "echo \"T-008\"",
+    "build": "echo \"T-008\"",
+    "typecheck": "echo \"T-008\"",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rogikotha/application": "workspace:*",
+    "@rogikotha/contracts": "workspace:*",
+    "@rogikotha/database": "workspace:*",
+    "@rogikotha/adapters": "workspace:*",
+    "@rogikotha/i18n": "workspace:*"
+  },
+  "devDependencies": {
+    "@rogikotha/test-support": "workspace:*"
+  }
+}
