@@ -59,7 +59,7 @@ Modify: `packages/database/package.json`
 |---|---|---|
 | Exact pins | `pnpm ls --filter @rogikotha/database drizzle-orm drizzle-kit` | `0.45.2`, `0.31.10` |
 | Migrate from empty | `pnpm db:reset && pnpm db:migrate` | exit 0; `drizzle_migrations` has 2 rows |
-| Tables present | `psql $DATABASE_URL -c "\dt"` (via docker exec) | 24 tables incl. `auth_users`, `account_profiles`, `personas`, `persona_links`, `doctors`, `taxonomy_terms`, `audit_events`, `config_versions`, `demo_clock` |
+| Tables present | `psql $DATABASE_URL -c "\dt"` (via docker exec) | 30 tables (`ISS-086`: the "24" this row used to say was a miscount — §1 4 + §2 8 + §3 3 + §4 9 + §5 2 + §9 1 + §11 2 + §15 1 = 30, confirmed live) incl. `auth_users`, `account_profiles`, `personas`, `persona_links`, `doctors`, `taxonomy_terms`, `audit_events`, `config_versions`, `demo_clock` |
 | Enums present | `psql … -c "\dT"` | every §0 enum |
 | Worker grants | integration test "rk_worker cannot select from persona_links" | passes |
 | Integration tests | `pnpm test:int` | green |
