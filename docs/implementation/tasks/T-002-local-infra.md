@@ -152,9 +152,112 @@ Modify: none (root `.env.example` is a copy made by the human; `.env` is git-ign
 
 ## Hand-off (implementer fills in)
 
+**Run record:** Claude Code · claude-sonnet-5 · effort medium.
+
 ### What changed
+
+Created all five owned files plus one implied by the scope-change block:
+`infra/compose/docker-compose.yml` (postgres 18, mailpit, clamav, three named volumes),
+`infra/compose/postgres-init/01-roles.sql`, `infra/compose/postgres-init/02-extensions.sql`,
+`infra/compose/.env.example`, `infra/compose/README.md`, and
+`infra/compose/clamav/rogikotha-test.ndb` (the custom test signature required by the "Scope
+change 2026-09-12" block, which the "Owned paths" summary list omitted — see `ISS-042`).
+
+Also appended a 2026-09-13 entry to `docs/status/dependency-check-log.md` (pins: `postgres:18`
+unchanged, `clamav/clamav:1.5.4` unchanged, `axllent/mailpit:v1.31.1` — see `ISS-043` for why this
+wasn't already present in this worktree), added `infra/compose/.gitattributes` (`* text eol=lf`,
+see `ISS-044`), and added `ISS-039` through `ISS-044` to `docs/implementation/ISSUES.md`.
+
+Three deviations from the task's literal inline snippet, all confirmed necessary by running the
+actual containers (not assumed) — each is a `// ASSUMPTION(T-002):` comment in
+`docker-compose.yml` plus an `ISS-` row:
+
+1. `axllent/mailpit:latest` → `axllent/mailpit:v1.31.1` (the task text itself said to check
+   releases and pin a real tag before committing; `ISS-039`).
+2. `pgdata:/var/lib/postgresql/data` → `pgdata:/var/lib/postgresql`. The current `postgres:18`
+   image (`PG_VERSION 18.6-1.pgdg13+2`) moved to a versioned data directory
+   (`PGDATA=/var/lib/postgresql/18/docker`) and declares its own image `VOLUME` one level up; the
+   task's literal mount point makes the container exit immediately (`ISS-040`).
+3. ClamAV's custom signature bind mount changed from read-only to read-write. The image's `/init`
+   entrypoint always runs `chown -R clamav:clamav /var/lib/clamav`, which fails hard against a
+   read-only bind mount and exits the container (`ISS-041`).
+
+Additionally, `infra/compose/.gitattributes` (`* text eol=lf`) was added because this Windows
+checkout has `core.autocrlf=true` and no repo-root `.gitattributes` — without it, a future
+checkout would convert `rogikotha-test.ndb` to CRLF and corrupt its line-based signature format
+(`ISS-044`).
+
 ### Not done and why
+
+Nothing in scope was skipped. Not attempted (correctly out of scope per the task file): table/
+column-level grants (T-004's migration), the clamd client adapter (T-304), the SMTP adapter
+(T-101), and the `/api/health` route (T-008).
+
 ### Questions for the human
+
+None require a decision before merge. For awareness: `ISS-042` and `ISS-043` note two small
+process gaps (a scope-change file not listed in "Owned paths"; a dependency-check-log entry that
+existed only as an uncommitted diff in a sibling worktree) — no action needed unless T-006 also
+appended the same 2026-09-13 dependency-check-log entry, in which case the merge should just see
+identical text on both sides.
+
 ### Follow-ups
+
+- T-004: apply `0004_roles.sql` table/column grants against these roles; until then `rk_worker`/
+  `rk_maintenance` can connect but see no tables (documented in `infra/compose/README.md`).
+- T-008: `/api/health` should report `scanner: unavailable` (not fail startup) whenever clamd
+  isn't reachable — this task deliberately does not wire any start-up dependency on ClamAV being
+  healthy (FD-035, hard-rule checklist item 1).
+- Whoever next edits `infra/compose/docker-compose.yml`: keep the three `// ASSUMPTION(T-002)`
+  comments (mailpit tag, postgres volume path, clamav bind-mount mode) — reverting any of them to
+  the task's original literal text was confirmed live to break the corresponding container.
+
 ### `pnpm check` output summary
+
+N/A — infra only, no application code, no `packages/*` or `apps/*` files touched. `pnpm check`
+was not run (nothing for it to check in the owned paths); `docker compose -f
+infra/compose/docker-compose.yml config` was used instead as the structural validity check (see
+below).
+
 ### Hard-rule evidence
+
+Live verification, Docker Desktop running (`docker info` confirmed before touching
+`infra/compose/`), from a clean `down -v` state:
+
+- `docker compose -f infra/compose/docker-compose.yml config` — valid, no errors.
+- `docker compose -f infra/compose/docker-compose.yml up -d` then `... ps` — postgres and mailpit
+  `healthy` within ~10s; clamav `health: starting` then `healthy` after signature download
+  (observed healthy within ~1 minute in this run; the task's `start_period: 600s` still covers a
+  slower cold pull).
+- Roles: `... exec postgres psql -U postgres -d rogikotha -c "\du"` lists `rk_app`, `rk_worker`,
+  `rk_maintenance`.
+- Extensions: `... exec postgres psql -U rk_app -d rogikotha -c "select current_user, (select
+  count(*) from pg_extension where extname in ('pg_trgm','citext','pgcrypto'))"` →
+  `rk_app | 3`. Same three extensions confirmed present in `rogikotha_test`.
+- Mailpit: `curl -s http://localhost:8025/api/v1/info` → JSON body, `"Version":"v1.31.1"`.
+- SMTP port: `node -e "require('net').connect(1025,'localhost')..."` → `ok`.
+- Version pins: `grep -n "clamav/clamav:1.5.4" infra/compose/docker-compose.yml` (line 38, one
+  match); `grep -n "axllent/mailpit:" infra/compose/docker-compose.yml` → `v1.31.1`, not `latest`.
+- Reset: `down -v` then `up -d` again — fresh volumes confirmed (roles/extensions queries re-ran
+  clean, no "already exists" errors), init scripts re-executed.
+- No secrets committed: `grep -E "KEY=|SECRET=" infra/compose/.env.example` → both
+  `APP_ENCRYPTION_KEY=` and `BETTER_AUTH_SECRET=` present with empty values only.
+- Custom ClamAV signature (Scope change 2026-09-12 / CR-001 / FD-036): copied a file containing
+  the ASCII bytes `ROGIKOTHA-MALWARE-TEST-MARKER` into the running container and ran
+  `clamscan /tmp/flagged.jpg` → `RogiKotha.Test.Marker.UNOFFICIAL FOUND` (exit code 1, which is
+  clamscan's normal "infected file found" exit status, not a failure).
+
+Hard-rule checklist:
+
+- [x] Original evidence is never served publicly; scanning that cannot run fails closed (this
+      task must not make the scanner a hard start-up dependency) — no `depends_on: condition:
+      service_healthy` from any other service onto `clamav` exists anywhere in
+      `docker-compose.yml`; `clamav`'s own healthcheck only gates its own container's reported
+      status, and `README.md` documents "nothing in the application may depend on the clamav
+      container reporting healthy at start-up" and the `MalwareScanner` port's
+      `status: 'unavailable'` fail-closed contract (`docker-compose.yml`, `README.md` "Confirming
+      each service is ready").
+- [x] No agent/tool attribution in any file or commit — checked every file created in this task
+      (`docker-compose.yml`, both `.sql` files, `.env.example`, `README.md`,
+      `rogikotha-test.ndb`) plus the commit message body before pushing; none reference any
+      agent, tool, or model name.
