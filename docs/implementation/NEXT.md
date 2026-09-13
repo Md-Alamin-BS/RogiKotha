@@ -2,65 +2,57 @@
 
 _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 
-**Updated:** 2026-09-13 · by: loop validate session (Claude Code · claude-opus-5[1m] · effort high)
+**Updated:** 2026-09-14 · by: T-007 implementer (Claude Code · claude-sonnet-5 · effort high)
 
 ## Queue (machine-read by LOOP.md)
 ```
 mode: implement
-tasks: T-007, CR-005
+tasks: T-009, CR-005
 recommended: Claude Sonnet 5 or GPT-5.6 Terra or Opus 4.8 · effort high
 ```
 
 ## State of the build
-- **T-005 and T-207a both validated `PASS WITH FOLLOW-UP` and merged** (`ee0d250`, `ec5e998`).
-  Post-merge on `build/demo`: `pnpm check` **exit 0** (typecheck 9/9, eslint 0 errors / 1 known
-  warning `ISS-105`, **33 files / 110 passed + 2 expected-fail**, i18n **777 keys** both locales,
-  37 route rows + proxy), `pnpm smoke` 6/9, `pnpm test:int` 7 files / 27 passed + 2 expected-fail.
-  Counts reconcile exactly (20/64 before + T-005's 5/21 + T-207a's 8/27 = 33/112), so neither merge
-  dropped a test. Phase 0 lane A is one task from done; Phase 2 lane B is blocked behind T-201.
-- The 2 "expected fail" tests are deliberate: `validator-probes.int.test.ts` holds `it.fails`
-  tripwires for `ISS-139` and `ISS-141` that **turn the suite red the day those are fixed** — that
-  is the signal to delete the marker, not a broken test.
-- Issue-id collision resolved: T-005 keeps `ISS-125`–`132`, T-207a's set was renumbered to
-  `ISS-133`–`138`, validators used `139`–`149` and `150`–`154`. Every stale reference on
-  `build/demo` was renumbered at merge (`ISS-154` closed).
+- **T-007 done, queued for validation** (`task/t-007-test-support-and-seed`, not yet merged — see
+  `docs/implementation/handoffs/T-007.md`). `packages/test-support` now has the full typed corpus,
+  13 builders, 16 fakes, and an idempotent seed verified live: `pnpm db:reset && pnpm db:migrate &&
+  pnpm db:seed` twice (604 rows then 0), row counts match every acceptance number (doctors 6,
+  branches 5, reviews 12, facility_reviews 8, comments 10, evidence_items 7, cases 5, accounts 80),
+  seeded password hashes verify with `@node-rs/argon2`. `pnpm check` **exit 0** on the branch
+  (37 files/146+2xf, i18n 777 keys, both builds); `pnpm smoke` 7/10 (+1 file/+1 test).
+- **CR-005 status unknown** — this session did not touch `packages/contracts` or `apps/web`; its
+  `06-change-requests.md` row still says `needs queueing`. Whoever picks it up should check
+  `BUILD-LOG.md` for anything since `21:40 2026-09-13` before assuming it is still untouched.
+- 15 new `ISS-155`..`ISS-169` rows (T-007). The one open question for the human: `ISS-158` —
+  `05-demo-storyboard.md`'s seeded-accounts table names `anon_author_r4` as the anonymous-alias
+  proof, but review r4 is `pseudo` (`r_ahmed`) in the actual prototype data; the seed correctly uses
+  the real anonymous reviews (r2/r8/r12) instead, so this is a doc-vs-data mismatch, not a bug.
 
 ## Next, per lane (human-readable)
-- **Lane A — T-007** (test support: corpus, builders, fakes, seed, fixtures). Unblocks T-201, which
-  unblocks all of lane B. ⚠ If `pnpm test:int` ever appears to hang, it is `ISS-143`, not your code:
-  kill it, re-run, and note it — **queue `CR-007` immediately after T-007**.
-- **Lane B — CR-005** (strip the 99 `.js` import suffixes from `packages/contracts/src`). I queued
-  this under its own `Status:` line ("not blocked on a founder decision, just needs a session") —
-  say so if you'd rather it waited. Without it no Phase 2 page can import a real contracts view
-  model: T-207a's validator reproduced **42** `Module not found` errors from a throwaway route.
-- Then: T-009 → T-010 (lane A), T-101 after T-009; T-201 after T-007 opens T-202/T-203/T-206 and
-  T-207 Half B.
+- **Lane A — T-009** (worker skeleton: pg-boss, job registry, outbox relay). Depends on T-004/T-005
+  (both merged); does not depend on T-007. First three things: (1) `git fetch origin`, branch from
+  `build/demo` after T-007 merges (or now, if T-007's validator is mid-review — T-009 does not touch
+  `packages/test-support`); (2) read `tasks/T-009-worker-skeleton.md`; (3) `packages/database`'s
+  `PgOutbox` (already implemented, `repositories/outbox.ts`) is what the relay claims from.
+- **Lane B — CR-005** (strip `.js` import suffixes from `packages/contracts/src`) — unchanged from
+  last turn, see `06-change-requests.md`.
+- After T-007 validates: T-101 (Better Auth) unblocks — its adapter must use the **same** Argon2id
+  parameters T-007 already pinned (`m=65536, t=3, p=1`, `seed-accounts.ts`) or seeded accounts stop
+  verifying. T-201 also unblocks once T-007 validates, opening T-202/T-203/T-206/T-207 Half B.
 
 ## Blockers
-- None for this queue. Both tasks are M1 and parallel-safe: `packages/test-support/**` vs
-  `packages/contracts/**` are disjoint.
+- None for T-009. CR-005 blocks any Phase 2+ page that needs a real `@rogikotha/contracts` view model.
 
 ## Questions for the human
-- **`ISS-140` / `CR-006` (S2, needs your ruling):** the database grants `rk_worker`
-  `SELECT (id, email)` on `auth_users`; `02-data-model.md` §16 (twice) and `01-conventions.md` §11
-  all say the worker has **no** `auth_*` access. T-005's own task file instructed the grant, so this
-  is a spec conflict, not a bug. **(a)** revoke it and read recipients from
-  `email_deliveries.to_email_enc` as designed (recommended), or **(b)** keep it and amend both
-  documents. Either ships; leaving them contradictory is the bad outcome. Options in
-  `tasks/CR-006-worker-auth-users-grant.md`.
-- **`CR-007`** (`ISS-143`): `pnpm test:int` hung 44 min on 1 run in 8 with no timeout firing. Cause
-  established (per-file `DROP SCHEMA` + no `lock_timeout`). No decision needed — just approve
-  queueing it after T-007, before the int-test file count grows again.
-- **`CR-004`** still open — theme toggle is silent to a screen reader (`ISS-122`). Localize (new
-  Bengali copy, batch with `ISS-050`, recommended), keep English with a written §6 exemption, or
-  drop? Options in `tasks/CR-004-live-region-announcements.md`.
-- **`ISS-135`** (was `ISS-127`, T-207a, S4): Terms/Privacy reuse `nav.about` as their kicker. Fine
-  permanently, or do they want their own? Ships either way.
-- **`AGENTS.md` vs `LOOP.md` §0.1 conflict** (carried forward, still unresolved): one bans
-  self-attribution in committed generated files, the other requires `TOOL · MODEL · EFFORT` in every
-  record. Sessions keep following established practice; one sentence from you would settle it.
-- **Open, owned by later tasks:** `ISS-139` (T-304), `ISS-141` (T-309), `ISS-144`/`ISS-145` (T-009),
-  `ISS-108` (T-104), `ISS-112` (T-101 — its Better Auth mapping block is wrong, do not trust it),
-  `ISS-110`, `ISS-151` (T-207 Half B). **Still open:** `ISS-050`, `ISS-096`, `ISS-074`, `ISS-075`,
-  `ISS-054`, `ISS-056`, and the D-001 browser walkthrough before T-102/T-103 (`ISS-029`/`ISS-028`/
-  `ISS-037`).
+- **`ISS-158`** (new, T-007): correct `05-demo-storyboard.md`'s `anon_author_r4` reference, or leave
+  it as documented drift? See `docs/implementation/handoffs/T-007.md`.
+- **`ISS-140` / `CR-006`** (S2, still needs your ruling): `rk_worker` grant on `auth_users(id, email)`
+  contradicts `02-data-model.md` §16 twice. Options in `tasks/CR-006-worker-auth-users-grant.md`.
+- **`CR-007`** (`ISS-143`): approve queueing the `pnpm test:int` hang fix; no decision needed.
+- **`CR-004`**: theme toggle screen-reader silence (`ISS-122`) — localize, exempt, or drop?
+- **`AGENTS.md` vs `LOOP.md` §0.1`** attribution-record conflict — still unresolved, one sentence
+  would settle it.
+- **Still open, owned by later tasks:** `ISS-139` (T-304), `ISS-141` (T-309), `ISS-144`/`ISS-145`
+  (T-009 — read these before writing the outbox relay), `ISS-108` (T-104), `ISS-112`/`ISS-166`
+  (T-101 — Better Auth mapping *and* the `@node-rs/argon2` const-enum import gotcha), `ISS-157`/
+  `ISS-164` (T-201/T-304/T-309 schema gaps), `ISS-050`, `ISS-096`, `ISS-074`, `ISS-075`, `ISS-054`,
+  `ISS-056`, D-001 walkthrough (`ISS-029`/`ISS-028`/`ISS-037`).

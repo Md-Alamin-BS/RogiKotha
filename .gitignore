@@ -8,3 +8,4 @@ package-lock.json
 coverage/
 *.tsbuildinfo
 .vitest/
+packages/test-support/fixtures/oversize.png
