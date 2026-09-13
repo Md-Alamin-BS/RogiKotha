@@ -13,7 +13,7 @@
 
 ## Why this exists
 
-`ISS-125` (S2, found by `T-207a`'s implementer). `packages/contracts/src` uses `.js`-suffixed
+`ISS-133` (S2, found by `T-207a`'s implementer). `packages/contracts/src` uses `.js`-suffixed
 relative imports throughout (e.g. `config-values.ts:8` → `from './enums.js'`). Next's Turbopack
 build cannot resolve these when it transpiles the package via `apps/web/next.config.ts`'s
 `transpilePackages` — every consumer of `@rogikotha/contracts` from `apps/web` fails `next build`.
@@ -38,7 +38,7 @@ the experiment as active but the build fails identically).
 
 `T-207a` worked around this locally in `emergency/page.tsx` by hand-typing the emergency config
 defaults as a local constant with a Vitest-only parity test against the real default
-(`ISS-126` in that task's own log), rather than importing `DEFAULT_CONFIG_VALUES`. That workaround
+(`ISS-134` in that task's own log), rather than importing `DEFAULT_CONFIG_VALUES`. That workaround
 is scoped to one page and does not generalize — it blocks most of Phase 2+, which needs real
 contracts view models rendered on real pages.
 
@@ -77,13 +77,13 @@ fix only.
 
 ## Steps
 
-1. Read `ISS-125`'s full row (in whichever branch/merge currently carries it — check `ISSUES.md` on
+1. Read `ISS-133`'s full row (in whichever branch/merge currently carries it — check `ISSUES.md` on
    `build/demo`) for the exact reproduction and what was already ruled out.
 2. Strip `.js` suffixes from every relative import in `packages/contracts/src`.
 3. `pnpm check` green.
 4. Prove the Turbopack build actually resolves it: a real `apps/web` page or a throwaway
    `next build` smoke check importing the main barrel.
-5. Close `ISS-125` as `fixed in CR-005`.
+5. Close `ISS-133` as `fixed in CR-005`.
 
 ## Acceptance checks
 
