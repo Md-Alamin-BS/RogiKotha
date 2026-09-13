@@ -215,7 +215,7 @@ pnpm test:int    — 6 files / 27 tests, all green (packages/database only)
 pnpm smoke       — 5 files / 7 tests, all green
 ```
 
-Run record: Claude Code · claude-sonnet-5 · effort high
+Run record: Claude Code · claude-sonnet-5 · effort high · commit `c14e666`
 
 ### Hard-rule evidence
 
