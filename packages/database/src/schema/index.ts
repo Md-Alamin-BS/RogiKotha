@@ -11,3 +11,14 @@ export * from './taxonomy.js';
 export * from './audit.js';
 export * from './administration.js';
 export * from './demo.js';
+// T-005 (§6–§8, §12–§14): retention before evidence (evidence_items.hold_id
+// references legal_holds); review before evidence/community/moderation
+// (they reference reviews).
+export * from './retention.js';
+export * from './review.js';
+export * from './evidence.js';
+export * from './community.js';
+export * from './moderation.js';
+export * from './notification.js';
+export * from './search.js';
+export * from './data-requests.js';

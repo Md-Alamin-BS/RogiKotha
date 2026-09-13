@@ -52,6 +52,9 @@ export const staffDevices = pgTable('staff_devices', {
   lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
   approvedAt: timestamp('approved_at', { withTimezone: true }),
   revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  // ISS-111 item (2): every table has `created_at` per 02-data-model.md's
+  // header rule; missing here since T-004.
+  createdAt: createdAt(),
 });
 
 export const staffDeviceApprovals = pgTable('staff_device_approvals', {
@@ -75,10 +78,11 @@ export const enforcements = pgTable('enforcements', {
   noteToUser: text('note_to_user'),
   startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
   endsAt: timestamp('ends_at', { withTimezone: true }),
-  // `moderation_decisions` does not exist until T-005 (02-data-model.md §16
-  // note 1; task step 6). Declared as a plain `uuid` column, deliberately
-  // with no FK constraint; T-005's `0005_deferred_fks.sql` adds it once
-  // that table exists.
+  // `moderation_decisions` now exists (T-005, `schema/moderation.ts`), but
+  // `moderation.ts` itself references `accountProfiles` (`actorAccountId`
+  // etc.), so a Drizzle `.references()` here would be a circular import
+  // between the two schema files. Left a plain `uuid` column; the real FK
+  // constraint is added by raw SQL in `0005_deferred_fks.sql` instead.
   decisionId: uuid('decision_id'),
   actorAccountId: uuid('actor_account_id')
     .notNull()
@@ -102,8 +106,14 @@ export const bookmarks = pgTable(
     accountId: uuid('account_id')
       .notNull()
       .references(() => accountProfiles.id, { onDelete: 'cascade' }),
-    // `reviews` does not exist until T-005 (task step 6). Plain `uuid`
-    // column, no FK; T-005's `0005_deferred_fks.sql` adds it.
+    // `reviews` now exists (T-005, `schema/review.ts`). Kept a plain `uuid`
+    // column for consistency with the other three deferred FKs added via
+    // raw SQL (`persona_links.review_id`, `enforcements.decision_id`,
+    // `evidence_items.published_artifact_id`) — the real FK constraint is
+    // added by raw SQL in `0005_deferred_fks.sql` (`evidence_items.hold_id`,
+    // the fifth deferred FK, is a normal Drizzle `.references()` in
+    // `schema/evidence.ts` instead, since it has no circular import to
+    // avoid).
     reviewId: uuid('review_id').notNull(),
     createdAt: createdAt(),
   },
