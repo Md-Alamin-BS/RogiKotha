@@ -27,6 +27,13 @@ Rules:
 
 ## Entries
 
+### 2026-09-13
+
+- Scope: T-002 (local infra compose: postgres, mailpit, clamav) and T-006 (`packages/i18n`, next-intl).
+- Checked: `postgres:18` image tag (floats to patch); `axllent/mailpit` release tags; `clamav/clamav:1.5.4`; `next-intl` npm version.
+- Findings: `postgres:18` currently resolves to 18.6 (17 days old), no newer 18.x patch — untagged `18` major tag stays correct per the master plan. `clamav/clamav:1.5.4` (2026-08, blog post "ClamAV 1.5.4 and 1.4.6 security patch versions published") is still the current 1.5.x patch and fixes 8 CVEs (CVE-2026-20337/20338/20339/20345/20346/20347/20348, CVE-2025-8088) plus a clamd STATS thread-safety fix — no newer 1.5.x tag exists, pin unchanged. `axllent/mailpit` has moved past the master plan's "current stable, check before pinning" placeholder to `v1.31.1` (2026-09-05, DNS-rebinding mitigation + SSRF hardening) — this is the tag T-002 pins. `next-intl` is unchanged at `4.14.2` (still current, matches the master plan pin).
+- Decision: `infra/compose/docker-compose.yml` pins `postgres:18`, `clamav/clamav:1.5.4` (unchanged) and `axllent/mailpit:v1.31.1` (updated from the plan's placeholder). `packages/i18n` keeps `next-intl@^4.14.2` (unchanged).
+
 ### 2026-09-10
 
 - Scope: Demo implementation plan (`docs/implementation/`) — first production-style workspace: Next.js app, PostgreSQL, Better Auth, pg-boss worker, evidence pipeline, tests and lint.
