@@ -15,6 +15,34 @@
       "when": 1789295445659,
       "tag": "0001_grants_part1",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789304736946,
+      "tag": "0002_content",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789305001322,
+      "tag": "0003_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789305006216,
+      "tag": "0004_deferred_fks",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789305007189,
+      "tag": "0005_grants_part2",
+      "breakpoints": true
     }
   ]
 }

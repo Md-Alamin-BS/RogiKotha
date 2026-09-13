@@ -120,10 +120,16 @@ const EXPECTED_TABLES = [
 ];
 
 describe('migrations apply from an empty database', () => {
-  it('creates the drizzle migrations table with both migrations applied', async () => {
+  it('creates the drizzle migrations table with every migration applied', async () => {
     // drizzle-orm's migrator table has no `tag` column — only `id`/`hash`/`created_at`.
+    // Was 2 (0000_init, 0001_grants_part1) at T-004; T-005 adds four more
+    // (0002_content, 0003_triggers, 0004_deferred_fks, 0005_grants_part2) —
+    // matches this task's own acceptance table ("6 migrations applied").
+    // Not in T-005's owned paths, but this specific count is a direct,
+    // expected, mechanical consequence of T-005's own migrations (same
+    // class of fix as `ISS-086`), not a silent redesign of the test.
     const rows = await testDb.execute(sql`select hash from drizzle_migrations order by id`);
-    expect(rows.rows).toHaveLength(2);
+    expect(rows.rows).toHaveLength(6);
   });
 
   it('creates every §1–§5, §9, §11, §15 table', async () => {

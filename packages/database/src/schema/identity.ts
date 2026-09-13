@@ -1,6 +1,9 @@
 // Identity (02-data-model.md §3, AD-3). `personas` is public and carries no
 // account column; `persona_links` is the private linkage table, excluded
-// from `rk_worker` grants by `0002_grants_part1.sql`.
+// from `rk_worker` grants by `0001_grants_part1.sql` (ISS-111 item 3: this
+// comment named `0002_grants_part1.sql` before T-005; the file is
+// `0001_grants_part1.sql` after T-004's own drizzle-kit renumbering,
+// `ISS-085`).
 import { boolean, pgTable, smallint, text, uuid } from 'drizzle-orm/pg-core';
 
 import { accountProfiles } from './account.js';
@@ -26,8 +29,11 @@ export const personaLinks = pgTable('persona_links', {
     .notNull()
     .references(() => accountProfiles.id, { onDelete: 'cascade' }),
   // Set for `anonymous` personas: the alias is scoped to one review thread.
-  // `reviews` does not exist until T-005 (task step 7); plain `uuid`
-  // column, no FK; T-005's `0005_deferred_fks.sql` adds it.
+  // `reviews` now exists (T-005, `schema/review.ts`), but `review.ts` itself
+  // imports `personas` from this file (`reviews.author_persona_id`), so a
+  // Drizzle `.references()` here would be a circular import between the two
+  // schema files. Left a plain `uuid` column; the real FK constraint is
+  // added by raw SQL in `0005_deferred_fks.sql` instead.
   reviewId: uuid('review_id'),
   createdAt: createdAt(),
 });

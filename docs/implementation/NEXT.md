@@ -2,7 +2,7 @@
 
 _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 
-**Updated:** 2026-09-13 · by: loop validate session (Claude Code · claude-opus-5[1m] · effort high)
+**Updated:** 2026-09-13 · by: T-005 implementer (Claude Code · claude-sonnet-5 · effort high)
 
 ## Queue (machine-read by LOOP.md)
 ```
@@ -12,35 +12,31 @@ recommended: Claude Sonnet 5 or GPT-5.6 Terra or Opus 4.8 · effort high
 ```
 
 ## State of the build
-- **T-004 and T-008 validated `PASS WITH FOLLOW-UP`, both merged** (`8d63911`, `fdd2a43`). On
-  `build/demo` from an empty `node_modules`: `pnpm check` green (20 files / 64 tests, parity 764
-  keys, 37 route rows), `pnpm smoke` 4/6, `pnpm test:int` 2/8.
-- Schema walked column-by-column against a live `pg_attribute` dump — 30 tables, 36/36 enums, no
-  divergence, grants re-proven from real `rk_worker` sessions; T-008's three stylesheets are
-  byte-identical to the prototype (SHA-256). `CR-003` merged too (`esbuild` in `allowBuilds`,
-  `ISS-106` — without it a fresh worktree ran no `pnpm` script). `CR-004` written, blocked on you.
+- **T-005 (database part 2) finished (done), queued for validation.** Branch
+  `task/t-005-database-part-2`. `pnpm check` green (24 files/83 tests, i18n 764 keys, build); `pnpm
+  test:int` green (6 files/27 tests); `pnpm smoke` green (5 files/7 tests, one new file —
+  `ISS-109` fixed). 59 tables in `public` now (30 T-004 + 28 T-005 + `drizzle_migrations`).
+- **FD-037 (ISS-107) implemented and tested**: `rk_worker`'s default privileges are now
+  default-deny (`migrations/0005_grants_part2.sql`); verified live and by
+  `constraints.int.test.ts`'s "FD-037 (ISS-107)" block, including on a table created *after* the
+  flip. `ISS-108`/`ISS-110`/`ISS-112`/`ISS-113` still open (owned by later tasks, unchanged by T-005).
+- T-207a status: not touched by this session (different worktree, different lane); check its own
+  handoff/BUILD-LOG entry for lane B's state.
 
 ## Next, per lane (human-readable)
-- **Lane A:** T-005 (database part 2); T-007 → T-009 → T-010 unlock behind it.
-- **Lane B:** T-207 half A (emergency/about/terms/privacy) — needs T-008 only, paths disjoint from
-  T-005's, so both can run at once in two terminals (`… Lane A` / `… Lane B`).
+- **Lane A:** T-005 → validate → merge, then T-007 (`packages/test-support`) unlocks, then T-009
+  (worker skeleton — only needed `outbox_events`, which T-005 just created, so it can start
+  immediately after T-005 merges, without waiting for T-007).
+- **Lane B:** unchanged from before this session — see T-207a's own status.
 
 ## Blockers
-- None.
+- None for lane A. T-005 is ready for an independent validator session (different vendor for M1 is
+  preferred per master-plan §7, but same-vendor validation is allowed with the loop-mode rule in
+  `04-handoff-and-validation.md` §3.2).
 
 ## Questions for the human
-- **CR-004 / `ISS-122` — blocks queueing it.** The theme toggle is currently silent to a screen
-  reader. The prototype's announcements ("Theme: dark") are hard-coded English and §6 forbids that.
-  Localize (new Bengali copy, batched with `ISS-050` — recommended), keep English with a written §6
-  exemption, or drop? Options in `tasks/CR-004-live-region-announcements.md`.
-- **`ISS-107` — answer before T-005 starts.** T-004's `ALTER DEFAULT PRIVILEGES` gives `rk_worker`
-  read+write on every table T-005 creates, so exposure of `reports.reporter_account_id` /
-  `appeals.appellant_account_id` depends on what T-005 remembers to REVOKE. Default-deny now, or
-  keep default-allow and require an explicit revoke + test in T-005?
-- **`AGENTS.md` vs `LOOP.md` §0.1 conflict:** one bans self-attribution in committed generated
-  files, the other requires `TOOL · MODEL · EFFORT` in every record. I followed the established
-  practice; one sentence from you carving out the build records would settle it.
-- **Owned, no action:** `ISS-112` (T-004's Better Auth mapping is wrong; T-101 must not trust it),
-  `ISS-108` (audit allowlist is a shallow denylist, T-104), `ISS-110`. **Still open:** `ISS-050`,
-  `ISS-096`, `ISS-099`, `ISS-074`, `ISS-075`, `ISS-054`, `ISS-056`, D-001 walkthrough before
-  T-102/T-103 (`ISS-029`/`ISS-028`/`ISS-037`).
+- None new from T-005. FD-037 was the one open question blocking it and was already answered.
+- Still open from before: `AGENTS.md` vs `LOOP.md` §0.1 attribution-in-records tension; `ISS-050`,
+  `ISS-096`, `ISS-099`, `ISS-074`, `ISS-075`, `ISS-054`, `ISS-056`; D-001 browser walkthrough before
+  T-102/T-103 (`ISS-029`/`ISS-028`/`ISS-037`); `CR-004` (theme-toggle announcements) still needs
+  queueing.
