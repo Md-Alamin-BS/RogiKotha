@@ -115,45 +115,45 @@ note naming the task that will fill it in. `/api/health` and a self-contained ro
 Everything in the task's "Not in scope" section, as instructed: no data, no `server/container.ts`, no
 sign-in/account menu beyond a `/sign-in` link, no sheet content, no compare tray. `/admin/sign-in`,
 `/admin/approve-device`, `/admin/security` render the full console chrome instead of the prototype's
-chrome-less auth views (no `admin/(public)/` route group — out of this task's Owned paths; `ISS-090`,
+chrome-less auth views (no `admin/(public)/` route group — out of this task's Owned paths; `ISS-100`,
 owner T-103).
 
 ### Questions for the human
 
 None blocking. Two non-blocking items worth a founder decision, both logged: whether to add the
-missing `admin.demoNote` i18n key (`ISS-086`), and whether `/terms`/`/privacy` should get dedicated
-title keys now or wait for T-207 (`ISS-089`).
+missing `admin.demoNote` i18n key (`ISS-096`), and whether `/terms`/`/privacy` should get dedicated
+title keys now or wait for T-207 (`ISS-099`).
 
 ### Follow-ups
 
-- `ISS-084` (S2, **fixed**): the task's own Owned paths name `apps/web/proxy.ts`; Next only ever
+- `ISS-094` (S2, **fixed**): the task's own Owned paths name `apps/web/proxy.ts`; Next only ever
   looks for it at `apps/web/src/proxy.ts` (verified: the package-root file was silently never
   invoked). Moved there, matching `01-conventions.md` §1's file tree. Flagging because the task file
   itself needs correcting for whoever reads it next.
-- `ISS-085` theme-cycle description (task says "light → dark → system", the actual prototype only
+- `ISS-095` theme-cycle description (task says "light → dark → system", the actual prototype only
   ever toggles light/dark) — ported the real behaviour.
-- `ISS-086` `admin.demoNote` key missing — dropped that banner segment.
-- `ISS-087` invented "person" icon (no prototype glyph existed).
-- `ISS-088` `ViewShell` lives under `components/patient/` but admin pages import it too (no separate
+- `ISS-096` `admin.demoNote` key missing — dropped that banner segment.
+- `ISS-097` invented "person" icon (no prototype glyph existed).
+- `ISS-098` `ViewShell` lives under `components/patient/` but admin pages import it too (no separate
   file listed in Owned paths).
-- `ISS-089` `/terms`/`/privacy` reuse `nav.about` for their placeholder title (no dedicated key yet).
-- `ISS-090` admin auth routes keep full console chrome (see "Not done and why").
-- `ISS-091` (fixed): disabled Next 16's `agentRules` auto-file generation.
-- `ISS-092` (fixed): two `.impeccable/config.json` `side-tab` ignores for the ported CSS instead of
+- `ISS-099` `/terms`/`/privacy` reuse `nav.about` for their placeholder title (no dedicated key yet).
+- `ISS-100` admin auth routes keep full console chrome (see "Not done and why").
+- `ISS-101` (fixed): disabled Next 16's `agentRules` auto-file generation.
+- `ISS-102` (fixed): two `.impeccable/config.json` `side-tab` ignores for the ported CSS instead of
   editing it (detector zero-findings vs. "do not rewrite the ported CSS" — same tension two earlier
   tasks already resolved the same way for other rules).
-- `ISS-093` informational: `/fr` is a 307 before it is a 404 (correct `localePrefix: 'always'`
+- `ISS-103` informational: `/fr` is a 307 before it is a 404 (correct `localePrefix: 'always'`
   behaviour), not a defect in the acceptance table's literal wording.
-- `ISS-094` `pnpm-workspace.yaml`'s `allowBuilds` auto-write reverted, not committed (recurrence of
+- `ISS-104` `pnpm-workspace.yaml`'s `allowBuilds` auto-write reverted, not committed (recurrence of
   `ISS-055`).
-- `ISS-095` a pre-existing `packages/i18n/src/routing.ts` eslint-disable comment now reports as
+- `ISS-105` a pre-existing `packages/i18n/src/routing.ts` eslint-disable comment now reports as
   unused (out of this task's owned paths, left for whoever next touches that file).
 
 ### `pnpm check` output summary
 
 All green on this branch (full output captured before the final `pnpm-workspace.yaml` revert):
 `pnpm -r typecheck` — all 9 packages/apps `Done`. `eslint .` — 0 errors, 1 pre-existing warning in
-`packages/i18n/src/routing.ts` (`ISS-095`, not owned by this task). `vitest run --config
+`packages/i18n/src/routing.ts` (`ISS-105`, not owned by this task). `vitest run --config
 vitest.workspace.ts` — **18 test files, 55 tests, all passed** (apps/web contributes 7 files / 16
 tests of that total, including one `shell.smoke.test.tsx` per `04-handoff-and-validation.md` §3.1).
 `pnpm i18n:check` — "764 keys, both locales, no placeholder or ERROR_CODES mismatches." `pnpm -r
@@ -175,7 +175,7 @@ build` — `apps/web build: Done`, `next build` route table lists all 35 routes 
 | Health | `{"ok":true,"db":"unknown","queue":"unknown","mail":"unknown","scanner":"unknown","mode":"unknown"}` |
 | Detector | 0 findings |
 | Component tests | green, both locales (`Masthead.test.tsx`) |
-| Unknown locale `/fr` | 307 → `/en/fr` → 404 (see `ISS-093`) |
+| Unknown locale `/fr` | 307 → `/en/fr` → 404 (see `ISS-103`) |
 
 ### Hard-rule evidence
 
