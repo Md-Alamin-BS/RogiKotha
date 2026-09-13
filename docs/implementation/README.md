@@ -156,7 +156,7 @@ Update the status column as tasks move. Statuses: `todo`, `in progress (lane A|B
 
 | Task | Status | Branch | Validation | Notes |
 |---|---|---|---|---|
-| D-001 auth screens prototype pass | validating | `task/d-001-auth-screens-prototype` | | founder reviews in both locales and themes before T-102/T-103; 360 px width still unwalked |
+| D-001 auth screens prototype pass | PASS | `task/d-001-auth-screens-prototype` | [D-001](../validation/D-001.md) | founder reviews in both locales and themes before T-102/T-103; 360 px width still unwalked |
 | T-001 | validating | `task/t-001-workspace-scaffold` | | packages are empty stubs; `pnpm check` stops at `i18n:check` until T-006 |
 | T-002 | todo | | | |
 | T-003 | todo | | | |

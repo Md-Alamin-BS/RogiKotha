@@ -9,3 +9,5 @@ Events: `started`, `finished (done|partial)`, `validation started`, `validated P
 - 2026-09-13 01:15 · loop · implement T-001, D-001 · session started · Claude Code · claude-opus-5[1m] · effort high
 - 2026-09-13 02:30 · lane B · D-001 · finished (done) · a75d7f4 · patient auth screens (04b) + staff console auth (Chart Tray), static simulation; npm run check green, 96/96 smoke
 - 2026-09-13 02:38 · loop · implement T-001, D-001 · turn closed; both finished (done), queued for validation · `15ac96c`, `5f215bf` · per-task started/finished lines ride on the task branches
+- 2026-09-13 02:49 · lane B · D-001 · validation started · task/d-001-auth-screens-prototype (rebased onto build/demo `af2b7f8`, register-file conflict only) · Claude Code · claude-sonnet-5 · effort xhigh
+- 2026-09-13 10:56 · lane B · D-001 · validated PASS · `04d06d3` · all acceptance rows pass (staff device revoke/re-approval and step-up flows verified live in-browser), `npm run check` + detector + smoke green, diff review clean; founder walkthrough still recommended before T-102/T-103 (not a merge blocker); `docs/validation/D-001.md`
