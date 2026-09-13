@@ -5,7 +5,12 @@ export default defineConfig({
     name: 'database',
     environment: 'node',
     passWithNoTests: true,
-    // Integration tests (*.int.test.ts) are not excluded here: this is the
-    // only project that runs them, via `pnpm test:int`.
+    include: ['src/**/*.int.test.ts'],
+    setupFiles: ['./src/test-setup.ts'],
+    // The two int test files share one `DATABASE_URL_TEST` database and one
+    // reset cycle (`test-setup.ts`); running them in parallel workers would
+    // race the schema reset.
+    fileParallelism: false,
+    testTimeout: 30_000,
   },
 });
