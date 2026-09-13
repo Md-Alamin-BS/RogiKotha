@@ -2,8 +2,8 @@
 // (03-routes-and-contracts.md §4 "review (T-301, T-302, T-306, T-307)").
 import { z } from 'zod';
 
-import { CRITERIA, CRITERION_VALUES, FOLLOW_UP_KINDS, IDENTITY_MODES } from '../enums.js';
-import { PUBLIC_ID_RE } from '../ids.js';
+import { CRITERIA, CRITERION_VALUES, FOLLOW_UP_KINDS, IDENTITY_MODES } from '../enums';
+import { PUBLIC_ID_RE } from '../ids';
 
 const publicId = z.string().regex(PUBLIC_ID_RE);
 const PageParams = { page: z.number().int().min(1).optional(), pageSize: z.number().int().min(1).max(100).optional() };

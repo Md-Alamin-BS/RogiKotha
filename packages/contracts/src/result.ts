@@ -1,7 +1,7 @@
 // The shape every command and query returns (01-conventions.md §3).
-import { errorMessageKey, type AppError, type ErrorCode } from './errors.js';
-import { newId } from './ids.js';
-import type { PageMeta } from './page.js';
+import { errorMessageKey, type AppError, type ErrorCode } from './errors';
+import { newId } from './ids';
+import type { PageMeta } from './page';
 
 export type Result<T> = { ok: true; data: T; meta?: PageMeta } | { ok: false; error: AppError };
 

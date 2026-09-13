@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { RegisterInput } from './schemas/account.js';
-import { FileReportInput } from './schemas/moderation.js';
-import { REPORT_REASONS } from './enums.js';
+import { RegisterInput } from './schemas/account';
+import { FileReportInput } from './schemas/moderation';
+import { REPORT_REASONS } from './enums';
 
 const VALID_REGISTER = {
   email: 'shirin@example.com',

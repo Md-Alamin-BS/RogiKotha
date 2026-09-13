@@ -5,7 +5,7 @@
 //
 // TODO(T-406): owner refines every field below against the ported
 // component.
-import type { CaseStatus, ModerationAction, ModerationLane, ReportReason } from '../enums.js';
+import type { CaseStatus, ModerationAction, ModerationLane, ReportReason } from '../enums';
 
 export interface CaseDecisionVM {
   action: ModerationAction;

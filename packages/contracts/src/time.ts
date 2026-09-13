@@ -3,7 +3,7 @@
 // SPINE.md "Consistency Conventions"). All "now" comes from the `Clock` port
 // (packages/application/src/ports/clock.ts) so the demo clock can move time
 // — nothing in this file reads the system clock itself.
-import { InternalError } from './errors.js';
+import { InternalError } from './errors';
 
 export type Iso8601 = string & { readonly __brand: 'Iso8601' };
 

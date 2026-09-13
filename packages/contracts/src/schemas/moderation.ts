@@ -2,7 +2,7 @@
 // (03-routes-and-contracts.md §4 "moderation (T-403, T-404)").
 import { z } from 'zod';
 
-import { CASE_STATUSES, MODERATION_ACTIONS, MODERATION_LANES, REPORT_REASONS, TARGET_KINDS } from '../enums.js';
+import { CASE_STATUSES, MODERATION_ACTIONS, MODERATION_LANES, REPORT_REASONS, TARGET_KINDS } from '../enums';
 
 const REPORT_DETAIL_MAX = 2000;
 const CASE_CODE = z.string().regex(/^MOD-\d+$/);

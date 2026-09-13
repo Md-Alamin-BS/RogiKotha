@@ -2,8 +2,8 @@
 // §5; 03-routes-and-contracts.md §2). `StaffRole` and `AccountStatus` are
 // data-model enums and live in enums.ts (the single source for every enum);
 // this file only describes the actor shape built from them.
-import type { ConfigValues } from './config-values.js';
-import type { AccountStatus, Locale, StaffRole } from './enums.js';
+import type { ConfigValues } from './config-values';
+import type { AccountStatus, Locale, StaffRole } from './enums';
 
 export type Capability =
   | 'reports.read'

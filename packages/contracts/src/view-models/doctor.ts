@@ -6,8 +6,8 @@
 //
 // TODO(T-202): owner refines every field below (exact set, nullability,
 // index-card shape) against the ported component.
-import type { Iso8601 } from '../time.js';
-import type { Provenance } from '../enums.js';
+import type { Iso8601 } from '../time';
+import type { Provenance } from '../enums';
 
 /** Shared by every "spread across accounts" summary (sentiment, outcome, criteria). */
 export interface DistributionVM {

@@ -4,9 +4,9 @@
 //
 // TODO(T-207): owner refines every field below against the ported
 // component (Discover/Emergency/About).
-import type { ConditionCardVM } from './condition.js';
-import type { DoctorCardVM } from './doctor.js';
-import type { FacilityCardVM } from './facility.js';
+import type { ConditionCardVM } from './condition';
+import type { DoctorCardVM } from './doctor';
+import type { FacilityCardVM } from './facility';
 
 export interface EmergencyPanelVM {
   ambulance: string;

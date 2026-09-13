@@ -5,7 +5,7 @@
 //
 // TODO(T-408): owner refines every field below against the ported
 // component.
-import type { StaffNotificationKind } from '../enums.js';
+import type { StaffNotificationKind } from '../enums';
 
 export interface StaffNotificationItemVM {
   id: string;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ConfigValuesSchema, DEFAULT_CONFIG_VALUES } from './config-values.js';
+import { ConfigValuesSchema, DEFAULT_CONFIG_VALUES } from './config-values';
 
 describe('ConfigValuesSchema', () => {
   it('parses the defaults', () => {

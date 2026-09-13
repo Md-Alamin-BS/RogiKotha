@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { ALL_CAPABILITIES, capabilitiesForRole } from './actor.js';
-import { DEFAULT_CONFIG_VALUES } from './config-values.js';
+import { ALL_CAPABILITIES, capabilitiesForRole } from './actor';
+import { DEFAULT_CONFIG_VALUES } from './config-values';
 
 describe('capabilitiesForRole', () => {
   it('super admin has every capability', () => {

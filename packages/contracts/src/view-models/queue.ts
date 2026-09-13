@@ -4,7 +4,7 @@
 //
 // TODO(T-406): owner refines every field below against the ported
 // component.
-import type { ModerationLane, ReportReason, TargetKind } from '../enums.js';
+import type { ModerationLane, ReportReason, TargetKind } from '../enums';
 
 export interface QueueCaseVM {
   code: string;

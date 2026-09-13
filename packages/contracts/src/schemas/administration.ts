@@ -2,7 +2,7 @@
 // (03-routes-and-contracts.md §4 "administration (T-105, T-408)").
 import { z } from 'zod';
 
-import { ConfigValuesSchema } from '../config-values.js';
+import { ConfigValuesSchema } from '../config-values';
 
 export const GetCurrentConfigInput = z.object({}).strict();
 
