@@ -267,8 +267,9 @@ Hard-rule checklist:
 ## Hand-off — re-work 2026-09-13 (ISS-057 S1, ISS-058 S3)
 
 **Run record:** Claude Code · claude-opus-5[1m] · effort high · start `7e4296a`
-(pre-rebase branch head) → rebased onto `bb954af` as `7bcf911`/`f2051fa` → end commit recorded in
-`docs/implementation/handoffs/T-002.md`. Task class is M0, whose implement tier is
+(pre-rebase branch head) → rebased onto `bb954af` as `7bcf911`/`f2051fa` → re-work commit
+`ebef8bc`, hash recorded by the commit immediately after it (a commit cannot carry its own hash —
+`ISS-038`). Task class is M0, whose implement tier is
 `GPT-5.6 Luna / Claude Haiku 4.5 · medium`; this session ran a **higher** tier than recommended,
 which `LOOP.md` §0.1 permits (only a *lower* tier than recommended is a stop condition, and only
 for M3).
