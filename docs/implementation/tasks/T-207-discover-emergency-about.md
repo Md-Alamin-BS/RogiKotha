@@ -102,20 +102,20 @@ Component tests in both locales for `Discover` (order, chips, grid filter, tease
 ## Hand-off (implementer fills in)
 
 ### What changed
-Half A only (Emergency, About, Terms, Privacy) — see `docs/implementation/handoffs/T-207a.md` for the full account. Owned paths touched: the four `page.tsx` routes, three new components (`Emergency.tsx`, `About.tsx`, `Policy.tsx`), and new i18n keys in both dictionaries (`emergency.lastVerifiedLine`, the whole `policy.*` namespace). A few small, justified edits landed outside the task's literal owned-paths list — see "Questions for the human" below and `ISSUES.md` `ISS-125`–`ISS-130`.
+Half A only (Emergency, About, Terms, Privacy) — see `docs/implementation/handoffs/T-207a.md` for the full account. Owned paths touched: the four `page.tsx` routes, three new components (`Emergency.tsx`, `About.tsx`, `Policy.tsx`), and new i18n keys in both dictionaries (`emergency.lastVerifiedLine`, the whole `policy.*` namespace). A few small, justified edits landed outside the task's literal owned-paths list — see "Questions for the human" below and `ISSUES.md` `ISS-133`–`ISS-138`.
 
 ### Not done and why
 Half B (the `/` Discover page, `Discover.tsx`, `EmergencyPanel`/`BrowseCard`/`SearchBox`/`MiniList`/`Avatar`) — explicitly out of scope for this task run per the assignment; it depends on T-202/T-203/T-206, none of which exist yet.
 
 ### Questions for the human
-- **`ISS-125` (S2, blocking for future work, not for this task):** `packages/contracts/src` uses `.js`-suffixed relative imports everywhere; Next's Turbopack build cannot resolve them through `transpilePackages`, so nothing in `apps/web` can import `@rogikotha/contracts` (any file, any subpath) and still build. Worked around locally in `emergency/page.tsx` (hand-typed config defaults + a Vitest-only parity test), but every future page that needs a real `packages/contracts` view model will hit the same wall. Needs a decision: strip the `.js` suffixes across the package (mechanical, but touches dozens of files I do not own), or find a working Turbopack resolver config (tried `experimental.extensionAlias`; it did not fix it).
-- **`ISS-127` (S4):** `Policy.tsx` has no dedicated kicker key for Terms/Privacy; I reused `nav.about` (same source About's own kicker uses). Confirm that's fine permanently, or provide dedicated copy.
+- **`ISS-133` (S2, blocking for future work, not for this task):** `packages/contracts/src` uses `.js`-suffixed relative imports everywhere; Next's Turbopack build cannot resolve them through `transpilePackages`, so nothing in `apps/web` can import `@rogikotha/contracts` (any file, any subpath) and still build. Worked around locally in `emergency/page.tsx` (hand-typed config defaults + a Vitest-only parity test), but every future page that needs a real `packages/contracts` view model will hit the same wall. Needs a decision: strip the `.js` suffixes across the package (mechanical, but touches dozens of files I do not own), or find a working Turbopack resolver config (tried `experimental.extensionAlias`; it did not fix it).
+- **`ISS-135` (S4):** `Policy.tsx` has no dedicated kicker key for Terms/Privacy; I reused `nav.about` (same source About's own kicker uses). Confirm that's fine permanently, or provide dedicated copy.
 - Per rule 4, I did **not** stop and ask on either — both are narrower/reversible choices, marked `// ASSUMPTION(T-207a)` in code with matching `ISS-` rows, and neither is a hard-rule change, data-boundary conflict, or founder-level copy call.
 
 ### Follow-ups
-- `ISS-125` — fix the `packages/contracts` build gap (see above); blocks Phase 2+ pages needing real data.
-- `ISS-126` — swap `EMERGENCY_DEFAULTS` for a real `config.current()` call once T-105 lands.
-- `ISS-127` — founder call on the Terms/Privacy kicker.
+- `ISS-133` — fix the `packages/contracts` build gap (see above); blocks Phase 2+ pages needing real data.
+- `ISS-134` — swap `EMERGENCY_DEFAULTS` for a real `config.current()` call once T-105 lands.
+- `ISS-135` — founder call on the Terms/Privacy kicker.
 - `ISS-099`/`ISS-121` (T-008) — fixed by this task (dedicated title keys; `ViewShell` omits an empty `<h1>`).
 
 ### `pnpm check` output summary
