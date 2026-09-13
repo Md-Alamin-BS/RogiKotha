@@ -2,41 +2,41 @@
 
 _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 
-**Updated:** 2026-09-13 · by: loop validate session (Claude Code · claude-opus-5[1m] · effort high)
+**Updated:** 2026-09-13 · by: loop implement session (Claude Code · claude-opus-5[1m] · effort high)
 
 ## Queue (machine-read by LOOP.md)
 ```
-mode: implement
-tasks: T-002 — fix ISS-057 (and ISS-058) per docs/validation/T-002.md
-recommended: GPT-5.6 Luna or Claude Haiku 4.5 · effort medium (Sonnet 5 / Opus 4.8 also fine)
+mode: validate
+tasks: T-002
+recommended: Sonnet 5 or Opus 4.8 · effort high, new session
 ```
 
 ## State of the build
-- **T-006 merged** at `bb954af`. `pnpm check` is now **green end-to-end for the first time**
-  (typecheck, lint, 18/18 tests, i18n parity over 764 keys, build); `pnpm smoke` 4/4. Caveat: the
-  ERROR_CODES half of `i18n:check` self-skips until T-003 creates `packages/contracts/src/errors.ts`.
-- **T-002 FAIL**, branch left at `7e4296a`. The infrastructure itself is sound — all 9 acceptance
-  rows passed live against Docker, the custom ClamAV signature really flags a marker file (control
-  file scans clean), and all three `// ASSUMPTION(T-002)` deviations were independently reproduced,
-  not just re-read. The only blocker is `ISS-057` (S1): `infra/compose/README.md:106` writes the
-  tool's brand name into committed product documentation, which `AGENTS.md` forbids for README and
-  doc files. One sentence to reword. While there, fix `ISS-058` (S3): the same README still calls
-  the ClamAV signature mount read-only when the shipped mount is read-write.
+- **T-002 re-worked and pushed** at `ca71ab4` (fix commit `ebef8bc`). `ISS-057` (S1) and `ISS-058`
+  (S3) closed: `infra/compose/README.md` no longer names any tool or model, and its "Custom test
+  signature" section now says the `.ndb` mount is **read-write** with the `chown` reason and a
+  pointer to `ISS-041`. **Documentation only** — `docker-compose.yml`, both `.sql` files,
+  `.env.example` and `rogikotha-test.ndb` are byte-identical to the round-1 branch, so round 1's
+  live 9/9 acceptance evidence stands; re-validation mainly has to re-read the diff.
+- Branch rebased onto `bb954af` (T-006 merged), so T-002 runs against real code for the first time:
+  `pnpm check` **green end-to-end**, `pnpm smoke` **4/4**, `docker compose config` valid.
+- Three new S4 rows ride on the branch: **`ISS-060`** (nothing in `pnpm check`/CI guards the
+  no-tool-identity rule — filed against **T-010**, which owns the workflow; that gap is why
+  `ISS-057` had to be caught by a human-directed read), `ISS-059` (an `infra/`-only task cannot add
+  a collectable smoke test), `ISS-061` (two `BUILD-LOG` rows for one event, per §1.2.7).
 
 ## Next, per lane (human-readable)
-- **Lane A:** T-002 fix → re-validate, then T-003 → T-004 → T-005 → T-007.
+- **Lane A:** re-validate T-002 → merge, then T-003 → T-004 → T-005 → T-007.
 - **Lane B:** idle — T-008 is blocked on T-003.
 
 ## Blockers
-- None technical. Queue-size note: **T-003 is unblocked now** (T-001 is merged) and its owned paths
-  are disjoint from T-002's, but `LOOP.md` §4.3 only pairs tasks from *different* lanes and both are
-  Lane A — so the rule leaves this a one-task turn for a one-line fix. To avoid the round-trip, add
-  `, T-003` to the Queue line and run two terminals with `Lane A` / `Lane B`; the plan already
-  declares them parallel-safe. Your call — I did not override the rule on my own.
+- None. Carried over, still your call: the Phase-0 remainder is all Lane A and `LOOP.md` §4.3 only
+  pairs tasks from *different* lanes, so the rule keeps queueing one task per turn. Add a second
+  Lane-A task to the Queue by hand if you want two terminals — I did not override the rule.
 
 ## Questions for the human
 - **Bilingual review still requested** (not a merge blocker): T-006's invented EN+BN wording for the
-  `notif.*` (5) and `admin.config.*` (15) keys is now on `build/demo` (`ISS-050`); all 20 strings are
+  `notif.*` (5) and `admin.config.*` (15) keys is on `build/demo` (`ISS-050`); all 20 strings are
   quoted in `docs/validation/T-006.md`. Read them before T-007/T-408 build UI against those keys.
 - **D-001 still wants your walkthrough** (carried over): a founder pass in both locales and themes
   before Lane B starts T-102/T-103. While there: `ISS-029` (`/me` always shows the `shirin_88`

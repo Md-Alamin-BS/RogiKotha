@@ -158,7 +158,7 @@ Update the status column as tasks move. Statuses: `todo`, `in progress (lane A|B
 |---|---|---|---|---|
 | D-001 auth screens prototype pass | merged | `task/d-001-auth-screens-prototype` | [D-001](../validation/D-001.md) | founder reviews in both locales and themes before T-102/T-103; 360 px width still unwalked |
 | T-001 | merged | `task/t-001-workspace-scaffold` | [T-001](../validation/T-001.md) | packages are empty stubs; `pnpm check` stops at `i18n:check` until T-006 |
-| T-002 | FAIL | `task/t-002-local-infra` | [T-002](../validation/T-002.md) | infra itself passes live (9/9 acceptance, ClamAV marker detected); blocked only by `ISS-057` — tool brand name in `infra/compose/README.md` prose. Also fix `ISS-058` (README still says the signature mount is read-only) |
+| T-002 | validating | `task/t-002-local-infra` | [T-002](../validation/T-002.md) | round 1 `FAIL` fixed: `ISS-057` (tool brand name in `infra/compose/README.md` prose) and `ISS-058` (README called the ClamAV signature mount read-only) both closed, docs only — compose, SQL, `.env.example` and the `.ndb` signature untouched. Rebased onto `bb954af`; `pnpm check` green, `pnpm smoke` 4/4. Awaiting re-validation |
 | T-003 | todo | | | |
 | T-004 | todo | | | |
 | T-005 | todo | | | |
