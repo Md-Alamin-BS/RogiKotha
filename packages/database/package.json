@@ -8,10 +8,22 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate": "drizzle-kit generate --name init",
+    "migrate": "tsx src/migrate.ts",
+    "reset": "tsx src/reset.ts"
   },
   "dependencies": {
     "@rogikotha/application": "workspace:*",
-    "@rogikotha/contracts": "workspace:*"
+    "@rogikotha/contracts": "workspace:*",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "0.45.2",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.4",
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "0.31.10",
+    "tsx": "4.23.13"
   }
 }

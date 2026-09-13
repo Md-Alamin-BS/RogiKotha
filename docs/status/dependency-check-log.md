@@ -27,6 +27,13 @@ Rules:
 
 ## Entries
 
+### 2026-09-13 (T-004)
+
+- Scope: T-004 (`packages/database` — Drizzle ORM/drizzle-kit/`pg`/`dotenv` first use in this codebase, plus `tsx` added to run `migrate.ts`/`reset.ts` directly).
+- Checked: `drizzle-orm` (task pins `0.45.2` exact); `drizzle-kit` (task pins `0.31.10` exact); `pg` (task pins `^8.23.0`); `dotenv` (task pins `^17`); `tsx` (not named by the task — added because Node 24's native `.ts` support does not remap `./x.js` relative-import specifiers to `./x.ts` files the way `tsc`'s `moduleResolution: bundler` does, so `node src/migrate.ts` fails on this repo's `.js`-suffixed relative imports; `tsx` is the standard fix).
+- Findings: `drizzle-orm@0.45.2`/`drizzle-kit@0.31.10` are still the current versions on the pre-1.0 line (last published ~5 months before this check per npm; no newer 0.4x patch and no 1.0 stable release yet — the 1.0 RC train the master plan says to avoid still has not shipped stable). `pg@8.23.0` resolved exactly. `dotenv` latest is `17.4.2` (same 17.x line the task's `^17` pin targets); `pnpm add dotenv@^17` resolved `17.4.2`. `tsx` latest is `4.23.13` (14 days old at check time), the actively maintained esbuild-based TS runner with no reported regressions relevant to a plain `node <file>.ts` replacement use case.
+- Decision: used `drizzle-orm@0.45.2`, `drizzle-kit@0.31.10` (exact pins, confirmed via `pnpm ls`), `pg@^8.23.0` (resolved `8.23.0`), `dotenv@^17.4.2` exactly as the task specifies. Added `tsx@4.23.13` as a new devDependency of `packages/database` — a tooling addition the task text did not anticipate, logged as `ISS-088` (S4).
+
 ### 2026-09-13 (T-003)
 
 - Scope: T-003 (`packages/contracts` — first use of `zod` and `uuid` in this codebase).
