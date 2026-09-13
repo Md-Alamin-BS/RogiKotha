@@ -5,11 +5,15 @@ Events: `started`, `finished (done|partial)`, `validation started`, `validated P
 
 - 2026-09-10 — · plan · demo implementation plan written (FD-031–035) · — · `docs/implementation/`
 - 2026-09-12 — · plan · CR-001 applied: images-only evidence (FD-036); handoff/validation protocol added · — · `04-handoff-and-validation.md`, `07-phase-2-document-evidence.md`
+- 2026-09-13 00:00 · lane B · D-001 · started · task/d-001-auth-screens-prototype · Claude Code · claude-sonnet-5 · effort high
 - 2026-09-13 01:15 · loop · implement T-001, D-001 · session started · Claude Code · claude-opus-5[1m] · effort high
 - 2026-09-13 01:23 · lane A · T-001 · started · task/t-001-workspace-scaffold · Claude Code · claude-sonnet-5 · effort high
 - 2026-09-13 01:45 · lane A · T-001 · finished (done) · 2f35801 · pnpm workspace scaffold (TS 6.0.3, ESLint 10.10.0, Vitest 4.1.11); vitest.workspace.ts reworked around Vitest 4's removed workspace auto-discovery (ISS-004)
+- 2026-09-13 02:30 · lane B · D-001 · finished (done) · a75d7f4 · patient auth screens (04b) + staff console auth (Chart Tray), static simulation; npm run check green, 96/96 smoke
 - 2026-09-13 02:38 · loop · implement T-001, D-001 · turn closed; both finished (done), queued for validation · `15ac96c`, `5f215bf` · per-task started/finished lines ride on the task branches
 - 2026-09-13 02:43 · loop · validate T-001, D-001 · session started · Claude Code · claude-sonnet-5 · effort xhigh
 - 2026-09-13 02:49 · lane A · T-001 · validation started · task/t-001-workspace-scaffold (rebased onto build/demo `af2b7f8`, register-file conflict only) · Claude Code · claude-sonnet-5 · effort xhigh
+- 2026-09-13 02:49 · lane B · D-001 · validation started · task/d-001-auth-screens-prototype (rebased onto build/demo `af2b7f8`, register-file conflict only) · Claude Code · claude-sonnet-5 · effort xhigh
 - 2026-09-13 02:53 · lane A · T-001 · validated PASS · `ae266f8` · all acceptance rows pass, `pnpm smoke` green, diff review clean; `docs/validation/T-001.md`
+- 2026-09-13 10:56 · lane B · D-001 · validated PASS · `04d06d3` · all acceptance rows pass (staff device revoke/re-approval and step-up flows verified live in-browser), `npm run check` + detector + smoke green, diff review clean; founder walkthrough still recommended before T-102/T-103 (not a merge blocker); `docs/validation/D-001.md`
 - 2026-09-13 11:00 · lane A · T-001 · merged · `d5f37f5` · `pnpm check` on `build/demo` stops at `i18n:check` exactly as documented (typecheck/lint/test green); `pnpm tools:check` 83/83

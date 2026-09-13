@@ -702,3 +702,17 @@ html[data-lang="bn"] :is(h1, h2, h3, h4, .display) { font-family: var(--bangla);
 .kicker { color: var(--eyebrow); }
 .masthead { background: var(--masthead-bg); }
 .byline-name { color: var(--byline-accent); }
+
+/* added: D-001 STORY-AUTH-001/002 auth screens (docs/design/auth-screens-spec.md).
+   Field-level error text, paired with aria-invalid/aria-describedby on the
+   control - the only new class this task adds here. The #staff-account
+   entry needs no .ctl variant: .ctl is already a min-width pill (the #role
+   chip already shows two letters, "SA"/"Ad"/"Mo", with no special case). */
+.field-error { color: var(--warn-ink); font-size: var(--fs-1); font-weight: 600; margin: 4px 0 0; }
+
+/* added: D-001 STORY-AUTH-001/002 the auth screens hide the console chrome
+   on #sign-in/#approve-device/#security by setting el.hidden (route() in
+   app.js), but .bar-nav/.tabbar always set an unconditional `display`
+   (including inside the 760px media query for .tabbar), so the hidden
+   attribute alone was overridden and the chrome stayed visible - ISS-026. */
+.bar-nav[hidden], .tabbar[hidden], .crumbs[hidden] { display: none; }

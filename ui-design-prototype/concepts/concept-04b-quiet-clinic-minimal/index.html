@@ -52,6 +52,8 @@
   <a class="btn cta-write" href="#write" data-nav="compose" data-i18n="nav.compose"></a>
 
   <div class="controls">
+    <!-- STORY-AUTH-001: masthead account entry, signed-out/unverified/verified/staff states -->
+    <button type="button" id="account" class="ctl" data-i18n="auth.signIn" data-i18n-attr="title"><span></span></button>
     <button type="button" id="lang"   class="ctl" data-i18n="a11y.lang"   data-i18n-attr="title" aria-pressed="false"><span>অ</span></button>
     <button type="button" id="theme"  class="ctl" data-i18n="a11y.theme"  data-i18n-attr="title"><span>◐</span></button>
     <button type="button" id="motion" class="ctl" data-i18n="a11y.motion" data-i18n-attr="title" aria-pressed="false"><span>◌</span></button>
@@ -75,6 +77,12 @@
       <button class="opt" type="button" data-scheme-pick="a" aria-pressed="false" data-i18n="demo.scheme.a"></button>
       <button class="opt" type="button" data-scheme-pick="b" aria-pressed="false" data-i18n="demo.scheme.b"></button>
       <button class="opt" type="button" data-scheme-pick="c" aria-pressed="false" data-i18n="demo.scheme.c"></button>
+    </div>
+    <p class="note" style="margin:0 0 6px" data-i18n="auth.kicker"></p>
+    <!-- STORY-AUTH-001: demo-only signed-in/out toggle, simulation only -->
+    <div class="opt-row" style="margin-bottom:14px">
+      <button class="opt" type="button" data-session="out" aria-pressed="true"  data-i18n="auth.signOut"></button>
+      <button class="opt" type="button" data-session="in"  aria-pressed="false" data-i18n="auth.signIn"></button>
     </div>
     <button class="btn small" type="button" id="demo-reset" data-i18n="demo.reset"></button>
     <button class="link-btn" type="button" id="demo-close" style="margin-left:8px" data-i18n="demo.close"></button>
@@ -105,6 +113,13 @@
   <section class="view" id="view-person"    hidden></section>
   <section class="view" id="view-emergency" hidden></section>
   <section class="view" id="view-about"     hidden></section>
+  <!-- STORY-AUTH-001: patient auth screens (static simulation; see auth-screens-spec.md) -->
+  <section class="view" id="view-register"  hidden></section>
+  <section class="view" id="view-signin"    hidden></section>
+  <section class="view" id="view-verify"    hidden></section>
+  <!-- STORY-AUTH-002: recovery and session security -->
+  <section class="view" id="view-reset"     hidden></section>
+  <section class="view" id="view-security"  hidden></section>
 </main>
 
 <!-- compare tray, present on results -->
