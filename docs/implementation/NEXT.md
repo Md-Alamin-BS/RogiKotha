@@ -2,45 +2,42 @@
 
 _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 
-**Updated:** 2026-09-13 · by: loop implement session (Claude Code · claude-sonnet-5 · effort high)
+**Updated:** 2026-09-13 · by: loop validate session (Claude Code · claude-sonnet-5 · effort high)
 
 ## Queue (machine-read by LOOP.md)
 ```
-mode: validate
-tasks: T-003
-recommended: GPT-5.6 Terra (alt: Claude Sonnet 5 or Opus 4.8, new session) · effort high
+mode: implement
+tasks: T-004, T-008
+recommended: Claude Sonnet 5 or GPT-5.6 Terra or Opus 4.8 · effort high
 ```
 
 ## State of the build
-- **T-003 implemented** on `task/t-003-contracts` (not yet merged) — `packages/contracts` built in
-  full: `Result`/`errors` (38-code `ERROR_CODES`, exact copy of 03 §2)/`Actor`/`ids`/`time`/`enums`
-  (36 enums)/`page`/`config-values`, 14 `schemas/<module>.ts` files, 18 `view-models/<page>.ts`
-  files. `pnpm check` green end-to-end (typecheck 9/9, lint clean, 11 files/39 tests, i18n parity
-  764 keys, build) and `pnpm smoke` green, independently re-run from the main checkout, not just
-  taken from the implementer's report. All Acceptance-check commands and the Hard-rule checklist
-  (no `rating`/`score`, no `reporterAccountId`, no `bn:` pairs in VMs, no framework imports, no
-  agent/tool identity) re-verified live by grep.
-- One task-file discrepancy found: the Acceptance table expects 40 error codes; 03 §2's own source
-  text contains exactly 38, and `ERROR_CODES` matches it exactly — see `ISS-076`, not treated as a
-  contracts defect. Three more `S4` follow-ups logged (`ISS-073`..`ISS-075`, all on `task/t-003-
-  contracts`, ride to `build/demo` at merge): `newPublicId()` uses `uuid.v4()` not
-  `crypto.getRandomValues` (no dom/node lib in this package); `search.ts`'s `gender` filter is a
-  closed enum with no data-model backing; `uuid@14` is now current, pin deliberately kept at `^13`.
-- T-002 still merged at `66a5fc6`; Phase 0 now additionally has the contracts vocabulary pending
-  validation. `README.md` §5 row for T-003 set to `validating`.
+- **T-003 validated PASS and merged** (`e92dc4b`) — `packages/contracts` is now on `build/demo`.
+  Validator independently re-ran `pnpm check`/`pnpm smoke` in a fresh worktree, executed all 6
+  acceptance rows, hand-counted the 38-code `ErrorCode` union in `03-routes-and-contracts.md` §2
+  against `errors.ts` (exact match — confirms `ISS-076` is a task-file wording defect, not a
+  contracts defect), and re-verified every hard-rule grep. No new findings; `ISS-073..076` (S4)
+  confirmed correctly triaged. `docs/validation/T-003.md` has the full record.
+- Phase 0 now has: workspace scaffold (T-001), local infra (T-002), i18n dictionary (T-006), and
+  contracts vocabulary (T-003) all merged. `pnpm check` on `build/demo` is green end-to-end
+  (typecheck 9/9, lint clean, 39/39 tests, i18n parity 764 keys, build); `pnpm smoke` 5/5.
+- T-004 (lane A, database part 1) and T-008 (lane B, web shell) are both now unblocked (their
+  "Depends on" rows — T-001/T-002/T-003 and T-003/T-006 — are all merged) and are each other's
+  named "Parallel-safe with" entry with disjoint owned paths, so both are queued this turn.
 
 ## Next, per lane (human-readable)
-- **Lane A:** validate T-003 → merge → T-004 → T-005 → T-007.
-- **Lane B:** idle — T-008 unblocks once T-003 merges.
+- **Lane A:** implement T-004 → T-005 → T-007.
+- **Lane B:** implement T-008 → (T-009 once T-005 lands `outbox_events`).
 
 ## Blockers
 - None.
 
 ## Questions for the human
-- **New (T-003):** is 38 the right error-code count, or does 03 §2 itself need codes added
-  (`ISS-076`)? Is the closed `male|female` gender enum in `schemas/search.ts` acceptable (`ISS-074`)?
-  Worth a deliberate bump to `uuid@14` later, which fixes a `v7()` bug relevant to `ids.ts`
-  (`ISS-075`)?
+- **T-003 follow-ups (carried over):** is the closed `male|female` gender enum in
+  `schemas/search.ts` acceptable, or should `02-data-model.md` gain a formal enum before T-206
+  (`ISS-074`)? Worth a deliberate bump to `uuid@14` — fixes a `v7()` bug relevant to `ids.ts`
+  (`ISS-075`)? Should the task file's acceptance-check table be corrected from "40" to "38" error
+  codes (`ISS-076`)?
 - **Bilingual review still requested** (not a merge blocker): T-006's invented EN+BN wording for
   the `notif.*` (5) and `admin.config.*` (15) keys is on `build/demo` (`ISS-050`); all 20 strings
   are quoted in `docs/validation/T-006.md`.
