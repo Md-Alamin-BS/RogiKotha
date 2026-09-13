@@ -210,6 +210,12 @@ export interface CorpusModerationCase {
   seedRef: string;
   lane: 'critical' | 'standard' | 'appeals';
   ageHours: number;
+  /** The prototype's own `reports` count (CR-008 / ISS-174) — may exceed
+   * `reportReasons.length` when several reporters gave the same reason
+   * (MOD-2033: 6 reports, 3 authored reasons). The seed pads
+   * `reportReasons` up to this length rather than truncating it down, so
+   * `reportReasons` never loses information the corpus actually states. */
+  reportCount: number;
   reportReasons: ReportReason[];
   autoHidden: boolean;
   coordinated: boolean;

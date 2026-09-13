@@ -119,15 +119,129 @@ corrections for `ISS-158`/`ISS-176`: those are the founder's wording call, not t
 
 ## Hard-rule checklist
 
-- [ ] No number stands for quality; counts still come from rows (the six MOD-2033 reports are six real
-      `reports` rows, not a stored number).
-- [ ] Reporter identity never reaches the reported person — the three extra reporters come from the
-      `reporter_1..6` pool, still disjoint from every authoring account.
-- [ ] Audit/notification details stay allowlisted: notification `params` carry ids and enums only,
-      never free text, an email, a filename or a review body.
-- [ ] Bengali and English both work — every seeded `message_key` exists in both files; parity stays at
-      777 keys (this task adds none).
-- [ ] Synthetic marker still visible in every regenerated fixture.
-- [ ] No agent/tool attribution in any file or commit.
+- [x] No number stands for quality; counts still come from rows (the six MOD-2033 reports are six real
+      `reports` rows, not a stored number). Evidence: live query against the seeded `rogikotha_cr008`
+      database — `moderation_cases` for `MOD-2033` shows `report_count`/`distinct_reporters` **6/6**,
+      matched by **6** real `reports` rows from six distinct `reporter_1..6` accounts, and
+      `moderation_case_reasons` for the case sums to **6** (`packages/test-support/src/seed/
+      seed-moderation.ts` — `paddedReasons` feeds both the reason-count insert and the report-row
+      loop, so the two never diverge).
+- [x] Reporter identity never reaches the reported person — the three extra reporters come from the
+      `reporter_1..6` pool, still disjoint from every authoring account. Evidence: the live query above
+      shows all six `MOD-2033` reports filed by `reporter_1`..`reporter_6`; `REPORTER_USERNAMES` in
+      `seed-moderation.ts` is unchanged from T-007 (still disjoint from every content-author account).
+- [x] Audit/notification details stay allowlisted: notification `params` carry ids and enums only,
+      never free text, an email, a filename or a review body. Evidence:
+      `packages/test-support/src/seed/seed-notifications.ts` (`resolveNotificationFields`) — every
+      `params` value is a `reviewPublicId`/`evidenceItemPublicId`/`commentPublicId`/`caseCode` or `{}`;
+      live query confirms, e.g. `{"reviewPublicId": "da7dttdqr7", "evidenceItemPublicId":
+      "xck74mncmy"}` for `n1`, never the corpus's free-text `text.en/bn`.
+- [x] Bengali and English both work — every seeded `message_key` exists in both files; parity stays at
+      777 keys (this task adds none). Evidence: `pnpm i18n:check` — "i18n parity check passed: 777
+      keys, both locales" (unchanged from before this task; the five `notif.*` keys already existed).
+- [x] Synthetic marker still visible in every regenerated fixture. Evidence: `photo.jpg` is the only
+      fixture whose bytes actually changed (its EXIF, not its pixels) — `writePhotoWithExifGps()` still
+      rasterises the same `prescriptionSvg()` template that draws `DEMO_MARKER` (T-007's proven path);
+      the other six fixtures (`prescription-1/2.jpg`, `not-a-png.png`, `broken.jpg`, `flagged.jpg`,
+      `report.pdf`) are byte-identical to before this task (only an EOL-only regeneration touched
+      `report.pdf`, fixed by `.gitattributes`).
+- [x] No agent/tool attribution in any file or commit. Evidence: `git log -1
+      --format='%an <%ae>%n%cn <%ce>%n%B'` on the final commit (see Run record below); grepped every
+      changed file under `packages/test-support/` for tool/model/brand names — none found outside the
+      required `TOOL · MODEL · EFFORT` run-record fields in `docs/implementation/`.
 
 ## Hand-off (implementer fills in)
+
+### What changed
+
+All five findings from T-007's validation, entirely inside `packages/test-support/` (plus the new root
+`.gitattributes`):
+
+1. **`ISS-173`** — new `src/seed/seed-notifications.ts` (`seedUserNotifications`), registered last in
+   `seed.ts`'s step order (after accounts/config/directory/content/evidence/moderation, since its
+   `params` resolve ids seeded by the last two of those). Inserts the five `USER_NOTIFICATIONS` corpus
+   rows for `shirin_88`, idempotent by `dedupeKey` (`n1`..`n5`); `read_at` null where `unread`,
+   `expires_at` computed from the seeded retention policy's `notification_days`.
+2. **`ISS-174`** — `corpus/types.ts` gained `CorpusModerationCase.reportCount`; `port-corpus.mjs` now
+   carries the prototype's `reports` field through; `seed-moderation.ts` pads `reportReasons` up to
+   `reportCount` (repeating the last reason) and uses the padded list for both the reason-count insert
+   and the report-row insert, so the two stay consistent.
+3. **`ISS-175`** — `build-fixtures.mjs`'s `writePhotoWithExifGps` writes the GPS block under sharp's
+   documented `IFD3` key instead of `GPS` (confirmed against sharp's own docs and empirically — `GPS`
+   is silently dropped, `IFD3` is not) and re-reads the file after writing, failing the script unless
+   EXIF tag `0x8825` (GPSInfo) is present.
+4. **`ISS-177`** — `fakes/repositories.ts`: `FakeReviewRepository` gained a separate `facilityReviews`
+   store plus `listExperiences`, `sentimentDistribution`, `outcomeDistribution`, `criteriaDistribution`,
+   `insertFacilityReview`, `softDeleteFacilityReview`, `restoreFacilityReview`;
+   `FakeAccountRepository` gained a `blocks` store plus `setBlock`/`unsetBlock`/`isBlocked`. New
+   `fakes/repositories-superset.test.ts` reads method names out of each `packages/database/src/
+   repositories/*.ts` stub's source text (never imports `@rogikotha/database` — boundary) and asserts
+   every one of the 13 fakes is a method-name superset of its stub.
+5. **`ISS-178`** — new root `.gitattributes` (`* text=auto eol=lf`, plus `binary` for
+   `*.pdf`/`*.jpg`/`*.jpeg`/`*.png`); `git add --renormalize .` then a fresh `port` + `fixtures:build`
+   left the working tree genuinely clean (`git status --porcelain` empty, `git diff --quiet` exit 0).
+
+`packages/test-support/src/builders/case.ts`'s `aCase()` builder gained a `reportCount` field
+(defaulting to `reportReasons.length`) — a mechanical consequence of widening `CorpusModerationCase`,
+not a new decision.
+
+### Not done and why
+
+Nothing from the task's six steps was skipped. `ISS-176` (storyboard names MOD-2041 in the wrong lane)
+is explicitly out of scope — a founder wording call, not this task's.
+
+### Questions for the human
+
+None — the task needed no founder decision, per its own "Status: needs queueing — no founder decision
+required" and the two `// ASSUMPTION(CR-008):` markers taken as the narrower, reversible option (see
+`ISS-190`, `ISS-191`).
+
+### Follow-ups
+
+- `ISS-190` (S4) — `seed-notifications.ts`'s `params` deliberately omit the values four of the five
+  message keys interpolate (`{label}`, `{name}`, `{action}`, `{city}`, `{days}`); T-405 (the first task
+  to render these) must resolve them from the stored ids at query time.
+- `ISS-192` (S4) — `pnpm db:reset` does not clear `STORAGE_ROOT`, so repeated reset+seed cycles in a
+  long-lived worktree accumulate orphaned derivative directories (found while verifying the
+  "Derivatives on disk" acceptance row; not a CR-008 defect — `seed-evidence.ts`/`derivatives.ts` are
+  untouched by this task).
+
+### `pnpm check` output summary
+
+```
+pnpm typecheck   — 9/9 packages, exit 0
+pnpm lint        — 0 errors, 1 pre-existing warning (packages/i18n/src/routing.ts, ISS-105, not touched here)
+pnpm test        — 38 files / 160 passed + 2 expected-fail (162) — was 37/146+2xf; +1 file
+                   (repositories-superset.test.ts), +14 tests (13 repository-fake pairs + 1 coverage check)
+pnpm i18n:check  — 777 keys, both locales, parity unchanged (no i18n edit — the five notif.* keys
+                   already existed, ported by T-006)
+pnpm build       — apps/web + apps/worker, both green (37 route rows + Proxy, unchanged)
+pnpm smoke       — 7 files / 10 tests, unchanged
+pnpm test:int    — 7 files / 27 passed + 2 expected-fail (29), unchanged (database project only)
+pnpm --filter @rogikotha/test-support exec vitest run src/seed/seed.int.test.ts
+                 — 3/3 green against a freshly reset+migrated rogikotha_test_cr008
+```
+
+Seed verified directly against the isolated demo database (`rogikotha_cr008`, `.env`'s
+`DATABASE_URL`), from empty storage:
+```
+pnpm db:reset && pnpm db:migrate && pnpm db:seed   → accounts 44, config 3, directory 63, content 392,
+    evidence 63, moderation 42 (was 39 — +3 MOD-2033 report rows), notifications 5 inserted
+pnpm db:seed (again)                                → 0 inserted for every step, including notifications
+```
+Row counts unchanged from T-007's baseline: doctors 6, facility_branches 5, taxonomy_terms 14,
+reviews 12, facility_reviews 8, comments 10, evidence_items 7, moderation_cases 5,
+account_profiles 80. `.data/storage/public` has 6 item directories with `page-1.png`+`thumb.png`
+(from a from-empty storage run — see `ISS-192`). `notifications` has 5 rows, all `shirin_88`, one per
+`notification_kind`. `moderation_cases`/`reports`/`moderation_case_reasons` for MOD-2033 are 6/6/6/6/6
+as specified; MOD-2011/2029/2038/2041 unchanged at 0/0, 1/1, 1/1, 2/2. `fixtures/photo.jpg` re-read
+with a hand-rolled EXIF parser shows tag `0x8825` present. `git status --porcelain` is empty after a
+fresh `port` + `fixtures:build`.
+
+### Hard-rule evidence
+
+See the checklist above — every row has a file:line or live-query citation.
+
+### Run record
+
+Claude Code · claude-sonnet-5 · effort high · start `553889b` → end (see commit below)

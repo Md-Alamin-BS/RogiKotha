@@ -25,7 +25,7 @@
 // flipped, since `comments.state`/`reviews.state` both have a
 // `hidden_pending_review` value.
 import { newId } from '@rogikotha/contracts';
-import type { TargetKind } from '@rogikotha/contracts';
+import type { ReportReason, TargetKind } from '@rogikotha/contracts';
 import {
   appeals,
   auditEvents,
@@ -79,6 +79,19 @@ export async function seedModeration(db: Db, ctx: SeedContext): Promise<number> 
     const reviewId = c.reviewSeedRef ? ctx.reviewIdBySeedRef.get(c.reviewSeedRef) : undefined;
     const openedAt = new Date(Date.now() - c.ageHours * 60 * 60 * 1000);
 
+    // CR-008 / ISS-174: `reportCount` is the prototype's own `reports`
+    // number (ported verbatim by `port-corpus.mjs`), which can exceed
+    // `reportReasons.length` when several reporters gave the same reason
+    // (MOD-2033: 6 reports, 3 authored reasons — `factual, factual,
+    // impersonation`). Pad by repeating the corpus's own last reason, per
+    // the task's instruction, rather than inventing an undocumented
+    // `other` the corpus never states. The four other cases are
+    // unaffected: their `reportReasons.length` already equals
+    // `reportCount`, so padding is a no-op for them.
+    const paddedReasons: ReportReason[] = [...c.reportReasons];
+    const lastReason: ReportReason = paddedReasons[paddedReasons.length - 1] ?? 'other';
+    while (paddedReasons.length < c.reportCount) paddedReasons.push(lastReason);
+
     const [caseRow] = await db
       .insert(moderationCases)
       .values({
@@ -89,8 +102,8 @@ export async function seedModeration(db: Db, ctx: SeedContext): Promise<number> 
         targetKind,
         targetId,
         reviewId,
-        reportCount: c.reportReasons.length,
-        distinctReporters: Math.min(c.reportReasons.length, REPORTER_USERNAMES.length),
+        reportCount: c.reportCount,
+        distinctReporters: Math.min(c.reportCount, REPORTER_USERNAMES.length),
         autoHidden: c.autoHidden,
         coordinatedSignal: c.coordinated,
         summaryEn: c.summary.en,
@@ -101,8 +114,12 @@ export async function seedModeration(db: Db, ctx: SeedContext): Promise<number> 
       .returning();
     inserted += 1;
 
+    // The reason breakdown is derived from the same `paddedReasons` list as
+    // the report rows below, so `sum(moderation_case_reasons.count)` always
+    // equals the real number of `reports` rows for the case (hard rule: no
+    // number stands for quality; every count is a row count).
     const reasonCounts = new Map<string, number>();
-    for (const reason of c.reportReasons) reasonCounts.set(reason, (reasonCounts.get(reason) ?? 0) + 1);
+    for (const reason of paddedReasons) reasonCounts.set(reason, (reasonCounts.get(reason) ?? 0) + 1);
     for (const [reason, count] of reasonCounts) {
       await db.insert(moderationCaseReasons).values({ caseId: caseRow!.id, reason: reason as (typeof c.reportReasons)[number], count });
       inserted += 1;
@@ -111,7 +128,7 @@ export async function seedModeration(db: Db, ctx: SeedContext): Promise<number> 
     // Report rows from distinct `reporter_N` accounts, so `report_count`/
     // `distinct_reporters` are real, derived counts (hard rule).
     let reporterIndex = 0;
-    for (const reason of c.reportReasons) {
+    for (const reason of paddedReasons) {
       const reporterUsername = REPORTER_USERNAMES[reporterIndex % REPORTER_USERNAMES.length]!;
       reporterIndex += 1;
       const reporterAccountId = ctx.accountIdByUsername.get(reporterUsername);

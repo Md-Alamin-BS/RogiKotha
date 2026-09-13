@@ -25,6 +25,10 @@ export function aCase(overrides: Partial<CaseBuild> = {}): CaseBuild {
     seedRef: code,
     lane,
     ageHours: 1,
+    // CR-008: defaults to the reason-list length, same as every case in
+    // the corpus except MOD-2033 (ISS-174) — a builder default, not a
+    // claim about that fixture.
+    reportCount: reasons.length,
     reportReasons: reasons,
     autoHidden: false,
     coordinated: false,

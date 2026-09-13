@@ -32,6 +32,7 @@ import { seedContent } from './seed-content.js';
 import { seedDirectory } from './seed-directory.js';
 import { seedEvidence } from './seed-evidence.js';
 import { seedModeration } from './seed-moderation.js';
+import { seedUserNotifications } from './seed-notifications.js';
 
 /**
  * Lookup maps threaded through every seed step, so a later step (e.g.
@@ -99,6 +100,10 @@ export async function runSeed(db: Db): Promise<SeedCounts> {
   counts.content = await seedContent(db, ctx);
   counts.evidence = await seedEvidence(db, ctx);
   counts.moderation = await seedModeration(db, ctx);
+  // Last: params reference an evidence item (seed-evidence) and a
+  // moderation case code (seed-moderation), so every other step's ids
+  // must already exist (CR-008 / ISS-173 — see seed-notifications.ts).
+  counts.notifications = await seedUserNotifications(db, ctx);
 
   return counts;
 }

@@ -424,6 +424,10 @@ function buildModeration(RK) {
     seedRef: c.id,
     lane: c.lane === 'appeal' ? 'appeals' : c.lane,
     ageHours: c.ageHours,
+    // CR-008 / ISS-174: the prototype's own report count, carried through
+    // verbatim (previously dropped — the seed derived a count from
+    // `reasons.length` instead, which silently under-counted MOD-2033).
+    reportCount: c.reports,
     reportReasons: [...c.reasons],
     autoHidden: Boolean(c.autoHidden),
     coordinated: Boolean(c.coordinated),
