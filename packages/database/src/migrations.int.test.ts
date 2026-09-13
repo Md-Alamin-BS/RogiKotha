@@ -121,7 +121,8 @@ const EXPECTED_TABLES = [
 
 describe('migrations apply from an empty database', () => {
   it('creates the drizzle migrations table with both migrations applied', async () => {
-    const rows = await testDb.execute(sql`select tag from drizzle_migrations order by id`);
+    // drizzle-orm's migrator table has no `tag` column — only `id`/`hash`/`created_at`.
+    const rows = await testDb.execute(sql`select hash from drizzle_migrations order by id`);
     expect(rows.rows).toHaveLength(2);
   });
 

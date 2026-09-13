@@ -18,7 +18,16 @@ export async function runMigrate(url: string): Promise<void> {
   }
   const { db, pool } = createDb(url);
   try {
-    await migrate(db, { migrationsFolder, migrationsTable: 'drizzle_migrations' });
+    // migrationsSchema defaults to a separate `drizzle` schema if omitted,
+    // which then survives `DROP SCHEMA public CASCADE` in reset.ts and lets
+    // a later reset skip re-applying migrations it thinks already ran
+    // (ISS-092). Keeping the bookkeeping table in `public` means one drop
+    // clears both the real tables and the migration history together.
+    await migrate(db, {
+      migrationsFolder,
+      migrationsTable: 'drizzle_migrations',
+      migrationsSchema: 'public',
+    });
   } finally {
     await closeDb(pool);
   }

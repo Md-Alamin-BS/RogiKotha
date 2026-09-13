@@ -109,7 +109,18 @@ inherited the `ALTER DEFAULT PRIVILEGES` grant to `rk_worker`).
 
 ### Questions for the human
 
-**Blocking (`ISS-084`, S1):** a native Windows PostgreSQL 18 service (`postgresql-x64-18`,
+**Update (same day, follow-up session):** `ISS-084` is resolved — founder chose to remap the
+compose stack's port rather than touch the native service (`infra/compose/docker-compose.yml` now
+maps `5433:5432`, `.env`/`.env.example`/`infra/compose/README.md` updated). Unblocking it surfaced
+two more real bugs, now also fixed: `ISS-092` (S1 — `pnpm db:reset` could silently hand back an
+empty, unmigrated `public` schema on a second reset, because drizzle-orm's migration bookkeeping
+table defaulted to a separate `drizzle` schema that survived `DROP SCHEMA public CASCADE`; fixed by
+keeping that table inside `public` via `migrationsSchema: 'public'`) and `ISS-093` (S4 — a test
+queried a `tag` column that was never part of drizzle-orm's migrations table). `pnpm test:int` is
+now genuinely green (8/8); see the updated `pnpm check` output summary below. Everything below this
+line is the original, unchanged account from before the fix.
+
+**Blocking (`ISS-084`, S1) — original account, now resolved above:** a native Windows PostgreSQL 18 service (`postgresql-x64-18`,
 `Get-Service` shows it `Running`/`Automatic`) occupies host port 5432 ahead of the Docker
 `rogikotha-postgres-1` container. `Get-NetTCPConnection -LocalPort 5432` names the native
 `postgres.exe`, not Docker's proxy, as the port's owner; `docker logs rogikotha-postgres-1` shows
@@ -139,8 +150,16 @@ the rest).
 
 ### Follow-ups
 
-- `ISS-084` (S1) — free port 5432 so `pnpm test:int`/`pnpm check` can actually run against the
-  Docker postgres. Owner: founder/human.
+- `ISS-084` (S1) — **fixed**: compose port remapped to `5433`, `.env`/`.env.example`/README updated.
+- `ISS-092` (S1) — **fixed**: `migrate.ts` keeps drizzle-orm's migration bookkeeping in `public`
+  (`migrationsSchema: 'public'`) instead of the default separate `drizzle` schema; `reset.ts` also
+  drops any stray leftover `drizzle` schema defensively.
+- `ISS-093` (S4) — **fixed**: `migrations.int.test.ts` queried a non-existent `tag` column; changed
+  to `hash`.
+- Whoever merges this branch: rebasing onto current `build/demo` will need one more
+  `pnpm approve-builds --all` for `esbuild` (pulled in transitively by `drizzle-kit`) — CR-002's
+  `allowBuilds` block in `pnpm-workspace.yaml` only listed `@parcel/watcher`/`@swc/core` at the time
+  it merged. Worth adding `esbuild: true` to that block at merge time so it doesn't recur.
 - `ISS-087` (S4, fixed here) — drizzle-kit 0.31.10 cannot serialize a JS `BigInt` column default;
   worked around with a SQL-literal default in `schema/demo.ts`. Worth a drizzle-kit upstream issue
   if a future task hits it again elsewhere.
@@ -155,7 +174,7 @@ the rest).
 - `pnpm lint` (`eslint .`): **green**, no findings in `packages/database`.
 - `pnpm i18n:check`: **green** — "764 keys, both locales, no placeholder or ERROR_CODES mismatches."
 - `pnpm -r build`: **green**.
-- `pnpm test` / `pnpm test:int`: **red** — both int test files fail in `beforeAll` with
+- `pnpm test` / `pnpm test:int`: **red at first** — both int test files failed in `beforeAll` with
   `password authentication failed for user "rk_app"`, exclusively because of the `ISS-084`
   environment blocker above (every other package's unit tests still pass: 39/39, matching the
   pre-T-004 baseline, no regression). Full run: `Test Files 2 failed | 11 passed (13)`,
@@ -167,6 +186,14 @@ the rest).
   and `auth_users`, allowed `SELECT` on `personas`, allowed `INSERT` but denied `SELECT` on
   `audit_events`, and correctly gained access to a table created afterward by `rk_app` via the
   default-privilege grant. Scratch database dropped afterward.
+- **Update, after `ISS-084`/`ISS-092`/`ISS-093` were fixed:** `pnpm test:int` — **green**, 2 files,
+  8/8 tests, run twice from a clean `DROP SCHEMA public CASCADE` to confirm `db:reset` is now
+  idempotent (30 tables both times). Full `pnpm check` from the worktree root — **green**
+  end-to-end: typecheck 9/9, lint clean, `vitest run` 13 files/47 tests, i18n parity 764 keys,
+  build. `pnpm smoke` — 3 files/5 tests, green. `pnpm db:reset && pnpm db:migrate` against the dev
+  database (not just the test one) also verified directly: `drizzle_migrations` has 2 rows, 30
+  tables. `APP_MODE=production pnpm --filter @rogikotha/database reset` — refuses, exit 1, as the
+  acceptance table requires.
 
 ### Hard-rule evidence
 

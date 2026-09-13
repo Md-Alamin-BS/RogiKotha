@@ -20,6 +20,13 @@ export async function runReset(url: string): Promise<void> {
     await pool.query('CREATE EXTENSION IF NOT EXISTS pg_trgm');
     await pool.query('CREATE EXTENSION IF NOT EXISTS citext');
     await pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto');
+    // Defensive cleanup for ISS-092: migrate.ts now keeps drizzle-orm's
+    // migration bookkeeping table inside `public` (so this same DROP wipes
+    // it too), but a database reset before that fix landed can still have a
+    // stray `drizzle` schema left over with hashes recorded against tables
+    // this DROP just removed — which would make migrate() skip re-applying
+    // them. Clear it every time so a reset is always a true reset.
+    await pool.query('DROP SCHEMA IF EXISTS drizzle CASCADE');
   } finally {
     await pool.end();
   }
