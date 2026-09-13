@@ -158,11 +158,11 @@ Update the status column as tasks move. Statuses: `todo`, `in progress (lane A|B
 |---|---|---|---|---|
 | D-001 auth screens prototype pass | merged | `task/d-001-auth-screens-prototype` | [D-001](../validation/D-001.md) | founder reviews in both locales and themes before T-102/T-103; 360 px width still unwalked |
 | T-001 | merged | `task/t-001-workspace-scaffold` | [T-001](../validation/T-001.md) | packages are empty stubs; `pnpm check` stops at `i18n:check` until T-006 |
-| T-002 | validating | `task/t-002-local-infra` | | |
+| T-002 | FAIL | `task/t-002-local-infra` | [T-002](../validation/T-002.md) | infra itself passes live (9/9 acceptance, ClamAV marker detected); blocked only by `ISS-057` — tool brand name in `infra/compose/README.md` prose. Also fix `ISS-058` (README still says the signature mount is read-only) |
 | T-003 | todo | | | |
 | T-004 | todo | | | |
 | T-005 | todo | | | |
-| T-006 | validating | `task/t-006-i18n` | | |
+| T-006 | merged | `task/t-006-i18n` | [T-006](../validation/T-006.md) | 764 bilingual keys; `pnpm check` green end-to-end from here on. The ERROR_CODES half of `i18n:check` self-skips until T-003 lands `packages/contracts/src/errors.ts` |
 | T-007 | todo | | | |
 | T-008 | todo | | | |
 | T-009 | todo | | | |

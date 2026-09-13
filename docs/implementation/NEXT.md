@@ -2,43 +2,46 @@
 
 _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 
-**Updated:** 2026-09-13 · by: loop implement session (Claude Code · claude-sonnet-5 · effort high)
+**Updated:** 2026-09-13 · by: loop validate session (Claude Code · claude-opus-5[1m] · effort high)
 
 ## Queue (machine-read by LOOP.md)
 ```
-mode: validate
-tasks: T-002, T-006
-recommended: Claude Sonnet 5 or Opus 4.8 · effort high, new session
+mode: implement
+tasks: T-002 — fix ISS-057 (and ISS-058) per docs/validation/T-002.md
+recommended: GPT-5.6 Luna or Claude Haiku 4.5 · effort medium (Sonnet 5 / Opus 4.8 also fine)
 ```
 
 ## State of the build
-- **T-002 done** (`task/t-002-local-infra` @ `fb6daae`) and **T-006 done** (`task/t-006-i18n` @ `4056fd8`),
-  both by sub-agents in separate worktrees this session; both pushed, not yet merged. `infra/`
-  now has the compose stack (postgres/mailpit/clamav); `packages/i18n` now has 764 real bilingual
-  keys, formatters and next-intl config (was an empty stub).
-- Both branches logged `S4` issues only (no `S1`/`S2`); ISS ids originally collided
-  (`ISS-039..044` in both) — **already renumbered and fixed** in `task/t-006-i18n` (now
-  `ISS-045..056`) by this session before push. Validator: no further renumbering needed, just
-  confirm the two ranges are disjoint when both merge.
+- **T-006 merged** at `bb954af`. `pnpm check` is now **green end-to-end for the first time**
+  (typecheck, lint, 18/18 tests, i18n parity over 764 keys, build); `pnpm smoke` 4/4. Caveat: the
+  ERROR_CODES half of `i18n:check` self-skips until T-003 creates `packages/contracts/src/errors.ts`.
+- **T-002 FAIL**, branch left at `7e4296a`. The infrastructure itself is sound — all 9 acceptance
+  rows passed live against Docker, the custom ClamAV signature really flags a marker file (control
+  file scans clean), and all three `// ASSUMPTION(T-002)` deviations were independently reproduced,
+  not just re-read. The only blocker is `ISS-057` (S1): `infra/compose/README.md:106` writes the
+  tool's brand name into committed product documentation, which `AGENTS.md` forbids for README and
+  doc files. One sentence to reword. While there, fix `ISS-058` (S3): the same README still calls
+  the ClamAV signature mount read-only when the shipped mount is read-write.
 
 ## Next, per lane (human-readable)
-- **Lane A:** validate T-002 first (independent live Docker run — three `// ASSUMPTION(T-002)`
-  deviations from the task file's literal compose text: postgres volume path, mailpit tag
-  `v1.31.1`, clamav bind-mount mode; see `handoffs/T-002.md`), then T-003 → T-004 → T-005 → T-007.
-- **Lane B:** validate T-006 (re-run `pnpm i18n:check`/`test`/`typecheck`; spot-check the invented
-  `notif.*`/`admin.config.*` wording and the auth-spec verbatim rows; note `pnpm install` now needs
-  `--ignore-scripts`, see `handoffs/T-006.md` `ISS-055`), then T-008.
+- **Lane A:** T-002 fix → re-validate, then T-003 → T-004 → T-005 → T-007.
+- **Lane B:** idle — T-008 is blocked on T-003.
 
 ## Blockers
-- none
+- None technical. Queue-size note: **T-003 is unblocked now** (T-001 is merged) and its owned paths
+  are disjoint from T-002's, but `LOOP.md` §4.3 only pairs tasks from *different* lanes and both are
+  Lane A — so the rule leaves this a one-task turn for a one-line fix. To avoid the round-trip, add
+  `, T-003` to the Queue line and run two terminals with `Lane A` / `Lane B`; the plan already
+  declares them parallel-safe. Your call — I did not override the rule on my own.
 
 ## Questions for the human
-- **Bilingual review requested (not a merge blocker):** T-006 invented EN+BN wording for the
-  `notif.*` (5 keys) and `admin.config.*` (~15 keys) addendum entries that no task named copy for
-  (`ISS-050`) — please read them in `packages/i18n/messages/{en,bn}.json` before T-007/T-408 build
-  UI against them.
-- **D-001 still wants your walkthrough** (carried over, unresolved): a founder visual pass (both
-  locales, both themes) before Lane B starts T-102/T-103. While there: `ISS-029` (`/me` shows the
-  fixed `shirin_88` fixture regardless of signed-in account — accept, or should D-001 fix it?),
-  `ISS-028` (Terms/Privacy → `#about`, fine until the React port?). 360 px is still unverified
-  (`ISS-037`).
+- **Bilingual review still requested** (not a merge blocker): T-006's invented EN+BN wording for the
+  `notif.*` (5) and `admin.config.*` (15) keys is now on `build/demo` (`ISS-050`); all 20 strings are
+  quoted in `docs/validation/T-006.md`. Read them before T-007/T-408 build UI against those keys.
+- **D-001 still wants your walkthrough** (carried over): a founder pass in both locales and themes
+  before Lane B starts T-102/T-103. While there: `ISS-029` (`/me` always shows the `shirin_88`
+  fixture — accept, or fix?), `ISS-028` (Terms/Privacy → `#about`, fine until the React port?).
+  360 px is still unverified (`ISS-037`).
+- **Minor, no action unless you disagree:** `ISS-054` — T-408's task file names the removed key
+  `admin.role.current`, most likely wants `staff.role.chipTitle`. `ISS-056` — T-006's task file
+  cites `evidence.notice` for the viewer disclaimer; the real key is `viewer.notice`.
