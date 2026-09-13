@@ -2,7 +2,7 @@
 // (03-routes-and-contracts.md §4 "identity (T-104)").
 import { z } from 'zod';
 
-import { IDENTITY_MODES, TARGET_KINDS } from '../enums.js';
+import { IDENTITY_MODES, TARGET_KINDS } from '../enums';
 
 // internal — called only by other application code, never a public route
 export const PersonaForInput = z

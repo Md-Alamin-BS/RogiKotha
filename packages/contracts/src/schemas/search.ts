@@ -4,8 +4,8 @@
 // renders).
 import { z } from 'zod';
 
-import { FACILITY_TYPES, OUTCOMES, SEARCH_KINDS, SENTIMENTS } from '../enums.js';
-import { PUBLIC_ID_RE } from '../ids.js';
+import { FACILITY_TYPES, OUTCOMES, SEARCH_KINDS, SENTIMENTS } from '../enums';
+import { PUBLIC_ID_RE } from '../ids';
 
 const SEARCH_TABS = ['doctors', 'facilities', 'conditions', 'reviews'] as const;
 const SEARCH_SORTS = ['relevance', 'volume', 'recent'] as const;

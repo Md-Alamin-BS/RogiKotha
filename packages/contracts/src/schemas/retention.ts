@@ -3,7 +3,7 @@
 // owned by the `retention` module (01-conventions.md §1 fixed module list).
 import { z } from 'zod';
 
-import { TARGET_KINDS } from '../enums.js';
+import { TARGET_KINDS } from '../enums';
 
 export const CurrentPolicyInput = z.object({}).strict();
 

@@ -6,7 +6,7 @@
 //
 // TODO(T-308): owner refines every field below against the ported
 // evidence-viewer component.
-import type { EvidenceGroup } from '../enums.js';
+import type { EvidenceGroup } from '../enums';
 
 export interface EvidencePageRefVM {
   artifactUrl: string;

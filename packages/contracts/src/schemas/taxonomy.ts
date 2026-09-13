@@ -2,8 +2,8 @@
 // (03-routes-and-contracts.md §4 "taxonomy (T-201)").
 import { z } from 'zod';
 
-import { TAG_GROUPS, TERM_KINDS } from '../enums.js';
-import { PUBLIC_ID_RE } from '../ids.js';
+import { TAG_GROUPS, TERM_KINDS } from '../enums';
+import { PUBLIC_ID_RE } from '../ids';
 
 const publicId = z.string().regex(PUBLIC_ID_RE);
 const ALIAS_LANGS = ['en', 'bn', 'banglish'] as const;

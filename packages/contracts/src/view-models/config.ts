@@ -4,7 +4,7 @@
 //
 // TODO(T-408): owner refines every field below against the ported
 // component.
-import type { ConfigValues } from '../config-values.js';
+import type { ConfigValues } from '../config-values';
 
 export interface ConfigChangeRowVM {
   path: string;

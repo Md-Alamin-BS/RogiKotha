@@ -5,8 +5,8 @@
 // TODO(T-203): owner refines every field below against the ported
 // component; parent-vs-branch aggregation (denominators disclosed at the
 // parent level per 03-routes-and-contracts.md §1) is this task's call.
-import type { FacilityType } from '../enums.js';
-import type { DistributionVM, ProvenanceFieldVM } from './doctor.js';
+import type { FacilityType } from '../enums';
+import type { DistributionVM, ProvenanceFieldVM } from './doctor';
 
 export interface FacilityDoctorRefVM {
   publicId: string;

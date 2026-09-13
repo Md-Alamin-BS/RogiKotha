@@ -5,7 +5,7 @@
 // module list) and live in schemas/retention.ts instead.
 import { z } from 'zod';
 
-import { EVIDENCE_GROUPS, EVIDENCE_STATES } from '../enums.js';
+import { EVIDENCE_GROUPS, EVIDENCE_STATES } from '../enums';
 
 // Phase 1 accepts images only (FD-036); PDF/HEIC/Office wait for Phase 2.
 const DECLARED_MIME = ['image/jpeg', 'image/png'] as const;

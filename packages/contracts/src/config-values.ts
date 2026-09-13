@@ -5,7 +5,7 @@
 // `config.invariant` error code.
 import { z } from 'zod';
 
-import { REPORT_REASONS } from './enums.js';
+import { REPORT_REASONS } from './enums';
 
 export const ConfigValuesSchema = z
   .object({

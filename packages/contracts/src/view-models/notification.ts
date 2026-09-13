@@ -6,7 +6,7 @@
 //
 // TODO(T-405): owner refines every field below against the ported
 // component.
-import type { NotificationKind } from '../enums.js';
+import type { NotificationKind } from '../enums';
 
 export interface NotificationVM {
   id: string;

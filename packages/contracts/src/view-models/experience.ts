@@ -5,8 +5,8 @@
 // TODO(T-307): owner refines every field below against the ported
 // component; `review.getExperience`'s "thirteen sections" and "Not
 // provided" semantics (03-routes-and-contracts.md §4) are this task's call.
-import type { FollowUpKind, Outcome, Relationship, Sentiment, TagGroup } from '../enums.js';
-import type { EvidenceGroupVM } from './evidence.js';
+import type { FollowUpKind, Outcome, Relationship, Sentiment, TagGroup } from '../enums';
+import type { EvidenceGroupVM } from './evidence';
 
 export interface ExperienceCardVM {
   publicId: string;

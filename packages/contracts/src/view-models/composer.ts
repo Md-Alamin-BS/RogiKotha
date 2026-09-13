@@ -5,7 +5,7 @@
 // TODO(T-306): owner refines every field below against the ported
 // component; `ComposerDraftVM.payload`'s shape is the composer's own state
 // (see `schemas/review.ts` `SaveDraftInput.payload`, same TODO owner).
-import type { TagGroup } from '../enums.js';
+import type { TagGroup } from '../enums';
 
 export interface ComposerDoctorOptionVM {
   publicId: string;

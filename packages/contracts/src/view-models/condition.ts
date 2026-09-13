@@ -5,7 +5,7 @@
 // TODO(T-203): owner refines every field below against the ported
 // component; the aliases list (incl. Banglish) is taxonomy_aliases, not
 // rendered here directly.
-import type { DistributionVM, FacilityRefVM } from './doctor.js';
+import type { DistributionVM, FacilityRefVM } from './doctor';
 
 export interface ConditionCardVM {
   publicId: string;

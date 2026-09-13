@@ -2,8 +2,8 @@
 // (03-routes-and-contracts.md §4 "directory (T-201, T-204)").
 import { z } from 'zod';
 
-import { OUTCOMES, RELATIONSHIPS, SUBMISSION_STATUSES } from '../enums.js';
-import { PUBLIC_ID_RE } from '../ids.js';
+import { OUTCOMES, RELATIONSHIPS, SUBMISSION_STATUSES } from '../enums';
+import { PUBLIC_ID_RE } from '../ids';
 
 const publicId = z.string().regex(PUBLIC_ID_RE);
 const PageParams = { page: z.number().int().min(1).optional(), pageSize: z.number().int().min(1).max(100).optional() };

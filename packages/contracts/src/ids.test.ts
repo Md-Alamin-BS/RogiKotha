@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isId, newId, newPublicId, stripSlug } from './ids.js';
+import { isId, newId, newPublicId, stripSlug } from './ids';
 
 describe('newPublicId', () => {
   it('generates unique valid public ids', () => {

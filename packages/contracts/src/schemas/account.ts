@@ -5,7 +5,7 @@
 // Auth session to an `Actor` is not itself a zod-validated command input.
 import { z } from 'zod';
 
-import { LOCALES } from '../enums.js';
+import { LOCALES } from '../enums';
 
 /** Exported so other schema files (e.g. community's block commands) can reuse it. */
 export const USERNAME_RE = /^[a-z0-9_]{3,24}$/;

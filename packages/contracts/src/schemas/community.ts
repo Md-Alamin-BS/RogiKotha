@@ -2,8 +2,8 @@
 // (03-routes-and-contracts.md §4 "community (T-401, T-402)").
 import { z } from 'zod';
 
-import { REACTION_VALUES } from '../enums.js';
-import { USERNAME_RE } from './account.js';
+import { REACTION_VALUES } from '../enums';
+import { USERNAME_RE } from './account';
 
 const COMMENT_BODY_MAX = 4000;
 // data-model.md §8 `reactions.target_kind ('review'|'facility_review'|'comment')`

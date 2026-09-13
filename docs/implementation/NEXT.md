@@ -2,43 +2,48 @@
 
 _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 
-**Updated:** 2026-09-13 · by: loop validate session (Claude Code · claude-opus-5[1m] · effort high)
+**Updated:** 2026-09-13 · by: CR-005 implementer (Claude Code · claude-sonnet-5 · effort high)
 
 ## Queue (machine-read by LOOP.md)
 ```
 mode: implement
-tasks: T-007, CR-005
+tasks: T-007
 recommended: Claude Sonnet 5 or GPT-5.6 Terra or Opus 4.8 · effort high
 ```
 
 ## State of the build
+- **CR-005 done, awaiting validation** on `task/cr-005-contracts-extensionless-imports`: stripped
+  the `.js` suffix from all 99 relative import specifiers across 39 files in
+  `packages/contracts/src` (mechanical, matches `packages/i18n/src`'s existing convention).
+  `pnpm check`/`pnpm smoke` unchanged (**33 files/110+2ef=112**, **777 keys**, **37 route rows**,
+  **6 files/9 smoke**). Proof: `emergency/page.tsx` converted back to a direct
+  `DEFAULT_CONFIG_VALUES` import from `@rogikotha/contracts`'s main barrel; `next build` resolves
+  it with no `Module not found`; live `next start` + curl confirmed byte-identical rendered output
+  in both locales. `ISS-133`/`ISS-134` closed. See `docs/implementation/handoffs/CR-005.md`.
 - **T-005 and T-207a both validated `PASS WITH FOLLOW-UP` and merged** (`ee0d250`, `ec5e998`).
   Post-merge on `build/demo`: `pnpm check` **exit 0** (typecheck 9/9, eslint 0 errors / 1 known
   warning `ISS-105`, **33 files / 110 passed + 2 expected-fail**, i18n **777 keys** both locales,
   37 route rows + proxy), `pnpm smoke` 6/9, `pnpm test:int` 7 files / 27 passed + 2 expected-fail.
-  Counts reconcile exactly (20/64 before + T-005's 5/21 + T-207a's 8/27 = 33/112), so neither merge
-  dropped a test. Phase 0 lane A is one task from done; Phase 2 lane B is blocked behind T-201.
+  Phase 0 lane A is one task from done; Phase 2 lane B is blocked behind T-201 (needs T-007 first).
 - The 2 "expected fail" tests are deliberate: `validator-probes.int.test.ts` holds `it.fails`
   tripwires for `ISS-139` and `ISS-141` that **turn the suite red the day those are fixed** — that
   is the signal to delete the marker, not a broken test.
 - Issue-id collision resolved: T-005 keeps `ISS-125`–`132`, T-207a's set was renumbered to
-  `ISS-133`–`138`, validators used `139`–`149` and `150`–`154`. Every stale reference on
-  `build/demo` was renumbered at merge (`ISS-154` closed).
+  `ISS-133`–`138`, validators used `139`–`149` and `150`–`154`. CR-005 added `ISS-171`/`ISS-172`.
 
 ## Next, per lane (human-readable)
 - **Lane A — T-007** (test support: corpus, builders, fakes, seed, fixtures). Unblocks T-201, which
   unblocks all of lane B. ⚠ If `pnpm test:int` ever appears to hang, it is `ISS-143`, not your code:
   kill it, re-run, and note it — **queue `CR-007` immediately after T-007**.
-- **Lane B — CR-005** (strip the 99 `.js` import suffixes from `packages/contracts/src`). I queued
-  this under its own `Status:` line ("not blocked on a founder decision, just needs a session") —
-  say so if you'd rather it waited. Without it no Phase 2 page can import a real contracts view
-  model: T-207a's validator reproduced **42** `Module not found` errors from a throwaway route.
+- **Lane B — validate CR-005**, then merge. After that, lane B has no ready task of its own until
+  T-007 → T-201 opens T-202/T-203/T-206 and T-207 Half B; a fresh lane B session should pick up
+  `CR-004` (blocked on a founder wording call, see below) or wait.
 - Then: T-009 → T-010 (lane A), T-101 after T-009; T-201 after T-007 opens T-202/T-203/T-206 and
   T-207 Half B.
 
 ## Blockers
-- None for this queue. Both tasks are M1 and parallel-safe: `packages/test-support/**` vs
-  `packages/contracts/**` are disjoint.
+- None for T-007. CR-005 needs its independent validation session (different session from the
+  implementer, per `04-handoff-and-validation.md` §2).
 
 ## Questions for the human
 - **`ISS-140` / `CR-006` (S2, needs your ruling):** the database grants `rk_worker`

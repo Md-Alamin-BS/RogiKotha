@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ERROR_CODES, errorMessageKey } from './errors.js';
+import { ERROR_CODES, errorMessageKey } from './errors';
 
 describe('errorMessageKey', () => {
   it('every code maps to a key matching /^errors\\.[a-z]+\\.[a-zA-Z]+$/', () => {

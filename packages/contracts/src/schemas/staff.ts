@@ -3,7 +3,7 @@
 // T-103, T-105)") but kept in their own file per T-003's owned paths.
 import { z } from 'zod';
 
-import { STAFF_ROLES } from '../enums.js';
+import { STAFF_ROLES } from '../enums';
 
 export const BeginDeviceApprovalInput = z.object({ deviceSecret: z.string().min(1).optional() }).strict();
 

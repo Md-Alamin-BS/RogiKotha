@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { err, ok, unwrap } from './result.js';
+import { err, ok, unwrap } from './result';
 
 describe('err', () => {
   it('derives the message key from the code', () => {

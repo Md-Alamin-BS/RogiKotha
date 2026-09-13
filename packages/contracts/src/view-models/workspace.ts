@@ -5,7 +5,7 @@
 //
 // TODO(T-409): owner refines every field below against the ported
 // component.
-import type { DataRequestKind, DataRequestStatus, Locale, PublicationState } from '../enums.js';
+import type { DataRequestKind, DataRequestStatus, Locale, PublicationState } from '../enums';
 
 export interface WorkspacePublishedItemVM {
   publicId: string;

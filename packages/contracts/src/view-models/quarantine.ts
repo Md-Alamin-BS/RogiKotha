@@ -6,7 +6,7 @@
 // component; whether staff ever see the original filename (vs. a
 // server-generated label) is this task's call against 01-conventions.md §4
 // ("original filename is private metadata only").
-import type { CustodyEvent, EvidenceFailReason, EvidenceState } from '../enums.js';
+import type { CustodyEvent, EvidenceFailReason, EvidenceState } from '../enums';
 
 export interface QuarantineStageVM {
   event: CustodyEvent;

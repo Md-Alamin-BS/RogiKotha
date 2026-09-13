@@ -6,11 +6,11 @@
 // component; `SearchResultItemVM`'s card union is a placeholder — the
 // actual page renders two tabs (doctors, facilities) with conditions/
 // reviews as a documented follow-up (03-routes-and-contracts.md §1).
-import type { SearchKind } from '../enums.js';
-import type { ConditionCardVM } from './condition.js';
-import type { DoctorCardVM } from './doctor.js';
-import type { ExperienceCardVM } from './experience.js';
-import type { FacilityCardVM } from './facility.js';
+import type { SearchKind } from '../enums';
+import type { ConditionCardVM } from './condition';
+import type { DoctorCardVM } from './doctor';
+import type { ExperienceCardVM } from './experience';
+import type { FacilityCardVM } from './facility';
 
 export interface ResolvedNoteVM {
   original: string;

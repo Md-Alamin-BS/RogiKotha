@@ -92,3 +92,130 @@ fix only.
 | Typecheck/tests unaffected | `pnpm check` | green, same test counts as before this change |
 | Contracts importable from web | `next build` (or `pnpm --filter web build`) on a page importing `@rogikotha/contracts`'s main barrel | builds cleanly, no `Module not found` |
 | No behavior change | `pnpm test:int` (if any consumer package has one) | green, unchanged |
+
+## Hand-off (implementer fills in)
+
+### What changed
+
+Stripped the `.js` suffix from every relative import specifier in
+`packages/contracts/src` — **99 specifiers across 39 files** (`import`/
+`import type`/`export *` alike), mechanical find-and-replace only, no
+logic, type or export change: `enums.ts`, `errors.ts`, `actor.ts`,
+`ids.ts`, `time.ts`, `page.ts`, `config-values.ts`, `result.ts`,
+`index.ts` (46 `export *` lines), all 14 `schemas/<module>.ts` files, all
+19 `view-models/<page>.ts` files, plus the 7 test files inside `src/**`
+that also used `.js`-suffixed relative imports (`actor.test.ts`,
+`config-values.test.ts`, `contracts.smoke.test.ts`, `errors.test.ts`,
+`ids.test.ts`, `result.test.ts`, `schemas.test.ts`). `packages/contracts`
+now follows the same extensionless-relative-import convention
+`packages/i18n/src` already used.
+
+Converted `apps/web/src/app/[locale]/(patient)/emergency/page.tsx` back to
+a direct `DEFAULT_CONFIG_VALUES` import from `@rogikotha/contracts`'s
+**main barrel** (`.`, not a subpath), per this task's step 4 and the
+"Owned paths" note that permits touching this file to prove the fix. The
+hand-typed `EMERGENCY_DEFAULTS` local constant and its long
+`// ASSUMPTION(T-207a)` comment are gone; a short `// ASSUMPTION(CR-005)`
+comment now explains only the remaining, unrelated gap (`config.current()`
+is still a T-105 stub, so this reads the package's static default, not a
+live query). `page.parity.test.ts` was **adapted, not deleted**: its old
+job (catching drift between the hand-typed copy and the real default) no
+longer applies once there is no second copy, so it now asserts
+`DEFAULT_CONFIG_VALUES.emergency` still holds the exact values
+`components/patient/Emergency.test.tsx`'s hardcoded fixture and the demo
+storyboard expect.
+
+### Not done and why
+
+Nothing in scope was skipped. Considered and rejected: hunting a
+Turbopack-side resolver config instead (task step 2's fallback) — not
+needed, the direct fix worked cleanly on the first attempt with no
+non-obvious breakage, exactly as the task predicted for the common case.
+
+### Questions for the human
+
+None. This was a mechanical, unambiguous fix with a working proof; no
+design choice was involved beyond the one `// ASSUMPTION(CR-005)` marker
+already logged as `ISS-171` (S4, informational — the emergency page still
+reads a static default, not a live query, which is T-105's scope, not
+this task's).
+
+### Follow-ups
+
+- `ISS-171` (S4) — `emergency/page.tsx`'s `// ASSUMPTION(CR-005)` marker:
+  still reads `DEFAULT_CONFIG_VALUES.emergency` (static), not a live
+  `config.current()` query; owner T-105.
+- `ISS-172` (S4, fixed here) — `page.parity.test.ts` adapted rather than
+  deleted so the coverage a drift-guard test provided is not lost.
+- `ISS-134`'s underlying need (a real `config.current()` query) remains
+  open under T-105; only the specific hand-typed-workaround this row
+  named is gone.
+
+### `pnpm check` output summary
+
+**Baseline** (before any change, fresh `pnpm install` in this worktree):
+typecheck 9/9 packages green; `eslint .` — 0 errors, 1 pre-existing
+warning (`packages/i18n/src/routing.ts:17`, unrelated); `vitest run
+--config vitest.workspace.ts` — **33 files, 110 passed + 2 expected-fail
+(112)**; `pnpm i18n:check` — "777 keys, both locales, no placeholder or
+ERROR_CODES mismatches"; `pnpm -r build` — green, `next build` **37 route
+rows** (34 app rows + `/_not-found` + `/api/health`) + `ƒ Proxy
+(Middleware)`. `pnpm smoke` — **6 files, 9 tests**, green. `pnpm test:int`
+— 7 files, 27 passed + 2 expected-fail (29).
+
+**After this fix**: identical counts throughout — typecheck 9/9 green;
+lint 0 errors / 1 same pre-existing warning; `vitest run` **33 files, 110
+passed + 2 expected-fail (112)**; `pnpm i18n:check` — 777 keys, same
+result; `pnpm -r build` — green, `next build` **same 37 route rows** + `ƒ
+Proxy (Middleware)`, now with `/[locale]/emergency` importing the main
+`@rogikotha/contracts` barrel directly and no `Module not found` error.
+`pnpm smoke` — **6 files, 9 tests**, unchanged. `pnpm test:int` — 7 files,
+27 passed + 2 expected-fail (29), unchanged. No test was added, removed,
+retargeted or skipped by this task (`page.parity.test.ts`'s one test was
+edited, not deleted — see "What changed").
+
+### Live-render proof (the acceptance table's "Contracts importable from
+web" row, executed for real)
+
+`pnpm --filter @rogikotha/web start` on port 3101 after the `next build`
+above, then:
+
+```
+curl -s http://localhost:3101/en/emergency | grep -oE 'tel:[0-9-]+'
+  → tel:999, tel:16263, tel:09612-119911 (x2 each — head-grid + card href)
+curl -s http://localhost:3101/en/emergency | grep -o 'Last verified[^<]*'
+  → "Last verified 21 August 2026"
+curl -s http://localhost:3101/bn/emergency | grep -oE '০[০-৯]{2}[০-৯১২-]+১১'
+  → ০৯৬১২-১১৯৯১১ (x2)
+curl -s http://localhost:3101/bn/emergency | grep -o 'সর্বশেষ[^<]*'
+  → "সর্বশেষ যাচাই ২১ আগস্ট ২০২৬"
+```
+
+Every value is byte-identical to what the hand-typed `EMERGENCY_DEFAULTS`
+constant produced before this fix (same four literals), now sourced live
+from `@rogikotha/contracts`'s `DEFAULT_CONFIG_VALUES.emergency` through a
+real `next build` + `next start`, not just a Vitest-resolved import.
+
+### Hard-rule evidence
+
+- No agent/tool attribution — `grep -rniE
+  "claude|anthropic|gpt|openai|co-authored" packages/contracts/src
+  apps/web/src/app/\[locale\]/\(patient\)/emergency` → no matches.
+- No number stands for quality / no logic changed — this task's diff is
+  import-specifier text only (`git diff --stat packages/contracts/src` →
+  "39 files changed, 99 insertions(+), 99 deletions(-)", i.e. one line
+  changed per import, nothing else); confirmed no `.ts` file's non-import
+  lines differ: `git diff packages/contracts/src | grep -E '^[+-]' | grep
+  -vE "^(\+\+\+|---)" | grep -vE "(from |export \* from )'\."` → no
+  matches.
+- Bengali and English both work, numerals follow language — proven live
+  above (`০৯৬১২-১১৯৯১১` / `09612-119911`, Bengali digits with the hyphen
+  kept, matching `Emergency.test.tsx`'s existing assertions).
+- Every other hard-rule checklist item is unaffected by an
+  import-specifier-only change in a package with no UI/copy/logic; not
+  re-evidenced here (see `T-003`/`T-207a`'s hand-offs for the original
+  evidence, still valid — nothing in this task's scope could break them).
+
+### Run record
+
+`Claude Code · claude-sonnet-5 · effort high · start 3f3e52b → end 2a93390`
