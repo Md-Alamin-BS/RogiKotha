@@ -33,6 +33,19 @@ recommended: Claude Sonnet 5 or GPT-5.6 Terra or Opus 4.8 · effort high
 - None.
 
 ## Questions for the human
+- **NEW — a second validate session ran T-003 in parallel and did *not* agree with the PASS.**
+  Two sessions validated T-003 at the same time; the one that finished first merged it. The second
+  found two **S2** defects, both re-confirmed live on merged `build/demo`: `ISS-077` —
+  `newPublicId()` has 46 bits of entropy, not 50, and **every public id ends in `4` or `m`**
+  (the UUIDv4 version nibble sits in the low bits; measured over 50 000 ids, position 9 has an
+  alphabet of exactly 2); and `ISS-078` — `auth.account_suspended` is specified by
+  `docs/design/auth-screens-spec.md:100` and needed by `account.signIn`, but is in no `ErrorCode`
+  union, while its string already ships in both dictionaries (this answers `ISS-076`: 03 §2 really
+  is short a code, so "40" was not just a wrong number). Also `ISS-079`/`ISS-080` (S3),
+  `ISS-081`/`ISS-082`/`ISS-083` (S4). Full record: `docs/validation/T-003-round-2.md`.
+  **Decide:** queue a small `contracts` follow-up (CR) for `ISS-077`/`ISS-079`/`ISS-080` before the
+  seed lands in T-007, or let it ride? And should a future implement turn ever be started in two
+  terminals without `Lane A`/`Lane B` — that is what let both sessions take the same task.
 - **T-003 follow-ups (carried over):** is the closed `male|female` gender enum in
   `schemas/search.ts` acceptable, or should `02-data-model.md` gain a formal enum before T-206
   (`ISS-074`)? Worth a deliberate bump to `uuid@14` — fixes a `v7()` bug relevant to `ids.ts`
