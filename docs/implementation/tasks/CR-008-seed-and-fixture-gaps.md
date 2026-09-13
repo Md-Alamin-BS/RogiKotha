@@ -244,4 +244,4 @@ See the checklist above — every row has a file:line or live-query citation.
 
 ### Run record
 
-Claude Code · claude-sonnet-5 · effort high · start `553889b` → end (see commit below)
+Claude Code · claude-sonnet-5 · effort high · start `553889b` → end `1f7aa88`
