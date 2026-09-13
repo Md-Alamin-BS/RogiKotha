@@ -7,3 +7,4 @@ Events: `started`, `finished (done|partial)`, `validation started`, `validated P
 - 2026-09-12 — · plan · CR-001 applied: images-only evidence (FD-036); handoff/validation protocol added · — · `04-handoff-and-validation.md`, `07-phase-2-document-evidence.md`
 - 2026-09-13 01:15 · loop · implement T-001, D-001 · session started · Claude Code · claude-opus-5[1m] · effort high
 - 2026-09-13 02:38 · loop · implement T-001, D-001 · turn closed; both finished (done), queued for validation · `15ac96c`, `5f215bf` · per-task started/finished lines ride on the task branches
+- 2026-09-13 02:43 · loop · validate T-001, D-001 · session started · Claude Code · claude-sonnet-5 · effort xhigh
