@@ -34,6 +34,22 @@ export function formatNumber(n: number, locale: Locale): string {
   return locale === 'bn' ? toBengaliDigits(grouped) : grouped;
 }
 
+/**
+ * // ASSUMPTION(T-207a): added — outside this task's owned paths
+ * // (`packages/i18n/src`), but T-207's step 1 requires digit-only Bengali
+ * // rendering of literal config strings (phone numbers) that `formatNumber`
+ * // cannot handle: `formatNumber` coerces its input to a `number` and adds
+ * // Intl thousands grouping, which would insert a comma into "16263" and
+ * // cannot represent "09612-119911" (leading zero, embedded hyphen) at all.
+ * // This substitutes digit characters only, leaving every other character
+ * // (the hyphen) untouched — same substitution `formatNumber` already does
+ * // internally, exposed for values that are not really numbers. See
+ * // docs/implementation/ISSUES.md.
+ */
+export function formatDigits(input: string, locale: Locale): string {
+  return locale === 'bn' ? toBengaliDigits(input) : input;
+}
+
 const MONTHS_EN = [
   'January',
   'February',
@@ -73,6 +89,36 @@ export interface MonthYear {
   year: number;
   /** 1-12 */
   month: number;
+}
+
+/**
+ * // ASSUMPTION(T-207a): added — outside this task's owned paths
+ * // (`packages/i18n/src`). `01-conventions.md` §9 only names
+ * // `formatMonthYear` (month/year only, for review/treatment dates); T-207
+ * // step 1 explicitly names a day-level `formatDate` for
+ * // `ConfigValues.emergency.lastVerified`, which the prototype always
+ * // showed with a day ("21 August 2026" / "২১ আগস্ট ২০২৬") — this is
+ * // operational config metadata, not review content, so the month/year-only
+ * // rule's privacy rationale does not apply. Narrower, reversible: added
+ * // one function, reusing the existing month-name tables and digit
+ * // substitution rather than introducing a new date library. See
+ * // docs/implementation/ISSUES.md.
+ */
+export function formatDate(isoDate: string, locale: Locale): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!match) {
+    throw new RangeError(`formatDate: expected an ISO "YYYY-MM-DD" date, got "${isoDate}"`);
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12) {
+    throw new RangeError(`formatDate: month must be 1-12, got ${month}`);
+  }
+  const monthName = locale === 'bn' ? MONTHS_BN[month - 1] : MONTHS_EN[month - 1];
+  const dayStr = locale === 'bn' ? toBengaliDigits(String(day)) : String(day);
+  const yearStr = locale === 'bn' ? toBengaliDigits(String(year)) : String(year);
+  return `${dayStr} ${monthName} ${yearStr}`;
 }
 
 /**

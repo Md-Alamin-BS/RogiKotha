@@ -9,6 +9,15 @@ import { useAnnounce } from '@/lib/announce';
 // components/patient/ is where the task's Owned paths places this file —
 // admin has no separate ViewShell-equivalent listed there. See ISS list in
 // the T-008 hand-off.
+//
+// ASSUMPTION(T-207a, fixes ISS-121): `title` only renders an `<h1
+// class="display">` when non-empty. A page whose ported content brings its
+// own complete heading (Emergency's `.emerg-head h1`, About/Policy's
+// `.about-head h1` — neither is `.display`, and the prototype's real markup
+// for these views never had a second, generic heading above them) passes
+// `title=""` so this section stays a single-heading landmark instead of an
+// empty `<h1>` (an axe/WCAG failure) sitting in front of the real one. See
+// docs/implementation/ISSUES.md.
 export function ViewShell({
   view,
   title,
@@ -32,7 +41,7 @@ export function ViewShell({
 
   return (
     <section className="view" id={`view-${view}`}>
-      <h1 className="display">{title}</h1>
+      {title ? <h1 className="display">{title}</h1> : null}
       {children}
     </section>
   );

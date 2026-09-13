@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./format": "./src/format.ts",
     "./routing": "./src/routing.ts",
     "./request": "./src/request.ts"
   },

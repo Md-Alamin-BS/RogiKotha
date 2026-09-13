@@ -395,6 +395,7 @@ export type MessageKey =
   | 'emergency.body'
   | 'emergency.crisis'
   | 'emergency.healthLineLabel'
+  | 'emergency.lastVerifiedLine'
   | 'emergency.title'
   | 'emergview.ambulance'
   | 'emergview.bmdc'
@@ -603,6 +604,18 @@ export type MessageKey =
   | 'person.noindex'
   | 'person.viewOf'
   | 'person.viewPublic'
+  | 'policy.privacy.data'
+  | 'policy.privacy.dataBody'
+  | 'policy.privacy.intro'
+  | 'policy.privacy.lawful'
+  | 'policy.privacy.lawfulBody'
+  | 'policy.privacy.title'
+  | 'policy.terms.eligibility'
+  | 'policy.terms.eligibilityBody'
+  | 'policy.terms.enforcement'
+  | 'policy.terms.enforcementBody'
+  | 'policy.terms.intro'
+  | 'policy.terms.title'
   | 'profile.about'
   | 'profile.accounts'
   | 'profile.allConditions'
@@ -1161,6 +1174,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'emergency.body',
   'emergency.crisis',
   'emergency.healthLineLabel',
+  'emergency.lastVerifiedLine',
   'emergency.title',
   'emergview.ambulance',
   'emergview.bmdc',
@@ -1369,6 +1383,18 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'person.noindex',
   'person.viewOf',
   'person.viewPublic',
+  'policy.privacy.data',
+  'policy.privacy.dataBody',
+  'policy.privacy.intro',
+  'policy.privacy.lawful',
+  'policy.privacy.lawfulBody',
+  'policy.privacy.title',
+  'policy.terms.eligibility',
+  'policy.terms.eligibilityBody',
+  'policy.terms.enforcement',
+  'policy.terms.enforcementBody',
+  'policy.terms.intro',
+  'policy.terms.title',
   'profile.about',
   'profile.accounts',
   'profile.allConditions',
