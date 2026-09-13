@@ -14,6 +14,7 @@ export const ERROR_CODES = [
   'auth.username_invalid',
   'auth.age_required',
   'auth.terms_required',
+  'auth.account_suspended',
   'forbidden',
   'not_found',
   'conflict',

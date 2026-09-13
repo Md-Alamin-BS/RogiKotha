@@ -78,7 +78,7 @@ export type Capability =
 // contracts/errors.ts — ErrorCode (prefix.name). Each maps to `errors.<prefix>.<name>` in i18n.
 'auth.invalid_credentials' | 'auth.email_unverified' | 'auth.rate_limited' | 'auth.token_invalid' | 'auth.token_expired'
 | 'auth.step_up_required' | 'auth.device_unapproved' | 'auth.password_too_short' | 'auth.username_taken'
-| 'auth.username_invalid' | 'auth.age_required' | 'auth.terms_required'
+| 'auth.username_invalid' | 'auth.age_required' | 'auth.terms_required' | 'auth.account_suspended'
 | 'forbidden' | 'not_found' | 'conflict' | 'validation' | 'rate_limited' | 'internal'
 | 'review.min_fields' | 'review.attestation_required' | 'review.not_editable' | 'review.restore_expired'
 | 'evidence.too_many' | 'evidence.too_large' | 'evidence.total_too_large' | 'evidence.type_rejected' | 'evidence.not_previewable' | 'evidence.confirmation_required'

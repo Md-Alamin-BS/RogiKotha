@@ -174,8 +174,11 @@ sub-agents, each in its own worktree of the task branch, or one after the other)
 4. Write `docs/validation/<task>.md` from `templates/validation-template.md` with verdict
    `PASS | PASS WITH FOLLOW-UP | FAIL`; add an `ISS-` row per finding with severity
    (`S1` breaks demo/hard rule/private data/red check; `S2` storyboard behaviour wrong; `S3` polish;
-   `S4` debt). Commit on the task branch (`<task>: validation record`, author check as in §1.2.6),
-   rebase, push.
+   `S4` debt). A finding in already-merged code that no currently queued task owns follows
+   `04-handoff-and-validation.md` §4.1: fix it now, in its own small branch, if it's small and
+   mechanical; otherwise write a `CR-nnn` mini task file so a later session can pick it up — never
+   leave it only as an open `ISS-` row with no path forward. Commit on the task branch (`<task>:
+   validation record`, author check as in §1.2.6), rebase, push.
 5. **Merge on PASS** (also PASS WITH FOLLOW-UP when every follow-up has an `ISS-` row with an owner):
    in the main checkout, `git switch build/demo && git pull --ff-only origin build/demo`,
    `git merge --no-ff <branch> -m "Merge <task>: <title>"`, run `pnpm check` on `build/demo`; if
@@ -242,6 +245,8 @@ and `docs/validation/DEMO-GATES.md`, and stop. Do not print a next prompt.
   replying in the session that asked); the next session reads the file, not the chat.
 - Read `NEXT.md` and the open `S1`/`S2` rows in `ISSUES.md` when you have five minutes. Add your own
   wishes to `06-change-requests.md`; the next implement session picks up `S`-size rows for the task
-  it is working on and larger ones become `CR-` tasks queued by §4.
+  it is working on and larger ones become `CR-` tasks queued by §4. A `CR-nnn` row logged
+  `Status: needs queueing` (from `04-handoff-and-validation.md` §4.1 — a session's own out-of-scope
+  finding, not a founder wish) is queued the same way once you approve it or answer its question.
 - At the end of each phase (the validator writes "phase gate reached" in `NEXT.md`), open the running
   demo and walk the storyboard steps it lists; write what you saw into `docs/validation/PHASE-n.md`.

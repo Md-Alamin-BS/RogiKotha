@@ -1,3 +1,12 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+# ISS-055: without this, every fresh install/worktree stops on
+# ERR_PNPM_IGNORED_BUILDS and needs a manual `pnpm approve-builds --all`.
+# Both are native-build install/postinstall scripts from pnpm's own
+# dependency tree (file-watching and SWC transpilation), not arbitrary
+# third-party postinstall code — safe to pre-approve once, for good.
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
