@@ -25,7 +25,7 @@ them to run again.
 
 | Service | URL / address | Notes |
 |---|---|---|
-| PostgreSQL | `localhost:5432` | databases `rogikotha` (owned by `rk_app`) and `rogikotha_test` |
+| PostgreSQL | `localhost:5433` (container's internal port is still 5432 — remapped per `ISS-084`, a native Windows PostgreSQL service occupies host port 5432 on some machines) | databases `rogikotha` (owned by `rk_app`) and `rogikotha_test` |
 | Mailpit SMTP | `localhost:1025` | any auth accepted (`MP_SMTP_AUTH_ACCEPT_ANY`), insecure allowed for local dev |
 | Mailpit web UI | http://localhost:8025 | read every email the app sends; `GET /api/v1/info` returns JSON when it's up |
 | ClamAV (clamd) | `localhost:3310` | INSTREAM protocol; see `MalwareScanner` port in `03-routes-and-contracts.md` §3 |

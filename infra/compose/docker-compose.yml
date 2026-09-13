@@ -6,7 +6,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: rogikotha
-    ports: ["5432:5432"]
+    # ISS-084: host port 5433, not 5432 — a native Windows PostgreSQL service (postgresql-x64-18,
+    # auto-start) already owns 5432 on developer machines that have one installed, so the
+    # container's own default port was silently unreachable from the host. The container's
+    # internal port stays 5432 (nothing inside the compose network needs to change).
+    ports: ["5433:5432"]
     volumes:
       # ASSUMPTION(T-002): task file's inline snippet said `pgdata:/var/lib/postgresql/data`.
       # The current `postgres:18` image (PG_VERSION 18.6-1.pgdg13+2) changed its default PGDATA
