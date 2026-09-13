@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Story | infra / demo data — closes the three `S2` and two `S3` rows T-007's validation raised |
-| Phase / Lane | 0 / A (but path-disjoint from everything: one package) |
+| Phase / Lane | 0 / either — queued into lane A alongside T-009, whose owned paths it does not touch |
 | Class → model | M1 → Claude Sonnet 5 (alt GPT-5.6 Terra); validator: the other vendor |
 | Effort setting | high |
 | Estimate | 2–3 h agent; validation 1 h |
