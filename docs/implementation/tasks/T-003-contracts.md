@@ -85,8 +85,142 @@ Modify: `packages/contracts/package.json` (add zod, uuid)
 ## Hand-off (implementer fills in)
 
 ### What changed
+
+Built `packages/contracts` end to end per "Owned paths": `result.ts` (`Result`,
+`ok`/`err`/`isOk`/`unwrap`), `errors.ts` (`ERROR_CODES` — the exact 38-code
+union copied from 03 §2 — `AppError`, `errorMessageKey`, `InternalError`),
+`actor.ts` (`Capability`, `Actor`, `ANONYMOUS_ACTOR`, `capabilitiesForRole`),
+`ids.ts` (`newId`/`isId` UUIDv7, `newPublicId`/`isPublicId`/`stripSlug`
+10-char Crockford base32), `time.ts` (`Iso8601`, `toIso`/`fromIso`,
+`addDays`, `monthYear`), `enums.ts` (36 data-model enums + 2 extra `as
+const` lists — `CRITICAL_REPORT_REASONS`, `PROTECTED_PROFILE_FIELDS` — 38
+`as const` arrays total), `page.ts` (`PageMeta`, `CursorPage`,
+`BoundedPage`, `encodeCursor`/`decodeCursor`, implemented without `Buffer`
+or `btoa`/`atob` so the package stays runnable outside Node), and
+`config-values.ts` (`ConfigValuesSchema` zod schema + ranges,
+`DEFAULT_CONFIG_VALUES`).
+
+14 `schemas/<module>.ts` files (`account`, `staff`, `identity`, `directory`,
+`taxonomy`, `search`, `review`, `evidence`, `retention`, `community`,
+`moderation`, `notification`, `administration`, `data-requests`) — one zod
+`z.object` per command in 03 §4 (job payloads included), named
+`<Verb><Noun>Input`. The four names given verbatim in the task text
+(`RegisterInput`, `PublishReviewInput`, `FileReportInput`, `DecideCaseInput`,
+`ApplyConfigInput`) are exact; every other command got a similarly qualified
+name (e.g. `PublishInput` for both `review.publish` and the internal
+`evidence.publish` would have collided under one flat `index.ts` namespace,
+so they are `PublishReviewInput` / `PublishEvidenceInput`). Encoded limits:
+password min 10, username `/^[a-z0-9_]{3,24}$/`, comment body 1-4000, report
+detail <= 2000, evidence limits as exported `EVIDENCE_LIMITS` (10 items /
+15 MB / 100 MB). Composer/submission/field-change/appeal-checklist payloads
+a later task owns are `z.unknown()` with a `// TODO(T-xxx)` line naming the
+owner. Every file exports a `<module>Schemas` discoverability object.
+
+18 `view-models/<page>.ts` files (`discover`, `search`, `doctor`, `facility`,
+`condition`, `experience`, `thread`, `evidence`, `composer`, `workspace`,
+`security`, `notification`, `public-profile`, `queue`, `case-tray`,
+`quarantine`, `providers`, `staff-notifications`, `config`) — plain
+serialisable `interface`/`type`s (no zod), each starting with a comment
+naming the prototype function/RK.* fields it replaces and a
+`// TODO(T-xxx)` line naming the owner per the task's map. Shared shapes
+(`DistributionVM`, `ProvenanceFieldVM`, `ChamberVM`, `ConditionRefVM`,
+`FacilityRefVM`) live in `doctor.ts` (where the task's example introduces
+them) and are imported by `facility.ts`/`condition.ts`/`search.ts`.
+
+`src/index.ts` re-exports every file with a flat `export *` (verified no
+name collisions across the whole package — see "Not done and why" for the
+one deliberate exception). `packages/contracts/package.json` gained
+`zod@^4.5.4` (resolved `4.6.2`) and `uuid@^13` (resolved `13.0.2`) as
+dependencies; `@types/uuid` was **not** added — `uuid@13` ships its own
+`dist/index.d.ts`.
+
+Tests: `ids.test.ts` (3), `result.test.ts` (4), `actor.test.ts` (3),
+`config-values.test.ts` (3), `errors.test.ts` (2), `schemas.test.ts` (5),
+plus the pre-existing `workspace.smoke.test.ts` (2) and a new
+`contracts.smoke.test.ts` (1, added for the cumulative smoke suite,
+04-handoff-and-validation.md §3.1) — 23 tests in the package, 39 in the
+whole repo.
+
+Also: reverted an unrelated stray `allowBuilds` stub that a plain `pnpm
+install` had auto-written into `pnpm-workspace.yaml` before this task
+touched anything (same phenomenon T-006 hit and reverted per ISS-055 — not
+committed, not part of this task's owned paths). Appended a 2026-09-13
+entry to `docs/status/dependency-check-log.md` for `zod`/`uuid` (the
+existing 2026-09-13 entry covered other dependencies, not these two, and
+the 2026-09-10 entry that did mention `zod` was exactly 3 days old, i.e.
+not "less than 3 days", so a fresh check was done per `AGENTS.md`).
+
 ### Not done and why
+
+- `schemas/directory.ts` `ListDoctorsInput.filters`, `schemas/review.ts`
+  `SaveDraftInput.payload`/`CorrectReviewInput.fields`/
+  `ListExperiencesInput.filters`, `schemas/directory.ts`
+  `SubmitProfileInput.payload`/`ProposeFieldChangeInput.newValue`,
+  `schemas/moderation.ts` `DecideAppealInput.checklist`,
+  `schemas/notification.ts` `NotificationDeliverJobInput`,
+  `schemas/administration.ts` `ProposeConfigInput.values` (shallow, not
+  deep, partial) — all left as `z.unknown()`/a shallow partial with a
+  `// TODO(T-xxx)` line naming the later task that owns the exact shape,
+  per the task's own "Not in scope" instruction ("you create the files
+  with the fields the prototype visibly renders and a `// TODO(T-xxx)`
+  line naming the owner").
+- View-model field lists are the task's own explicit scope boundary
+  ("Final field lists of view models owned by later tasks") — every file
+  carries a `// TODO(T-xxx)` naming its owner per the task's map.
+- Did not use `crypto.getRandomValues` for `newPublicId()` (ISS-073) or add
+  a formal `gender` enum to `enums.ts` (ISS-074) — see the Issues list.
+
 ### Questions for the human
+
+- The task's acceptance-check table expects 40 error codes; the exact
+  union copied from `03-routes-and-contracts.md` §2 has 38 (verified by
+  grepping the source doc directly), and the acceptance check's own grep
+  command against `errors.ts` returns 39 (38 codes + one incidental `'.'`
+  string literal inside `errorMessageKey`). Is 38 the intended count (and
+  the task file's "40" simply wrong), or were 2 codes meant to exist in
+  03 §2 that are missing from that doc? I took the narrower, non-inventive
+  option: copy exactly what 03 §2 has (ISS-076). `pnpm i18n:check`'s
+  `ERROR_CODES <-> errors.*` completeness check passes against this exact
+  set, which is independent evidence 38 is correct.
+- `uuid@14.0.0` is now current (v13 is "legacy-13") and its `v7()` fix is
+  directly relevant to this package's only use of the library. Kept the
+  task's pinned `^13` rather than bump a major on my own authority
+  (ISS-075) — worth a deliberate decision on whether/when to move to v14.
+
 ### Follow-ups
+
+- ISS-073, ISS-074, ISS-075, ISS-076 (see `ISSUES.md`).
+- Every `z.unknown()`/TODO-marked schema and VM field list above is a
+  follow-up for its named owner task.
+
 ### `pnpm check` output summary
+
+Before any change (baseline): typecheck 9/9 packages green; lint green;
+`vitest run` 18 tests / 4 files green; i18n parity green (764 keys, noting
+`errors.ts` did not exist yet); build green.
+
+After this task: `pnpm --filter @rogikotha/contracts typecheck` — clean,
+exit 0. `pnpm --filter @rogikotha/contracts test` — 8 files, 23 tests,
+green. Full `pnpm check` from repo root: typecheck 9/9 packages green;
+`eslint .` green; `vitest run --config vitest.workspace.ts` — **11 files,
+39 tests**, all green; `pnpm i18n:check` — "764 keys, both locales, no
+placeholder or ERROR_CODES mismatches" (the `ERROR_CODES <-> errors.*`
+completeness check now actually runs, and passes, against this task's
+`errors.ts`); `pnpm -r build` green. `pnpm smoke` from repo root: **3
+files, 5 tests**, green (added `contracts.smoke.test.ts`).
+
 ### Hard-rule evidence
+
+- No number stands for quality — `grep -rniE "rating|score"
+  packages/contracts/src` → no matches.
+- Reporter identity never reaches a public projection — `grep -rn
+  "reporterAccountId" packages/contracts/src` → no matches;
+  `view-models/case-tray.ts`'s `CaseTrayVM.reporter` is the literal type
+  `'restricted'`, never an id.
+- No `{en, bn}` pairs in view models — `grep -rn "bn:"
+  packages/contracts/src/view-models` → no matches.
+- No framework imports — `grep -rnE "from '(next|react|drizzle|pg)"
+  packages/contracts/src` → no matches.
+- No agent/tool attribution — `grep -rniE
+  "claude|anthropic|gpt|openai|co-authored" packages/contracts/src` → no
+  matches.

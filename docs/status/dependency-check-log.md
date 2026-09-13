@@ -27,6 +27,13 @@ Rules:
 
 ## Entries
 
+### 2026-09-13 (T-003)
+
+- Scope: T-003 (`packages/contracts` — first use of `zod` and `uuid` in this codebase).
+- Checked: `zod` (task pins `^4.5.4`); `uuid` (task pins `^13`).
+- Findings: `zod` latest is `4.6.2`/`4.6.0` line (6 days old at check time), still the 4.x stable series the 2026-09-10 entry already vetted; no regressions reported for `z.object`/`z.enum`/`.min`/`.max`/`.strict()`, the only APIs this task uses; `pnpm add zod@^4.5.4` resolved to `4.6.2`, inside the pinned range. `uuid`: v13.0.2 (2026-05) is now the "legacy-13" line — v14.0.0 is current. v14's only breaking change is a Node >= 20 floor (this repo runs Node 24, so it would be compatible) plus a `v7()` bug fix ("aligned the default seq formula in v7Bytes with updateV7State") and a TypeScript moduleResolution/exports fix; no breaking change to `validate()`/`v7()`'s public signature or to published types otherwise. `pnpm add uuid@^13` resolved to `13.0.2`, matching the task's literal pin; ships its own types (`dist/index.d.ts`), so `@types/uuid` was skipped per the task's own conditional.
+- Decision: used `zod@^4.5.4` (resolved `4.6.2`) and `uuid@^13` (resolved `13.0.2`) exactly as the task file pins — deviating from a task's pinned major version is outside this task's authority (`04-handoff-and-validation.md` "Only stop entirely for … needing a different library/version than pinned" reserves that call to the human). Flagged `uuid@14` as a follow-up worth a deliberate upgrade decision later, since its `v7()` fix is directly relevant to `ids.ts`'s only use of the package (see `ISS-075`).
+
 ### 2026-09-13
 
 - Scope: T-002 (local infra compose: postgres, mailpit, clamav) and T-006 (`packages/i18n`, next-intl).
