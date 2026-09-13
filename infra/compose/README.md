@@ -59,9 +59,13 @@ Until T-004 runs its migration, `rk_worker`/`rk_maintenance` can connect but see
 
 `clamav/rogikotha-test.ndb` adds one signature, `RogiKotha.Test.Marker`, that matches any file
 containing the ASCII bytes `ROGIKOTHA-MALWARE-TEST-MARKER` (ndb format
-`Name:TargetType:Offset:HexSignature`, target `0` = any file type). It is bind-mounted read-only
-into the container's signature directory (`/var/lib/clamav/rogikotha-test.ndb`) and loads
-alongside the official signatures on every start — it does not wait for the freshclamd download.
+`Name:TargetType:Offset:HexSignature`, target `0` = any file type). It is bind-mounted
+**read-write** into the container's signature directory (`/var/lib/clamav/rogikotha-test.ndb`) —
+not read-only as the scope-change text originally asked, because the image's entrypoint runs
+`chown -R clamav:clamav /var/lib/clamav` on every start and fails on a read-only mount
+(`ISS-041`; the compose file carries the same note next to the mount). Nothing in the app writes
+to it. It loads alongside the official signatures on every start — it does not wait for the
+freshclamd download.
 This lets the demo show a "malware detected" outcome with a harmless synthetic file instead of a
 real malicious sample: create any file whose bytes include `ROGIKOTHA-MALWARE-TEST-MARKER` (for
 example append it to a JPEG used only for this demo step) and scan it:
@@ -103,9 +107,9 @@ bind-mounted (`postgres-init/*.sql`, `clamav/rogikotha-test.ndb`) must stay LF-o
 `core.autocrlf`, because a CRLF-converted `.ndb` file fails to parse correctly inside the
 container (`ISS-044`). Docker Desktop's backing vhdx grows with every image pull and named volume
 and never shrinks on its own; this is a known, recurring disk-space issue on this workstation (see
-the user's global Claude instructions) — run the owner's disk-cleanup routine
-(`disk-report.ps1` / `disk-cleanup.ps1 -Execute -Compact`) periodically rather than treating vhdx
-growth from this stack as a defect.
+the owner's local disk-maintenance notes, outside this repo) — run the owner's disk-cleanup
+routine (`disk-report.ps1` / `disk-cleanup.ps1 -Execute -Compact`) periodically rather than
+treating vhdx growth from this stack as a defect.
 
 ## What this task does not do
 

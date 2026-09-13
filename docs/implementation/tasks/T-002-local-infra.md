@@ -261,3 +261,103 @@ Hard-rule checklist:
       (`docker-compose.yml`, both `.sql` files, `.env.example`, `README.md`,
       `rogikotha-test.ndb`) plus the commit message body before pushing; none reference any
       agent, tool, or model name.
+
+---
+
+## Hand-off — re-work 2026-09-13 (ISS-057 S1, ISS-058 S3)
+
+**Run record:** Claude Code · claude-opus-5[1m] · effort high · start `7e4296a`
+(pre-rebase branch head) → rebased onto `bb954af` as `7bcf911`/`f2051fa` → end commit recorded in
+`docs/implementation/handoffs/T-002.md`. Task class is M0, whose implement tier is
+`GPT-5.6 Luna / Claude Haiku 4.5 · medium`; this session ran a **higher** tier than recommended,
+which `LOOP.md` §0.1 permits (only a *lower* tier than recommended is a stop condition, and only
+for M3).
+
+### What changed
+
+Documentation only — no compose file, SQL, `.env.example`, signature file or container behaviour
+was touched. `git diff` against the pre-fix branch head covers exactly two prose passages in
+`infra/compose/README.md` plus register files.
+
+1. **`ISS-057` (S1, the merge blocker).** `infra/compose/README.md` "Storage and disk notes" said
+   "(see the user's global Claude instructions)", putting a tool brand name into committed product
+   documentation — forbidden by `AGENTS.md` ("README.md and any other documentation file"). It now
+   reads "(see the owner's local disk-maintenance notes, outside this repo)". The pointer still
+   works for a human — the two script names (`disk-report.ps1`, `disk-cleanup.ps1`) were already
+   in the same sentence and are what a reader actually needs — but names no tool, model or vendor.
+2. **`ISS-058` (S3).** The same file's "Custom test signature" section still described the
+   `.ndb` bind mount as read-only, which was the scope-change block's original wording and not
+   what shipped. It now says **read-write**, states the reason (the image entrypoint's
+   `chown -R clamav:clamav /var/lib/clamav` fails against a read-only mount and exits the
+   container), points at `ISS-041` and at the matching `// ASSUMPTION(T-002)` comment beside the
+   mount in `docker-compose.yml`, and adds that nothing in the app writes to the file. The README,
+   the compose comment and the issue row now agree.
+3. Register files: `ISS-057` and `ISS-058` marked fixed; new `ISS-059`, `ISS-060`, `ISS-061`
+   (below); `docs/implementation/README.md` §5 tracker row moved `FAIL` → `validating`.
+
+### Correction to the original hand-off
+
+The original hand-off's second hard-rule checkbox ("No agent/tool attribution in any file or
+commit — checked every file created in this task ... none reference any agent, tool, or model
+name") was **not accurate for `README.md`** at the time it was written; that is precisely what
+`ISS-057` found. It is accurate now — see the evidence below.
+
+### Not done and why
+
+- **No new smoke assertion**, contrary to `LOOP.md` §1.2.5. The task file's own "Tests to write"
+  row is "None (infrastructure)", the change is two sentences of prose, and
+  `vitest.workspace.ts` discovers projects only under `packages/*` and `apps/*` — a test placed in
+  this task's owned `infra/compose/` tree would never be collected, and widening the globs means
+  editing T-001's `vitest.workspace.ts`, outside T-002's owned paths. Logged as `ISS-059`; the
+  cumulative suite was re-run instead (see below).
+- **No automated guard** for the rule `ISS-057` broke. A repo-wide grep over tracked files, with
+  `docs/implementation/**` and `docs/validation/**` excluded (`LOOP.md` §0.1 *requires* a
+  `TOOL · MODEL · EFFORT` run record in those), belongs in `pnpm check` / the CI workflow, both
+  owned by T-010. Logged as `ISS-060` against T-010.
+- **`BUILD-LOG.md` now has two rows for the same 13:27 "T-002 validated FAIL" event** — the two
+  sides of a rebase conflict, kept per `LOOP.md` §1.2.7 ("keep both sides' rows"). `ISS-061`.
+
+### Questions for the human
+
+None. This was a prose fix inside the task's own owned file; no product, data-boundary or
+founder decision was involved, so nothing under `LOOP.md` §1.2.4's "ask the human" list applies.
+
+### `pnpm check` output summary
+
+Run in the `rk-T-002` worktree **after** rebasing onto `origin/build/demo` (`bb954af`, i.e. with
+T-006's i18n package present), both before and after the edit:
+
+- `pnpm install --ignore-scripts` (per `ISS-055`) — clean.
+- `pnpm check` — **green end to end**: `typecheck` (9 projects), `lint` (`eslint .`, no findings),
+  `test` 18/18 in 4 files, `i18n:check` "764 keys, both locales, no placeholder or ERROR_CODES
+  mismatches" (its ERROR_CODES half still self-skips until T-003 creates
+  `packages/contracts/src/errors.ts`), `build` (9 projects).
+- `pnpm smoke` — **4/4 passed**, 2 files. No assertion added or removed (`ISS-059`).
+
+This is the first `pnpm check` run this task has ever had that exercises real code: the original
+hand-off recorded "N/A — infra only" because on the pre-T-006 base the command stopped at
+`i18n:check`.
+
+### Hard-rule evidence (re-verified for this change)
+
+- **No agent/tool attribution in any file or commit** —
+  `git diff origin/build/demo...HEAD | grep -inE "claude|gpt|opus|sonnet|haiku|luna|terra|sol|copilot|codex|anthropic|openai|puku|chatgpt|co-authored"`
+  now returns matches only inside `docs/implementation/**` and `docs/validation/**`, where
+  `LOOP.md` §0.1 mandates a `TOOL · MODEL · EFFORT` run record and where the `ISS-057` finding
+  necessarily quotes the offending sentence to be intelligible. Zero matches under `infra/`,
+  `packages/`, `apps/`, or any other product path:
+  `grep -rinE "claude|opus|sonnet|haiku|codex|puku|anthropic|openai" infra/` → no output.
+  `git log origin/build/demo..HEAD --format='%an <%ae> | %cn <%ce> | %s'` → author and committer
+  are the human's identity on every commit; no `Co-Authored-By` trailer, no tool name in any
+  subject or body.
+- **Scanner is not a start-up dependency (fail-closed)** — unchanged by this edit and re-checked:
+  `grep -n depends_on infra/compose/docker-compose.yml` → no matches at all, so nothing waits on
+  `clamav`'s health. The README's fail-closed paragraph ("`status: 'unavailable'`", item stays
+  `scanning`) is untouched.
+
+Hard-rule checklist (re-work):
+
+- [x] Original evidence is never served publicly; scanning that cannot run fails closed — no
+      `depends_on` edge onto `clamav` exists; not touched by this change.
+- [x] No agent/tool attribution in any file or commit — now true for `infra/compose/README.md`,
+      the file `ISS-057` was raised against; verified by the greps above.
