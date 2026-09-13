@@ -50,6 +50,13 @@ Rules:
   see `docs/aidlc-migration/README.md` §1. Re-check for a release containing the #1545 fix before
   upgrading.
 
+### 2026-09-14 (T-009)
+
+- Scope: T-009 (`apps/worker` skeleton, `packages/database/src/queue` — first use of `pg-boss` in this codebase's actual dependency graph). The 2026-09-10 baseline entry covers `pg-boss` but is more than 3 days old.
+- Checked: `pg-boss` (task pins `^12.30.0`).
+- Findings: `12.31.1` (2026-09-13, one day before this check) is now the current stable release on the 12.x line — `12.30.0` (2026-09-03) is no longer the head of its own caret range. Between them: `12.30.0` added `createQueue`-index performance work, vacuum-health monitoring and deprecated (ignored, not removed) the `priority`/`orderByCreatedOn` `work()` options; `12.31.0` added RRULE scheduling support, a `missed` catch-up option for schedules, and Bun runtime support (schema version 39 → 41, two nullable-column-only bumps, no table rewrites); `12.31.1` is a bug fix for `stop({ close: false })` followed by a second `stop()`. Nothing in either release touches `new PgBoss(...)`, `start()`, `stop()`, `createQueue()`, `send()`/`enqueue`, or `work()` in a breaking way — the only caveat found ("every cron schedule can send twice during a rolling upgrade" for RRULE catch-up) does not apply: this task uses none of `schedule()`/RRULE. `migrate: false`/`createSchema: false` (documented constructor options, unchanged across both versions) let a restricted-privilege role start against an already-installed schema without DDL rights — confirmed working live against this worktree's compose PostgreSQL, connected as `rk_worker`.
+- Decision: `pnpm --filter @rogikotha/database add pg-boss@^12.30.0` itself resolved and recorded `pg-boss@^12.31.0` in `package.json` (pnpm resolves the caret range's current head rather than preserving the literal string typed) — accepted rather than force-pinning back to `12.30.0`, since `12.31.x` is the verified-current stable release with no relevant regressions. Logged as `ISS-184` (S4).
+
 ### 2026-09-13 (T-007)
 
 - Scope: T-007 (`packages/test-support` — first use of `@node-rs/argon2` and `sharp` in this codebase's actual dependency graph, and `tsx` for this package's own scripts; `@cantoo/pdf-lib` from the task's original step 1 is **not** installed, see Decision).

@@ -9,6 +9,7 @@ import path from 'node:path';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
 import { closeDb, createDb } from './client.js';
+import { installPgBoss } from './queue/pg-boss-queue.js';
 
 const migrationsFolder = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'migrations');
 
@@ -16,6 +17,13 @@ export async function runMigrate(url: string): Promise<void> {
   if (process.env.APP_MODE === 'production') {
     throw new Error('db:migrate refuses to run with APP_MODE=production');
   }
+  // T-009 step 2 / 02-data-model.md §16 note 2: the `pgboss` schema is
+  // installed as `rk_app` (this connection, which owns the database) before
+  // the SQL migrations run — `0006_pgboss_grants.sql` below grants
+  // `rk_worker` USAGE/DML on it, which needs the schema to already exist.
+  // `rk_worker`'s own `PgBossQueue` always passes `migrate: false` and never
+  // calls `installPgBoss`.
+  await installPgBoss(url);
   const { db, pool } = createDb(url);
   try {
     // migrationsSchema defaults to a separate `drizzle` schema if omitted,

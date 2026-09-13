@@ -1,0 +1,25 @@
+{
+  // ASSUMPTION(T-009): keeps the repo's usual `module: ESNext` /
+  // `moduleResolution: bundler` (from tsconfig.base.json) instead of
+  // `NodeNext` — every workspace package's `package.json` "exports" points
+  // at its TS source (`./src/index.ts`), not a compiled `dist/`, and
+  // several of those source files still have extensionless internal
+  // imports (CR-009 tracks it for `packages/database`) that only fail
+  // under `NodeNext`'s stricter resolution. `bundler` resolution compiles
+  // this package's own `.js`-suffixed relative imports the same way
+  // `pnpm typecheck` already does everywhere else in the repo. `dist/main.js`
+  // is therefore only truly runnable by `node` once every workspace
+  // package it imports also ships real compiled output — logged as an
+  // `ISS-` row; today `pnpm dev:worker` (`tsx watch`, which resolves TS
+  // source directly) is the supported way to run the worker, and `build`
+  // exists so `pnpm check`'s `pnpm -r build` step stays green.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": false,
+    "sourceMap": false,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
+}

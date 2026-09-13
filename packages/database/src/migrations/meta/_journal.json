@@ -43,6 +43,13 @@
       "when": 1789305007189,
       "tag": "0005_grants_part2",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789331720026,
+      "tag": "0006_pgboss_grants",
+      "breakpoints": true
     }
   ]
 }
