@@ -1,4 +1,17 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // ASSUMPTION(T-006): tsconfig.base.json sets declaration:true (checked
+    // for portability even though noEmit:true means nothing is ever
+    // written) alongside noEmit:true. next-intl's createNavigation() return
+    // type references Next.js's internal router types (RedirectType,
+    // NavigateOptions, PrefetchOptions), which are not portable to a
+    // declaration file unless this package also depends on `next` directly
+    // — the plan's own dependency-direction table (01-conventions.md §2)
+    // says i18n has no runtime dependency besides next-intl, so adding
+    // `next` here would be a bigger boundary change than turning off a
+    // check that already emits nothing. See docs/implementation/ISSUES.md.
+    "declaration": false
+  },
   "include": ["src"]
 }

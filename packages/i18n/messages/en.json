@@ -1,0 +1,976 @@
+{
+  "a11y": {
+    "call": "Tap to call",
+    "close": "Close",
+    "lang": "Switch interface language",
+    "motion": "Reduce animation",
+    "screens": "Screens",
+    "siteSections": "Site sections",
+    "skip": "Skip to main content",
+    "theme": "Switch light or dark mode"
+  },
+  "aboutview": {
+    "contact": "Contact and feedback",
+    "contactBody": "Email: hello@rogikotha.example (this is a design exploration — the address is not monitored). For real emergencies, do not use this site.",
+    "contactBodyProduct": "Email: hello@rogikotha.example. For real emergencies, do not use this site.",
+    "intro": "RogiKotha is a place where patients publish first-hand experiences of doctors, hospitals and clinics in Bangladesh. It is not a medical service, not a directory of paid listings, and not a place to ask for medical advice.",
+    "lastReviewed": "Methodology last reviewed 21 August 2026",
+    "limitsBody": "RogiKotha does not diagnose, does not verify whether a treatment was correct, and does not decide whether care was negligent. Accounts are patient reports — they tell you what one person experienced, not what will happen to you. If you are deciding what to do about a health problem, talk to a qualified clinician, not to this site.",
+    "limitsTitle": "What this is not",
+    "modBody": "Before publication your experience runs through automated checks for duplicates, and for private details, spam and threatening language in the text. Files are scanned for malware and converted to a safe format. None of these judge your story or decide whether your care was good or bad. Nothing is published without your confirmation. After publication, unsafe advice is handled by people — readers report it and a moderator reviews it. Nothing is classified automatically.",
+    "modTitle": "How experiences are moderated",
+    "privacyBody": "You can write under your real name, a pseudonym, or anonymously. You decide which one. If you write under a pseudonym, your real name is never stored with the experience. If you upload documents, you black out private details yourself before publishing and confirm you have done so — RogiKotha does not detect or remove them for you.",
+    "privacyTitle": "Privacy and identity",
+    "reviewerBody": "A reviewer label is the label chosen by the person who wrote the experience, for their own experience — for example “Wrong diagnosis” or “Second opinion differed”. It is their claim, not our finding. RogiKotha does not check whether it is medically correct, and no doctor confirms it on our behalf. Labels are always shown as words written by the reviewer.",
+    "reviewerTitle": "What a reviewer label means",
+    "title": "About RogiKotha"
+  },
+  "admin": {
+    "act": {
+      "ban": "Ban account",
+      "hide": "Hide temporarily",
+      "lock": "Lock comments",
+      "none": "No action needed",
+      "redact": "Ask author to redact",
+      "remove": "Remove",
+      "removeFile": "Remove attachment",
+      "restrict": "Restrict account",
+      "suspend": "Suspend account",
+      "warn": "Warning to author"
+    },
+    "age": "Waiting",
+    "appealTarget": "reviewed within 7 business days",
+    "appeals": "Appeals",
+    "approve": "Approve",
+    "auditLog": "Audit",
+    "auditPreview": "This will be written to the audit log",
+    "autoHidden": "Hidden automatically",
+    "bulk": {
+      "affected": "affected",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "done": "Bulk action queued (no-op for prototype).",
+      "empty": "No cases selected.",
+      "preview": "Preview affected",
+      "previewAffected": "Preview affected",
+      "select": "Select",
+      "selectCritical": "Select all critical",
+      "toolbar": "Bulk actions"
+    },
+    "case": "Case",
+    "claims": "Claim requests",
+    "commit": "Record decision",
+    "config": {
+      "apply": "Apply",
+      "cap": {
+        "actions": "Take content actions",
+        "identity": "Reveal reporter identity",
+        "originalEvidence": "Reveal original evidence",
+        "reports": "View reports"
+      },
+      "capabilities": {
+        "note": "Super Admin capabilities are fixed and cannot be changed here."
+      },
+      "conflict": "Someone else changed the configuration; review the new values.",
+      "history": "Version history",
+      "outOfRange": "That value is outside the allowed range.",
+      "readOnly": "Read-only. You do not have permission to change these values.",
+      "reason": "Reason",
+      "reasons": {
+        "fixed": "This reason cannot be turned off.",
+        "label": "Report reasons"
+      },
+      "retention": {
+        "auditDays": "Audit log retention (days)",
+        "defaultDays": "Default retention (days)",
+        "label": "Retention defaults",
+        "maxDays": "Maximum retention (days)",
+        "notificationDays": "Notification retention (days)"
+      },
+      "role": {
+        "admin": "Admin",
+        "mod": "Moderator",
+        "sa": "Super Admin"
+      },
+      "roles": "Role & capability matrix",
+      "rollback": "Roll back to this version",
+      "rolledBackFrom": "Rolled back from version {n}",
+      "threshold": {
+        "appealDays": "Appeal window (days)",
+        "criticalHours": "Critical case hours",
+        "five": "Five-account auto-hide threshold",
+        "limitedData": "Limited-data threshold",
+        "standardDays": "Standard case days"
+      },
+      "thresholds": "Reporting thresholds",
+      "title": "Versioned runtime configuration",
+      "version": "Version {n}"
+    },
+    "coordinated": "Possible coordinated reporting",
+    "coordinatedNote": "Several reports arrived together from accounts created within days of each other. Weigh them as one signal, not many.",
+    "critical": "Critical",
+    "criticalTarget": "decided within 24 hours",
+    "decision": "Decision",
+    "done": {
+      "acked": "Acknowledged",
+      "approved": "Approved — written to the audit log",
+      "merged": "Merged — written to the audit log",
+      "rejected": "Rejected — written to the audit log",
+      "requested": "Access requested — logged for approval",
+      "revealed": "Revealed — your name and reason are in the audit log"
+    },
+    "evidenceGateNote": "Opening the original is a distinct permission and every access is written to the audit log with your name and reason.",
+    "evidenceGated": "Original evidence — separate permission",
+    "failClosed": "Scanner unavailable — failed closed",
+    "failClosedNote": "When scanning cannot run, the file is held. It is never published on the assumption that it is probably fine.",
+    "hours": "h",
+    "legalHold": "Legal hold",
+    "legalHoldNote": "Retention is suspended and the item is hidden publicly while preserved.",
+    "merge": "Merge into canonical",
+    "mergeNote": "Experiences, tags, chambers and claims move across. The old address redirects and the change is audited.",
+    "nav": {
+      "casework": "Casework",
+      "oversight": "Oversight"
+    },
+    "newProfileNote": "Check for duplicates and obvious abuse. This is not registration verification.",
+    "newProfiles": "New profiles",
+    "noRewrite": "You may redact private identifiers. You may never rewrite the author’s medical story — ask them to change it instead.",
+    "notif": {
+      "action": {
+        "ack": "Acknowledge",
+        "open": "Open"
+      },
+      "empty": "No notifications yet.",
+      "kind": {
+        "claim": "Claim submitted",
+        "evidence": "Evidence processed",
+        "identity": "Identity reveal request",
+        "identityReveal": "Identity reveal requested",
+        "newReport": "New report",
+        "protected": "Protected-field change",
+        "protectedChange": "Protected field change requested",
+        "report": "Report",
+        "security": "Security alert"
+      },
+      "title": "Notification triage"
+    },
+    "permission": "Your permissions",
+    "permissionNote": "Fields you cannot see are hidden rather than blanked, so it is obvious something exists that you are not cleared for.",
+    "permissions": "Permissions on this case",
+    "pipeline": "Processing pipeline",
+    "pl": {
+      "converted": "Sanitised",
+      "published": "Public copy ready",
+      "rasterised": "Rasterised",
+      "received": "Received",
+      "redacted": "Redaction flattened",
+      "scanned": "Malware scan",
+      "validated": "Type checked"
+    },
+    "portal": "Staff console",
+    "possibleDup": "Possible duplicate of",
+    "proportion": "Use the least restrictive action that solves the problem.",
+    "protectedFields": "Protected field changes",
+    "protectedNote": "Identity, BMDC number, degrees and specialty need approval. Operational details do not.",
+    "reasonToAuthor": "Reason sent to the author",
+    "reasonsGiven": "Reasons given",
+    "recorded": "Decision recorded and the author has been told.",
+    "reject": "Reject",
+    "reported": "Reported content",
+    "reporterMasked": "Reporter identity — restricted",
+    "reporterNote": "Not available at your permission level, and never shown to the reported person. Access by the Super Admin is recorded.",
+    "reports": "reports",
+    "requestAccess": "Request access",
+    "retention": "Original deleted after 90 days",
+    "reveal": {
+      "audited": "Reveal (audited)"
+    },
+    "role": {
+      "admin": "Admin",
+      "mod": "Moderator",
+      "sa": "Super Admin"
+    },
+    "staffOnly": "Staff only",
+    "staffOnlyNote": "This screen is for moderation staff only. Patients and doctors do not see it.",
+    "standard": "Standard",
+    "standardTarget": "decided within 3 business days",
+    "stillVisible": "Still public",
+    "tab": {
+      "config": "Configuration",
+      "evidence": "Evidence quarantine",
+      "notifications": "Notifications",
+      "providers": "Providers & claims",
+      "queue": "Report queue"
+    },
+    "textStays": "The written experience stayed public throughout. Only the file was held.",
+    "threshold": "Auto-hide threshold: 5 unique confirmed accounts (configurable)",
+    "timeline": {
+      "recent": "Recent actions on this case",
+      "timeAgo": "ago"
+    },
+    "title": "Moderation",
+    "wasNow": "was → now"
+  },
+  "appeal": {
+    "action": "What happened",
+    "button": "Appeal this decision",
+    "noReporter": "We do not tell you who reported it.",
+    "policyReason": "The rule applied",
+    "sent": "Appeal received. A different reviewer will look at it and write you a new reason.",
+    "target": "Appeals are reviewed fresh, normally within seven business days.",
+    "text": "Tell us what we got wrong",
+    "title": "A decision was made about your experience"
+  },
+  "auth": {
+    "ageLabel": "I confirm that I am 18 or older.",
+    "displayName": "Display name",
+    "displayNameHint": "How your name appears. You can change it later.",
+    "email": "Email",
+    "errorSummary": "Please check the following",
+    "forgot": "Forgot your password?",
+    "gate": {
+      "body": "Reactions, comments, bookmarks and reports need a confirmed account so they stay accountable. Reading does not.",
+      "register": "Create an account",
+      "title": "Sign in to take part",
+      "verifyToAct": "Confirm your email to do this.",
+      "verifyToPublish": "Confirm your email to publish. Your draft is saved.",
+      "writeBody": "Sign in with a confirmed account to publish. You can read everything without one."
+    },
+    "haveAccount": "Already have an account? Sign in",
+    "hidePassword": "Hide",
+    "kicker": "Your account",
+    "language": "Interface language",
+    "noAccount": "New here? Create an account",
+    "password": "Password",
+    "passwordHint": "At least 10 characters. A sentence you will remember works well.",
+    "privacyLink": "Privacy Policy",
+    "register": {
+      "lede": "You only need an account to write, react or comment. Reading is open to everyone.",
+      "submit": "Create account",
+      "title": "Create an account"
+    },
+    "reset": {
+      "confirmPassword": "Confirm new password",
+      "done": "Password changed. You have been signed out everywhere; sign in again.",
+      "lede": "Enter your email and we will send a link to choose a new password.",
+      "mismatch": "The two passwords do not match.",
+      "newPassword": "New password",
+      "sent": "If that email has an account, a reset link is on its way. It expires in 1 hour.",
+      "setSubmit": "Change password",
+      "submit": "Send reset link",
+      "title": "Reset your password"
+    },
+    "security": {
+      "changePassword": "Change password",
+      "currentPassword": "Current password",
+      "device": "Device",
+      "email": "Email",
+      "emailNote": "Changing your email is not available yet.",
+      "firstSeen": "First seen",
+      "lastSeen": "Last seen",
+      "nav": "Security",
+      "password": "Password",
+      "passwordChanged": "Password changed. Other devices have been signed out.",
+      "sessions": "Where you're signed in",
+      "signOutAll": "Sign out everywhere",
+      "signOutAllNote": "This signs out every device, including this one.",
+      "thisDevice": "This device",
+      "title": "Security",
+      "unverified": "Not confirmed",
+      "verified": "Confirmed"
+    },
+    "showPassword": "Show",
+    "signIn": {
+      "label": "Sign in",
+      "lede": "Reading never needs an account. Signing in lets you write, react and follow your own accounts.",
+      "submit": "Sign in",
+      "title": "Sign in"
+    },
+    "signOut": "Sign out",
+    "termsLabel": "I accept the {terms} and the {privacy}.",
+    "termsLink": "Terms",
+    "username": "Username",
+    "usernameHint": "3–24 letters, numbers or underscores. This is permanent and appears on your public accounts unless you choose to be anonymous.",
+    "verify": {
+      "body": "We sent a confirmation link to {email}. Open it to finish creating your account.",
+      "devInbox": "Open the local inbox (development only)",
+      "done": "Your email is confirmed. You can now write and take part.",
+      "expired": "That link has expired or was already used. Ask for a new one below.",
+      "expires": "The link expires in 24 hours. You can ask for a new one at any time.",
+      "resend": "Send a new link",
+      "resent": "A new link is on its way.",
+      "title": "Confirm your email"
+    },
+    "verifyPending": "Confirm your email"
+  },
+  "brand": {
+    "name": "RogiKotha",
+    "tagline": "Patient-reported treatment experiences"
+  },
+  "byline": {
+    "anonSentence": "Written anonymously",
+    "commentBy": "Comment by",
+    "identity": {
+      "pseudo": "Username",
+      "real": "Real name"
+    },
+    "otherBy": "Other experiences by {name}",
+    "published": "Published",
+    "yourIdentity": "Published as"
+  },
+  "claim": {
+    "secondOpinion": "Second opinion differed",
+    "wrongDx": "Wrong diagnosis",
+    "wrongRx": "Wrong treatment"
+  },
+  "compare": {
+    "add": "Add to compare",
+    "clear": "Clear",
+    "empty": "Pin two or three doctors from the results to see them here.",
+    "max": "You can compare up to three at a time.",
+    "notRanking": "This is not a ranking. Nothing here is combined into a score and the order means nothing — the columns simply sit next to each other so you can read them together.",
+    "open": "Compare",
+    "pinned": "pinned",
+    "remove": "Remove",
+    "title": "Side by side"
+  },
+  "compose": {
+    "addBmdc": "BMDC number, if you have it",
+    "addChamber": "Where they see patients",
+    "addDoctor": "Add a doctor who isn’t listed",
+    "addName": "Doctor’s full name",
+    "addPending": "Submitted. An administrator checks it for duplicates and obvious abuse before it appears. Your experience stays a private draft until then.",
+    "addSpecialty": "Specialty",
+    "addSubmit": "Submit for review",
+    "after": "What happened afterwards",
+    "age": "I am 18 or older",
+    "back": "Back",
+    "claims": "Do you want to add a label?",
+    "claimsNote": "These stay marked as your claim. RogiKotha will never present them as a finding.",
+    "confirm1": "This happened to me, or I witnessed it directly, and it is honest.",
+    "confirm2": "I have removed private details about other people from anything I attached.",
+    "confirm3": "I understand this is my own telling of what happened, not a medical finding.",
+    "confirmTitle": "Before you publish",
+    "diagnosis": "What you were told was wrong",
+    "doctor": "Which doctor?",
+    "doctorMissing": "Can’t find them? Add a doctor",
+    "doctorMissingNote": "A new profile is checked for duplicates and obvious abuse before it appears. Your draft stays private until then.",
+    "draftSaved": "Draft saved",
+    "evidence": "Attach documents",
+    "evidenceOptional": "Entirely optional. An experience without documents is just as valid.",
+    "fixNow": "Fix it",
+    "identity": {
+      "anon": "Anonymous",
+      "anonNote": "Anonymous hides your name from readers. It is not absolute anonymity — your account and contact details remain private but known to us, and can be required by law.",
+      "label": "How should your name appear?",
+      "pseudo": "My username",
+      "real": "My real name"
+    },
+    "ignore": "Leave as it is",
+    "intro": "One experience describes one course of treatment for one condition. Take as much or as little space as you need.",
+    "mode": {
+      "detailed": "Detailed timeline",
+      "detailedHint": "Symptoms, diagnosis, treatment, what happened next.",
+      "quick": "Short version",
+      "quickHint": "A few sentences. Four fields."
+    },
+    "next": "Continue",
+    "notSure": "Not sure",
+    "of": "of",
+    "optional": "Optional",
+    "outcome": "How are you now?",
+    "period": "When was the treatment?",
+    "periodNote": "Only the month and year are shown publicly.",
+    "preview": "Preview as readers will see it",
+    "publish": "Publish",
+    "publishedNote": "Your words publish immediately after automated safety checks. Any documents stay private until they finish processing.",
+    "redact": "Hide private details before you upload",
+    "redactBody": "Cover the patient name and photo, phone numbers, address, national ID, hospital record numbers, QR codes and signatures. Keep the doctor and facility details visible.",
+    "redactTool": "Draw over anything private",
+    "relationship": "Your relationship to the patient",
+    "required": "Required",
+    "safety": "Automatic checks",
+    "safetyDup": "You already wrote about this doctor for this condition",
+    "safetyDupFix": "A second experience is only for a different condition or a different treatment episode. Add an update to the first one instead?",
+    "safetyEmerg": "You mentioned something urgent",
+    "safetyEmergFix": "If this is happening now, call 999. You can still publish — this does not block you.",
+    "safetyNote": "Run before anything is published. These are not judgements about your story.",
+    "safetyPass": "Nothing to fix",
+    "safetyPii": "This looks like a phone number",
+    "safetyPiiFix": "Remove it unless it is your own and you meant to share it.",
+    "saveDraft": "Save draft",
+    "saveExit": "Save and finish later",
+    "sentiment": "Overall, how would you describe it?",
+    "step": "Step",
+    "story": "What happened?",
+    "storyHint": "Write in Bangla, English or a mix — whatever you actually think in. Nothing is translated automatically.",
+    "symptoms": "Symptoms and why you went",
+    "tagGroup": {
+      "condition": "Diagnosis / condition",
+      "medicine": "Medicine",
+      "symptom": "Symptoms",
+      "treatment": "Treatment / procedure"
+    },
+    "tags": "Tag the health topic",
+    "tagsRequired": "Add at least one tag, or choose “Not sure”.",
+    "title": "Share your experience",
+    "treatment": "Treatment, tests and medicines"
+  },
+  "condition": {
+    "accounts": "Experiences about this health topic",
+    "acrossAll": "Across every experience tagged with this condition",
+    "alsoCalled": "Also written as",
+    "areas": "Areas",
+    "districts": "Districts",
+    "doctors": "Doctors people wrote about",
+    "facilities": "Facilities mentioned",
+    "hospitals": "Hospitals & chambers",
+    "medicines": "Medicines people mentioned",
+    "mentionNote": "Counted from what authors wrote. This is not a treatment guideline and not a recommendation.",
+    "noGeo": "Not enough location data yet — experiences don't always name the place.",
+    "provNote": "People write in Bangla, English and Banglish. Wording we have not mapped yet is kept exactly as submitted and stays searchable.",
+    "provisional": "Submitted wording, not yet mapped",
+    "specialtyTag": "Usually seen by",
+    "symptoms": "Symptoms people described",
+    "treatedAt": "Where this condition is treated",
+    "treatedAtNote": "Districts, areas and hospitals pulled from the experiences above. Where someone actually went, not a directory.",
+    "treatments": "Treatments people mentioned"
+  },
+  "crit": {
+    "admission": "Admission and discharge",
+    "billing": "Billing was clear",
+    "cleanliness": "Cleanliness",
+    "good": "Good",
+    "mixed": "Mixed",
+    "overall": "Overall visit",
+    "poor": "Poor",
+    "recommend": "Would go again",
+    "reportTime": "Reports delivered on time",
+    "reportTrust": "Reports seemed reliable",
+    "reportTrustNote": "This is the visitor’s impression only. RogiKotha does not test or validate any laboratory.",
+    "staff": "Staff behaviour",
+    "waiting": "Waiting and appointments"
+  },
+  "demo": {
+    "banner": "Demo — fictional records, not a real service"
+  },
+  "disclaimer": {
+    "long": "Everything below is written by members of the public about their own or a witnessed experience. RogiKotha does not diagnose, does not verify clinical correctness, and does not decide whether care was negligent. Do not change or delay treatment based on what you read here.",
+    "short": "Patient-reported experiences. Not medical advice."
+  },
+  "discover": {
+    "browse": "Browse by health topic",
+    "browseNote": "People usually arrive with a condition in mind, not a doctor’s name.",
+    "editorialNote": "Editorial note",
+    "facilities": "Looking for a hospital or diagnostic centre?",
+    "kicker": "Bangladesh · Public beta",
+    "latest": "From the latest accounts"
+  },
+  "email": {
+    "existing": {
+      "body": "An account with this email already exists. If that was you, sign in instead: {link}. If not, no action is needed.",
+      "subject": "Someone tried to register with your email"
+    },
+    "reset": {
+      "body": "Someone asked to reset the password for this email. If it was you, open this link within 1 hour: {link}. If not, you can ignore this message.",
+      "subject": "Reset your RogiKotha password"
+    },
+    "security": {
+      "passwordChanged": {
+        "body": "Your password was changed and other devices were signed out. If this wasn't you, reset your password now: {link}",
+        "subject": "Your RogiKotha password was changed"
+      }
+    },
+    "staff": {
+      "deviceApproval": {
+        "body": "A sign-in to the staff console was attempted from a device we haven't seen. If that was you, open this link on that device within 30 minutes: {link}. If not, tell the Super Admin.",
+        "subject": "Approve a new device for the staff console"
+      }
+    },
+    "verify": {
+      "body": "Open this link within 24 hours to confirm your email: {link}",
+      "subject": "Confirm your RogiKotha email"
+    }
+  },
+  "emergency": {
+    "ambulanceLabel": "Ambulance",
+    "body": "Call 999 for an ambulance or go to the nearest emergency department. For non-emergency health guidance call 16263.",
+    "crisis": "Mental health crisis support",
+    "healthLineLabel": "Health guidance",
+    "title": "If this is an emergency, do not wait for an answer here"
+  },
+  "emergview": {
+    "ambulance": "Ambulance",
+    "bmdc": "BMDC doctor register check",
+    "bmdcBody": "To verify a doctor's registration number, use the official BMDC register. RogiKotha shows the number but does not replace the official check.",
+    "crisis": "Mental health crisis line",
+    "healthLine": "National health helpline",
+    "intro": "This page lists the national emergency numbers for Bangladesh. Tap to call from a phone, or read them aloud if you need to. These numbers work 24 hours, every day, free from any mobile network.",
+    "poison": "Poison information centre",
+    "title": "Emergency help"
+  },
+  "errors": {
+    "auth": {
+      "accountSuspended": "This account is suspended. You can appeal from your workspace.",
+      "ageRequired": "Age: you must confirm that you are 18 or older.",
+      "deviceUnapproved": "This device is not approved yet. Check your staff email.",
+      "emailUnverified": "Confirm your email first.",
+      "invalidCredentials": "That email and password don't match anything we have.",
+      "passwordTooShort": "Password: use at least 10 characters.",
+      "rateLimited": "Too many attempts. Try again in {minutes} minutes.",
+      "stepUpRequired": "Confirm your password to continue.",
+      "termsRequired": "Terms: you must accept the Terms and the Privacy Policy.",
+      "tokenExpired": "That link has expired.",
+      "tokenInvalid": "That link is not valid.",
+      "usernameInvalid": "Username: use 3–24 lowercase letters, numbers or underscores.",
+      "usernameTaken": "Username: that one is taken."
+    },
+    "common": {
+      "conflict": "Someone else changed this first. Please refresh and try again.",
+      "forbidden": "You don't have permission to do this.",
+      "internal": "Something went wrong on our side. Please try again.",
+      "notFound": "We couldn't find that.",
+      "rateLimited": "Too many attempts. Try again in {minutes} minutes.",
+      "validation": "Please check the highlighted fields."
+    },
+    "community": {
+      "blocked": "You can't reply to this account.",
+      "mentionAnonymous": "Anonymous authors can't be @mentioned.",
+      "replyDepth": "Replies can only go one level deep here."
+    },
+    "config": {
+      "invariant": "That setting isn't recognised. Nothing was changed.",
+      "outOfRange": "That value is outside the allowed range."
+    },
+    "evidence": {
+      "confirmationRequired": "Confirm this file is safe to attach before publishing.",
+      "notPreviewable": "This file could not be prepared for preview.",
+      "tooLarge": "Each file must be 15 MB or smaller.",
+      "tooMany": "You can attach up to 10 files per draft.",
+      "totalTooLarge": "All files together must stay under 100 MB.",
+      "typeRejected": "Only JPG and PNG images are accepted."
+    },
+    "hold": {
+      "active": "This item is on hold and can't be changed."
+    },
+    "moderation": {
+      "duplicateReport": "You already reported this. We'll review it once.",
+      "narrativeLocked": "Only redaction is allowed here, not other edits.",
+      "selfAppealReview": "The original decision-maker cannot review this appeal."
+    },
+    "retention": {
+      "previewDrift": "The affected items changed since preview. Review again."
+    },
+    "review": {
+      "attestationRequired": "Confirm this experience is genuinely yours before publishing.",
+      "minFields": "Add a doctor and at least a short experience first.",
+      "notEditable": "This experience can no longer be edited.",
+      "restoreExpired": "The 30-day window to restore this has passed."
+    }
+  },
+  "ev": {
+    "failNote": "Your words stayed published. Only this file was held back.",
+    "remove": "Remove",
+    "replace": "Replace",
+    "state": {
+      "checking": "Checking the file",
+      "failed": "Could not be published",
+      "processing": "Making the public copy",
+      "quarantine": "In private quarantine",
+      "ready": "Published",
+      "redact": "Waiting for you to hide private details",
+      "scanning": "Scanning for malware"
+    }
+  },
+  "evidence": {
+    "group": {
+      "later": "Later or alternative treatment",
+      "outcome": "Outcome / follow-up",
+      "reviewed": "Reviewed treatment"
+    },
+    "notice": "Uploaded by the person who wrote this experience. Privacy has not been independently checked. You are seeing a processed copy; the original is never public.",
+    "open": "Open processed copy",
+    "status": "Documents attached — not medically validated"
+  },
+  "experience": {
+    "bookmark": "Save",
+    "bookmarkNote": "Saved items are private to you.",
+    "bookmarked": "Saved",
+    "cancelEdit": "Cancel",
+    "commentBox": "Add a comment",
+    "commentGone": "This comment was deleted by its author.",
+    "commentGoneWhy": "The replies below it are kept, so the conversation still makes sense.",
+    "commentHint": "Be specific about your own experience. This is not the place for medical instructions.",
+    "commentPost": "Post comment",
+    "currentNote": "The newest update is the current one. Older updates stay in place so the story still reads in order.",
+    "currentStatus": "Most recent status",
+    "dangerWarning": "This comment describes changing or stopping treatment. Do not act on it without your own doctor. A moderator has been asked to review it.",
+    "deleteComment": "Delete",
+    "discussion": "Discussion",
+    "editComment": "Edit",
+    "edited": "edited",
+    "episode": "Treatment episode",
+    "evidenceOnly": "You are seeing a processed copy. The original file is never public and is deleted after 90 days.",
+    "identityMode": "Shown as",
+    "laterCare": "Care received elsewhere afterwards",
+    "laterCareNote": "Written by the same author. Naming a later doctor here does not create a review for them and does not change their summaries.",
+    "linkWarning": "External link — RogiKotha has not checked where this goes.",
+    "openEvidence": "View processed copy",
+    "otherAccounts": "other experiences by this author",
+    "ownComment": "Your comment",
+    "providerHere": "Claimed this profile",
+    "providerNote": "A doctor who has claimed their profile takes part like any other member. They get no special reply channel and cannot edit or remove this experience.",
+    "publishedLabel": "Published",
+    "relatedCond": "Other people who wrote about this condition",
+    "relatedDoc": "Other experiences about this doctor",
+    "relatedNote": "Different people, different episodes. Read a few before drawing any conclusion.",
+    "reply": "Reply",
+    "replyCancel": "Cancel reply",
+    "replyLevel": "Replies go one level deep. A reply cannot be replied to.",
+    "replyingTo": "Replying to",
+    "saveComment": "Save changes",
+    "timeline": "How this unfolded",
+    "writtenBy": "Written by"
+  },
+  "facility": {
+    "accounts": "Visits",
+    "branch": "Branch",
+    "criteria": "What visitors described",
+    "doctorsHere": "Doctors who practise here",
+    "doctorsNote": "Listed for convenience only. A facility’s service record says nothing about these doctors.",
+    "kicker": "Hospital or clinic",
+    "parent": "Part of",
+    "separation": "This page is about the service at this facility only. None of it affects any doctor’s summaries.",
+    "type": {
+      "clinic": "Clinic",
+      "diagnostic": "Diagnostic centre",
+      "hospital": "Hospital"
+    },
+    "write": "Describe your visit"
+  },
+  "filter": {
+    "any": "Any",
+    "clear": "Clear all",
+    "condition": "Condition",
+    "evidence": "Documents",
+    "gender": {
+      "female": "Female",
+      "label": "Doctor gender",
+      "male": "Male"
+    },
+    "language": "Consultation language",
+    "location": "Location",
+    "note": "Filtering changes which experiences you see. It never reorders doctors by how positive they are.",
+    "outcome": "Reported outcome",
+    "sentiment": "Experience sentiment",
+    "specialty": "Specialty",
+    "title": "Narrow these results"
+  },
+  "hero": {
+    "body": "RogiKotha collects first-hand experiences of a single treatment episode — the symptoms, the diagnosis, the medicines, what happened next. Not scores. Not a ranking of doctors. Stories, with their dates and their limits shown honestly.",
+    "browse": "Browse experiences",
+    "cta": "Share your experience",
+    "title": "Read what patients actually went through."
+  },
+  "how": {
+    "1": {
+      "b": "Each experience covers a single course of treatment for a single condition — not a verdict on a doctor.",
+      "t": "One episode, one experience"
+    },
+    "2": {
+      "b": "We never calculate a quality score or rank doctors best-to-worst. You read the experiences and decide.",
+      "t": "No scores, ever"
+    },
+    "3": {
+      "b": "People may attach reports. We check them for safety and privacy — never for medical correctness.",
+      "t": "Documents are not validated"
+    },
+    "title": "How this works"
+  },
+  "index": {
+    "beFirst": "Be the first to write about it",
+    "doctorsNote": "Every doctor patients have written about. Listed alphabetically — never ranked, and never scored.",
+    "emptyTopic": "No one has written about this yet.",
+    "experiencesNote": "The most recent patient experiences across every doctor and hospital.",
+    "facilitiesNote": "Hospitals, clinics and diagnostic centres people have written about, with their branches.",
+    "topicsNote": "Every health topic in the directory, including those nobody has written about yet."
+  },
+  "label": {
+    "documentsWord": "documents",
+    "edited": "Edited",
+    "followUp": "Follow-up",
+    "limitedData": "Limited data",
+    "limitedDataWhy": "Fewer than 5 experiences. Too few to show a pattern — read them individually.",
+    "noDocuments": "No documents",
+    "notProvided": "Not provided",
+    "notVerified": "Registration not verified",
+    "notVerifiedWhy": "RogiKotha does not yet check BMDC registration. This profile was submitted by the community.",
+    "reviewerLabel": "Reviewer’s label",
+    "reviewerLabelWhy": "This is the author’s own claim. RogiKotha has not checked it and takes no position on it."
+  },
+  "mine": {
+    "addFollowUp": "Add an update",
+    "bookmarkNote": "Only you can see what you saved.",
+    "bookmarks": "Saved",
+    "continue": "Continue writing",
+    "days": "days",
+    "delete": "Delete",
+    "deleteNote": "Deleted experiences leave the summaries immediately. You can restore yours for 30 days.",
+    "deleted": "Deleted — removed from the summaries",
+    "draftExpires": "expires in",
+    "draftNote": "Drafts are encrypted and are removed after 30 days if you do not finish them.",
+    "drafts": "Drafts",
+    "edit": "Edit",
+    "empty": "Nothing here yet.",
+    "notifNote": "Notifications are kept for 90 days.",
+    "notifications": "Notifications",
+    "published": "Published",
+    "restore": "Restore",
+    "title": "My writing"
+  },
+  "nav": {
+    "about": "About & methodology",
+    "account": "Experiences",
+    "admin": "Moderation",
+    "compose": "Share your experience",
+    "condition": "Health topics",
+    "discover": "Discover",
+    "emergency": "Emergency help",
+    "facilities": "Hospitals & clinics",
+    "facility": "Facility",
+    "mine": "My writing",
+    "profile": "Doctors",
+    "results": "Results",
+    "viewDoctor": "View doctor",
+    "viewFacility": "View hospital"
+  },
+  "notif": {
+    "draftExpiring": "A draft will be removed in {days} days if you do not finish it.",
+    "evidenceReady": "Your {label} finished processing and is now attached to your experience.",
+    "moderationOutcome": "A comment on your experience was {action}. Your experience was not affected.",
+    "replyReceived": "{name} commented on your experience.",
+    "securityNewDevice": "New sign-in from a device in {city}. If this was not you, change your password."
+  },
+  "outcome": {
+    "helped": "Helped",
+    "none": "No improvement",
+    "selfReported": "Self-reported by the author. Not a clinical measurement.",
+    "title": "What authors reported afterwards",
+    "uncertain": "Uncertain",
+    "worse": "Worsened"
+  },
+  "person": {
+    "allowlist": "What appears here",
+    "allowlistNote": "Only experiences published under this name are listed. Anonymous experiences are never linked to a profile, even when the same person wrote them. Drafts, saved items and notifications are private and never appear here.",
+    "comments": "Public comments",
+    "contributions": "Public experiences",
+    "empty": "Nothing public yet.",
+    "kicker": "Public profile",
+    "noindex": "This page asks search engines not to index it.",
+    "viewOf": "View public profile",
+    "viewPublic": "View your public profile"
+  },
+  "profile": {
+    "about": "About",
+    "accounts": "Patient experiences",
+    "allConditions": "All conditions",
+    "bmdc": "BMDC number",
+    "breakdown": "By condition",
+    "byCondition": "Choose a condition to see only those experiences",
+    "chambers": "Practice locations",
+    "claimNote": "Doctors can claim their profile and correct the facts. Claiming does not verify BMDC registration and gives no control over what patients wrote.",
+    "claimThis": "Is this you?",
+    "conditions": "Conditions people wrote about",
+    "facilities": "Where they practise",
+    "facilitySep": "Facility service feedback is kept separate and never changes a doctor’s summaries.",
+    "fee": "Consultation fee",
+    "filterAccounts": "Filter these experiences",
+    "hasDocuments": "Has documents",
+    "kicker": "Doctor",
+    "languages": "Consultation languages",
+    "qualifications": "Qualifications",
+    "showing": "showing",
+    "specialty": "Specialty",
+    "total": "Total",
+    "write": "Write about your treatment"
+  },
+  "prov": {
+    "admin": "Admin checked",
+    "community": "Community submitted",
+    "provider": "Provider confirmed",
+    "title": "Where this information came from"
+  },
+  "rel": {
+    "family": "Family or caregiver",
+    "parent": "Parent or guardian",
+    "self": "The patient",
+    "witness": "Treatment witness"
+  },
+  "report": {
+    "dangerous": "Dangerous medical instruction",
+    "detail": "Anything else we should know?",
+    "duplicate": "Duplicate",
+    "evidence": "Attach something privately",
+    "evidenceNote": "Only moderators see this. It never becomes public.",
+    "factual": "I disagree with what it says",
+    "factualNote": "Disagreement alone does not remove an experience. It normally stays visible while a moderator looks at it.",
+    "harassment": "Harassment",
+    "hate": "Hate",
+    "identityNote": "Your name is never shown to the person you are reporting.",
+    "impersonation": "Impersonation",
+    "offtopic": "Off-topic",
+    "other": "Other",
+    "ownership": "Ownership",
+    "privacy": "Shows someone’s private details",
+    "reason": "Why are you reporting it?",
+    "sent": "Report sent. You will be told the outcome, without private enforcement details.",
+    "spam": "Spam or duplicate",
+    "submit": "Send report",
+    "threat": "Threat or harassment",
+    "title": "Report this",
+    "unsafeFile": "Unsafe or wrong file"
+  },
+  "results": {
+    "count": "doctors match",
+    "none": "Nothing matched yet",
+    "noneBody": "The directory starts empty and grows only as people write experiences. Try a broader term, or be the first to write about this doctor.",
+    "tabDoctors": "Doctors",
+    "tabFacilities": "Facilities"
+  },
+  "review": {
+    "comments": "Comments",
+    "episodeDate": "Treatment period",
+    "helpful": "Like",
+    "notHelpful": "Dislike",
+    "reactionNote": "Reactions are engagement only. They never affect summaries, ordering or moderation.",
+    "readFull": "Read in full",
+    "relationship": "Written by",
+    "report": "Report",
+    "tags": "Tags"
+  },
+  "search": {
+    "alsoSearched": "also matched as",
+    "banglish": "Bangla, English and Banglish all work.",
+    "didYouMean": "Showing results for",
+    "keepOriginal": "Search the exact words instead",
+    "label": "Search a doctor, condition, symptom, treatment or facility",
+    "placeholder": "Try “diabetes”, “ডায়াবেটিস” or “dayabetis”…",
+    "submit": "Search"
+  },
+  "sentiment": {
+    "accounts": "patient experiences",
+    "mixed": "Mixed",
+    "negative": "Negative",
+    "of": "of",
+    "positive": "Positive",
+    "title": "How authors described the episode"
+  },
+  "shell": {
+    "placeholder": "This screen arrives with task {task}."
+  },
+  "sort": {
+    "label": "Order",
+    "recent": "Most recent",
+    "relevance": "Relevance",
+    "volume": "Most experiences",
+    "why": "Why can’t I sort by best?",
+    "whyBody": "Because RogiKotha does not measure “best”. Ordering by sentiment would turn patient stories into a score, which is exactly what this platform refuses to do."
+  },
+  "staff": {
+    "device": {
+      "body": "We sent an approval link to your staff email. It expires in 30 minutes. Open it on this device.",
+      "recheck": "Confirm your password to trust this device",
+      "revoke": "Revoke",
+      "revoked": "Device revoked.",
+      "thisDevice": "This device",
+      "title": "Approve this device",
+      "trust": "Trust this device",
+      "trusted": "Trusted devices"
+    },
+    "notStaff": "This account has no staff role.",
+    "role": {
+      "chipTitle": "Signed in as {role}"
+    },
+    "security": {
+      "title": "Security"
+    },
+    "signIn": {
+      "kicker": "Staff console",
+      "note": "Staff only. Looking for RogiKotha? Go to the public site.",
+      "submit": "Sign in",
+      "title": "Sign in"
+    },
+    "stepUp": {
+      "body": "This action is logged. Enter your password to continue — you won't be asked again for five minutes.",
+      "confirm": "Continue",
+      "title": "Confirm your password"
+    }
+  },
+  "target": {
+    "account": "Experience",
+    "comment": "Comment",
+    "evidence": "Document",
+    "profile": "Profile"
+  },
+  "user2": {
+    "data": "Your data",
+    "dataCallout": "These requests are processed manually in this prototype. In production they trigger the documented workflow.",
+    "dataDelete": "Request account deletion",
+    "dataDeleteNote": "Public contributions remain in their anonymised form; identifiable records are removed within 30 days.",
+    "dataExport": "Request my data export",
+    "dataExportNote": "A signed archive will be prepared and a download link sent within 7 days.",
+    "dataNote": "Request a copy of what the service knows about you, or ask for your account to be deleted.",
+    "feedback": "Feedback",
+    "feedbackNote": "Share what worked, what broke, or what you wished the app did. Drafts save as you type.",
+    "feedbackPh": "What did you try? What happened?",
+    "feedbackSend": "Save draft",
+    "feedbackSent": "Draft saved locally.",
+    "lang": {
+      "bn": "বাংলা (Bangla)",
+      "en": "English"
+    },
+    "preferences": "Preferences",
+    "preferencesNote": "Choose how the app speaks to you. Settings stay on this device."
+  },
+  "viewer": {
+    "docHeadA": "PROCESSED COPY · NOT MEDICAL ADVICE",
+    "docHeadB": "SYNTHETIC · FOR PROTOTYPE ONLY",
+    "download": "Download processed copy",
+    "fit": "Fit",
+    "labMethod": "Method",
+    "labName": "City Diagnostic Centre — Biochemistry",
+    "labRange": "Reference range",
+    "labResult": "Result",
+    "labTest": "Test",
+    "labUnit": "Unit",
+    "noteClinic": "Outpatient follow-up note",
+    "noteExam": "Examination",
+    "noteHistory": "History",
+    "notePlan": "Plan",
+    "noteSubject": "Subject",
+    "notice": "Documents attached — not medically validated",
+    "of": "of",
+    "pageNext": "Next page",
+    "pageOf": "Page",
+    "pagePrev": "Previous page",
+    "rotate": "Rotate",
+    "rotateLabel": "Rotation",
+    "rxAdvice": "Advice",
+    "rxClinic": "City Health Clinic — Consultation room 4",
+    "rxDate": "Date",
+    "rxDiagnosis": "Diagnosis",
+    "rxDoctor": "Doctor",
+    "rxDose": "Dose",
+    "rxDuration": "Duration",
+    "rxMedicines": "Medicines",
+    "rxPatient": "Patient",
+    "rxRedacted": "[ redacted by author ]",
+    "rxSig": "Signature",
+    "seal": "PROCESSED · QUARANTINE PASSED",
+    "title": "Processed copy",
+    "zoom100": "100%",
+    "zoomIn": "Zoom in",
+    "zoomLabel": "Zoom level",
+    "zoomOut": "Zoom out"
+  }
+}
