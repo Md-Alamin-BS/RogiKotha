@@ -160,11 +160,11 @@ Update the status column as tasks move. Statuses: `todo`, `in progress (lane A|B
 | T-001 | merged | `task/t-001-workspace-scaffold` | [T-001](../validation/T-001.md) | packages are empty stubs; `pnpm check` stops at `i18n:check` until T-006 |
 | T-002 | merged | `task/t-002-local-infra` | [T-002](../validation/T-002.md) | round 2 `PASS WITH FOLLOW-UP`: `ISS-057`/`ISS-058` confirmed fixed, all 9 acceptance rows re-run live, `clamd` itself detects the custom marker signature. Follow-up `ISS-072` (S3, owner T-304): the README's `grep "Listening daemon"` ClamAV-readiness hint matches nothing on `clamav/clamav:1.5.4` — use `clamdscan --version` |
 | T-003 | merged | `task/t-003-contracts` | [T-003](../validation/T-003.md) | PASS: Result/errors/Actor/enums/schemas/view-models built; `pnpm check` green (39 tests), `pnpm smoke` green; ISS-073..076 (S4) logged, ISS-076 flags a task-file discrepancy (38 error codes in the source doc vs. an expected 40, independently confirmed 38 by the validator) |
-| T-004 | todo | | | |
+| T-004 | validating | `task/t-004-database-part-1` | | database part 1 built (client, 36 enums, 30 tables, grants, audit writer, 6 repository stubs); `pnpm check`/`pnpm test:int`/`pnpm smoke` all green after fixing `ISS-084` (port 5432 conflict, remapped to 5433), `ISS-092` (S1, `db:reset` could silently skip re-migrating), `ISS-093` |
 | T-005 | todo | | | |
 | T-006 | merged | `task/t-006-i18n` | [T-006](../validation/T-006.md) | 764 bilingual keys; `pnpm check` green end-to-end from here on. The ERROR_CODES half of `i18n:check` self-skips until T-003 lands `packages/contracts/src/errors.ts` |
 | T-007 | todo | | | |
-| T-008 | todo | | | |
+| T-008 | validating | `task/t-008-web-shell` | | web shell built and self-checked (`pnpm check` green 18/18 files 55/55 tests, `impeccable detect` 0 findings, `next build` 35 routes + proxy); `ISS-094` (S2, fixed): `proxy.ts` moved to `apps/web/src/proxy.ts`. 11 more S4 issues (`ISS-095`..`105`, renumbered from a collision with T-004's own `ISS-084..093`), none blocking |
 | T-009 | todo | | | |
 | T-010 | todo | | | |
 | T-101 | todo | | | |
