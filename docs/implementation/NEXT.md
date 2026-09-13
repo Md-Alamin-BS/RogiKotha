@@ -2,42 +2,43 @@
 
 _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 
-**Updated:** 2026-09-14 · by: loop validate session (Claude Code · claude-opus-5[1m] · effort high)
+**Updated:** 2026-09-14 · by: loop implement session (Claude Code · claude-sonnet-5 · effort high)
 
 ## Queue (machine-read by LOOP.md)
 ```
-mode: implement
+mode: validate
 tasks: T-009, CR-008
-recommended: Claude Sonnet 5 or GPT-5.6 Terra or Opus 4.8 · effort high
+recommended: GPT-5.6 Terra (other-vendor mid-tier) or Claude Opus 4.8 / Opus 5 if unavailable · effort high
 ```
 
 ## State of the build
-- **T-007 `PASS WITH FOLLOW-UP` (merged `eaefcf2`) and CR-005 `PASS` (merged `e84f9ee`).** Post-merge
-  on `build/demo`: `pnpm check` **exit 0** (37 files / 146 passed + 2 expected-fail, i18n 777 keys,
-  37 route rows + proxy), `pnpm smoke` 7/10, `pnpm test:int` 7 files / 29, standalone
-  `seed.int.test.ts` 3/3, and a live `db:reset && db:migrate && db:seed` = **604 rows then 0** — which
-  also clears the cross-branch risk: the seed reaches the now-extensionless `contracts` through `tsx`
-  fine.
-- **Phase 0 lane A is two tasks from done: T-009 → T-010.** T-201 and the rest of Phase 2 are
-  unblocked by T-007; T-101 unblocks once T-009 merges.
-- Eleven new rows, `ISS-173`..`ISS-183`. The three `S2`s in T-007 are all seeded **data**, not broken
-  machinery, and are specified in **`CR-008`** (queued below). One `S2` in already-merged T-004/T-005
-  code is specified in **`CR-009`** — read the sequencing note before queueing anything that touches
-  `packages/database`.
+- **T-009 and CR-008 both `done`, pushed, not yet merged.** T-009 (`apps/worker`, pg-boss, outbox
+  relay, `packages/database/src/queue/`) and CR-008 (five T-007 follow-ups in
+  `packages/test-support/`) ran as two parallel sub-agents this turn, each in its own worktree and
+  its own isolated Postgres database (`rogikotha_t009`/`rogikotha_test_t009`,
+  `rogikotha_cr008`/`rogikotha_test_cr008` — created ad hoc this turn so the two db-touching tasks
+  didn't race each other or the shared dev database; drop them once both merge). Both report
+  `pnpm check` green and no open questions.
+- **`ISS-` id collision to resolve at merge, not before:** T-009 claims `ISS-184`..`ISS-196`; CR-008
+  (told to start at `ISS-190`, not knowing T-009 would use that many) also claims `ISS-190`..`ISS-192`
+  for unrelated findings. Whichever branch merges second will hit a real `ISSUES.md` conflict at those
+  three rows — resolve per `04-handoff-and-validation.md` §6: keep both sides' content, renumber the
+  second branch's colliding rows upward (same as the `ISS-170` precedent from the T-007/CR-005 turn).
+- **Phase 0 lane A is one task from done: T-009 → T-010** (once T-009 merges). `CR-009` is queued
+  right after T-009 merges, on its own (see below) — then T-101 unblocks (T-007, T-008, T-009 all
+  done/merging).
 
 ## Next, per lane (human-readable)
-- **Lane A — T-009** (worker skeleton: pg-boss, job registry, outbox relay). Deps T-004/T-005 merged.
-  `ISS-144`/`ISS-145` are open and owned by this task.
-- **Lane B — CR-008** (five T-007 follow-ups, all inside `packages/test-support/` plus a root
-  `.gitattributes`). Path-disjoint from T-009, needs no founder decision, and closes three `S2`s while
-  the evidence is fresh.
-- **After T-009 merges, queue `CR-009` on its own, before T-201.** It rewrites an import line in
-  *every* file under `packages/database/src`, so it cannot share a turn with T-009 (`src/queue/**`,
-  `src/index.ts`) or T-201. Skipping it means the first Phase 2 page that reads the database repeats
-  `ISS-133` mid-task — which is exactly how `ISS-133` was found the first time.
+- **Validate T-009 and CR-008** (this Queue). Both M1; cross-vendor validation preferred per
+  `00-master-plan.md` §7 (Terra validates Sonnet) — if unavailable, a higher Claude tier plus the
+  usual "higher tier than recommended" note is acceptable per `LOOP.md` §0.1.
+- **After T-009 merges, queue `CR-009` on its own, before T-201/T-101.** It rewrites an import line in
+  *every* file under `packages/database/src`, so it cannot share a turn with anything touching that
+  package. T-009 itself added `packages/database/src/queue/*` and edited `src/index.ts`, which is
+  exactly the collision `NEXT.md` has been warning about since the CR-005 turn.
 
 ## Blockers
-- None for T-009 or CR-008. `CR-009` is not blocked, only sequenced (see above).
+- None for validating T-009 or CR-008. `CR-009` stays sequenced behind T-009's merge, not blocked.
 
 ## Questions for the human
 - **`ISS-158` + `ISS-176` are one ruling (T-007, S2/S3):** `05-demo-storyboard.md` disagrees with the
@@ -52,8 +53,7 @@ recommended: Claude Sonnet 5 or GPT-5.6 Terra or Opus 4.8 · effort high
   spec conflict, not a bug. **(a)** revoke it and read recipients from `email_deliveries.to_email_enc`
   as designed (recommended), or **(b)** keep it and amend both documents.
 - **`CR-007`** (`ISS-143`): `pnpm test:int` hung 44 min on 1 run in 8 with no timeout firing; cause
-  established. No decision needed — just approve queueing. T-007 has now grown the int-test file count
-  again, which is the condition for acting on it.
+  established. No decision needed — just approve queueing.
 - **`CR-004`** still open — theme toggle is silent to a screen reader (`ISS-122`). Localize (new
   Bengali copy, batch with `ISS-050`, recommended), keep English with a written §6 exemption, or drop?
 - **`ISS-135`** (T-207a, S4): Terms/Privacy reuse `nav.about` as their kicker. Fine permanently, or do
@@ -62,7 +62,7 @@ recommended: Claude Sonnet 5 or GPT-5.6 Terra or Opus 4.8 · effort high
   self-attribution in committed generated files, the other requires `TOOL · MODEL · EFFORT` in every
   record. Sessions keep following established practice; one sentence from you would settle it.
 - **Open, owned by later tasks:** `ISS-181`/`ISS-182` (T-304), `ISS-180` (T-101, informational),
-  `ISS-139` (T-304), `ISS-141` (T-309), `ISS-144`/`ISS-145` (T-009), `ISS-108` (T-104), `ISS-112`
-  (T-101 — its Better Auth mapping block is wrong, do not trust it), `ISS-110`, `ISS-151` (T-207 Half
-  B). **Still open:** `ISS-050`, `ISS-096`, `ISS-074`, `ISS-075`, `ISS-054`, `ISS-056`, and the D-001
-  browser walkthrough before T-102/T-103 (`ISS-029`/`ISS-028`/`ISS-037`).
+  `ISS-139` (T-304), `ISS-141` (T-309), `ISS-144`/`ISS-185` (T-009, deferred to Phase 1 gate — see
+  above), `ISS-108` (T-104), `ISS-112` (T-101 — its Better Auth mapping block is wrong, do not trust
+  it), `ISS-110`, `ISS-151` (T-207 Half B). **Still open:** `ISS-050`, `ISS-096`, `ISS-074`, `ISS-075`,
+  `ISS-054`, `ISS-056`, and the D-001 browser walkthrough before T-102/T-103 (`ISS-029`/`ISS-028`/`ISS-037`).
