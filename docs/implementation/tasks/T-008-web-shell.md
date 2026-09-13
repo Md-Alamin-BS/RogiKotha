@@ -105,10 +105,10 @@ layout (locale validation, theme/motion cookies, `data-app`/`data-lang`/`data-th
 `(patient)` and `admin` layouts with their own chrome (`Masthead`, `Tabs`/`ConsoleNav`, `TabBar`,
 `Crumbs`, `Colophon`, `DemoMarker`, `SkipLink`), shared primitives (`Icon`, `Sheet`, `LiveRegion`,
 `ThemeControls`), `lib/{cookies,metadata,titles,announce}.ts`, `server/actions/preferences.ts`, and
-one placeholder `page.tsx` per URL in `03-routes-and-contracts.md` §1 (33 routes: 24 patient + 9
+one placeholder `page.tsx` per URL in `03-routes-and-contracts.md` §1 (34 routes: 24 patient + 9
 admin content pages + the `/admin` redirect), each with `generateMetadata` and a `shell.placeholder`
 note naming the task that will fill it in. `/api/health` and a self-contained root `not-found.tsx`.
-18 test files, 55 assertions total (see "How I verified it" below).
+18 test files, 56 assertions total (see "How I verified it" below).
 
 ### Not done and why
 
@@ -154,17 +154,17 @@ title keys now or wait for T-207 (`ISS-099`).
 All green on this branch (full output captured before the final `pnpm-workspace.yaml` revert):
 `pnpm -r typecheck` — all 9 packages/apps `Done`. `eslint .` — 0 errors, 1 pre-existing warning in
 `packages/i18n/src/routing.ts` (`ISS-105`, not owned by this task). `vitest run --config
-vitest.workspace.ts` — **18 test files, 55 tests, all passed** (apps/web contributes 7 files / 16
+vitest.workspace.ts` — **18 test files, 56 tests, all passed** (apps/web contributes 7 files / 16
 tests of that total, including one `shell.smoke.test.tsx` per `04-handoff-and-validation.md` §3.1).
 `pnpm i18n:check` — "764 keys, both locales, no placeholder or ERROR_CODES mismatches." `pnpm -r
-build` — `apps/web build: Done`, `next build` route table lists all 35 routes plus `ƒ Proxy
+build` — `apps/web build: Done`, `next build` route table lists all 37 route rows plus `ƒ Proxy
 (Middleware)`. `npx impeccable detect apps/web/src --no-advisory` — 0 findings (exit 0).
 `pnpm --filter @rogikotha/web dev` manual pass: every acceptance-table row below executed via `curl`.
 
 | Check | Observed |
 |---|---|
 | Pins exact | `next@16.3.4`, `react@19.3.0`, `react-dom@19.3.0` |
-| Build | exit 0; 35 routes incl. every placeholder + `ƒ Proxy (Middleware)` |
+| Build | exit 0; 37 route rows incl. every placeholder + `ƒ Proxy (Middleware)` |
 | Root redirect | `Accept-Language: bn` → `location: /bn` |
 | Cookie wins | `Cookie: rk.lang=en` + `Accept-Language: bn` → `location: /en` |
 | Lang attribute SSR | `/bn` → `<html lang="bn" data-lang="bn">` |
