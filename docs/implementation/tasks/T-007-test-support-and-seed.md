@@ -143,6 +143,10 @@ verifies against `demo-pass-2026!` with `@node-rs/argon2`'s `verify()` (spot-che
 
 See the checklist above — every row has a file:line or live-query citation.
 
+### Run record
+
+Claude Code · claude-sonnet-5 · effort high · start `3f3e52b` → end `d68c925`
+
 
 ## Addendum — fixture mappings agreed after the spine reconciliation
 
