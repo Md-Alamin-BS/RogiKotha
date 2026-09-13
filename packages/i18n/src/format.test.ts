@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { countParams, formatMonthYear, formatNumber, formatRelative } from './format';
+import { countParams, formatDate, formatDigits, formatMonthYear, formatNumber, formatRelative } from './format';
 
 describe('formatNumber', () => {
   it('formatNumber renders Bengali digits for bn', () => {
@@ -55,6 +55,28 @@ describe('formatRelative', () => {
     expect(formatRelative(from, new Date('2026-09-13T03:00:00Z'), 'bn')).toBe('৩ ঘণ্টা আগে');
     expect(formatRelative(from, new Date('2026-09-15T00:00:00Z'), 'en')).toBe('2 days ago');
     expect(formatRelative(from, new Date('2026-09-15T00:00:00Z'), 'bn')).toBe('২ দিন আগে');
+  });
+});
+
+describe('formatDate', () => {
+  it('matches the prototype\'s "21 August 2026" / "২১ আগস্ট ২০২৬"', () => {
+    expect(formatDate('2026-08-21', 'en')).toBe('21 August 2026');
+    expect(formatDate('2026-08-21', 'bn')).toBe('২১ আগস্ট ২০২৬');
+  });
+
+  it('rejects a non-ISO string', () => {
+    expect(() => formatDate('21 August 2026', 'en')).toThrow(RangeError);
+  });
+});
+
+describe('formatDigits', () => {
+  it('substitutes digits only, keeping a leading zero and a hyphen intact', () => {
+    expect(formatDigits('09612-119911', 'bn')).toBe('০৯৬১২-১১৯৯১১');
+    expect(formatDigits('09612-119911', 'en')).toBe('09612-119911');
+  });
+
+  it('does not add thousands grouping (unlike formatNumber)', () => {
+    expect(formatDigits('16263', 'bn')).toBe('১৬২৬৩');
   });
 });
 

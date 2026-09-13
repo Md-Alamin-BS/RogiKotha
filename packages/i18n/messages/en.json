@@ -497,6 +497,7 @@
     "body": "Call 999 for an ambulance or go to the nearest emergency department. For non-emergency health guidance call 16263.",
     "crisis": "Mental health crisis support",
     "healthLineLabel": "Health guidance",
+    "lastVerifiedLine": "Last verified {date}",
     "title": "If this is an emergency, do not wait for an answer here"
   },
   "emergview": {
@@ -769,6 +770,24 @@
     "noindex": "This page asks search engines not to index it.",
     "viewOf": "View public profile",
     "viewPublic": "View your public profile"
+  },
+  "policy": {
+    "privacy": {
+      "data": "What we keep",
+      "dataBody": "Your email, password hash, username, display name and language; your accounts, comments, reactions, bookmarks and drafts; the processed copies of documents you publish. Original uploads are kept privately for a limited time and then deleted. You can export or delete your data from your workspace.",
+      "intro": "What we store, what is public, and who can see the rest.",
+      "lawful": "Anonymous accounts and lawful requests",
+      "lawfulBody": "An anonymous account is never publicly linked to you. A small number of authorised staff can, for a stated moderation, security or legal reason, look up which account wrote it; every such access is recorded. We may be required to disclose that link in response to a lawful order.",
+      "title": "Privacy policy"
+    },
+    "terms": {
+      "eligibility": "Who can write",
+      "eligibilityBody": "You must be 18 or older and describe care you received or personally witnessed. You are responsible for what you publish, and you may be asked to correct or remove details that identify other private people.",
+      "enforcement": "Reports and enforcement",
+      "enforcementBody": "Anyone can report content. Reports from several different confirmed accounts can hide content temporarily until a moderator reviews it. Moderators may redact identifiers, remove files, warn, hide or restrict — they never rewrite your account of care. You can appeal every decision.",
+      "intro": "These terms describe what RogiKotha is, what you agree to when you write, and what we do not do.",
+      "title": "Terms of use"
+    }
   },
   "profile": {
     "about": "About",

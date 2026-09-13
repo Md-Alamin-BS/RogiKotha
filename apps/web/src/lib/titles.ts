@@ -28,9 +28,6 @@ export type ViewName =
   | 'signin'
   | 'verify'
   | 'reset'
-  // ASSUMPTION(T-008): `terms`/`privacy` are new routes (03-routes-and-contracts.md
-  // §1) that did not exist in the prototype's titleForView switch and have
-  // no dedicated i18n title key yet — see ISS list in the T-008 hand-off.
   | 'terms'
   | 'privacy'
   | 'queue'
@@ -75,9 +72,16 @@ export function titleForView(view: ViewName, t: Translate): string {
     case 'emergency':
       return t('nav.emergency');
     case 'about':
-    case 'terms':
-    case 'privacy':
       return t('nav.about');
+    // ASSUMPTION(T-207a, fixes ISS-099): `terms`/`privacy` are new routes
+    // (03-routes-and-contracts.md §1) not in the prototype's titleForView
+    // switch; T-207 step 3 adds dedicated `policy.terms.title`/
+    // `policy.privacy.title` keys, so these no longer fall back to
+    // `nav.about`'s text.
+    case 'terms':
+      return t('policy.terms.title');
+    case 'privacy':
+      return t('policy.privacy.title');
     case 'register':
       return t('auth.register.title');
     case 'signin':

@@ -51,6 +51,8 @@ describe('titleForView', () => {
     expect(titleForView('person', t)).toBe('Public profile');
     expect(titleForView('emergency', t)).toBe('Emergency help');
     expect(titleForView('about', t)).toBe('About & methodology');
+    expect(titleForView('terms', t)).toBe('Terms of use');
+    expect(titleForView('privacy', t)).toBe('Privacy policy');
     expect(titleForView('register', t)).toBe('Create an account');
     expect(titleForView('signin', t)).toBe('Sign in');
     expect(titleForView('verify', t)).toBe('Confirm your email');
@@ -80,6 +82,8 @@ describe('titleForView', () => {
     expect(titleForView('person', t)).toBe('প্রকাশ্য প্রোফাইল');
     expect(titleForView('emergency', t)).toBe('জরুরি সাহায্য');
     expect(titleForView('about', t)).toBe('সম্পর্কে ও পদ্ধতি');
+    expect(titleForView('terms', t)).toBe('ব্যবহারের শর্তাবলি');
+    expect(titleForView('privacy', t)).toBe('গোপনীয়তা নীতি');
     expect(titleForView('register', t)).toBe('অ্যাকাউন্ট খুলুন');
     expect(titleForView('signin', t)).toBe('সাইন ইন');
     expect(titleForView('reset', t)).toBe('পাসওয়ার্ড রিসেট করুন');

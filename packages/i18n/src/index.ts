@@ -1,4 +1,4 @@
-export { formatNumber, formatMonthYear, formatRelative, countParams } from './format';
+export { formatNumber, formatDigits, formatMonthYear, formatDate, formatRelative, countParams } from './format';
 export type { MonthYear, CountParams } from './format';
 
 export { routing, Link, redirect, usePathname, useRouter, getPathname } from './routing';
