@@ -95,6 +95,46 @@ Columns: `ID · date · found in (task) · by (implementer/validator/human) · s
 
 Every `// ASSUMPTION(T-xxx):` marker in code has an `S4` row. Every validator finding has a row. Every fixed bug has a row — the register is also the list of things the smoke suite should cover.
 
+### 4.1 Findings outside every currently queued task's owned paths
+
+A session sometimes finds a genuine defect in already-merged code that no currently queued task
+owns — e.g. a bug in a foundational package like `contracts`, discovered while validating a
+different task. `01-conventions.md` §5 says task files are edited by the human, not silently by
+implementers; the same applies to code outside any owned-paths declaration. But logging an `ISS-`
+row with no owner and moving on means small bugs sit open indefinitely.
+
+Founder's standing instruction (given 2026-09-13, prompted by `ISS-077`/`ISS-078` sitting open for
+one full turn after `T-003` merged): **default to fixing it now if it is small**, rather than only
+logging it and asking. Use this test:
+
+- **Fix it immediately, in its own small branch/worktree (`task/cr-nnn-<slug>` off `build/demo`), when
+  all of these hold:** the fix is mechanical and unambiguous (a bug with one clear correct answer,
+  not a design choice); it does not touch a hard rule, a data-model boundary, or a pinned dependency
+  version; it needs no new product/UX decision; and it is genuinely small (rule of thumb: `CR` size
+  **S** in `06-change-requests.md`, ≤ 1 h). Then: implement the fix, add a regression test if a
+  passing suite missed the bug before (that itself is a signal to strengthen the test, not just fix
+  the code), correct any hand-off/task-file field that is now factually wrong (correcting a miscount
+  or filling a blank commit-hash field is fixing an error, not silently rewriting the task — see the
+  `ISS-082` precedent), close the `ISS-` row(s) as `fixed in CR-nnn` with how, add one `CR-nnn` row to
+  `06-change-requests.md`, and merge to `build/demo` the same way a task branch does: a fresh `pnpm
+  check` (and `pnpm smoke`) on the merge result, no attribution anywhere, register files updated. A
+  fix this small and well-specified does not need to wait for a fresh validator session — but run the
+  full suite plus whatever adversarial check caught the original bug yourself before merging, and say
+  so in the commit/hand-off.
+- **Otherwise, write it up — do not fix it silently.** If the fix needs a founder decision (a wording
+  or scope call, a version bump, a hard-rule interpretation), or is bigger than "a few lines and a
+  test", or spans multiple packages/owners: leave the code alone. Write a proper `tasks/CR-nnn-*.md`
+  mini task file (shape it like any existing task file: Goal, Read first, Owned paths, Steps,
+  Acceptance checks) with everything a fresh implement-mode session needs — what is wrong, why, the
+  suggested fix if one exists, and which existing owner/master-plan step it slots into. Log the
+  `CR-nnn` row in `06-change-requests.md` (`Status: needs queueing`), and surface it under "Questions
+  for the human" in `NEXT.md` until the founder either approves it for the next Queue (`LOOP.md` §4)
+  or answers the open question it depends on.
+
+Either way: never leave an `S1`/`S2` finding in merged code both unaddressed *and* unwritten. It gets
+fixed now, or it gets a CR file precise enough that the next session does not have to re-derive the
+same investigation from scratch.
+
 ## 5. Context hygiene (why the files are short)
 
 - One task per session. When the task is done or you are stuck, hand off and stop; a fresh session reading a 60-line handoff outperforms a long session carrying a stale plan.

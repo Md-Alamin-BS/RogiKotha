@@ -29,12 +29,19 @@ const SLUGGED_PUBLIC_ID_RE = /^[0-9a-hjkmnp-tv-z]{10}(-.*)?$/;
  * package's tsconfig (no `dom`/`@types/node` lib, per 01-conventions.md §2:
  * "contracts -> zod only") and adding either is outside this task's owned
  * paths. Instead this draws its randomness from a fresh `uuid.v4()` (already
- * a CSPRNG-backed dependency this task installs) and repacks 50 of its 122
- * random bits into 10 base32 symbols — narrower and reversible; logged as
- * ISS-073.
+ * a CSPRNG-backed dependency this task installs) — narrower and reversible;
+ * logged as ISS-073.
+ *
+ * The hex slice is chars 19-31 (not 0-12): a v4 UUID's only non-random bits
+ * are the version nibble (hex index 12) and the top two bits of the variant
+ * nibble (hex index 16); every char at index 17 and after is fully random,
+ * so chars 19-31 (13 hex chars, 52 bits) carry no fixed bits (CR-002 /
+ * ISS-077 — the original `slice(0, 13)` included the version nibble at
+ * index 12, which always decoded to the last emitted symbol being `4` or
+ * `m`; see `docs/validation/T-003-round-2.md`).
  */
 export function newPublicId(): string {
-  const hex = uuidV4().replace(/-/g, '').slice(0, 13); // 52 bits of randomness
+  const hex = uuidV4().replace(/-/g, '').slice(19, 32); // 52 bits of randomness, no version/variant nibble
   let n = BigInt(`0x${hex}`);
   let out = '';
   for (let i = 0; i < 10; i++) {

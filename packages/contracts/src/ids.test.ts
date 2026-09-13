@@ -13,6 +13,23 @@ describe('newPublicId', () => {
     }
     expect(seen.size).toBe(10_000);
   });
+
+  it('reaches more than two distinct symbols at every position (regression for ISS-077)', () => {
+    // The old `.slice(0, 13)` always emitted `4` or `m` at the last position
+    // because it captured UUIDv4's fixed version nibble. Uniqueness alone
+    // (the test above) cannot catch a single low-entropy position, since
+    // 10,000 ids can still all be unique with only 2 symbols in one slot.
+    const byPosition: Array<Set<string>> = Array.from({ length: 10 }, () => new Set());
+    for (let i = 0; i < 20_000; i++) {
+      const id = newPublicId();
+      for (let pos = 0; pos < 10; pos++) {
+        byPosition[pos]!.add(id[pos]!);
+      }
+    }
+    for (let pos = 0; pos < 10; pos++) {
+      expect(byPosition[pos]!.size).toBeGreaterThan(2);
+    }
+  });
 });
 
 describe('stripSlug', () => {

@@ -139,10 +139,21 @@ function main() {
 
   const errorCodes = readErrorCodes();
   if (errorCodes) {
+    const expectedKeys = new Set(errorCodes.map(errorCodeToMessageKey));
     for (const code of errorCodes) {
       const messageKey = errorCodeToMessageKey(code);
       if (!enFlat.has(messageKey)) {
         problems.push(`ERROR_CODES entry "${code}" has no i18n key ${messageKey}`);
+      }
+    }
+    // Reverse direction (CR-002 / ISS-078): an errors.* key with no code
+    // behind it is exactly as much of a defect as a code with no key — the
+    // forward loop above only ever walked codes to keys, so a dictionary key
+    // ported ahead of its ErrorCode (as errors.auth.accountSuspended was)
+    // went undetected until a validator's manual cross-check found it.
+    for (const key of enFlat.keys()) {
+      if (key.startsWith('errors.') && !expectedKeys.has(key)) {
+        problems.push(`i18n key "${key}" has no ERROR_CODES entry`);
       }
     }
   }
