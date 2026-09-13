@@ -164,7 +164,7 @@ Update the status column as tasks move. Statuses: `todo`, `in progress (lane A|B
 | T-005 | todo | | | |
 | T-006 | merged | `task/t-006-i18n` | [T-006](../validation/T-006.md) | 764 bilingual keys; `pnpm check` green end-to-end from here on. The ERROR_CODES half of `i18n:check` self-skips until T-003 lands `packages/contracts/src/errors.ts` |
 | T-007 | todo | | | |
-| T-008 | validating | `task/t-008-web-shell` | | web shell built and self-checked (`pnpm check` green 18/18 files 55/55 tests, `impeccable detect` 0 findings, `next build` 35 routes + proxy); `ISS-094` (S2, fixed): `proxy.ts` moved to `apps/web/src/proxy.ts`. 11 more S4 issues (`ISS-095`..`105`, renumbered from a collision with T-004's own `ISS-084..093`), none blocking |
+| T-008 | PASS+F | `task/t-008-web-shell` | [T-008](../validation/T-008.md) | web shell built and self-checked (`pnpm check` green 18/18 files 55/55 tests, `impeccable detect` 0 findings, `next build` 35 routes + proxy); `ISS-094` (S2, fixed): `proxy.ts` moved to `apps/web/src/proxy.ts`. 11 more S4 issues (`ISS-095`..`105`, renumbered from a collision with T-004's own `ISS-084..093`), none blocking Validated 2026-09-13: **PASS WITH FOLLOW-UP** (`docs/validation/T-008.md`) — all 13 acceptance rows pass, `pnpm check` green (18 files/56 tests), `pnpm smoke` 4/6, CSS port byte-identical, route map complete; no `S1`/`S2`. New: `ISS-120`/`121`/`122` (S3), `ISS-123`/`124` (S4) |
 | T-009 | todo | | | |
 | T-010 | todo | | | |
 | T-101 | todo | | | |
