@@ -27,6 +27,30 @@ Rules:
 
 ## Entries
 
+### 2026-09-13 (T-008)
+
+- Scope: T-008 (`apps/web` shell — first use of `next`, `react`, `react-dom`, `next-intl`'s runtime
+  APIs inside a real Next.js app, `@testing-library/react`, `@testing-library/jest-dom`,
+  `@testing-library/user-event`, `jsdom`, `@vitejs/plugin-react` in this repo).
+- Checked: `next` (task pins exact `16.3.4`); `react`/`react-dom` (exact `19.3.0`); `next-intl`
+  (`^4.14.2`, already vetted 2026-09-13 for `packages/i18n`); Next 16's `middleware.ts` → `proxy.ts`
+  rename and `experimental.typedRoutes` stability; `@testing-library/react` `^16.3.3`;
+  `@testing-library/jest-dom` `^6`; `@testing-library/user-event` `^14`; `jsdom` `^30`;
+  `@vitejs/plugin-react` `^5`.
+- Findings: `next@16.3.4` (2026-08-31) is still the current patch on the 16.x line — no newer 16.3.x
+  tag exists (confirms the 2026-09-10 entry, now 3 days old). `proxy.ts` is confirmed as the Next 16
+  rename of `middleware.ts`; next-intl's `createMiddleware(routing)` from `next-intl/middleware` is
+  unchanged, only the file name/export moved — matches the task's own instruction. `typedRoutes`
+  graduated out of `experimental` as of Next 15.5 and stays stable in 16.3 — the task's own
+  conditional ("if stable … else omit") resolves to using the top-level `typedRoutes: true`, not
+  `experimental.typedRoutes`. next-intl's docs now mention `next/root-params` (Next 16.3+) as an
+  alternative to `setRequestLocale`; the task file explicitly specifies `setRequestLocale`, which task
+  files win per `01-conventions.md` — used as specified, `root-params` noted as a future follow-up.
+  No advisories found against any of the pinned testing-library/jsdom/vitejs-plugin-react versions.
+- Decision: used the task's exact pins (`next@16.3.4`, `react@19.3.0`, `react-dom@19.3.0`,
+  `next-intl@^4.14.2`) and current-stable testing deps as listed above; `next.config.ts` uses
+  top-level `typedRoutes: true`; `proxy.ts` uses `next-intl/middleware`'s `createMiddleware`.
+
 ### 2026-09-13 (T-003)
 
 - Scope: T-003 (`packages/contracts` — first use of `zod` and `uuid` in this codebase).
