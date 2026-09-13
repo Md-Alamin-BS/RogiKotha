@@ -12,3 +12,4 @@ Events: `started`, `finished (done|partial)`, `validation started`, `validated P
 - 2026-09-13 02:43 · loop · validate T-001, D-001 · session started · Claude Code · claude-sonnet-5 · effort xhigh
 - 2026-09-13 02:49 · lane A · T-001 · validation started · task/t-001-workspace-scaffold (rebased onto build/demo `af2b7f8`, register-file conflict only) · Claude Code · claude-sonnet-5 · effort xhigh
 - 2026-09-13 02:53 · lane A · T-001 · validated PASS · `ae266f8` · all acceptance rows pass, `pnpm smoke` green, diff review clean; `docs/validation/T-001.md`
+- 2026-09-13 11:00 · lane A · T-001 · merged · `d5f37f5` · `pnpm check` on `build/demo` stops at `i18n:check` exactly as documented (typecheck/lint/test green); `pnpm tools:check` 83/83
