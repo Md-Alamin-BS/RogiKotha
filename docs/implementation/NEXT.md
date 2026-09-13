@@ -2,38 +2,43 @@
 
 _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 
-**Updated:** 2026-09-13 · by: loop validate session (Claude Code · claude-sonnet-5 · effort xhigh)
+**Updated:** 2026-09-13 · by: loop implement session (Claude Code · claude-sonnet-5 · effort high)
 
 ## Queue (machine-read by LOOP.md)
 ```
-mode: implement
+mode: validate
 tasks: T-002, T-006
-recommended: GPT-5.6 Luna or Claude Haiku 4.5 · effort medium (Sonnet 5 / Opus 4.8 also fine)
+recommended: Claude Sonnet 5 or Opus 4.8 · effort high, new session
 ```
 
 ## State of the build
-- **T-001 merged** (`d5f37f5`) and **D-001 merged** (`a38f363`). `pnpm check` stops at `i18n:check`
-  exactly as documented (rest green); `pnpm tools:check` 96/96; detector shows only the 2
-  pre-existing `ISS-027` findings. Validation records: `docs/validation/T-001.md`,
-  `docs/validation/D-001.md` (both PASS; every D-001 acceptance row independently re-verified,
-  including two flows not covered by smoke, checked live in a browser this session).
-- `infra/` still absent (T-002 next); `packages/i18n` still an empty stub (T-006 next).
+- **T-002 done** (`task/t-002-local-infra` @ `fb6daae`) and **T-006 done** (`task/t-006-i18n` @ `4056fd8`),
+  both by sub-agents in separate worktrees this session; both pushed, not yet merged. `infra/`
+  now has the compose stack (postgres/mailpit/clamav); `packages/i18n` now has 764 real bilingual
+  keys, formatters and next-intl config (was an empty stub).
+- Both branches logged `S4` issues only (no `S1`/`S2`); ISS ids originally collided
+  (`ISS-039..044` in both) — **already renumbered and fixed** in `task/t-006-i18n` (now
+  `ISS-045..056`) by this session before push. Validator: no further renumbering needed, just
+  confirm the two ranges are disjoint when both merge.
 
 ## Next, per lane (human-readable)
-- **Lane A:** T-002 (docker-compose: postgres 18 / mailpit / clamav, `pnpm infra:*`) → T-003 → T-004
-  → T-005 → T-007. First: read T-002's "Scope change 2026-09-12" block (FD-036/CR-001); confirm
-  Docker Desktop is running before touching `infra/compose/`.
-- **Lane B:** T-006 (port the 568-key dictionary into `packages/i18n`, parity test, formatters,
-  next-intl config) → T-008. First: read `handoffs/T-001.md` for what the workspace already provides.
+- **Lane A:** validate T-002 first (independent live Docker run — three `// ASSUMPTION(T-002)`
+  deviations from the task file's literal compose text: postgres volume path, mailpit tag
+  `v1.31.1`, clamav bind-mount mode; see `handoffs/T-002.md`), then T-003 → T-004 → T-005 → T-007.
+- **Lane B:** validate T-006 (re-run `pnpm i18n:check`/`test`/`typecheck`; spot-check the invented
+  `notif.*`/`admin.config.*` wording and the auth-spec verbatim rows; note `pnpm install` now needs
+  `--ignore-scripts`, see `handoffs/T-006.md` `ISS-055`), then T-008.
 
 ## Blockers
 - none
 
 ## Questions for the human
-- **D-001 still wants your walkthrough** — its own header names a founder visual pass (both locales,
-  both themes) as its validator, on top of this session's checks; do it before Lane B starts
-  T-102/T-103. While there: `ISS-029` (`/me` shows the fixed `shirin_88` fixture regardless of signed-in
-  account — accept, or should D-001 fix it?), `ISS-028` (Terms/Privacy → `#about`, fine until the React
-  port?). 360 px is still unverified — this session's browser tooling hit the same `resize_window`
-  limitation the implementer did (`ISS-037`).
-
+- **Bilingual review requested (not a merge blocker):** T-006 invented EN+BN wording for the
+  `notif.*` (5 keys) and `admin.config.*` (~15 keys) addendum entries that no task named copy for
+  (`ISS-050`) — please read them in `packages/i18n/messages/{en,bn}.json` before T-007/T-408 build
+  UI against them.
+- **D-001 still wants your walkthrough** (carried over, unresolved): a founder visual pass (both
+  locales, both themes) before Lane B starts T-102/T-103. While there: `ISS-029` (`/me` shows the
+  fixed `shirin_88` fixture regardless of signed-in account — accept, or should D-001 fix it?),
+  `ISS-028` (Terms/Privacy → `#about`, fine until the React port?). 360 px is still unverified
+  (`ISS-037`).
