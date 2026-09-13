@@ -10,3 +10,7 @@ packages:
 allowBuilds:
   '@parcel/watcher': true
   '@swc/core': true
+  # ISS-106: drizzle-kit (T-004) pulls in esbuild, whose install script is
+  # gated the same way. Same reasoning as the two above: it is a native
+  # build step from a pinned build tool, not third-party postinstall code.
+  esbuild: true
