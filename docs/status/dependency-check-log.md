@@ -27,6 +27,13 @@ Rules:
 
 ## Entries
 
+### 2026-09-13 (T-007)
+
+- Scope: T-007 (`packages/test-support` — first use of `@node-rs/argon2` and `sharp` in this codebase's actual dependency graph, and `tsx` for this package's own scripts; `@cantoo/pdf-lib` from the task's original step 1 is **not** installed, see Decision).
+- Checked: `@node-rs/argon2` (task pins `^2.2.0`); `sharp` (task pins `^0.35.4`); `tsx` (task pins `^4`, already vetted 2026-09-13 for T-004 at `4.23.13`, 3 days old at this check).
+- Findings: `@node-rs/argon2` latest on npm is `2.2.0` (published 2 days before this check) — same version the 2026-09-10 entry already vetted (m=64 MiB/t=3/p=1 params unaffected). `sharp` latest is `0.35.4` (published 17 days before this check) — same version the 2026-09-10 entry already vetted, no newer patch. `tsx@4.23.13` unchanged from the T-004 check. No advisories found against any of the three.
+- Decision: used `@node-rs/argon2@^2.2.0`, `sharp@^0.35.4`, `tsx@^4` (devDependency) exactly as pinned. Did **not** install `@cantoo/pdf-lib`: the task's own "Scope change 2026-09-12 — images only (CR-001 / FD-036)" block, which overrides the steps below it, says seeded evidence derivatives are PNG pages/thumbnails only ("Do not generate PDFs"), and `03-routes-and-contracts.md` §3 says `PdfRasteriser`/`PdfAssembler` are "**Phase 2** … not created in Phase 1". Installing a PDF-assembly library for code that must not run in Phase 1 would be dead weight; logged as an `ISS-` deviation from step 1's literal (pre-scope-change) instruction.
+
 ### 2026-09-13 (T-004)
 
 - Scope: T-004 (`packages/database` — Drizzle ORM/drizzle-kit/`pg`/`dotenv` first use in this codebase, plus `tsx` added to run `migrate.ts`/`reset.ts` directly).
