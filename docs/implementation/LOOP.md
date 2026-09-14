@@ -136,11 +136,12 @@ Read `00-master-plan.md` §1–§4 and §7, `01-conventions.md` (all), `04-hando
    commits to `build/demo` outside a merge.)
 3. Remove the worktrees you created (`git worktree remove ../rk-<task>`); the branches stay on origin.
 4. Print, as the last thing you say (fill `<model · effort>` from the tier table for the queued
-   tasks' classes — validate column):
+   tasks' classes — validate column; `<tasks>` is the literal Queue `tasks:` line you just wrote to
+   `NEXT.md`, so the printed line is self-contained and needs no cross-reference to find the task ids):
 
    ```
    Implemented: <tasks> (<done|partial each>). Questions for you: <list or none>.
-   Open a NEW session on <model · effort> (validation of <classes>) and paste:
+   Open a NEW session on <model · effort> to VALIDATE <tasks> and paste:
    Read docs/implementation/LOOP.md and do exactly what it says. Ask me only when it tells you to.
    ```
    (If a parallel lane session is still `[running]`, say instead: "Wait for the Lane <X> session to
@@ -196,11 +197,13 @@ sub-agents, each in its own worktree of the task branch, or one after the other)
    Commit the register files on `build/demo` (`loop: queue implement <tasks>`), push.
 2. Remove your worktrees.
 3. Print, as the last thing you say (fill `<model · effort>` from the tier table — implement
-   column — for the classes of the tasks you just queued):
+   column — for the classes of the tasks you just queued; `<tasks>` is the literal Queue `tasks:`
+   line you just wrote to `NEXT.md`, so the printed line is self-contained and needs no
+   cross-reference to find the task ids):
 
    ```
    Validated: <task: verdict, …>. Merged: <tasks>. Needs your decision: <list or none>.
-   Open a NEW session on <model · effort> (implementing <classes>) and paste:
+   Open a NEW session on <model · effort> to IMPLEMENT <tasks> and paste:
    Read docs/implementation/LOOP.md and do exactly what it says. Ask me only when it tells you to.
    ```
    Then stop.
