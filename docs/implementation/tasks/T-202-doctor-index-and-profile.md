@@ -1,0 +1,114 @@
+# T-202 — Doctor index and doctor profile pages (port)
+
+| Field | Value |
+|---|---|
+| Story | STORY-DIR-001, STORY-REV-004, STORY-DIR-002 (claim entry point only) |
+| Phase / Lane | 2 / B |
+| Class → model | M2 → Claude Sonnet 5 (alternate GPT-5.6 Terra); validator: GPT-5.6 Terra |
+| Effort setting | `high` |
+| Estimate | 4–5 h agent; validation 1–1.5 h |
+| Depends on | T-201 (VMs + queries), T-008 (shell, ported CSS, `useAnnounce`, `Sheet`) |
+| Parallel-safe with | T-203 after this task's shared components land (T-203 imports them) — sequence T-202 first; T-204, T-205 (lane A) |
+
+## Goal
+
+Port `renderDoctorIndex` and `renderProfile` (and the helpers they use) into React pages under
+`/{locale}/doctors` and `/{locale}/doctors/{publicId}`, pixel-faithful to 04b, in both locales, reading
+`DoctorCardVM` / `DoctorProfileVM` from T-201. This task also creates the **shared patient
+primitives** every later patient page reuses (`Byline`, `AccountRow`, `DistBlock`, `SentimentBlock`,
+`OutcomeBlock`, `Badge`, `NotVerified`, `EmergencyPanel`, `Avatar`, `MiniList`, `IndexHead`).
+
+## Read first
+
+1. `docs/implementation/01-conventions.md` §6–§9 (i18n, CSS port, React port, routing) and §14
+2. `docs/implementation/03-routes-and-contracts.md` §1 (patient rows for `/doctors`), §6
+3. `docs/implementation/02-data-model.md` §17 (publication states → 404)
+4. Prototype `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/app.js`, read **fully**: `badge` 271, `notVerified` 273, `docCount` 277, `distBlock` 286–316, `sentimentBlock` 317, `outcomeBlock` 321–337, `emergencyPanel` 338–350, `initials` 479, `byline` 485–515 (and the two comment blocks above it — port the comments), `doctorLink` 516, `facilityLink` 521, `accountRow` 527–553, `doctorEntry` 615–635, `profileAccounts` 669–678, `renderProfile` 679–803, `indexHead` 1745, `renderDoctorIndex` 1754–1763; handlers at 2519 (`data-doctor`), 2542–2553 (`data-pcond`, `data-pfilter`, `#claim`); `titleForView` 226 (`profile`, `doctors` cases)
+5. `ui-design-prototype/shared/rogikotha-data.js` `avatar` 1451–1477 (port the SVG generation exactly)
+6. `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/styles.css` — search for `.p-hero`, `.p-grid`, `.p-side`, `.facts`, `.prov`, `.pillrow`, `.breakdown`, `.doc-entry`, `.dist`, `.capsules`, `.cap`, `.outcome-row`, `.acct`, `.byline`, `.index-head`, `.index-list`, `.count-line` to confirm the class names you must keep
+
+## Owned paths
+
+- `apps/web/src/app/[locale]/(patient)/doctors/page.tsx`
+- `apps/web/src/app/[locale]/(patient)/doctors/[publicId]/page.tsx`
+- `apps/web/src/components/patient/DoctorIndex.tsx`, `DoctorProfile.tsx`, `DoctorEntry.tsx`, `ProfileFilters.tsx` (client), `ClaimSheet.tsx` (client)
+- `apps/web/src/components/patient/shared/{Byline.tsx,AccountRow.tsx,DistBlock.tsx,SentimentBlock.tsx,OutcomeBlock.tsx,Badge.tsx,NotVerified.tsx,EmergencyPanel.tsx,Avatar.tsx,MiniList.tsx,IndexHead.tsx,DoctorLink.tsx,FacilityLink.tsx}`
+- `apps/web/src/lib/format.ts` additions only if `packages/i18n` lacks a formatter you need (prefer adding to `packages/i18n/src/format.ts` and note it)
+- `packages/i18n/messages/{en,bn}.json` — **new keys only**, listed in step 2
+- Component tests `apps/web/src/components/patient/**/*.test.tsx`
+
+## Not in scope
+
+- Facility, condition, topic pages → T-203. Search results and compare → T-206. Discover → T-207.
+- The claim **command** and its server action → T-204. This task ships `ClaimSheet` with the copy and form fields and calls `claimProfileAction` if it exists; if T-204 has not merged, render the sheet with `// TODO(T-204)` and a disabled submit.
+- The "Write about this doctor" button targets `/write?doctor={publicId}`; the composer is T-306.
+- Any change to the ported CSS beyond `/* added: T-202 … */` lines.
+
+## Steps
+
+1. **Shared primitives first** (they are the contract for T-203/T-206/T-207/T-307):
+   - `Avatar({seed, hue, size})` — port `avatar()` verbatim as JSX; `role="img" aria-hidden focusable="false"`.
+   - `Badge({cls, children})` → `<span class="badge {cls}">`. `NotVerified()` → `.badge.warn` with `title=label.notVerifiedWhy`, text `label.notVerified`.
+   - `DistBlock({dist, prefix, title?, compact?})` — port `distBlock` exactly: empty → `<p class="denominator">label.notProvided`; capsules `<span class="cap c-{key}" style="--g:{count||0.4}"><b>{n}</b><em>{label}</em>` with `role="img"` + `aria-label` = the plain sentence (`"3 positive, 1 mixed, 1 negative — of 5 accounts"`); denominator line `sentiment.of {total} sentiment.accounts · {title}`; `limited` line `label.limitedData — label.limitedDataWhy`. `compact` variant as in the prototype. Numbers through `formatNumber(n, locale)`.
+   - `SentimentBlock({dist, compact})` = `DistBlock` with keys `['positive','mixed','negative']`, prefix `sentiment.`, title `sentiment.title`. `OutcomeBlock({dist})` — port `outcomeBlock`: heading `outcome.title`, rows for `helped, none, worse, uncertain` with `.track > i style="--w:{count/total}"` and `.n` = `{n}/{total}`, `outcome.selfReported` denominator, limited line.
+   - `Byline({author: BylineVM, variant, when?, static?, relationship?})` — port `byline` including the long comment. Anonymous: avatar glyph `—`, name = `byline.anonSentence`, chip `compose.identity.anon`, **never a link, never accent**. Named/pseudonymous: lede key by variant (`experience.writtenBy` / `byline.commentBy` / `byline.yourIdentity`), name is a `<Link href="/authors/{username}">` with `aria-label = byline.otherBy {name}` unless `static`; chip `byline.identity.{named|pseudonymous}` (map `named→'real'`, `pseudonymous→'pseudo'` to the existing keys `byline.identity.real|pseudo`); relationship chip `rel.{relationship}` (not for `comment`); `when` as `<time>`. `initials` port: strip `Dr.`/`ডা.` prefix; pseudonymous → `@` + first char.
+   - `DoctorLink({publicId, name})`, `FacilityLink({publicId, label})` → `<Link class="link-btn name-link" title=nav.viewDoctor|nav.viewFacility>`.
+   - `AccountRow({card: ExperienceCardVM})` — port `accountRow`: `.row-flags` = sentiment badge (`badge {sentiment}` text `sentiment.{s}`; omit when undefined), outcome `badge plain`, condition `.tag`, documents badge (`warn` with `{n} label.documentsWord` or `plain label.noDocuments`), `<h3>` title, `Byline variant="row"`, `.who` line (`review.episodeDate: {period}` + `DoctorLink`), `.excerpt` (VM already truncated; append `…`), `.btn.small.ghost` → `<Link href="/experiences/{publicId}">review.readFull`.
+   - `EmergencyPanel()` — port `emergencyPanel`; numbers from `ConfigValues.emergency` (server component reads `config.current`); `tel:` hrefs; labels from the **new keys** below; last-verified line via `formatDate`.
+   - `MiniList` / `MiniRow({href, avatar, title, sub, loc?})` → `.mini-list > a.mini-row` (the prototype used `<button>`; a navigation is a link — keep the classes).
+   - `IndexHead({kicker, title, note})`.
+2. **New i18n keys** (both files, same commit): `emergency.ambulanceLabel` (Ambulance / অ্যাম্বুলেন্স), `emergency.healthLineLabel` (Health guidance / স্বাস্থ্য পরামর্শ), `label.documentsWord` (documents / কাগজপত্র), `filter.gender.female` (Female / নারী), `filter.gender.male` (Male / পুরুষ), `profile.total` (Total / মোট), `discover.kicker` (Bangladesh · Public beta / বাংলাদেশ · পাবলিক বেটা), `discover.editorialNote` (Editorial note / সম্পাদকীয় নোট), `discover.latest` (From the latest accounts / সাম্প্রতিক বিবরণ). These replace inline `state.lang === 'bn' ? … : …` literals in the prototype; T-207 reuses the `discover.*` ones.
+3. **`/doctors` page** — server component: `directory.listDoctors` sorted by localized name (`localeCompare` with the locale); render `IndexHead(nav.discover, nav.profile, index.doctorsNote)`, `.count-line` `{n} · nav.profile`, `.index-list` of `DoctorEntry`. `generateMetadata` title = `nav.profile`.
+4. **`DoctorEntry({card, pinned?, onPin?})`** — port `doctorEntry`: `.doc-entry[role=group]` → `.doc-av` Avatar 48, `<h3>DoctorLink`, `.doc-sub` `{specialty} · {area}, {city}`, `.doc-treats` up to 3 `{condition} ({count})` joined by ` · `, `.doc-flags` NotVerified + documents badge, `.doc-side` compact SentimentBlock + the pin button. The pin button is only rendered when `onPin` is provided (T-206 supplies it); on the index it is absent.
+5. **`/doctors/[publicId]` page** — server component: resolve redirect (`directory.resolvePublicId`, `redirect()` 301 on change), load `directory.getDoctor` with URL params `?condition=&outcome=&relationship=&docs=1`; not found or unpublished → `notFound()`. Render `DoctorProfile` exactly in the prototype's block order:
+   1. `.panel > .p-hero`: Avatar 118, kicker `profile.kicker`, `<h1>` name, `.p-spec`, `.p-flags` (NotVerified, `{accountsTotal} profile.accounts` lowercased, `prov.provider` badge if `claimed`), `.p-actions` (`.btn` Link to `/write?doctor=` with `profile.write`; `.btn.ghost.small` `profile.claimThis` opens `ClaimSheet`).
+   2. `.p-grid` left: conditions panel (`profile.conditions`, note `profile.byCondition`, `.pillrow` with "all" pill `profile.allConditions ({accountsTotal})` + one per condition `({count})`, `aria-pressed` from URL param — these are links that set `?condition=`), then `SentimentBlock(scopedSentiment)` and `OutcomeBlock(scopedOutcome)`.
+   3. breakdown panel: `profile.breakdown` table `.breakdown` with headers `filter.condition`, `sentiment.positive|mixed|negative`, `profile.total`; rows per condition; ` ⚠` after total when limited; denominator `label.limitedDataWhy`.
+   4. filter panel `profile.filterAccounts`: `.pillrow` of outcome pills (`outcome.{k}`), `profile.hasDocuments`, relationship pills (`rel.{k}`), all as links toggling URL params (`ProfileFilters` is a client component only to keep the pressed state instantaneous; it must still work as plain links); denominator `profile.showing {showing} / {scopedTotal}`.
+   5. `<h2 class="section-head">profile.accounts` + `AccountRow` list or `.empty-state` `mine.empty`.
+   6. `aside.p-side`: provenance panel (`prov.title`, `ul.facts` li = `.k` key, value, `.prov[data-p]` `prov.{provenance}`) rendering **only** the `facts` the VM provides; chambers panel (`profile.chambers`) with `data-p` provenance; facilities panel (`profile.facilities`, MiniList of branches, note `profile.facilitySep`) only when non-empty.
+   Keys for facts labels: `profile.bmdc`, `profile.specialty`, `profile.qualifications`, `profile.languages`, `profile.fee`.
+6. **Metadata & a11y**: `generateMetadata` title = doctor name (both locales); `robots: index` (the prototype's `setNoindex(true)` on the profile is a prototype-era guard — public doctor profiles **are** indexable; note this in hand-off). `useAnnounce` "View: profile" equivalent on navigation is handled by the layout; nothing extra here.
+7. **`ClaimSheet`** — `Sheet` titled `profile.claimThis`, body `profile.claimNote`, then (signed-in only) a form: method (`text`), evidence note (`textarea`, private) → `claimProfileAction` (T-204). Signed-out: the auth gate copy `auth.gate.title/body` with the two buttons (T-102 owns the gate component `AuthGate`; import it if present, else inline the two links with `// TODO(T-102)`).
+8. Run `npx impeccable detect apps/web/src --no-advisory`, `pnpm contrast`, `pnpm check`.
+
+## Acceptance checks
+
+| Check | Command | Expected |
+|---|---|---|
+| Index renders both locales | `pnpm vitest run apps/web -t "DoctorIndex"` | 6 entries alphabetical by localized name; Bengali digits in counts under `bn` |
+| Profile block order | `pnpm vitest run apps/web -t "DoctorProfile order"` | headings appear in the order of step 5 |
+| Not provided semantics | `pnpm vitest run apps/web -t "omits"` | a doctor with no `fee` shows no fee row; a doctor with zero accounts shows `label.notProvided` in both blocks, never `0` |
+| Filters via URL | `pnpm vitest run apps/web -t "filters"` | `?condition=&outcome=helped&docs=1` yields pressed pills and `showing x / y` |
+| Redirect | manual: visit an old public id after a T-204 merge (or a seeded redirect) | 301 to the new URL |
+| Anonymous byline | `pnpm vitest run apps/web -t "anonymous byline"` | no `<a>` inside `.byline` for an anonymous card; text = `byline.anonSentence` |
+| Impeccable + contrast | `npx impeccable detect apps/web/src --no-advisory && pnpm contrast` | zero findings |
+| Visual | open `/en/doctors/{d1}` and `/bn/doctors/{d1}` beside the prototype `#doctors/d1` at 1280 and 390 px | no layout difference a reviewer can point to |
+| Full check | `pnpm check` | green |
+
+## Tests to write
+
+- Component tests (Testing Library, `en` and `bn`) for `DistBlock` (empty, limited, compact, aria-label sentence), `OutcomeBlock`, `Byline` (three identity modes; `static`), `AccountRow`, `DoctorEntry` (no pin button without `onPin`), `DoctorProfile` (block order, facts omission, filters, claim sheet opens), `DoctorIndex`.
+- A snapshot-free DOM assertion that every `.cap` has a `<b>` count and the parent has `role="img"`.
+
+## Hard-rule checklist
+
+- [ ] Distributions show count + denominator; capsules carry their own count; no percentage text, no score.
+- [ ] "Not provided" / "No documents" for missing values; no `0`.
+- [ ] "Limited data" line when `dist.limited`.
+- [ ] `NotVerified` rendered on every entry and on the profile hero.
+- [ ] Facility separation note (`profile.facilitySep`) present where the prototype had it.
+- [ ] Anonymous author never linked or accent-coloured.
+- [ ] Neutral ordering: index is alphabetical; nothing sorts by sentiment.
+- [ ] Both locales; numerals via formatter; no inline literals left (grep for `=== 'bn'`).
+- [ ] Emergency panel numbers from config; `tel:` links.
+- [ ] No agent/tool attribution.
+
+## Hand-off (implementer fills in)
+
+### What changed
+### Not done and why
+### Questions for the human
+### Follow-ups
+### `pnpm check` output summary
+### Hard-rule evidence

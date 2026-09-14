@@ -1,6 +1,6 @@
 # RogiKotha decision log
 
-**As of:** 2026-09-06  
+**As of:** 2026-09-12  
 **Rule:** A recommendation is not a confirmed product decision. Founder confirmation, source authority, and mandatory specialist sign-offs are recorded separately.
 
 ## Confirmed source-authority decisions
@@ -93,6 +93,27 @@ The console was reported as calm but unreadable: nothing drew the eye, gaps did 
 Three directions were built against the same markup and content so the only variable was the visual system: A (Chart Tray, surface-led), B (Ink Ledger, type-led) and C (Signal Ward, colour-led). A was chosen for the console because a moderator works the queue for hours and re-locates position from peripheral vision; a plane boundary is pre-attentive and survives the type inflating 44% in Bengali, where a weight-led hierarchy would not. Its honest cost is recorded: light mode is structurally weaker than dark because white is a ceiling, and the direction keeps its structure in backgrounds, so it degrades under `forced-colors` and in print — the stylesheet carries a `forced-colors` block that re-adds the planes as borders, which is an admission that the structure was never in the markup. B and C are archived at `ui-design-prototype/.archive/admin-shell-studies/`.
 
 Verified: page-to-card is now 1.094:1 light and 1.171:1 dark; tray-to-well is 1.199/1.306; selection is 1.173 against hover 1.078; every text pair and every control border clears AA and WCAG 2.2 SC 1.4.11 on every plane in both themes; a jsdom harness boots the console and passes 33 behaviour checks with no runtime errors. Not verified: anything visual — no screenshot of the ported console was taken, and the sub-760px tab bar has not been seen rendering.
+
+## Founder decisions — round 4 (2026-09-10, demo implementation planning)
+
+Recorded during the planning session that produced `docs/implementation/`. Each was put to the founder as an explicit choice with a recommendation and confirmed in that session.
+
+| ID | Decision | Scope/status |
+|---|---|---|
+| FD-031 | The local demo is built on the **local-development composition** of the architecture: a real Next.js application, PostgreSQL 18 in Docker, Better Auth email/password with confirmed email, a pg-boss worker, filesystem evidence storage, and Mailpit as the mail sink. Real accounts, writes and uploads are enabled; the seed is the synthetic corpus. The read-only USD 0 public demo of ADR-0010/FD-012 remains a separate, unbuilt composition. | Confirmed 2026-09-10; does not change AD-14 — demo markers stay on and production still requires production configuration |
+| FD-032 | The product frontend **ports the approved prototype CSS and tokens as plain CSS** into React components, class names verbatim. Tailwind CSS, shadcn, Radix and Motion are **not adopted** in Phase 1. Pixel fidelity to 04b and Chart Tray outranks framework conformance. | Confirmed 2026-09-10; supersedes the Styling, Accessible primitives, Component source and Motion rows of `docs/architecture/DEPENDENCY-SELECTIONS.md`; ADR-0002 (Next.js/TypeScript/PostgreSQL) unchanged |
+| FD-033 | The first implementation uses a **trimmed monorepo**: `apps/web`, `apps/worker`, `packages/{contracts,domain,application,database,adapters,i18n,test-support}`. The spine's `auth`, `evidence`, `search` and `ui` packages fold into `adapters`, `database` and `apps/web`; every port stays an interface in `application` so they can be extracted later. | Confirmed 2026-09-10; refines the Structural Seed of `ARCHITECTURE-SPINE.md` without changing any AD rule |
+| FD-034 | Sign-up, sign-in, email confirmation, password reset, session control, staff sign-in, staff new-device approval and password recheck are **specified now** in `docs/design/auth-screens-spec.md` and get a **prototype pass** (D-001) before implementation. Staff use the **same account system** with a staff role; the console's role switcher is replaced by real roles and three seeded staff accounts. | Confirmed 2026-09-10; closes the gap that STORY-AUTH-001/002 had no screens or design |
+| FD-036 | Phase 1 evidence upload accepts **JPEG and PNG images only**. PDF intake, rasterisation, derivative-PDF assembly and the multi-page viewer, then HEIC and Office formats, are planned as a separate Phase 2 (`docs/implementation/07-phase-2-document-evidence.md`) with their own malicious-corpus validation. FD-002's "narrow allowlist with later expansion designed in" is satisfied more narrowly than the JPEG/PNG/PDF planning baseline. | Confirmed 2026-09-12 (CR-001); the storage/scanner/sanitiser ports are unchanged so Phase 2 adds adapters, not architecture |
+| FD-035 | In the demo the following are **real, not stubbed**: PostgreSQL search (FTS + trigram + Bangla/Banglish aliases), staff new-device approval, retention and legal-hold jobs with a demo clock, account export and orchestrated deletion, and a PWA with a safe public-shell cache. ClamAV runs as a container that is **optional at start-up but fail-closed at scan time**: a scan that cannot run never advances an evidence item. | Confirmed 2026-09-10; consistent with FD-002/004/005/020/021/023 and AD-6/AD-7 |
+
+### Version pins taken with these decisions
+
+TypeScript stays on 6.x (TypeScript 7 breaks the lint toolchain until 7.1), pnpm on 11.x, Vitest on 4.1.x; Better Auth moves to the now-stable 1.7.3 line (ADR-0003's "exclude 1.7 prereleases" is satisfied); `pdf-lib` is replaced by the maintained `@cantoo/pdf-lib` fork; MinIO is no longer a candidate for anything. Evidence and sources: `docs/status/dependency-check-log.md` (2026-09-10).
+
+### Model routing taken with these decisions
+
+`docs/planning/research/model-assignment-2026-09-10/research.md` and `docs/implementation/00-master-plan.md` §7 replace the 2026-08-30 assignment classes for the demo build: Sonnet 5 / GPT-5.6 Terra for routine and frontend-port work, Opus 5 (alternate Sol) for high-risk work with cross-vendor validation and founder approval, Luna / Haiku 4.5 for mechanical ports, Fable 5.1 not used for implementation.
 
 ## Provisional technical recommendations
 

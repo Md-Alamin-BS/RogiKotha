@@ -1,5 +1,7 @@
 # RogiKotha dependency selections
 
+> **2026-09-10 (FD-032/FD-033, demo build).** For the local demo implementation the Styling (Tailwind), Accessible primitives (Radix), Component source (shadcn) and Motion rows are **not adopted**; the frontend ports the approved prototype's plain CSS and tokens. Pins actually used, with the reasons for departing from the newest releases (TypeScript 6 not 7, pnpm 11 not 12, Vitest 4 not 5, Better Auth 1.7.3, `@cantoo/pdf-lib`, no MinIO), are in `docs/implementation/00-master-plan.md` §3 and `docs/status/dependency-check-log.md` (2026-09-10). Everything else in this table stands.
+
 Status: Approved planning baseline; re-check exact patches immediately before installation  
 Snapshot: 2026-08-30  
 Principle: Prefer native platform capabilities and maintained open-source components. A listed dependency is not installed by this planning phase.
