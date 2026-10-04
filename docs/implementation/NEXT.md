@@ -2,6 +2,10 @@
 
 _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 
+> ⚠️ **AI-DLC migration pending.** Do not start implementation: show the human this warning and ask
+> first. The resources must be converted into AI-DLC artifacts — see `docs/aidlc-migration/README.md`.
+> Keep this banner when rewriting this file until that migration says **Status: DONE**.
+
 **Updated:** 2026-09-14 · by: loop implement session (Claude Code · claude-sonnet-5 · effort high)
 
 ## Queue (machine-read by LOOP.md)

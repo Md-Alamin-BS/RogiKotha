@@ -27,6 +27,29 @@ Rules:
 
 ## Entries
 
+### 2026-10-04 (AWS AI-DLC — process tooling)
+
+- Scope: Install AWS AI-DLC (`awslabs/aidlc-workflows`) as the project's development method,
+  configured for Claude Code and Codex CLI. Conversion of existing resources is deferred
+  (`docs/aidlc-migration/README.md`).
+- Checked: AI-DLC 2.10.0 (GitHub release marked Latest, 2026-09-24) vs
+  2.10.1-preview.20261003.2 (pre-release, 2026-10-03); 2.9.1 previews. Licence MIT-0. Installer
+  `install.ps1` verifies SHA-256 checksums and GitHub attestations. Codex harness needs
+  Codex CLI ≥ 0.145.0 (Codex not installed on this machine at check time); Claude Code 2.1.289
+  local.
+- Findings: 2.10.0 is the current stable; everything newer is a daily preview. 2.10.0 release
+  notes list no known issues; it adds harness coexistence (Claude + Codex in one repo) and Windows
+  drive-letter fixes. The Claude harness registers about 12 hooks in `.claude/settings.json`; the
+  guard hooks fail open outside an active code-generation stage. The unit-claim registry commits
+  as `AI-DLC Unit Claims <aidlc-unit@local>` — conflicts with the no-tool-identity rule in
+  `AGENTS.md`; recorded as an open decision in the migration file.
+- Decision: install and pin 2.10.0 (`.aidlc-version`). Do not follow the preview channel. Strip
+  the AWS MCP servers from `.mcp.json` (project does not run on AWS); keep `context7`.
+- Install result: 2.10.0 has a Windows Git Bash launcher bug (#1545, fixed upstream, unreleased)
+  and an ownership-manifest bug that would delete project skills on refresh; both worked around,
+  see `docs/aidlc-migration/README.md` §1. Re-check for a release containing the #1545 fix before
+  upgrading.
+
 ### 2026-09-13 (T-007)
 
 - Scope: T-007 (`packages/test-support` — first use of `@node-rs/argon2` and `sharp` in this codebase's actual dependency graph, and `tsx` for this package's own scripts; `@cantoo/pdf-lib` from the task's original step 1 is **not** installed, see Decision).

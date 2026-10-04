@@ -18,6 +18,12 @@ self-sufficient for running the loop. Where they differ, this file wins in loop 
 
 ## 0. Every session, before anything else
 
+0. **AI-DLC migration gate.** If `docs/aidlc-migration/README.md` exists and does not say
+   **Status: DONE**, stop before any other step (before switching branches). Show the human:
+   "⚠️ AI-DLC migration pending — this loop and its resources must be converted into AI-DLC
+   artifacts before implementation starts. See `docs/aidlc-migration/README.md`." Then ask:
+   "Convert to AI-DLC first, or run this loop on the old process this once?" Continue only on an
+   explicit answer.
 1. Identify yourself: tool name (puku-cli, Claude Code, Codex) and the model id your tool reports
    (`/model`, `/status`, session header). If the tool cannot tell you, use the model name the human
    configured and say so. Write it as `TOOL · MODEL · EFFORT` in every record you touch.
