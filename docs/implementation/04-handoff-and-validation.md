@@ -30,7 +30,7 @@ contract was met; the second tells the next agent how to work in what was built.
 
 ### Implementer — at start (before any code)
 
-0. `git fetch origin`; work from the updated `build/demo`. If `NEXT.md` changed upstream (another machine pushed), re-read it before trusting your assignment.
+0. `git fetch origin`; work from the updated `main`. If `NEXT.md` changed upstream (another machine pushed), re-read it before trusting your assignment.
 1. Read `NEXT.md`. If it names a different task for your lane than the one you were given, stop and ask the human.
 2. Read the `handoffs/` files of every task in your task's **Depends on** row, and any open `ISSUES.md` rows whose *area* matches your owned paths.
 3. Read your task file and the docs it names. Then append to `BUILD-LOG.md`: `<date time> · lane X · T-xxx · started · <branch>`.
@@ -43,7 +43,7 @@ contract was met; the second tells the next agent how to work in what was built.
 3. Add an `ISS-` row for every defect, gap, surprise or workaround you met — including ones you fixed (status `fixed in T-xxx`), so patterns become visible.
 4. Rewrite `NEXT.md`: current state in three lines, next task for your lane (from the master plan order, skipping anything blocked), the first three things that agent should do, blockers, questions for the human.
 5. Append to `BUILD-LOG.md`: `… · T-xxx · finished (done|partial) · <commit> · <one-line note>`; set the tracker row to `validating`.
-6. Commit (task paths only, no attribution), verify the author and message with `git log -1 --format='%an <%ae>%n%B'`, rebase on `origin/build/demo`, push the task branch, open a PR into `build/demo` (rules in §6). Stop. Do not start the next task in the same session.
+6. Commit (task paths only, no attribution), verify the author and message with `git log -1 --format='%an <%ae>%n%B'`, rebase on `origin/main`, push the task branch, open a PR into `main` (rules in §6). Stop. Do not start the next task in the same session.
 
 ### Validator — a new session, the other vendor
 
@@ -55,7 +55,7 @@ contract was met; the second tells the next agent how to work in what was built.
 
 ### Human — daily
 
-Read `NEXT.md` and the open `S1`/`S2` rows in `ISSUES.md`. Merge `PASS` branches into `build/demo` in dependency order, then re-run `pnpm check` on `build/demo` and append `… · merged`. Answer the questions in `NEXT.md` (write the answer into `NEXT.md` or the task file — not only in chat, because the next agent will not see the chat). Log your own change requests in `06-change-requests.md`.
+Read `NEXT.md` and the open `S1`/`S2` rows in `ISSUES.md`. Merge `PASS` branches into `main` in dependency order, then re-run `pnpm check` on `main` and append `… · merged`. Answer the questions in `NEXT.md` (write the answer into `NEXT.md` or the task file — not only in chat, because the next agent will not see the chat). Log your own change requests in `06-change-requests.md`.
 
 ## 3. Validation gates (what "tested and validated after each task" means)
 
@@ -75,7 +75,7 @@ Each task adds at least one smoke assertion for the behaviour it delivered, in `
 
 ### 3.2 Rules for verdicts
 
-- In loop mode (`LOOP.md`) the validating session merges `PASS` branches into `build/demo` itself after a green `pnpm check` on the merged result, and same-model validation of an M3 task is allowed with a `human approval required` line that the human signs before the phase gate.
+- In loop mode (`LOOP.md`) the validating session merges `PASS` branches into `main` itself after a green `pnpm check` on the merged result, and same-model validation of an M3 task is allowed with a `human approval required` line that the human signs before the phase gate.
 
 - `FAIL` → the implementer's lane fixes the listed `ISS-` rows first (same class of model, fresh session, with the validation record pasted in). Two `FAIL`s on an M1/M2 task → escalate the class (master plan §7).
 - `PASS WITH FOLLOW-UP` → merge; each follow-up is an `ISS-` row with `S2`/`S3`, an owner task, and a due gate (usually the phase gate).
@@ -107,7 +107,7 @@ Founder's standing instruction (given 2026-09-13, prompted by `ISS-077`/`ISS-078
 one full turn after `T-003` merged): **default to fixing it now if it is small**, rather than only
 logging it and asking. Use this test:
 
-- **Fix it immediately, in its own small branch/worktree (`task/cr-nnn-<slug>` off `build/demo`), when
+- **Fix it immediately, in its own small branch/worktree (`task/cr-nnn-<slug>` off `main`), when
   all of these hold:** the fix is mechanical and unambiguous (a bug with one clear correct answer,
   not a design choice); it does not touch a hard rule, a data-model boundary, or a pinned dependency
   version; it needs no new product/UX decision; and it is genuinely small (rule of thumb: `CR` size
@@ -116,7 +116,7 @@ logging it and asking. Use this test:
   the code), correct any hand-off/task-file field that is now factually wrong (correcting a miscount
   or filling a blank commit-hash field is fixing an error, not silently rewriting the task — see the
   `ISS-082` precedent), close the `ISS-` row(s) as `fixed in CR-nnn` with how, add one `CR-nnn` row to
-  `06-change-requests.md`, and merge to `build/demo` the same way a task branch does: a fresh `pnpm
+  `06-change-requests.md`, and merge to `main` the same way a task branch does: a fresh `pnpm
   check` (and `pnpm smoke`) on the merge result, no attribution anywhere, register files updated. A
   fix this small and well-specified does not need to wait for a fresh validator session — but run the
   full suite plus whatever adversarial check caught the original bug yourself before merging, and say
@@ -145,10 +145,10 @@ same investigation from scratch.
 ## 6. Two lanes in parallel
 
 - Lane A (backend) and lane B (frontend) each own a git worktree and a task branch at a time. `NEXT.md` has one "next" per lane.
-- Merge into `build/demo` in the master plan's dependency order only; a lane never merges its own branch — the human does, after `PASS`.
+- Merge into `main` in the master plan's dependency order only; a lane never merges its own branch — the human does, after `PASS`.
 - A task that must change a shared file it does not own (dictionary files are the usual case) says so in its handoff; the human merges that task first.
-- Rebase task branches on `build/demo` before validation when the dependency landed after the branch was cut; log it in `BUILD-LOG.md`.
-- Remote: `origin` (GitHub) holds `build/demo` and the task branches. Every session fetches first; task branches are pushed and opened as PRs into `build/demo`; nobody pushes to `build/demo`/`main` except a validator told `MERGE: yes` after PASS, or the human. Conflict rules: owned paths → resolve and re-check; register files (`NEXT.md`, `ISSUES.md`, `BUILD-LOG.md`, tracker) → union of both sides then rewrite `NEXT.md` from the newest state; lockfiles, migration numbers, foreign files → ask the human. `--force-with-lease` only on one's own task branch; never `--force`. Full text: `08-agent-prompts.md` §3.
+- Rebase task branches on `main` before validation when the dependency landed after the branch was cut; log it in `BUILD-LOG.md`.
+- Remote: `origin` (GitHub) holds `main` and the task branches. Every session fetches first; task branches are pushed and opened as PRs into `main`; nobody pushes to `main` except a validator told `MERGE: yes` after PASS, or the human. Conflict rules: owned paths → resolve and re-check; register files (`NEXT.md`, `ISSUES.md`, `BUILD-LOG.md`, tracker) → union of both sides then rewrite `NEXT.md` from the newest state; lockfiles, migration numbers, foreign files → ask the human. `--force-with-lease` only on one's own task branch; never `--force`. Full text: `08-agent-prompts.md` §3.
 
 ## 7. Budget for this protocol
 
@@ -169,4 +169,4 @@ Full citations: `docs/planning/research/agent-handoff-validation-2026-09-12/rese
 | Human phase gate (G5) even though every task was validated | DORA 2025: teams are merging more with zero review while perceiving higher quality; AI amplifies existing discipline | research |
 | In-repo `ISSUES.md` instead of GitHub Issues during the build | it stays in every agent's file context; Codex's GitHub connector cannot create issues at all | official gap + community |
 | 8 % handoff/re-work budget plus a 20–30 % calendar buffer | METR's RCT: experienced developers were 19 % slower with AI while believing they were faster; no vendor publishes a re-work rate — measure your own after Phase 0 and adjust | research |
-| `claude --worktree <lane>` per lane, `.worktreeinclude` for `.env`, daily merges to `build/demo`, file-disjoint lanes | Claude Code worktree docs (isolation checks, `baseRef`); community consensus that worktrees remove branch collisions but not semantic conflicts | official + community |
+| `claude --worktree <lane>` per lane, `.worktreeinclude` for `.env`, daily merges to `main`, file-disjoint lanes | Claude Code worktree docs (isolation checks, `baseRef`); community consensus that worktrees remove branch collisions but not semantic conflicts | official + community |

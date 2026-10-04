@@ -39,12 +39,8 @@ self-sufficient for running the loop. Where they differ, this file wins in loop 
    session runs at the higher one's tier; sub-agents get their own model per task (§1.1).
 2. Read `AGENTS.md`. No tool, model or agent identity in code, comments, docs, commit author, commit
    message or trailers — ever. Check after every commit (step 5.6).
-3. `git fetch origin`.
-   - If `docs/implementation/` is **not committed** yet (first run): ask the human once —
-     "May I commit all current changes to `main` as 'Add demo implementation plan', push, and create
-     `build/demo`?" — then do it: `git add -A && git commit -m "Add demo implementation plan"`,
-     `git push origin main`, `git switch -c build/demo && git push -u origin build/demo`.
-   - Otherwise: `git switch build/demo && git pull --ff-only origin build/demo`.
+3. `git fetch origin`, then `git switch main && git pull --ff-only origin main`. (`main` is the
+   integration branch; `build/demo` was merged into it and deleted on 2026-10-04.)
 4. Read `docs/implementation/NEXT.md`. Its **Queue** block is your instruction:
 
    ```
@@ -57,7 +53,7 @@ self-sufficient for running the loop. Where they differ, this file wins in loop 
    **Lane-scoped sessions.** If the human's prompt ends with `Lane A` or `Lane B`, you handle only
    the queued task whose task-file header says that lane (skip tasks marked `[ready]` or
    `[running]` by another session; mark yours `[running]` in `NEXT.md`, commit and push that one-line
-   change on `build/demo` immediately so the other session sees it). Two lane-scoped sessions may run
+   change on `main` immediately so the other session sees it). Two lane-scoped sessions may run
    at the same time in two terminals. Without a lane word, one session handles every queued task.
 5. Confirm git identity: `git config user.name` / `user.email` must be the human's (not
    puku/noreply/bot). If not, stop and ask the human to fix it.
@@ -76,7 +72,7 @@ Read `00-master-plan.md` §1–§4 and §7, `01-conventions.md` (all), `04-hando
 ### 1.1 Run tasks in parallel when there are two
 
 - Two tasks are in the Queue only if §4 judged them parallel-safe. Give each its **own worktree and
-  branch**: `git worktree add ../rk-<task> -b task/<task-lower>-<short-name> build/demo`
+  branch**: `git worktree add ../rk-<task> -b task/<task-lower>-<short-name> main`
   (if the branch already exists on `origin`, check it out instead and read its last handoff — a
   previous session may have left partial work).
 - If your tool can run sub-agents (puku-cli sub-agents, Claude Code's Agent tool), start one
@@ -113,17 +109,17 @@ Read `00-master-plan.md` §1–§4 and §7, `01-conventions.md` (all), `04-hando
 6. Commit on the task branch: message starts `<task>: `; then run
    `git log -1 --format='%an <%ae>%n%cn <%ce>%n%B'` — if any tool/model name or `Co-Authored-By`
    appears, `git commit --amend --reset-author` and remove the trailer.
-7. Sync and push: `git fetch origin && git rebase origin/build/demo`. Conflicts inside owned paths →
+7. Sync and push: `git fetch origin && git rebase origin/main`. Conflicts inside owned paths →
    resolve keeping both intents, re-run `pnpm check`. Conflicts in `NEXT.md`/`ISSUES.md`/`BUILD-LOG.md`
    /README tracker → keep both sides' rows (renumber colliding `ISS-` ids, keep the log chronological).
    Conflicts in a lockfile, a migration number, or a foreign file → stop as `partial` and report.
    Then `git push -u origin <branch>` (`--force-with-lease` only if this branch was pushed before).
-   Do **not** push to `build/demo` or `main`.
+   Do **not** push to `main`.
 8. Return to the main session: state (done/partial), branch, commit, open questions.
 
 ### 1.3 Close the session (main session, after all tasks returned)
 
-1. On `build/demo` (the main checkout): `git pull --ff-only origin build/demo` first (a parallel
+1. On `main` (the main checkout): `git pull --ff-only origin main` first (a parallel
    lane session may have pushed). Rewrite `NEXT.md` — state of the build in three lines, questions
    for the human (collected from the sub-agents), blockers. In the Queue mark your finished tasks
    `[ready]`. If **every** queued task is now `[ready]`, set `mode: validate` (keep the ids, drop the
@@ -131,9 +127,9 @@ Read `00-master-plan.md` §1–§4 and §7, `01-conventions.md` (all), `04-hando
    the next validate turn starts when that session marks its task `[ready]`. Set each finished task's
    tracker row in `README.md` §5 to `validating`.
    Append `finished (done|partial)` lines to `BUILD-LOG.md` with the model.
-2. Commit these register files on `build/demo` (`git pull --ff-only` first; message
-   `loop: queue validate <tasks>`), push `build/demo`. (These files are the only thing the loop
-   commits to `build/demo` outside a merge.)
+2. Commit these register files on `main` (`git pull --ff-only` first; message
+   `loop: queue validate <tasks>`), push `main`. (These files are the only thing the loop
+   commits to `main` outside a merge.)
 3. Remove the worktrees you created (`git worktree remove ../rk-<task>`); the branches stay on origin.
 4. Print, as the last thing you say (fill `<model · effort>` from the tier table for the queued
    tasks' classes — validate column; `<tasks>` is the literal Queue `tasks:` line you just wrote to
@@ -158,7 +154,7 @@ You did not implement these tasks; validate them independently. Read `04-handoff
 §3–§4, `01-conventions.md` §3, §5, §6, §10, §13, §14. For each task in the Queue (in parallel with
 sub-agents, each in its own worktree of the task branch, or one after the other):
 
-1. `git worktree add ../rk-<task> task/<branch>` from `origin`. If `origin/build/demo` moved since
+1. `git worktree add ../rk-<task> task/<branch>` from `origin`. If `origin/main` moved since
    the branch was cut, rebase the branch onto it (register-file conflicts: keep both; any other
    conflict: report and mark the task `FAIL` with an `S1` issue "needs manual rebase").
 2. Read `handoffs/<task>.md` and the task file including its Hand-off section.
@@ -167,7 +163,7 @@ sub-agents, each in its own worktree of the task branch, or one after the other)
    record's verdict line; the human must add `Approved: <name> <date>` before the phase gate.
 3. Run `pnpm check` and `pnpm smoke` (the whole cumulative suite; `pnpm e2e:smoke` too once it
    exists). Execute every row of the task's Acceptance table; record expected vs observed. Verify the
-   evidence behind each ticked hard-rule item. Read the full diff (`git diff origin/build/demo...HEAD`)
+   evidence behind each ticked hard-rule item. Read the full diff (`git diff origin/main...HEAD`)
    for: commands missing `requires`, missing audit rows, strings missing in `bn.json`, boundary
    violations (`01-conventions.md` §2), private data in view models or logs, files outside owned
    paths, tool/model names anywhere including `git log --format='%an <%ae>%n%B'`. For M3 tasks add
@@ -181,9 +177,9 @@ sub-agents, each in its own worktree of the task branch, or one after the other)
    leave it only as an open `ISS-` row with no path forward. Commit on the task branch (`<task>:
    validation record`, author check as in §1.2.6), rebase, push.
 5. **Merge on PASS** (also PASS WITH FOLLOW-UP when every follow-up has an `ISS-` row with an owner):
-   in the main checkout, `git switch build/demo && git pull --ff-only origin build/demo`,
-   `git merge --no-ff <branch> -m "Merge <task>: <title>"`, run `pnpm check` on `build/demo`; if
-   green, `git push origin build/demo`, set the tracker row to `merged`, append `merged` to
+   in the main checkout, `git switch main && git pull --ff-only origin main`,
+   `git merge --no-ff <branch> -m "Merge <task>: <title>"`, run `pnpm check` on `main`; if
+   green, `git push origin main`, set the tracker row to `merged`, append `merged` to
    `BUILD-LOG.md`. If `pnpm check` is red after the merge, `git merge --abort` is not possible after
    commit — instead `git reset --merge ORIG_HEAD` **before pushing**, mark the task `FAIL` with an
    `S1` issue "integration failure", and do not push.
@@ -194,7 +190,7 @@ sub-agents, each in its own worktree of the task branch, or one after the other)
 1. Build the next Queue with §4. Rewrite `NEXT.md` (state, Queue `mode: implement` with the new
    tasks — a `FAIL`ed task goes back first as "`<task>` — fix ISS-… per docs/validation/<task>.md" —
    questions for the human, blockers). Append `validated <verdict>` lines to `BUILD-LOG.md`.
-   Commit the register files on `build/demo` (`loop: queue implement <tasks>`), push.
+   Commit the register files on `main` (`loop: queue implement <tasks>`), push.
 2. Remove your worktrees.
 3. Print, as the last thing you say (fill `<model · effort>` from the tier table — implement
    column — for the classes of the tasks you just queued; `<tasks>` is the literal Queue `tasks:`

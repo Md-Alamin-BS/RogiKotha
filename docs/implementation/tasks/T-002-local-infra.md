@@ -342,13 +342,13 @@ hand-off recorded "N/A — infra only" because on the pre-T-006 base the command
 ### Hard-rule evidence (re-verified for this change)
 
 - **No agent/tool attribution in any file or commit** —
-  `git diff origin/build/demo...HEAD | grep -inE "claude|gpt|opus|sonnet|haiku|luna|terra|sol|copilot|codex|anthropic|openai|puku|chatgpt|co-authored"`
+  `git diff origin/main...HEAD | grep -inE "claude|gpt|opus|sonnet|haiku|luna|terra|sol|copilot|codex|anthropic|openai|puku|chatgpt|co-authored"`
   now returns matches only inside `docs/implementation/**` and `docs/validation/**`, where
   `LOOP.md` §0.1 mandates a `TOOL · MODEL · EFFORT` run record and where the `ISS-057` finding
   necessarily quotes the offending sentence to be intelligible. Zero matches under `infra/`,
   `packages/`, `apps/`, or any other product path:
   `grep -rinE "claude|opus|sonnet|haiku|codex|puku|anthropic|openai" infra/` → no output.
-  `git log origin/build/demo..HEAD --format='%an <%ae> | %cn <%ce> | %s'` → author and committer
+  `git log origin/main..HEAD --format='%an <%ae> | %cn <%ce> | %s'` → author and committer
   are the human's identity on every commit; no `Co-Authored-By` trailer, no tool name in any
   subject or body.
 - **Scanner is not a start-up dependency (fail-closed)** — unchanged by this edit and re-checked:

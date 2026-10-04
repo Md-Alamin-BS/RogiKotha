@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Story | STORY-… |
-| Commit range | `build/demo..<sha>` |
+| Commit range | `main..<sha>` |
 | Date | |
 | Validator | `<model id>` at effort `<setting>` — validation evidence only, never attribution |
 | Implementer model class | M? (from the task file) |

@@ -7,7 +7,7 @@
 | Class → model | M4 → GPT-5.6 Sol if Opus 5 implemented (else Claude Opus 5); optional final read by Fable 5.1; **human approval required** |
 | Effort setting | high (Sol) / xhigh (Opus) |
 | Estimate | 3–4 h agent; human 1 h |
-| Depends on | T-101, T-102, T-103, T-104, T-105 all merged into `build/demo` |
+| Depends on | T-101, T-102, T-103, T-104, T-105 all merged into `main` |
 | Parallel-safe with | T-201, T-202, T-203, T-207 (read-only task; adds tests only under `docs/validation/` and `apps/web/e2e/phase1/`) |
 
 ## Goal
@@ -35,7 +35,7 @@ Independently prove the Phase 1 security and privacy claims on the real stack (c
 
 ## Steps
 
-1. Check out `build/demo` at the merge commit after T-105; run `pnpm infra:up`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm check`. Record versions (`node -v`, `pnpm -v`, better-auth, next) and the commit range.
+1. Check out `main` at the merge commit after T-105; run `pnpm infra:up`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm check`. Record versions (`node -v`, `pnpm -v`, better-auth, next) and the commit range.
 2. Read the diff of every owned path of T-101–T-105 (`git log --oneline` for the task commits, then `git show`). Note every `// ASSUMPTION(` marker and check it against the spine docs.
 3. Run the negative matrix (table below); for each row record command/steps, expected, observed, pass/fail, and evidence (test name, response capture, Mailpit message id, SQL count).
 4. Write 5–10 adversarial tests the implementers did not write (candidates: username homoglyph `shırin_88`; email with plus-suffix reuse; `next` with backslash `/\evil.example`; step-up cookie replay after sign-out; device approval token used by a different staff account; anonymous alias appearing in `search_documents` body; `identity.reveal` reason with 9 chars; config apply with an extra nested key inside `emergency`; rollback to a non-existent version; `Accept-Language` injection into locale).

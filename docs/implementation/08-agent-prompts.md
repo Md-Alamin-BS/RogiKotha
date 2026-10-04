@@ -47,9 +47,9 @@ READ FIRST, in this order:
 7. PRODUCT.md "Hard rules".
 
 GIT, BEFORE ANY CODE:
-- git fetch origin. If origin/build/demo is ahead of your local build/demo, fast-forward it. If
+- git fetch origin. If origin/main is ahead of your local main, fast-forward it. If
   docs/implementation/NEXT.md changed upstream, re-read it and re-check that T-XXX is still the task.
-- git switch -c task/t-xxx-<short-name> build/demo (from the updated branch). If the branch already
+- git switch -c task/t-xxx-<short-name> main (from the updated branch). If the branch already
   exists on origin (a previous session started this task), check it out and read its last handoff.
 - Confirm git config user.name and user.email are the human's identity (not puku/noreply). If not,
   stop and ask me.
@@ -87,14 +87,14 @@ WHEN DONE (or when stopping with partial work, or after twice the task's high es
    git log -1 --format='%an <%ae>%n%cn <%ce>%n%B' and check that no tool, model or "Co-Authored-By"
    appears anywhere. If it does, fix it with git commit --amend --reset-author (and remove the
    trailer) before pushing.
-7. Sync and push: git fetch origin; git rebase origin/build/demo. On conflicts:
+7. Sync and push: git fetch origin; git rebase origin/main. On conflicts:
    - inside your owned paths → resolve keeping both intents, re-run pnpm check;
    - in NEXT.md / ISSUES.md / BUILD-LOG.md / README tracker → keep both sides' rows (renumber ISS-
      ids if they collide, keep BUILD-LOG chronological), then rewrite NEXT.md from the newest state;
    - in a lockfile, a migration number, or any file outside your owned paths → stop and ask me.
    Then git push -u origin <task-branch> (use --force-with-lease only if you rebased an already-pushed
-   task branch). Do not push to build/demo or main. Open a pull request into build/demo with
-   gh pr create --base build/demo --title "T-XXX: <title>" --body-file docs/implementation/handoffs/T-XXX.md
+   task branch). Do not push to main. Open a pull request into main with
+   gh pr create --base main --title "T-XXX: <title>" --body-file docs/implementation/handoffs/T-XXX.md
    (no attribution lines in the body). If gh is unavailable, tell me the branch name.
 8. Report to me in five lines: state, commit, PR link, open questions, and the next task NEXT.md
    names. Then stop. Do not merge. Do not start another task.
@@ -112,7 +112,7 @@ READ: AGENTS.md; docs/implementation/04-handoff-and-validation.md sections 2-4;
 docs/implementation/NEXT.md; docs/implementation/handoffs/T-XXX.md; docs/implementation/01-conventions.md
 sections 3, 5, 6, 10, 13, 14; docs/implementation/tasks/T-XXX-*.md including its hand-off section.
 
-GIT: git fetch origin; check out the task branch (origin/task/t-xxx-…); if origin/build/demo moved
+GIT: git fetch origin; check out the task branch (origin/task/t-xxx-…); if origin/main moved
 since the branch was cut, rebase the task branch onto it first (resolve register-file conflicts by
 keeping both sides; stop and ask me on any other conflict). Append "validation started" to
 docs/implementation/BUILD-LOG.md with the model.
@@ -122,11 +122,11 @@ DO:
    exists). Paste the summaries. A skipped or deleted smoke assertion is a finding.
 2. Execute every row of the task's "Acceptance checks" table; record observed vs expected.
 3. Verify the evidence behind every ticked hard-rule item (open the file:line or run the test).
-4. Read the full diff of every owned path (git diff origin/build/demo...HEAD). Look for: commands
+4. Read the full diff of every owned path (git diff origin/main...HEAD). Look for: commands
    missing `requires`, missing audit rows, strings missing in bn.json, imports crossing the boundaries
    in conventions section 2, private data (account ids, emails, reporter ids, original filenames) in
    view models or logs, files outside owned paths, any tool/model name in code, comments, docs or
-   the commit author/message/trailers (git log origin/build/demo..HEAD --format='%an <%ae>%n%B').
+   the commit author/message/trailers (git log origin/main..HEAD --format='%an <%ae>%n%B').
 5. For M3 tasks write 3-5 adversarial tests the implementer did not think of, run them, report
    results. Never fix code; you may add test files under the task's test paths and must say so.
 6. If a check needs facts you do not have (a library behaviour, a CVE, a Windows quirk), search the
@@ -143,10 +143,10 @@ verify with git log -1 as above), git fetch origin, rebase if needed, git push. 
 the PR (gh pr comment) if gh is available.
 
 MERGE: do not merge unless my prompt contains the line "MERGE: yes". If it does and the verdict is
-PASS (or PASS WITH FOLLOW-UP with every follow-up logged as an ISS- row), then: git switch build/demo;
-git pull --ff-only origin build/demo; git merge --no-ff <task-branch> -m "Merge T-XXX: <title>";
-pnpm check on build/demo; git push origin build/demo; append "merged" to BUILD-LOG.md and set the
-tracker row to "merged" (commit that on build/demo and push). If pnpm check fails on build/demo,
+PASS (or PASS WITH FOLLOW-UP with every follow-up logged as an ISS- row), then: git switch main;
+git pull --ff-only origin main; git merge --no-ff <task-branch> -m "Merge T-XXX: <title>";
+pnpm check on main; git push origin main; append "merged" to BUILD-LOG.md and set the
+tracker row to "merged" (commit that on main and push). If pnpm check fails on main,
 do not push; tell me. Ask me before merging if anything in the record is marked "decision for the
 human".
 
@@ -156,9 +156,9 @@ Then stop.
 
 ## 3. Git remote rules (apply to every tool; also added to `04-handoff-and-validation.md` §6)
 
-1. `origin` is `https://github.com/Md-Alamin-BS/RogiKotha.git`. `build/demo` is the integration branch; `main` receives merges from `build/demo` only when you decide.
-2. Every session starts with `git fetch origin` and works from the updated `build/demo`. Another machine may have pushed: if `NEXT.md` changed upstream, the session re-reads it before trusting the task assignment it was given.
-3. Task branches are pushed to `origin` and opened as PRs into `build/demo`; agents never push to `build/demo` or `main` unless the prompt says `MERGE: yes` (validator only, PASS only).
+1. `origin` is `https://github.com/Md-Alamin-BS/RogiKotha.git`. `main` is the integration branch (`build/demo` was merged into it and deleted on 2026-10-04).
+2. Every session starts with `git fetch origin` and works from the updated `main`. Another machine may have pushed: if `NEXT.md` changed upstream, the session re-reads it before trusting the task assignment it was given.
+3. Task branches are pushed to `origin` and opened as PRs into `main`; agents never push to `main` unless the prompt says `MERGE: yes` (validator only, PASS only).
 4. Conflicts: owned paths → resolve and re-check; register files (`NEXT.md`, `ISSUES.md`, `BUILD-LOG.md`, README tracker) → union of both sides, then `NEXT.md` rewritten from the newest state; lockfiles, migration numbers, files outside owned paths → stop and ask.
 5. `--force-with-lease` only on the session's own task branch after a rebase; never `--force`, never on shared branches.
 6. After every commit: `git log -1 --format='%an <%ae>%n%cn <%ce>%n%B'` must show your identity and no tool/model/trailer. A wrong author is fixed with `git commit --amend --reset-author` before pushing.

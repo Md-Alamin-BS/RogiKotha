@@ -300,7 +300,7 @@ Practical rules:
 | 10 | T-504 | T-503 | storyboard runs end to end in both languages |
 | 11 | T-505 | — | validation log and coverage matrix updated |
 
-Branching follows `docs/planning/11-worktree-safe-execution-plan.md`: integration branch `build/demo`, one branch + worktree per task (`task/t-101-better-auth`), merge in dependency order after `PASS`.
+Branching follows `docs/planning/11-worktree-safe-execution-plan.md`: integration branch `main`, one branch + worktree per task (`task/t-101-better-auth`), merge in dependency order after `PASS`.
 
 ## 9. Out of scope for this demo (stays in the backlog)
 

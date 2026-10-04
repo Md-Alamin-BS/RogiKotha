@@ -38,22 +38,22 @@ Read docs/implementation/LOOP.md and do exactly what it says. Ask me only when i
 
 ## 1. Before the first task
 
-1. Create the integration branch: `git switch -c build/demo` from the commit that contains this folder.
+1. The integration branch is `main` (`build/demo` was merged into it and deleted on 2026-10-04).
 2. Copy `infra/compose/.env.example` to `.env` after T-002 lands; never commit `.env`.
 3. Confirm the toolchain: Node 24, pnpm 11, Docker Desktop running (≥ 25 GB free on C:, the vhdx grows ≈ 1.5 GB per cycle — see the disk notes in the global instructions), Claude Code and Codex CLI signed in.
-4. Decide your two lanes. Lane A = backend tasks, lane B = frontend tasks (each task file says which). Each lane is a git worktree. With Claude Code use its native isolation: `claude --worktree lane-a` (creates `.claude/worktrees/lane-a` and blocks edits to the main checkout); add a `.worktreeinclude` file listing `.env` so it is copied into new worktrees. With Codex CLI create the worktree yourself: `git worktree add ../rk-lane-b build/demo` and run `codex` inside it. Keep the two lanes file-disjoint (the task files' owned paths already are).
+4. Decide your two lanes. Lane A = backend tasks, lane B = frontend tasks (each task file says which). Each lane is a git worktree. With Claude Code use its native isolation: `claude --worktree lane-a` (creates `.claude/worktrees/lane-a` and blocks edits to the main checkout); add a `.worktreeinclude` file listing `.env` so it is copied into new worktrees. With Codex CLI create the worktree yourself: `git worktree add ../rk-lane-b main` and run `codex` inside it. Keep the two lanes file-disjoint (the task files' owned paths already are).
 5. Read `04-handoff-and-validation.md` once; it is what every agent does at the start and end of a session, and what you do daily.
 6. `CLAUDE.md` at the repo root imports `AGENTS.md` (`@AGENTS.md`) so Claude Code and Codex read the same rules; keep it under 200 lines.
 
 ## 2. Running one task
 
 1. Open `NEXT.md`; it names the next task per lane. (The master plan §8 order is the source; `NEXT.md` is the live pointer.)
-2. In the lane's worktree: `git switch -c task/t-xxx-short-name build/demo`.
+2. In the lane's worktree: `git switch -c task/t-xxx-short-name main`.
 3. Open the tool the task's **Class** routes to (master plan §7) and paste the implementer prompt (§3 below) with the task ID filled in.
 4. While it runs: answer only questions it writes under "Questions for the human"; do not add scope. Log any change you want in `06-change-requests.md`.
 5. When it reports done: read `handoffs/T-xxx.md` and the task file's hand-off section, skim `git diff --stat`, run `pnpm check` yourself once. Check that `NEXT.md`, `ISSUES.md` and `BUILD-LOG.md` were updated; if not, the task is not finished.
 6. Open a **new session** in the *other* vendor's tool and paste the validator prompt (§4). It writes `docs/validation/T-xxx.md`.
-7. `PASS` → merge the task branch into `build/demo` (fast-forward or merge commit, your identity, no trailers). `PASS WITH FOLLOW-UP` → merge and add the follow-up as a CR row. `FAIL` → paste the validator's findings back to the implementer session (or a fresh one of the same class) and repeat from step 4. Two FAILs on an M1/M2 task → escalate the class to M3 for the retry.
+7. `PASS` → merge the task branch into `main` (fast-forward or merge commit, your identity, no trailers). `PASS WITH FOLLOW-UP` → merge and add the follow-up as a CR row. `FAIL` → paste the validator's findings back to the implementer session (or a fresh one of the same class) and repeat from step 4. Two FAILs on an M1/M2 task → escalate the class to M3 for the retry.
 8. Mark the task `merged` in the tracker table at the bottom of this file and append `merged` to `BUILD-LOG.md`. Full protocol: `04-handoff-and-validation.md`.
 
 Time-boxing: if an agent has run for twice the task's high estimate without reaching a checkpoint, stop it, read its hand-off notes, and restart with the notes pasted in — a fresh session with a summary beats a long confused one.
@@ -122,7 +122,7 @@ Your job is to inspect the actual diff and tests and return a verdict with evide
 Read: AGENTS.md; docs/implementation/04-handoff-and-validation.md sections 2-4; docs/implementation/NEXT.md;
 docs/implementation/handoffs/T-XXX.md; docs/implementation/01-conventions.md sections 3, 5, 6, 10, 13, 14;
 docs/implementation/tasks/T-XXX-*.md (including its hand-off section); then the diff:
-`git diff build/demo...HEAD --stat` and the full diff of every owned path.
+`git diff main...HEAD --stat` and the full diff of every owned path.
 
 Do:
 0. Append "validation started" to docs/implementation/BUILD-LOG.md.

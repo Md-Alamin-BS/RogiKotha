@@ -8,7 +8,7 @@
 | Effort setting | Sol `high` / Opus `xhigh` |
 | Estimate | 3–4 h agent; founder review 1.5 h |
 | Depends on | T-504 (walk-through ticked), T-503 (suite green), T-502, every `docs/validation/T-xxx.md` present with PASS or PASS+F |
-| Parallel-safe with | nothing — it reviews the merged `build/demo` branch as a whole |
+| Parallel-safe with | nothing — it reviews the merged `main` branch as a whole |
 
 ## Goal
 
@@ -60,7 +60,7 @@ findings make the verdict FAIL and go back to the owning task as a CR. Productio
 
 ## Steps
 
-1. **Preconditions.** `git switch build/demo`; `pnpm install --frozen-lockfile`; `pnpm check`; `pnpm demo` (fresh reset); `pnpm e2e` — all green or stop and FAIL. List every task in the tracker and confirm a validation record exists with PASS or PASS+F; any `FAIL` or missing record → stop.
+1. **Preconditions.** `git switch main`; `pnpm install --frozen-lockfile`; `pnpm check`; `pnpm demo` (fresh reset); `pnpm e2e` — all green or stop and FAIL. List every task in the tracker and confirm a validation record exists with PASS or PASS+F; any `FAIL` or missing record → stop.
 2. **Gate matrix** (`DEMO-GATES.md`). Take each bullet of the five "Production capability gates" and the eight "Architecture acceptance gates" in `docs/planning/05-recommended-architecture.md` and classify:
    - *Demonstrated locally* — cite the test file / validation record / storyboard step (e.g. "enumeration: `T-106.md` §adversarial cases 1–3"; "five-reporter auto-hide resistance to duplicate accounts: `discussion.spec.ts` P4.16 + `moderation` unit table").
    - *Deferred to production* — with the reason (e.g. "full backup restore within RPO: no production topology exists"; "malicious corpus beyond EICAR/encrypted/mismatch: legally safe corpus not yet assembled"; "counsel/healthcare scenario review: specialist gate").
@@ -68,7 +68,7 @@ findings make the verdict FAIL and go back to the owning task as a CR. Productio
 3. **Coverage regeneration.** In `tools/coverage.mjs` add `ROOTS = ['ui-design-prototype', 'apps', 'packages']` and extend the file filter to `.js,.mjs,.html,.css,.ts,.tsx,.sql`; keep the marker regexes (`STORY-[A-Z]+-\d{3}`, `NFR-\d{3}`, `FR-[A-Z]+-\d{3}`); output per story the set of files per root so the matrix can cite product code first. Run it; for each of the 36 rows write the new proof in the `file:line anchor` convention pointing at product code (a `// STORY-XYZ:` comment placed by the implementing task; where an implementer omitted the marker, add it in the owning file with a one-line comment — this is the one code edit allowed, and it must be listed in the hand-off). Statuses: `Done` only when the acceptance in `08-product-backlog.md` is met in the running app; `Partial` with the missing criterion named; the production-only halves of OPS-001/OPS-002 stay `Missing` with "deferred to production" in Notes. Run `node tools/proof-check.mjs`; zero broken citations.
 4. **Page-by-page review** (`DEMO-REVIEW-CHECKLIST.md`). A table with one row per URL in `03-routes-and-contracts.md` §1 × locale (`en`, `bn`) and the hard rules that apply on that page (from `01-conventions.md` §14), each cell `✓ (evidence)` / `✗ (finding id)` / `n/a`. Fill it by opening every page in the running app — not from screenshots. Include the four negative probes: `/api/evidence/items/<id>/original` as a signed-out user and as a moderator without the capability (403 both), a hidden experience by direct URL (404), a search for a hidden review's title (absent), an anonymous review's alias in `/authors/<real username>` (absent).
 5. **Validation log.** Append entries V-028 (Phase 0 gate: `pnpm check` from clean clone), V-029 (Phase 1: T-106 record), V-030 (Phase 2: search corpus bands from T-205's record), V-031 (Phase 3: evidence fail-closed and original isolation), V-032 (Phase 4: five-account hide, appeals segregation, config rollback), V-033 (T-503 matrix: engines × viewports × locales, axe result), V-034 (T-504 clean-clone timing and walk-through), V-035 (DEMO-GATES verdict). Each entry follows the verdict contract: ids, commit range, environment (Node/pnpm/Docker/OS versions), commands with exit codes, expected/observed, reviewer session (model id allowed here only), limitations, verdict.
-6. **Status docs.** `current-status.md`: phase becomes "Local demo delivered on `build/demo` (date); production not started"; move the "Not started" items that now exist; keep the honest "Not verified" style — list what is still only jsdom/arithmetic (nothing, after T-503) and what is manual-only (real iOS Safari, screen reader). `decision-log.md`: FD-036+ for any CR that changed a rule; update the header date. `risk-register.md`: add rows from T-502 residuals, T-503 `fixme`s, T-504 Windows notes, Drizzle 1.0 migration, Better Auth advisory recheck, TS 7 toolchain. `dependency-check-log.md`: close-out entry.
+6. **Status docs.** `current-status.md`: phase becomes "Local demo delivered on `main` (date); production not started"; move the "Not started" items that now exist; keep the honest "Not verified" style — list what is still only jsdom/arithmetic (nothing, after T-503) and what is manual-only (real iOS Safari, screen reader). `decision-log.md`: FD-036+ for any CR that changed a rule; update the header date. `risk-register.md`: add rows from T-502 residuals, T-503 `fixme`s, T-504 Windows notes, Drizzle 1.0 migration, Better Auth advisory recheck, TS 7 toolchain. `dependency-check-log.md`: close-out entry.
 7. **Product docs.** `PRODUCT.md` "Technical context" and `DESIGN.md`'s technical paragraph: replace "static HTML/CSS prototype is the current state" with the workspace facts; keep the prototype as the visual source of truth statement (FD-032). Root `README.md`: rewrite (the current file still describes a docx-only repo); include the repo map from master plan §4, the two entry points (`DEMO.md`, `docs/implementation/README.md`), and the documentation list; keep the licence paragraph.
 8. **Founder-facing summary** at the top of `docs/validation/T-505.md`: ten lines — verdict, what is demonstrated, what is deferred, the three biggest residual risks, and what the next gate is (production topology, specialist reviews).
 9. `pnpm check`; `node tools/coverage.mjs`; `node tools/proof-check.mjs`; the docs link check used at Gate 2 (`docs/status/validation-log.md` V-0xx names the script; rerun it) — zero broken links.
@@ -78,7 +78,7 @@ findings make the verdict FAIL and go back to the owning task as a CR. Productio
 
 | Check | Command | Expected |
 |---|---|---|
-| Branch green | `pnpm check && pnpm e2e` on `build/demo` | green |
+| Branch green | `pnpm check && pnpm e2e` on `main` | green |
 | Gate matrix complete | open `docs/validation/DEMO-GATES.md` | every bullet of both gate lists classified; every stop condition addressed; no stop condition hit |
 | Coverage regenerated | `node tools/coverage.mjs` | rollup printed; product-code proofs for every `Done`/`Partial` row |
 | Proofs resolve | `node tools/proof-check.mjs` | exit 0 |
@@ -87,7 +87,7 @@ findings make the verdict FAIL and go back to the owning task as a CR. Productio
 | Status coherent | read `current-status.md`, `decision-log.md`, `risk-register.md` | dates and phase agree; every CR with a rule change has an FD |
 | README rewritten | `README.md` | mentions `DEMO.md`, the repo map, no docx-only wording |
 | Links | the Gate 2 markdown link check | zero broken |
-| No attribution | `git log build/demo --format='%an %ae %b' \| grep -iE "claude\|codex\|gpt\|co-authored"`; `grep -riE "co-authored-by\|generated with" docs README.md DEMO.md` | no hits (model ids appear only inside `docs/validation/*.md` records) |
+| No attribution | `git log main --format='%an %ae %b' \| grep -iE "claude\|codex\|gpt\|co-authored"`; `grep -riE "co-authored-by\|generated with" docs README.md DEMO.md` | no hits (model ids appear only inside `docs/validation/*.md` records) |
 | Verdict | `docs/validation/T-505.md` | PASS or PASS WITH FOLLOW-UP with owners; FAIL blocks the demo from being called delivered |
 
 ## Tests to write
@@ -98,7 +98,7 @@ findings make the verdict FAIL and go back to the owning task as a CR. Productio
 ## Threat notes
 
 Not an implementation task; the reviewer re-reads `docs/security/local-demo-threat-notes.md` and
-records in `T-505.md` whether each control's test exists and passed on `build/demo`.
+records in `T-505.md` whether each control's test exists and passed on `main`.
 
 ## Hard-rule checklist
 

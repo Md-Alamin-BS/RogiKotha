@@ -69,7 +69,7 @@ config line.
 
 ## Steps
 
-1. Branch from `build/demo`. Confirm the starting state: count the `.js`-suffixed relative specifiers
+1. Branch from `main`. Confirm the starting state: count the `.js`-suffixed relative specifiers
    under `packages/database/src` (expect 124) and record it.
 2. Reproduce the failure first, so the fix is proven rather than assumed: add the throwaway
    `dbprobe/page.tsx` above, run `pnpm --filter @rogikotha/web build`, and keep the error text.

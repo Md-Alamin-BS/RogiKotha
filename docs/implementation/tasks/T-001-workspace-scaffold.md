@@ -36,7 +36,7 @@ Modify: `package.json` (root), `package-lock.json` (delete — pnpm replaces it)
 
 ## Steps
 
-1. Branch: `git switch -c task/t-001-workspace-scaffold build/demo`. Confirm `node -v` is 24.x and `pnpm -v` is **11.x** (do not upgrade to pnpm 12 — it is a two-week-old Rust rewrite; master plan §3). Write `.nvmrc` containing `24` and `.npmrc` containing:
+1. Branch: `git switch -c task/t-001-workspace-scaffold main`. Confirm `node -v` is 24.x and `pnpm -v` is **11.x** (do not upgrade to pnpm 12 — it is a two-week-old Rust rewrite; master plan §3). Write `.nvmrc` containing `24` and `.npmrc` containing:
    ```
    engine-strict=true
    auto-install-peers=true

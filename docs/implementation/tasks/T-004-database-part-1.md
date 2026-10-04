@@ -156,7 +156,7 @@ the rest).
   drops any stray leftover `drizzle` schema defensively.
 - `ISS-093` (S4) — **fixed**: `migrations.int.test.ts` queried a non-existent `tag` column; changed
   to `hash`.
-- Whoever merges this branch: rebasing onto current `build/demo` will need one more
+- Whoever merges this branch: rebasing onto current `main` will need one more
   `pnpm approve-builds --all` for `esbuild` (pulled in transitively by `drizzle-kit`) — CR-002's
   `allowBuilds` block in `pnpm-workspace.yaml` only listed `@parcel/watcher`/`@swc/core` at the time
   it merged. Worth adding `esbuild: true` to that block at merge time so it doesn't recur.

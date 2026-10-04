@@ -214,9 +214,9 @@ Test names read as sentences: `it('hides content after five distinct confirmed a
 
 ## 12. Git and commits
 
-- Branch per task from `build/demo`: `task/t-101-better-auth`. Worktree per lane. Never `reset --hard`, `checkout --`, or `clean` on a dirty tree (see `docs/planning/11-worktree-safe-execution-plan.md`).
+- Branch per task from `main`: `task/t-101-better-auth`. Worktree per lane. Never `reset --hard`, `checkout --`, or `clean` on a dirty tree (see `docs/planning/11-worktree-safe-execution-plan.md`).
 - Commit only the task's owned paths after reading `git diff --cached`. Message: `T-101: Better Auth adapter with Argon2id and verified email` then a short body. **No `Co-Authored-By`, no tool or model names, anywhere** (`AGENTS.md`). If your tool injects a trailer, run `git commit --amend` to remove it before pushing, or stop and tell the human.
-- One task = one PR into `build/demo` after its `VALIDATE` record says PASS.
+- One task = one PR into `main` after its `VALIDATE` record says PASS.
 
 ## 13. Definition of done (every task)
 
