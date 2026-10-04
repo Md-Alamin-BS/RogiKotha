@@ -91,19 +91,38 @@ Component tests in both locales for `Discover` (order, chips, grid filter, tease
 
 ## Hard-rule checklist
 
-- [ ] Persistent disclaimer (`disclaimer.short` in the opener's margin note; `disclaimer.long` in the footer from T-008) and non-blocking emergency guidance with numbers from config.
-- [ ] No number stands for quality on Discover (counts are "accounts", nothing ranked).
-- [ ] Facility separation copy in the teaser.
-- [ ] Lawful-access disclosure appears only in Privacy (FD-022); no banner anywhere.
-- [ ] No "Not provided" → `0` substitution in the teaser counts (a branch with zero accounts still says `0 accounts`? **No** — the prototype prints the count; keep the count since it is a count of accounts, not a value. Note this reading in hand-off).
-- [ ] Both locales; formatter numerals; no inline literals.
-- [ ] No agent/tool attribution.
+- [x] Persistent disclaimer (`disclaimer.short` in the opener's margin note; `disclaimer.long` in the footer from T-008) and non-blocking emergency guidance with numbers from config. — `disclaimer.long` is already in `Colophon.tsx` (T-008); `disclaimer.short`/the opener's margin note is Half B (Discover), not built here. Emergency guidance itself: `/emergency` renders three `tel:` cards + BMDC card from config-shaped values, non-blocking (plain links, no modal/gate) — `components/patient/Emergency.tsx`.
+- [ ] No number stands for quality on Discover (counts are "accounts", nothing ranked). — N/A this run: Discover (Half B) is out of scope.
+- [ ] Facility separation copy in the teaser. — N/A this run: the facilities teaser is Discover (Half B).
+- [x] Lawful-access disclosure appears only in Privacy (FD-022); no banner anywhere. — `policy.privacy.lawful`/`lawfulBody` render only in `Policy.tsx` when `kind="privacy"`; no banner/warning added anywhere else. Evidence: `apps/web/src/components/patient/fd-022-lawful-placement.test.tsx` (renders Emergency/About/Policy-terms/Policy-privacy in both locales, asserts the sentence is present only in the privacy render) and `Policy.test.tsx`'s "never renders the FD-022 lawful-access sentence" test; confirmed live against the running server too (`docs/implementation/handoffs/T-207a.md` "How I verified it").
+- [ ] No "Not provided" → `0` substitution in the teaser counts. — N/A this run: the facilities teaser is Discover (Half B). Reading recorded for whoever builds Half B: the prototype prints the raw count including `0`, since it is a count of accounts (not a missing value) — do not substitute "Not provided".
+- [x] Both locales; formatter numerals; no inline literals. — All four pages render `en`/`bn` from real dictionary keys (no hard-coded strings); phone numbers go through the new `formatDigits` and the last-verified date through the new `formatDate` (`packages/i18n/src/format.ts`) for Bengali digits. One exception, matching the prototype's own markup exactly (`01-conventions.md` §7.2's "prototype itself used them" carve-out): `Emergency.tsx`'s closing `<p class="note" style="margin-top:18px">` keeps the prototype's literal inline style.
+- [x] No agent/tool attribution. — Verified with `git log -1 --format='%an <%ae>%n%cn <%ce>%n%B'` after committing (see hand-off).
 
 ## Hand-off (implementer fills in)
 
 ### What changed
+Half A only (Emergency, About, Terms, Privacy) — see `docs/implementation/handoffs/T-207a.md` for the full account. Owned paths touched: the four `page.tsx` routes, three new components (`Emergency.tsx`, `About.tsx`, `Policy.tsx`), and new i18n keys in both dictionaries (`emergency.lastVerifiedLine`, the whole `policy.*` namespace). A few small, justified edits landed outside the task's literal owned-paths list — see "Questions for the human" below and `ISSUES.md` `ISS-133`–`ISS-138`.
+
 ### Not done and why
+Half B (the `/` Discover page, `Discover.tsx`, `EmergencyPanel`/`BrowseCard`/`SearchBox`/`MiniList`/`Avatar`) — explicitly out of scope for this task run per the assignment; it depends on T-202/T-203/T-206, none of which exist yet.
+
 ### Questions for the human
+- **`ISS-133` (S2, blocking for future work, not for this task):** `packages/contracts/src` uses `.js`-suffixed relative imports everywhere; Next's Turbopack build cannot resolve them through `transpilePackages`, so nothing in `apps/web` can import `@rogikotha/contracts` (any file, any subpath) and still build. Worked around locally in `emergency/page.tsx` (hand-typed config defaults + a Vitest-only parity test), but every future page that needs a real `packages/contracts` view model will hit the same wall. Needs a decision: strip the `.js` suffixes across the package (mechanical, but touches dozens of files I do not own), or find a working Turbopack resolver config (tried `experimental.extensionAlias`; it did not fix it).
+- **`ISS-135` (S4):** `Policy.tsx` has no dedicated kicker key for Terms/Privacy; I reused `nav.about` (same source About's own kicker uses). Confirm that's fine permanently, or provide dedicated copy.
+- Per rule 4, I did **not** stop and ask on either — both are narrower/reversible choices, marked `// ASSUMPTION(T-207a)` in code with matching `ISS-` rows, and neither is a hard-rule change, data-boundary conflict, or founder-level copy call.
+
 ### Follow-ups
+- `ISS-133` — fix the `packages/contracts` build gap (see above); blocks Phase 2+ pages needing real data.
+- `ISS-134` — swap `EMERGENCY_DEFAULTS` for a real `config.current()` call once T-105 lands.
+- `ISS-135` — founder call on the Terms/Privacy kicker.
+- `ISS-099`/`ISS-121` (T-008) — fixed by this task (dedicated title keys; `ViewShell` omits an empty `<h1>`).
+
 ### `pnpm check` output summary
+Green end to end from a fresh worktree install: typecheck 9/9 packages/apps; `eslint .` 0 errors / 1 pre-existing warning (`ISS-105`, not owned by this task); Vitest **27 files / 89 tests** (up from 20/64 before this task: +7 files, +25 tests — Half A's component/unit/parity tests); i18n parity **777 keys** (up from 764: +13, all new — `emergency.lastVerifiedLine` + the 12 `policy.*` keys), both locales; `next build` green, 34 route rows unchanged (no route added or removed) + `ƒ Proxy (Middleware)`. `npx impeccable detect apps/web/src --no-advisory` — 0 findings. `pnpm contrast` — all pairs pass in both light schemes.
+
 ### Hard-rule evidence
+See the checklist above; test names: `Emergency.test.tsx`, `About.test.tsx`, `Policy.test.tsx`, `fd-022-lawful-placement.test.tsx`, `emergency-about-policy.smoke.test.tsx`, `ViewShell.test.tsx`, `titles.test.ts` (updated), `packages/i18n/src/format.test.ts` (updated), `apps/web/src/app/[locale]/(patient)/emergency/page.parity.test.ts`.
+
+### Run record
+Claude Code · claude-sonnet-5 · effort high · branch `task/t-207a-discover-emergency-about`, start commit `75f9655` (`build/demo`).

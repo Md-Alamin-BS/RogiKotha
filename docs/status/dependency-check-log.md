@@ -27,6 +27,58 @@ Rules:
 
 ## Entries
 
+### 2026-09-13 (T-007)
+
+- Scope: T-007 (`packages/test-support` — first use of `@node-rs/argon2` and `sharp` in this codebase's actual dependency graph, and `tsx` for this package's own scripts; `@cantoo/pdf-lib` from the task's original step 1 is **not** installed, see Decision).
+- Checked: `@node-rs/argon2` (task pins `^2.2.0`); `sharp` (task pins `^0.35.4`); `tsx` (task pins `^4`, already vetted 2026-09-13 for T-004 at `4.23.13`, 3 days old at this check).
+- Findings: `@node-rs/argon2` latest on npm is `2.2.0` (published 2 days before this check) — same version the 2026-09-10 entry already vetted (m=64 MiB/t=3/p=1 params unaffected). `sharp` latest is `0.35.4` (published 17 days before this check) — same version the 2026-09-10 entry already vetted, no newer patch. `tsx@4.23.13` unchanged from the T-004 check. No advisories found against any of the three.
+- Decision: used `@node-rs/argon2@^2.2.0`, `sharp@^0.35.4`, `tsx@^4` (devDependency) exactly as pinned. Did **not** install `@cantoo/pdf-lib`: the task's own "Scope change 2026-09-12 — images only (CR-001 / FD-036)" block, which overrides the steps below it, says seeded evidence derivatives are PNG pages/thumbnails only ("Do not generate PDFs"), and `03-routes-and-contracts.md` §3 says `PdfRasteriser`/`PdfAssembler` are "**Phase 2** … not created in Phase 1". Installing a PDF-assembly library for code that must not run in Phase 1 would be dead weight; logged as an `ISS-` deviation from step 1's literal (pre-scope-change) instruction.
+
+### 2026-09-13 (T-004)
+
+- Scope: T-004 (`packages/database` — Drizzle ORM/drizzle-kit/`pg`/`dotenv` first use in this codebase, plus `tsx` added to run `migrate.ts`/`reset.ts` directly).
+- Checked: `drizzle-orm` (task pins `0.45.2` exact); `drizzle-kit` (task pins `0.31.10` exact); `pg` (task pins `^8.23.0`); `dotenv` (task pins `^17`); `tsx` (not named by the task — added because Node 24's native `.ts` support does not remap `./x.js` relative-import specifiers to `./x.ts` files the way `tsc`'s `moduleResolution: bundler` does, so `node src/migrate.ts` fails on this repo's `.js`-suffixed relative imports; `tsx` is the standard fix).
+- Findings: `drizzle-orm@0.45.2`/`drizzle-kit@0.31.10` are still the current versions on the pre-1.0 line (last published ~5 months before this check per npm; no newer 0.4x patch and no 1.0 stable release yet — the 1.0 RC train the master plan says to avoid still has not shipped stable). `pg@8.23.0` resolved exactly. `dotenv` latest is `17.4.2` (same 17.x line the task's `^17` pin targets); `pnpm add dotenv@^17` resolved `17.4.2`. `tsx` latest is `4.23.13` (14 days old at check time), the actively maintained esbuild-based TS runner with no reported regressions relevant to a plain `node <file>.ts` replacement use case.
+- Decision: used `drizzle-orm@0.45.2`, `drizzle-kit@0.31.10` (exact pins, confirmed via `pnpm ls`), `pg@^8.23.0` (resolved `8.23.0`), `dotenv@^17.4.2` exactly as the task specifies. Added `tsx@4.23.13` as a new devDependency of `packages/database` — a tooling addition the task text did not anticipate, logged as `ISS-088` (S4).
+
+### 2026-09-13 (T-008)
+
+- Scope: T-008 (`apps/web` shell — first use of `next`, `react`, `react-dom`, `next-intl`'s runtime
+  APIs inside a real Next.js app, `@testing-library/react`, `@testing-library/jest-dom`,
+  `@testing-library/user-event`, `jsdom`, `@vitejs/plugin-react` in this repo).
+- Checked: `next` (task pins exact `16.3.4`); `react`/`react-dom` (exact `19.3.0`); `next-intl`
+  (`^4.14.2`, already vetted 2026-09-13 for `packages/i18n`); Next 16's `middleware.ts` → `proxy.ts`
+  rename and `experimental.typedRoutes` stability; `@testing-library/react` `^16.3.3`;
+  `@testing-library/jest-dom` `^6`; `@testing-library/user-event` `^14`; `jsdom` `^30`;
+  `@vitejs/plugin-react` `^5`.
+- Findings: `next@16.3.4` (2026-08-31) is still the current patch on the 16.x line — no newer 16.3.x
+  tag exists (confirms the 2026-09-10 entry, now 3 days old). `proxy.ts` is confirmed as the Next 16
+  rename of `middleware.ts`; next-intl's `createMiddleware(routing)` from `next-intl/middleware` is
+  unchanged, only the file name/export moved — matches the task's own instruction. `typedRoutes`
+  graduated out of `experimental` as of Next 15.5 and stays stable in 16.3 — the task's own
+  conditional ("if stable … else omit") resolves to using the top-level `typedRoutes: true`, not
+  `experimental.typedRoutes`. next-intl's docs now mention `next/root-params` (Next 16.3+) as an
+  alternative to `setRequestLocale`; the task file explicitly specifies `setRequestLocale`, which task
+  files win per `01-conventions.md` — used as specified, `root-params` noted as a future follow-up.
+  No advisories found against any of the pinned testing-library/jsdom/vitejs-plugin-react versions.
+- Decision: used the task's exact pins (`next@16.3.4`, `react@19.3.0`, `react-dom@19.3.0`,
+  `next-intl@^4.14.2`) and current-stable testing deps as listed above; `next.config.ts` uses
+  top-level `typedRoutes: true`; `proxy.ts` uses `next-intl/middleware`'s `createMiddleware`.
+
+### 2026-09-13 (T-003)
+
+- Scope: T-003 (`packages/contracts` — first use of `zod` and `uuid` in this codebase).
+- Checked: `zod` (task pins `^4.5.4`); `uuid` (task pins `^13`).
+- Findings: `zod` latest is `4.6.2`/`4.6.0` line (6 days old at check time), still the 4.x stable series the 2026-09-10 entry already vetted; no regressions reported for `z.object`/`z.enum`/`.min`/`.max`/`.strict()`, the only APIs this task uses; `pnpm add zod@^4.5.4` resolved to `4.6.2`, inside the pinned range. `uuid`: v13.0.2 (2026-05) is now the "legacy-13" line — v14.0.0 is current. v14's only breaking change is a Node >= 20 floor (this repo runs Node 24, so it would be compatible) plus a `v7()` bug fix ("aligned the default seq formula in v7Bytes with updateV7State") and a TypeScript moduleResolution/exports fix; no breaking change to `validate()`/`v7()`'s public signature or to published types otherwise. `pnpm add uuid@^13` resolved to `13.0.2`, matching the task's literal pin; ships its own types (`dist/index.d.ts`), so `@types/uuid` was skipped per the task's own conditional.
+- Decision: used `zod@^4.5.4` (resolved `4.6.2`) and `uuid@^13` (resolved `13.0.2`) exactly as the task file pins — deviating from a task's pinned major version is outside this task's authority (`04-handoff-and-validation.md` "Only stop entirely for … needing a different library/version than pinned" reserves that call to the human). Flagged `uuid@14` as a follow-up worth a deliberate upgrade decision later, since its `v7()` fix is directly relevant to `ids.ts`'s only use of the package (see `ISS-075`).
+
+### 2026-09-13
+
+- Scope: T-002 (local infra compose: postgres, mailpit, clamav) and T-006 (`packages/i18n`, next-intl).
+- Checked: `postgres:18` image tag (floats to patch); `axllent/mailpit` release tags; `clamav/clamav:1.5.4`; `next-intl` npm version.
+- Findings: `postgres:18` currently resolves to 18.6 (17 days old), no newer 18.x patch — untagged `18` major tag stays correct per the master plan. `clamav/clamav:1.5.4` (2026-08, blog post "ClamAV 1.5.4 and 1.4.6 security patch versions published") is still the current 1.5.x patch and fixes 8 CVEs (CVE-2026-20337/20338/20339/20345/20346/20347/20348, CVE-2025-8088) plus a clamd STATS thread-safety fix — no newer 1.5.x tag exists, pin unchanged. `axllent/mailpit` has moved past the master plan's "current stable, check before pinning" placeholder to `v1.31.1` (2026-09-05, DNS-rebinding mitigation + SSRF hardening) — this is the tag T-002 pins. `next-intl` is unchanged at `4.14.2` (still current, matches the master plan pin).
+- Decision: `infra/compose/docker-compose.yml` pins `postgres:18`, `clamav/clamav:1.5.4` (unchanged) and `axllent/mailpit:v1.31.1` (updated from the plan's placeholder). `packages/i18n` keeps `next-intl@^4.14.2` (unchanged).
+
 ### 2026-09-10 (impeccable CLI — local work)
 
 - Scope: Wire `impeccable` CLI into `npm run check` per the

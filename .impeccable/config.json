@@ -29,6 +29,24 @@
         ],
         "createdAt": "2026-09-06T18:35:00.000Z",
         "reason": "Admin portal uses the same --sans stack as Concept 04b. Inter is the first-choice face; falls through to system-ui on non-Apple."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "apps/web/src/styles/patient.css"
+        ],
+        "createdAt": "2026-09-13T10:47:19.088Z",
+        "reason": "Byte-for-byte port of ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/styles.css (01-conventions.md §7, T-008) — .side-tab's border-left is the approved 04b design, not an AI-generated tell introduced by this port; the rule stays flagged in the source prototype file too, so fixing it here would be a redesign, which T-008 is explicitly not."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "apps/web/src/styles/admin.css"
+        ],
+        "createdAt": "2026-09-13T10:47:20.090Z",
+        "reason": "Byte-for-byte port of ui-design-prototype/admin/styles.css (01-conventions.md §7, T-008) — same rationale as the patient.css ignore entry: the approved Chart Tray design, not something this port introduced."
       }
     ]
   }

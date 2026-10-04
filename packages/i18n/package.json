@@ -1,0 +1,26 @@
+{
+  "name": "@rogikotha/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./format": "./src/format.ts",
+    "./routing": "./src/routing.ts",
+    "./request": "./src/request.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "port": "node scripts/port-from-prototype.mjs",
+    "check": "node scripts/check-parity.mjs",
+    "keys": "node scripts/gen-keys.mjs"
+  },
+  "peerDependencies": {
+    "next-intl": "^4.14.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.4",
+    "next-intl": "^4.14.4"
+  }
+}

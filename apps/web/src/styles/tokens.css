@@ -1,0 +1,247 @@
+/* ==========================================================================
+   RogiKotha design tokens — GENERATED, do not edit.
+
+   Source: ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/styles.css
+           (the Concept 04b identity block, FD-027).
+   Regenerate: node tools/sync-tokens.mjs      Verify: npm run check
+
+   Loaded by the staff console before its own stylesheet so both apps share
+   one palette, one type stack, one set of rules and surface tiers, in light
+   and dark. The patient app does not load this file: it IS the source.
+   ========================================================================== */
+
+:root {
+  /* --serif is now the system rounded face — used here for the UI, since
+     the minimal pass sets headings in a quiet sans and only the longer
+     reading text borrows a true serif. Heading posture comes from weight
+     and tracking, not a contrasting family. */
+  --serif: ui-rounded, 'SF Pro Rounded', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --sans: 'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  /* Restated here (unchanged) so the generated shared/tokens.css carries the
+     full type stack; the staff console has no shared layer to fall back on. */
+  --bangla: 'Noto Sans Bengali', 'Nirmala UI', 'Shonar Bangla', 'Kalpurush', 'SolaimanLipi', sans-serif;
+  --mono: 'Cascadia Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --measure: 72ch;
+
+  /* light — paper & teal-gray */
+  --bg:        hsl(40 14% 95%);      /* was 98%: paper page under pure-white cards (NHS grey-5 / Apple grouped-bg recipe, ~1.11:1) */
+  --ink:       hsl(200 14% 14%);
+  --ink-soft:  hsl(200 8% 34%);
+  /* 44% not 48%: at 48% this cleared only 4.05:1 on --bg, and --ink-faint
+     carries real text (.note, .denominator, .why, .badge.plain), so it
+     needs 4.5:1 for normal-size text. 44% gives 4.69:1. */
+  --ink-faint: hsl(200 6% 41%);  /* 41% not 44%: 44% fell to 4.08:1 on the darker inset. 41% = 4.53:1 there, 5.45:1 on a panel */
+
+  --glass:      hsl(0 0% 100%);
+  --glass-2:    hsl(40 10% 91.5%);   /* was 96%: inset now 1.20:1 against a panel (M3 surface-container-highest is 1.23) */
+  --rule:       hsl(200 14% 14% / 0.22);  /* was 0.07 = 1.14:1, below every system measured. Now 1.55:1 (GOV.UK #cecece 1.57, Radix slate7 1.57) */
+  --rule-hard:  hsl(200 14% 14% / 0.34);  /* was 0.16 = 1.37:1, which is NHS's DEFAULT border. Now 2.03:1 for hover/active (NHS grey-3 2.04) */
+  --rule-strong: hsl(200 14% 14% / 0.50); /* new: 3.13:1 on a panel - the WCAG 1.4.11 floor for a boundary that identifies a control */
+  --input-border: hsl(200 6% 41%);        /* new: 5.45:1 on a panel (NHS grey-1 input border is 5.75) */
+  --keyline:       0 2px 0 var(--rule);      /* NHS nhsuk-card--clickable: a flat bottom edge, zero blur. A keyline, not a shadow */
+  --keyline-hover: 0 2px 0 var(--rule-hard);
+  --shadow:     0 1px 1px hsl(200 14% 14% / .03);
+
+  --accent:      hsl(190 22% 32%);
+  --accent-2:    hsl(190 22% 26%);
+  --accent-soft: hsl(190 22% 32% / 0.10); /* was 0.06 = 1.09:1, invisible as a fill */
+  --accent-ink:  hsl(40 14% 98%);
+
+  --positive: hsl(160 18% 36%);
+  --mixed:    hsl(36 24% 38%);   /* was 42%: fell to 3.94:1 on the new inset */
+  --negative: hsl(8 36% 44%);    /* was 46%: 4.63:1 on the new inset */
+  --neutral:  hsl(200 6% 80%);
+
+  --warn-bg:   hsl(40 30% 95%);
+  --warn-line: hsl(36 18% 70%);
+  --warn-ink:  hsl(28 26% 28%);
+
+  --danger-bg:   hsl(8 36% 96%);
+  --danger-line: hsl(8 26% 70%);
+  --danger-ink:  hsl(8 36% 36%);
+
+  /* --redact-ink: pure black for redaction masks. Semantically must be
+     pure black; the 04b override inherits the same value (we never want
+     redaction ink to look like a brand colour). */
+  --redact-ink: hsl(0 0% 7%);
+  /* --overlay-scrim: 04b uses a deep slate tint instead of Concept 04's
+     warm 24° hue so the clinic posture is preserved even when a sheet
+     or tray floats over the page. */
+  --overlay-scrim: hsl(200 30% 6% / .42);
+
+  /* Concept 04b brand-mark palette override — keep the .brand-mark gradient
+     (defined against --hue-a / --hue-b in the shared component layer) in
+     the chosen teal-gray family instead of Concept 04's inherited
+     coral-clay. Hue 190 is the chosen teal accent; hue 200 is a slightly
+     cooler counterpoint so the gradient still reads as a gradient. */
+  --hue-a: 190;  /* teal-gray anchor */
+  --hue-b: 200;  /* teal-gray counterpoint */
+  --hue-c: 190;  /* not used by .brand-mark; keep on-palette */
+
+  --veil: none;
+}
+
+:root {
+  --eyebrow:       var(--accent);    /* kickers / eyebrows */
+  --rail:          transparent;      /* section-head underline; a scheme may colour it */
+  --byline-accent: var(--ink);       /* the author's name */
+  --display-font:  var(--serif);     /* h1-h4 face; today the rounded body stack */
+  --masthead-bg:   var(--bg);
+  --pagehead-bg:   transparent;      /* .a-head / .index-head */
+  --card-bg:       var(--glass);     /* panels, cards, rows */
+  --aside-bg:      var(--glass-2);   /* .a-margin boxes */
+  --callout-bg:    var(--glass);
+  --field-bg:      var(--glass);
+}
+
+:root {
+  --eyebrow:         var(--accent);   /* kickers / eyebrows */
+  --rail:            transparent;     /* 2px underline on section heads */
+  --byline-accent:   var(--ink);      /* the author's name */
+  --display-font:    var(--serif);    /* h1-h4 face, Latin */
+  --display-bangla:  var(--bangla);   /* h1-h4 face, Bengali */
+  --masthead-bg:     var(--bg);
+  --pagehead-bg:     transparent;     /* .a-head / .index-head */
+  --card-bg:         var(--glass);    /* panels, cards, rows */
+  --aside-bg:        var(--glass-2);  /* .a-margin boxes */
+  --callout-bg:      var(--glass);
+  --field-bg:        var(--glass);
+}
+
+:root[data-scheme="a"] {
+  --bg:            hsl(200 22% 95%);
+  --glass-2:       hsl(200 16% 91%);
+  --masthead-bg:   hsl(190 30% 90%);
+  --aside-bg:      hsl(200 22% 93%);
+  --callout-bg:    hsl(0 0% 100%);
+  --eyebrow:       hsl(210 32% 36%);
+  --rail:          hsl(190 22% 32%);
+  --byline-accent: hsl(190 22% 26%);
+  --accent-soft:   hsl(190 22% 32% / 0.12);
+}
+
+:root[data-scheme="a"] .kicker { font-weight: 800; }
+
+:root[data-scheme="a"] .section-head { padding-bottom: 6px; }
+
+:root[data-scheme="b"] {
+  --bg:            hsl(40 24% 95%);
+  --glass-2:       hsl(38 26% 91%);
+  --aside-bg:      hsl(36 30% 92%);
+  --masthead-bg:   hsl(40 26% 97%);
+  --eyebrow:       hsl(14 46% 36%);
+  --rail:          hsl(14 46% 36%);
+  --byline-accent: hsl(14 46% 30%);
+  --display-font:  Georgia, Cambria, 'Times New Roman', 'Noto Serif', serif;
+  --display-bangla: 'Shonar Bangla', 'Bangla MN', 'Noto Serif Bengali', 'Nirmala UI', sans-serif;
+}
+
+:root[data-scheme="b"] h1, :root[data-scheme="b"] h2, :root[data-scheme="b"] h3, :root[data-scheme="b"] h4 { font-weight: 700; letter-spacing: -.012em; }
+
+:root[data-scheme="b"] .display { font-weight: 700; letter-spacing: -.015em; }
+
+:root[data-scheme="b"] .kicker { letter-spacing: .2em; }
+
+:root[data-scheme="c"] {
+  --bg:            hsl(190 26% 95%);
+  --glass-2:       hsl(190 18% 91%);
+  --aside-bg:      hsl(190 22% 92.5%);
+  --callout-bg:    hsl(190 30% 94%);
+  --masthead-bg:   hsl(0 0% 100%);
+  --eyebrow:       hsl(322 24% 36%);
+  --rail:          hsl(322 24% 36%);
+  --byline-accent: hsl(322 26% 30%);
+  --accent-soft:   hsl(190 26% 32% / 0.12);
+}
+
+:root[data-scheme="c"] .masthead { border-top: 3px solid var(--accent); }
+
+:root[data-scheme="c"] .byline-id[data-identity="real"], :root[data-scheme="c"] .byline-id[data-identity="pseudo"] { border-color: var(--byline-accent); color: var(--byline-accent); }
+
+:root[data-scheme="c"] .byline-av { border-color: var(--byline-accent); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* deep slate-charcoal, never black */
+    --bg:        hsl(200 14% 8%);
+    --ink:       hsl(40 14% 94%);
+    --ink-soft:  hsl(200 6% 72%);
+    --ink-faint: hsl(200 6% 58%);  /* 58% not 56%: 56% gave only 4.28:1 on the dark aside well */
+
+    --glass:      hsl(200 12% 12%);
+    --glass-2:    hsl(200 10% 17.5%);   /* was 16%: inset now >=1.18:1 vs panel */
+    --rule:       hsl(40 14% 94% / 0.16);  /* was 0.08 = 1.24:1; dividers must sit in the 1.5-2.1 band */
+    --rule-hard:  hsl(40 14% 94% / 0.25);  /* was 0.20 = 1.83:1; hover edge >=2:1 */
+    --rule-strong: hsl(40 14% 94% / 0.38); /* 1.4.11 boundary, >=3:1 on a panel */
+    --input-border: hsl(200 8% 52%);        /* solid, text-grade like NHS grey-1 */
+    --keyline:       0 2px 0 var(--rule);
+    --keyline-hover: 0 2px 0 var(--rule-hard);
+    --shadow:     0 1px 1px hsl(0 0% 0% / .25);
+
+    --accent:      hsl(190 32% 70%);
+    --accent-2:    hsl(190 32% 78%);
+    --accent-soft: hsl(190 32% 70% / 0.10);
+    --accent-ink:  hsl(200 14% 10%);
+
+    --positive: hsl(160 28% 64%);
+    --mixed:    hsl(36 40% 66%);
+    --negative: hsl(8 56% 72%);
+    --neutral:  hsl(200 6% 32%);
+
+    --warn-bg:   hsl(40 14% 14%);
+    --warn-line: hsl(36 22% 60%);
+    --warn-ink:  hsl(36 40% 80%);
+
+    --danger-bg:   hsl(8 24% 14%);
+    --danger-line: hsl(8 32% 56%);
+    --danger-ink:  hsl(8 56% 80%);
+
+    --redact-ink:   hsl(0 0% 4%);
+    --overlay-scrim: hsl(200 30% 4% / .62);
+
+    /* keep the brand-mark gradient on the teal-gray family in dark mode */
+    --hue-a: 190;
+    --hue-b: 200;
+
+    --veil: none;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        hsl(200 14% 8%);
+  --ink:       hsl(40 14% 94%);
+  --ink-soft:  hsl(200 6% 72%);
+  --ink-faint: hsl(200 6% 58%);  /* 58% not 56%: 56% gave only 4.28:1 on the dark aside well */
+  --glass:      hsl(200 12% 12%);
+  --glass-2:    hsl(200 10% 17.5%);   /* was 16%: inset now >=1.18:1 vs panel */
+  --rule:       hsl(40 14% 94% / 0.16);  /* was 0.08 = 1.24:1; dividers must sit in the 1.5-2.1 band */
+  --rule-hard:  hsl(40 14% 94% / 0.25);  /* was 0.20 = 1.83:1; hover edge >=2:1 */
+    --rule-strong: hsl(40 14% 94% / 0.38); /* 1.4.11 boundary, >=3:1 on a panel */
+    --input-border: hsl(200 8% 52%);        /* solid, text-grade like NHS grey-1 */
+    --keyline:       0 2px 0 var(--rule);
+    --keyline-hover: 0 2px 0 var(--rule-hard);
+  --shadow:     0 1px 1px hsl(0 0% 0% / .25);
+  --accent:      hsl(190 32% 70%);
+  --accent-2:    hsl(190 32% 78%);
+  --accent-soft: hsl(190 32% 70% / 0.10);
+  --accent-ink:  hsl(200 14% 10%);
+  --positive: hsl(160 28% 64%);
+  --mixed:    hsl(36 40% 66%);
+  --negative: hsl(8 56% 72%);
+  --neutral:  hsl(200 6% 32%);
+  --warn-bg:   hsl(40 14% 14%);
+  --warn-line: hsl(36 22% 60%);
+  --warn-ink:  hsl(36 40% 80%);
+  --danger-bg:   hsl(8 24% 14%);
+  --danger-line: hsl(8 32% 56%);
+  --danger-ink:  hsl(8 56% 80%);
+  --redact-ink:   hsl(0 0% 4%);
+  --overlay-scrim: hsl(200 30% 4% / .62);
+  --hue-a: 190;
+  --hue-b: 200;
+  --veil: none;
+}

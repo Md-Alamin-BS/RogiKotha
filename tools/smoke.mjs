@@ -65,6 +65,78 @@ const t = (name, fn) => { try { const m = fn(); results.push([m===true?'PASS':'F
 // scripts loaded?
 t('app.js executed (RK + views present)', () => !!window.RK && $$('.view').length >= 11 || `views=${$$('.view').length} RK=${!!window.RK}`);
 
+// ============================================================================
+// STORY-AUTH-001/002 (D-001): auth screens, static simulation only.
+// Gate checks run first, signed OUT (the prototype's default state); the
+// register -> verify flow that follows leaves state.session signed in and
+// verified for the rest of this file's pre-existing journeys below, which
+// D-001 gated behind a confirmed account (reply, comment edit/delete,
+// reactions, bookmark, mine). See docs/implementation/handoffs/D-001.md.
+// ============================================================================
+await go('#write');
+t('signed-out reader sees the sign-in explanation on the write screen', () => $$('#view-compose .signin-note').length > 0 || 'missing');
+t('signed-out write screen renders no form', () => $$('#view-compose .c-grid').length === 0 || 'form still rendered');
+
+await go('#experiences/r1');
+const reactPressedBefore = $$('[data-react]').filter(b => b.getAttribute('aria-pressed') === 'true').length;
+click($$('[data-react]')[0]);
+await new Promise(r => setTimeout(r, 20));
+t('signed-out reaction click opens the gate sheet', () => !$('#overlay').hidden || 'overlay still hidden');
+t('signed-out reaction click does not record a reaction', () => {
+  const after = $$('[data-react]').filter(b => b.getAttribute('aria-pressed') === 'true').length;
+  return after === reactPressedBefore || `before=${reactPressedBefore} after=${after}`;
+});
+click($('#sheet-close')); await new Promise(r => setTimeout(r, 20));
+
+// ---- register -> verify (anti-enumeration: identical screen every time) ----
+await go('#register');
+t('register view renders', () => ($('#view-register')?.innerHTML.length ?? 0) > 300 || 'empty');
+$('#f-register-email').value = 'newreader@example.com';
+$('#f-register-password').value = 'short123'; // 9 chars - too short
+$('#f-register-username').value = 'newreader1';
+$('#f-register-displayName').value = 'New Reader';
+$('#f-register-age').checked = true;
+$('#f-register-terms').checked = true;
+$('#register-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+await new Promise(r => setTimeout(r, 30));
+t('register with a 9-char password shows the summary and #err-register-password', () => (!!$('#auth-error-summary-register') && !!$('#err-register-password')) || 'missing summary or inline error');
+$('#f-register-password').value = 'a much better remembered sentence';
+$('#register-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+await new Promise(r => setTimeout(r, 30));
+t('register valid -> #view-verify visible', () => (window.location.hash.startsWith('#verify-email') && $('#view-verify') && !$('#view-verify').hidden) || `hash=${window.location.hash}`);
+const pendingBody = ($('#view-verify')?.textContent || '').replace(/\s+/g, ' ').trim();
+// STORY-AUTH-001: registering the same email again must show the identical
+// pending screen - the app never checks whether the address is already used.
+await go('#register');
+$('#f-register-email').value = 'newreader@example.com';
+$('#f-register-password').value = 'a much better remembered sentence';
+$('#f-register-username').value = 'newreader1';
+$('#f-register-displayName').value = 'New Reader';
+$('#f-register-age').checked = true;
+$('#f-register-terms').checked = true;
+$('#register-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+await new Promise(r => setTimeout(r, 30));
+t('register twice with the same email shows the identical pending screen (anti-enumeration)', () => {
+  const secondBody = ($('#view-verify')?.textContent || '').replace(/\s+/g, ' ').trim();
+  return (window.location.hash.startsWith('#verify-email') && secondBody === pendingBody) || `first="${pendingBody.slice(0,60)}" second="${secondBody.slice(0,60)}"`;
+});
+click($('[data-verify-simulate]'));
+await new Promise(r => setTimeout(r, 30));
+t('simulate link -> #view-mine shows auth.verify.done', () => {
+  const txt = $('#view-mine')?.textContent || '';
+  return (window.location.hash.startsWith('#me') && /confirmed|নিশ্চিত হয়েছে/.test(txt)) || `hash=${window.location.hash}`;
+});
+
+await go('#experiences/r1');
+t('signed-in reaction click records', () => {
+  // renderAccount() replaces the whole subtree on click, so re-query after -
+  // the pre-click node reference goes stale and its attributes never change.
+  const before = $$('[data-react]')[0].getAttribute('aria-pressed');
+  click($$('[data-react]')[0]);
+  const after = $$('[data-react]')[0].getAttribute('aria-pressed');
+  return after !== before || 'unchanged';
+});
+
 await go('#account/r1');
 t('account view renders', () => ($('#view-account')?.innerHTML.length ?? 0) > 500 || 'empty');
 t('comment bodies are not "undefined"', () => {
@@ -178,13 +250,10 @@ t('person view lists only accounts by this author', () => {
 });
 t('person view shows the allowlist explainer', () => /never linked to a profile|কখনো কোনো প্রোফাইল/.test($('#view-person').textContent) || 'missing');
 
-// ---- the demo role must actually gate something ----
+// ---- STORY-AUTH-001: the write gate is keyed off state.session now, not
+// the demo role picker (which no longer gates anything - see app.js) ----
 await go('#write');
-t('signed-out reader sees the sign-in explanation on the write screen', () => $$('#view-compose .signin-note').length > 0 || 'missing');
-click($('[data-role="contributor"]')); await new Promise(r=>setTimeout(r,40));
-await go('#write');
-t('contributor does not see it - the role really gates', () => $$('#view-compose .signin-note').length === 0 || 'still shown');
-click($('[data-role="reader"]')); await new Promise(r=>setTimeout(r,40));
+t('verified account does not see the sign-in explanation - the session gate really gates', () => $$('#view-compose .signin-note').length === 0 || 'still shown');
 t('demo panel is translated, not hardcoded English', () => {
   const h = $('#demo-panel .sub-head');
   return (h && h.textContent.trim().length > 0) || 'demo.title did not render';
@@ -321,6 +390,52 @@ t('aria-labels translate with the UI', () => {
   return (nav && nav !== 'Screens') || `aria-label=${nav}`;
 });
 click($('#lang')); await new Promise(r=>setTimeout(r,60));
+
+// ============================================================================
+// STORY-AUTH-001/002 (D-001): staff console auth walkthrough.
+// A second, independent JSDOM instance - the admin console is a separate
+// static site with its own app.js and state (see ui-design-prototype/README.md).
+// ============================================================================
+const ADMIN_ROOT = join(REPO, 'ui-design-prototype/admin') + '/';
+const adminHtml = readFileSync(ADMIN_ROOT + 'index.html', 'utf8');
+const adminVc = new VirtualConsole();
+adminVc.on('jsdomError', e => { const m = e.message || String(e); if (!JSDOM_GAPS.test(m)) errors.push('admin jsdomError: ' + m); });
+adminVc.on('error', (...a) => errors.push('admin console.error: ' + a.join(' ')));
+const adminDom = new JSDOM(adminHtml, {
+  url: pathToFileURL(ADMIN_ROOT + 'index.html').href,
+  runScripts: 'dangerously', resources: 'usable',
+  pretendToBeVisual: true, virtualConsole: adminVc,
+});
+const aw = adminDom.window;
+aw.matchMedia = q => ({ matches:false, media:q, onchange:null,
+  addListener(){}, removeListener(){}, addEventListener(){}, removeEventListener(){}, dispatchEvent(){return false;} });
+await new Promise(r => aw.addEventListener('load', r, { once: true }));
+const ad = aw.document;
+const a$ = s => ad.querySelector(s);
+const aClick = el => { el.dispatchEvent(new aw.MouseEvent('click', { bubbles: true })); };
+const aGo = async h => { aw.location.hash = h; await new Promise(r=>setTimeout(r,40)); };
+
+await aGo('#sign-in');
+t('admin sign-in view renders', () => (a$('#view-signin')?.innerHTML.length ?? 0) > 100 || 'empty');
+a$('#f-signin-email').value = 'staff@example.com';
+a$('#f-signin-password').value = 'a very long staff password';
+a$('#staff-signin-form').dispatchEvent(new aw.Event('submit', { bubbles: true, cancelable: true }));
+await new Promise(r => setTimeout(r, 30));
+t('admin: unknown device goes to #approve-device', () => aw.location.hash === '#approve-device' || `hash=${aw.location.hash}`);
+aClick(a$('[data-approve-simulate]'));
+await new Promise(r => setTimeout(r, 30));
+a$('#f-approve-password').value = 'a very long staff password';
+a$('#staff-approve-form').dispatchEvent(new aw.Event('submit', { bubbles: true, cancelable: true }));
+await new Promise(r => setTimeout(r, 30));
+t('admin: sign-in -> approve -> trust -> body[data-view="queue"]', () => ad.body.getAttribute('data-view') === 'queue' || `data-view=${ad.body.getAttribute('data-view')}`);
+
+aw.location.hash = '#sign-in';
+await new Promise(r => setTimeout(r, 20));
+a$('#f-signin-email').value = 'reader@demo';
+a$('#f-signin-password').value = 'a very long staff password';
+a$('#staff-signin-form').dispatchEvent(new aw.Event('submit', { bubbles: true, cancelable: true }));
+await new Promise(r => setTimeout(r, 30));
+t('admin: a non-staff email is refused and stays on #sign-in', () => (aw.location.hash === '#sign-in' && !!a$('#auth-error-summary-signin')) || `hash=${aw.location.hash}`);
 
 console.log(results.map(([s,n,m])=>`${s.padEnd(4)} ${n}${m?'  -- '+m:''}`).join('\n'));
 console.log('\nRuntime errors: ' + (errors.length ? '\n' + errors.slice(0,10).join('\n') : 'none'));

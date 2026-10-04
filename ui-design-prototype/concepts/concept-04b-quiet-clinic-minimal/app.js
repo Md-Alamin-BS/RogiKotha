@@ -36,7 +36,20 @@
     editingComment: null,   /* FR-COM-003: open comment editor */
     commentEdits: {},       /* commentId -> edited text */
     commentDeleted: [],     /* commentId -> deleted by its author */
-    personId: null          /* STORY-USER-001: public profile handle */
+    personId: null,         /* STORY-USER-001: public profile handle */
+    /* STORY-AUTH-001/002: static session simulation. Nothing is stored,
+       sent over the network, or persisted; "sign in" flips this object. */
+    session: null,          /* null = signed out, else { username, display, verified, staff } */
+    authError: null,
+    verifyEmail: null,      /* email echoed on the pending-verify screen */
+    verifyToken: null,      /* dev-only: set by the "simulate link" control */
+    registeredEmails: [],   /* anti-enumeration demo memory for this session only */
+    resetToken: null,
+    resetDone: false,
+    verifyWelcome: false,   /* show auth.verify.done once on /me after confirming */
+    stepUpUntil: 0,         /* password-recheck (step-up) grace period, ms epoch */
+    pendingStepUp: null,    /* function queued behind the step-up sheet */
+    securityPasswordChanged: false
   };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -55,6 +68,73 @@
     /* Bengali digits, so numerals do not stay Latin in a Bangla interface. */
     if (state.lang !== 'bn') { return String(n); }
     return String(n).replace(/[0-9]/g, function (d) { return '০১২৩৪৫৬৭৮৯'[+d]; });
+  }
+
+  /* =====================================================================
+     STORY-AUTH-001/002: shared markup for the auth forms (spec §2).
+     state.authError, when set, has the shape:
+       { view: 'register'|'signin'|'reset'|'security', fields: { name: message } }
+     "fields" keys are inserted in the form's visual order, so the summary
+     list and the tab order agree.
+     ===================================================================== */
+  function authErrMsg(view, name) {
+    var e = state.authError;
+    return (e && e.view === view && e.fields && e.fields[name]) || '';
+  }
+  /* Every auth view is mounted in the DOM at once (only `hidden` toggles), so
+     field ids are namespaced "f-<view>-<name>" - a bare "f-email" would
+     collide between /register and /sign-in and $() would silently grab
+     whichever view happens to come first in document order. */
+  // `required` only draws the visual .req marker - it does NOT add the HTML
+  // `required` attribute, because native constraint validation would then
+  // block submission with the browser's own tooltip instead of our
+  // summary+inline pattern. Pass 'required' inside extraAttrs on the (few)
+  // fields that have no dedicated errors.auth.* key and so rely on native
+  // validation instead (email, display name - see ISS-020).
+  function authField(view, name, labelKey, type, required, hintKey, extraAttrs) {
+    var err = authErrMsg(view, name);
+    var fid = 'f-' + view + '-' + name, eid = 'err-' + view + '-' + name;
+    return '<div class="field">' +
+      '<label for="' + fid + '">' + esc(T(labelKey)) +
+        (required ? '<span class="req">' + esc(T('compose.required')) + '</span>' : '') +
+      '</label>' +
+      (hintKey ? '<p class="sub">' + esc(T(hintKey)) + '</p>' : '') +
+      '<input id="' + fid + '" name="' + name + '" type="' + type + '"' +
+        (err ? ' aria-invalid="true" aria-describedby="' + eid + '"' : '') +
+        (extraAttrs || '') + '>' +
+      (err ? '<p class="field-error" id="' + eid + '">' + esc(err) + '</p>' : '') +
+    '</div>';
+  }
+  // Password field with the required Show/Hide toggle (spec §2).
+  function authPasswordField(view, name, labelKey, hintKey) {
+    var err = authErrMsg(view, name);
+    var fid = 'f-' + view + '-' + name, eid = 'err-' + view + '-' + name;
+    return '<div class="field">' +
+      '<label for="' + fid + '">' + esc(T(labelKey)) + '<span class="req">' + esc(T('compose.required')) + '</span></label>' +
+      (hintKey ? '<p class="sub">' + esc(T(hintKey)) + '</p>' : '') +
+      '<input id="' + fid + '" name="' + name + '" type="password"' +
+        (err ? ' aria-invalid="true" aria-describedby="' + eid + '"' : '') + '>' +
+      '<p class="sub" style="margin-top:6px">' +
+        '<button class="link-btn" type="button" data-toggle-pw="' + fid + '" aria-pressed="false">' + esc(T('auth.showPassword')) + '</button>' +
+      '</p>' +
+      (err ? '<p class="field-error" id="' + eid + '">' + esc(err) + '</p>' : '') +
+    '</div>';
+  }
+  function authErrorSummary(view) {
+    var e = state.authError;
+    if (!e || e.view !== view || !e.fields) { return ''; }
+    var names = Object.keys(e.fields);
+    if (!names.length) { return ''; }
+    return '<div class="callout warn" id="auth-error-summary-' + view + '" tabindex="-1">' +
+      '<b>' + esc(T('auth.errorSummary')) + '</b>' +
+      '<ul>' + names.map(function (n) {
+        return '<li><a href="#f-' + view + '-' + n + '">' + esc(e.fields[n]) + '</a></li>';
+      }).join('') + '</ul>' +
+    '</div>';
+  }
+  function focusAuthSummary(view) {
+    var s = $('#auth-error-summary-' + view);
+    if (s) { s.focus(); }
   }
 
   /* =====================================================================
@@ -111,7 +191,8 @@
 
   var VIEWS = ['discover', 'results', 'doctors', 'profile', 'experiences', 'account',
                'topics', 'condition', 'facilities', 'facility', 'compose',
-               'mine', 'saved', 'notifications', 'person', 'emergency', 'about'];
+               'mine', 'saved', 'notifications', 'person', 'emergency', 'about',
+               /* STORY-AUTH-001/002 */ 'register', 'signin', 'verify', 'reset', 'security'];
 
   /* ---------------------------------------------------------------------
      Routing: URL slug <-> internal view name.
@@ -134,12 +215,17 @@
     topics:        { view: 'topics',       detail: 'condition', id: 'conditionId' },
     experiences:   { view: 'experiences',  detail: 'account',   id: 'accountId' },
     write:         { view: 'compose' },
-    me:            { view: 'mine' },
+    me:            { view: 'mine',         detail: 'security',  id: 'meSection' },
     saved:         { view: 'saved' },
     notifications: { view: 'notifications' },
     authors:       { view: 'person',       detail: 'person',    id: 'personId' },
     emergency:     { view: 'emergency' },
-    about:         { view: 'about' }
+    about:         { view: 'about' },
+    /* STORY-AUTH-001/002: patient auth screens (static simulation) */
+    register:            { view: 'register' },
+    'sign-in':            { view: 'signin' },
+    'verify-email':       { view: 'verify' },
+    'reset-password':     { view: 'reset' }
   };
 
   /* view name -> the slug that addresses it, so go('profile/d1') still works
@@ -215,6 +301,12 @@
     if (v === 'experiences') { renderExperienceIndex(); }
     if (v === 'saved') { renderSaved(); }
     if (v === 'notifications') { renderNotifications(); }
+    if (v === 'register') { renderRegister(); }
+    if (v === 'signin') { renderSignin(); }
+    if (v === 'verify') { renderVerify(); }
+    if (v === 'reset') { renderReset(); }
+    if (v === 'security') { renderSecurity(); }
+    if (v === 'mine') { renderMine(); }
     $('#tray').hidden = !(v === 'results' && state.compare.length);
     setTitle(titleForView(v));
     window.scrollTo({ top: 0, behavior: motionAllowed() ? 'smooth' : 'auto' });
@@ -247,6 +339,11 @@
       case 'person':        return state.personId || T('person.kicker');
       case 'emergency':     return T('nav.emergency');
       case 'about':         return T('nav.about');
+      case 'register':      return T('auth.register.title');
+      case 'signin':        return T('auth.signIn.title');
+      case 'verify':        return T('auth.verify.title');
+      case 'reset':         return T('auth.reset.title');
+      case 'security':      return T('auth.security.title');
       default:              return '';
     }
   }
@@ -1365,6 +1462,25 @@
         '<p class="sub">' + esc(T('compose.storyHint')) + '</p>' +
         '<textarea id="f-story" data-story="1" style="min-height:170px"></textarea></div>';
 
+    // STORY-AUTH-001: signed out cannot see the composer at all (spec §3.7);
+    // this replaces the old demo-role gate, which is now vestigial (the
+    // reader/contributor/moderator picker in the demo panel no longer gates
+    // anything - the signed-in/out toggle does).
+    if (!state.session) {
+      host.innerHTML =
+        '<section class="a-head">' +
+          '<span class="kicker">' + esc(T('nav.compose')) + '</span>' +
+          '<h1 class="display">' + esc(T('compose.title')) + '</h1>' +
+          '<p class="lede">' + esc(T('compose.intro')) + '</p>' +
+        '</section>' +
+        '<div class="callout warn signin-note"><b>' + esc(T('auth.gate.title')) + '</b>' + esc(T('auth.gate.writeBody')) + '</div>' +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">' +
+          '<button class="btn small ghost" type="button" data-goto="sign-in">' + esc(T('auth.signIn')) + '</button>' +
+          '<button class="btn small ghost" type="button" data-goto="register">' + esc(T('auth.gate.register')) + '</button>' +
+        '</div>';
+      return;
+    }
+
     host.innerHTML =
       '<section class="a-head">' +
         '<span class="kicker">' + esc(T('nav.compose')) + '</span>' +
@@ -1372,13 +1488,10 @@
         '<p class="lede">' + esc(T('compose.intro')) + '</p>' +
       '</section>' +
 
-      /* EXPERIENCE.md:115 - the demo must explain simulated sign-in at the
-         point of contributing. This is also the only thing state.role gates,
-         which is what makes the demo panel's claim true rather than
-         decorative. */
-      (state.role === 'reader'
-        ? '<div class="callout warn signin-note"><b>' + esc(T('write.signinTitle')) + '</b>' +
-          esc(T('write.signinBody')) + '</div>'
+      // STORY-AUTH-001: unverified accounts see the §3.2 pending banner and
+      // the form still renders (drafts still save; only Publish is gated).
+      (!state.session.verified
+        ? '<div class="callout warn">' + esc(T('auth.verify.body')).replace('{email}', '<b>' + esc(state.session.email || state.verifyEmail || '') + '</b>') + '</div>'
         : '') +
 
       '<div class="c-modes">' +
@@ -1490,7 +1603,11 @@
               return '<label class="check"><input type="checkbox" data-confirm="' + i + '"><span>' + esc(T(k)) + '</span></label>';
             }).join('') + '</div>' +
             '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">' +
-              '<button class="btn" type="button" id="publish">' + esc(T('compose.publish')) + '</button>' +
+              /* STORY-AUTH-001: Publish is disabled, not hidden, while
+                 unverified - the draft is still visible and still saves. */
+              '<button class="btn" type="button" id="publish"' +
+                (!state.session.verified ? ' disabled title="' + esc(T('auth.gate.verifyToPublish')) + '"' : '') + '>' +
+                esc(T('compose.publish')) + '</button>' +
               '<button class="btn ghost small" type="button" id="save-draft">' + esc(T('compose.saveExit')) + '</button>' +
               '<span class="saved-flag" id="saved-flag">' + esc(T('compose.draftSaved')) + '</span>' +
             '</div>' +
@@ -1676,7 +1793,19 @@
     /* Saved (#saved) and Notifications (#notifications) now render in
        renderSaved() / renderNotifications(). */
 
+    // STORY-AUTH-001: one-time "email confirmed" welcome after /verify-email?token=
+    var welcome = state.verifyWelcome
+      ? '<div class="callout" style="border-color:var(--positive);color:var(--positive)">' + esc(T('auth.verify.done')) + '</div>'
+      : '';
+    if (state.verifyWelcome) { state.verifyWelcome = false; }
+    // STORY-AUTH-001/3.2: unverified users see the pending banner as well
+    var pending = (state.session && !state.session.verified)
+      ? '<div class="callout warn">' + esc(T('auth.verify.body').replace('{email}', esc(state.session.email || state.verifyEmail || ''))) +
+        ' <button class="link-btn" type="button" data-verify-resend="1">' + esc(T('auth.verify.resend')) + '</button></div>'
+      : '';
+
     host.innerHTML =
+      welcome + pending +
       '<section class="a-head">' +
         '<span class="kicker">' + esc(P(RK.user.display)) + ' · ' + esc(RK.user.username) + '</span>' +
         '<h1 class="display">' + esc(T('mine.title')) + '</h1>' +
@@ -1841,10 +1970,13 @@
 
   /* Shared sub-navigation for the three workspace pages. */
   function workspaceNav(current) {
-    var items = [['mine', 'nav.mine'], ['saved', 'mine.bookmarks'], ['notifications', 'mine.notifications']];
+    // STORY-AUTH-002: fifth workspace link to the security page
+    var items = [['mine', 'nav.mine'], ['saved', 'mine.bookmarks'], ['notifications', 'mine.notifications'],
+                 ['security', 'auth.security.nav']];
     return '<nav class="mine-tabs" aria-label="' + esc(T('nav.mine')) + '">' +
       items.map(function (it) {
-        return '<button type="button" data-goto="' + it[0] + '" aria-pressed="' +
+        var goto = it[0] === 'security' ? 'me/security' : it[0];
+        return '<button type="button" data-goto="' + goto + '" aria-pressed="' +
           (it[0] === current) + '">' + esc(T(it[1])) + '</button>';
       }).join('') + '</nav>';
   }
@@ -1960,6 +2092,288 @@
       '</div>' +
 
       '<p class="note about-foot">' + esc(T('aboutview.lastReviewed')) + '</p>';
+  }
+
+  /* =====================================================================
+     STORY-AUTH-001/002: patient auth screens.
+     Static simulation only - "sign in" flips state.session and nothing
+     else leaves the page. See docs/design/auth-screens-spec.md.
+     ===================================================================== */
+
+  function captureRegDraft() {
+    var d = state.regDraft || (state.regDraft = { lang: state.lang });
+    var f;
+    if ((f = $('#f-register-email'))) { d.email = f.value; }
+    if ((f = $('#f-register-username'))) { d.username = f.value; }
+    if ((f = $('#f-register-displayName'))) { d.displayName = f.value; }
+    if ((f = $('#f-register-age'))) { d.age = f.checked; }
+    if ((f = $('#f-register-terms'))) { d.terms = f.checked; }
+    return d;
+  }
+
+  // STORY-AUTH-001: renderRegister - account creation, client-only validation
+  function renderRegister() {
+    var host = $('#view-register');
+    if (!host) { return; }
+    setNoindex(true);
+    var d = state.regDraft || (state.regDraft = { email: '', username: '', displayName: '', lang: state.lang, age: false, terms: false });
+    var lang = d.lang || state.lang;
+    /* ASSUMPTION(D-001): auth-screens-spec.md §5 has no errors.auth.* key
+       for an invalid/missing email or display name, so those two rely on
+       native HTML validation (required / type=email / maxlength) rather
+       than the custom summary+inline pattern used for the four fields that
+       do have a dedicated key (password, username, age, terms). ISS-020. */
+    var termsHtml = esc(T('auth.termsLabel'))
+      .replace('{terms}', '<a href="#about">' + esc(T('auth.termsLink')) + '</a>')
+      .replace('{privacy}', '<a href="#about">' + esc(T('auth.privacyLink')) + '</a>');
+    host.innerHTML =
+      '<section class="a-head">' +
+        '<span class="kicker">' + esc(T('auth.kicker')) + '</span>' +
+        '<h1 class="display">' + esc(T('auth.register.title')) + '</h1>' +
+        '<p class="lede">' + esc(T('auth.register.lede')) + '</p>' +
+      '</section>' +
+      '<section class="panel" style="max-width:560px;margin:0 auto">' +
+        authErrorSummary('register') +
+        '<form id="register-form" novalidate>' +
+          authField('register', 'email', 'auth.email', 'email', true, null, ' required maxlength="254"') +
+          authPasswordField('register', 'password', 'auth.password', 'auth.passwordHint') +
+          authField('register', 'username', 'auth.username', 'text', true, 'auth.usernameHint', ' autocapitalize="off" maxlength="24"') +
+          '<p class="sub" id="username-preview" style="margin-top:-4px">' + (d.username ? '@' + esc(d.username) : '') + '</p>' +
+          authField('register', 'displayName', 'auth.displayName', 'text', true, 'auth.displayNameHint', ' required maxlength="60"') +
+          '<div class="field"><span class="lbl">' + esc(T('auth.language')) + '</span>' +
+            '<div class="opt-row" role="radiogroup" aria-label="' + esc(T('auth.language')) + '">' +
+              ['en', 'bn'].map(function (l) {
+                var on = lang === l;
+                return '<button class="opt" type="button" role="radio" data-reg-lang="' + l + '" aria-checked="' + on + '" aria-pressed="' + on + '">' + esc(T('user2.lang.' + l)) + '</button>';
+              }).join('') +
+            '</div>' +
+          '</div>' +
+          '<div class="field">' +
+            '<label class="check"><input type="checkbox" id="f-register-age"' + (d.age ? ' checked' : '') +
+              (authErrMsg('register', 'age') ? ' aria-invalid="true" aria-describedby="err-register-age"' : '') + '>' +
+              '<span>' + esc(T('auth.ageLabel')) + '</span></label>' +
+            (authErrMsg('register', 'age') ? '<p class="field-error" id="err-register-age">' + esc(authErrMsg('register', 'age')) + '</p>' : '') +
+          '</div>' +
+          '<div class="field">' +
+            '<label class="check"><input type="checkbox" id="f-register-terms"' + (d.terms ? ' checked' : '') +
+              (authErrMsg('register', 'terms') ? ' aria-invalid="true" aria-describedby="err-register-terms"' : '') + '>' +
+              '<span>' + termsHtml + '</span></label>' +
+            (authErrMsg('register', 'terms') ? '<p class="field-error" id="err-register-terms">' + esc(authErrMsg('register', 'terms')) + '</p>' : '') +
+          '</div>' +
+          '<button class="btn ghost" type="submit">' + esc(T('auth.register.submit')) + '</button>' +
+        '</form>' +
+        '<p class="sub" style="margin-top:14px"><button class="link-btn" type="button" data-goto="sign-in">' + esc(T('auth.haveAccount')) + '</button></p>' +
+      '</section>';
+    if (d.email && $('#f-register-email')) { $('#f-register-email').value = d.email; }
+    if (d.username && $('#f-register-username')) { $('#f-register-username').value = d.username; }
+    if (d.displayName && $('#f-register-displayName')) { $('#f-register-displayName').value = d.displayName; }
+  }
+
+  // STORY-AUTH-001: renderSignin - any email + password >= 10 chars succeeds
+  function renderSignin() {
+    var host = $('#view-signin');
+    if (!host) { return; }
+    setNoindex(true);
+    var doneCallout = state.resetDone
+      ? '<div class="callout" style="border-color:var(--positive);color:var(--positive)">' + esc(T('auth.reset.done')) + '</div>'
+      : '';
+    if (state.resetDone) { state.resetDone = false; }
+    host.innerHTML =
+      doneCallout +
+      '<section class="a-head">' +
+        '<span class="kicker">' + esc(T('auth.kicker')) + '</span>' +
+        '<h1 class="display">' + esc(T('auth.signIn.title')) + '</h1>' +
+        '<p class="lede">' + esc(T('auth.signIn.lede')) + '</p>' +
+      '</section>' +
+      '<section class="panel" style="max-width:560px;margin:0 auto">' +
+        authErrorSummary('signin') +
+        '<form id="signin-form" novalidate>' +
+          authField('signin', 'email', 'auth.email', 'email', true) +
+          authPasswordField('signin', 'password', 'auth.password') +
+          '<button class="btn ghost" type="submit">' + esc(T('auth.signIn.submit')) + '</button>' +
+        '</form>' +
+        '<p class="sub" style="margin-top:14px"><button class="link-btn" type="button" data-goto="reset-password">' + esc(T('auth.forgot')) + '</button></p>' +
+        '<p class="sub"><button class="link-btn" type="button" data-goto="register">' + esc(T('auth.noAccount')) + '</button></p>' +
+      '</section>';
+  }
+
+  // STORY-AUTH-001: renderVerify - pending-confirmation panel (spec §3.2)
+  function renderVerify() {
+    var host = $('#view-verify');
+    if (!host) { return; }
+    setNoindex(true);
+    var email = (state.session && state.session.email) || state.verifyEmail || '';
+    host.innerHTML =
+      '<section class="a-head">' +
+        '<span class="kicker">' + esc(T('auth.kicker')) + '</span>' +
+        '<h1 class="display">' + esc(T('auth.verify.title')) + '</h1>' +
+      '</section>' +
+      '<section class="panel" style="max-width:560px;margin:0 auto">' +
+        '<p>' + esc(T('auth.verify.body')).replace('{email}', '<b>' + esc(email) + '</b>') + '</p>' +
+        '<div class="callout" style="margin:14px 0">' + esc(T('auth.verify.expires')) + '</div>' +
+        '<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">' +
+          '<button class="btn small ghost" type="button" id="verify-resend">' + esc(T('auth.verify.resend')) + '</button>' +
+          '<span class="saved-flag" id="verify-resent-flag">' + esc(T('auth.verify.resent')) + '</span>' +
+        '</div>' +
+        /* ASSUMPTION(D-001): spec §5 gives no copy for a dev-only "simulate
+           the emailed link" control, so this reuses auth.verify.devInbox and,
+           since there is no real inbox in this static prototype, confirms
+           the account immediately rather than opening anything. ISS-021. */
+        '<p class="sub" style="margin-top:14px"><button class="link-btn" type="button" data-verify-simulate="1">' + esc(T('auth.verify.devInbox')) + '</button></p>' +
+      '</section>';
+  }
+
+  // STORY-AUTH-002: renderReset - request then set (spec §3.4)
+  function renderReset() {
+    var host = $('#view-reset');
+    if (!host) { return; }
+    setNoindex(true);
+    var body;
+    if (state.resetToken) {
+      body = '<form id="reset-set-form" novalidate>' +
+        authPasswordField('reset', 'newPassword', 'auth.reset.newPassword', 'auth.passwordHint') +
+        authPasswordField('reset', 'confirmPassword', 'auth.reset.confirmPassword') +
+        '<button class="btn ghost" type="submit">' + esc(T('auth.reset.setSubmit')) + '</button>' +
+      '</form>';
+    } else if (state.resetSent) {
+      body = '<div class="callout">' + esc(T('auth.reset.sent')) + '</div>' +
+        '<p class="sub" style="margin-top:14px"><button class="link-btn" type="button" data-reset-simulate="1">' + esc(T('auth.verify.devInbox')) + '</button></p>';
+    } else {
+      body = '<form id="reset-request-form" novalidate>' +
+        authField('reset', 'email', 'auth.email', 'email', true, null, ' required') +
+        '<button class="btn ghost" type="submit">' + esc(T('auth.reset.submit')) + '</button>' +
+      '</form>';
+    }
+    host.innerHTML =
+      '<section class="a-head">' +
+        '<span class="kicker">' + esc(T('auth.kicker')) + '</span>' +
+        '<h1 class="display">' + esc(T('auth.reset.title')) + '</h1>' +
+        '<p class="lede">' + esc(T('auth.reset.lede')) + '</p>' +
+      '</section>' +
+      '<section class="panel" style="max-width:560px;margin:0 auto">' +
+        authErrorSummary('reset') +
+        body +
+      '</section>';
+  }
+
+  // STORY-AUTH-002: renderSecurity - email / password / sessions / data
+  function renderSecurity() {
+    var host = $('#view-security');
+    if (!host) { return; }
+    setNoindex(true);
+    if (!state.session) {
+      host.innerHTML =
+        '<section class="a-head">' +
+          '<span class="kicker">' + esc(T('auth.kicker')) + '</span>' +
+          '<h1 class="display">' + esc(T('auth.security.title')) + '</h1>' +
+        '</section>' +
+        '<section class="panel" style="max-width:560px;margin:0 auto">' +
+          '<div class="callout warn"><b>' + esc(T('auth.gate.title')) + '</b><br>' + esc(T('auth.gate.body')) + '</div>' +
+          '<div style="margin-top:14px"><button class="btn small ghost" type="button" data-goto="sign-in">' + esc(T('auth.signIn')) + '</button></div>' +
+        '</section>';
+      return;
+    }
+    var sess = state.session;
+    var sessions = [
+      { label: 'Chrome on Windows', first: '12 Aug 2026', last: state.lang === 'bn' ? 'এইমাত্র' : 'Just now', here: true },
+      { label: 'Safari on iPhone', first: '2 Sep 2026', last: '3 Sep 2026', here: false }
+    ];
+    host.innerHTML =
+      '<section class="a-head">' +
+        '<span class="kicker">' + esc(T('auth.kicker')) + '</span>' +
+        '<h1 class="display">' + esc(T('auth.security.title')) + '</h1>' +
+      '</section>' +
+      workspaceNav('security') +
+      '<section class="panel" style="max-width:680px;margin:0 auto">' +
+        '<div class="sub">' +
+          '<h4 class="sub-head">' + esc(T('auth.security.email')) + '</h4>' +
+          '<p>' + esc(sess.email || '') + ' — ' + (sess.verified ? esc(T('auth.security.verified')) : esc(T('auth.security.unverified'))) + '</p>' +
+          '<p class="note">' + esc(T('auth.security.emailNote')) + '</p>' +
+        '</div>' +
+        '<div class="sub" style="margin-top:24px">' +
+          '<h4 class="sub-head">' + esc(T('auth.security.password')) + '</h4>' +
+          authErrorSummary('security') +
+          '<form id="security-password-form" novalidate>' +
+            authPasswordField('security', 'currentPassword', 'auth.security.currentPassword') +
+            authPasswordField('security', 'newPassword', 'auth.reset.newPassword', 'auth.passwordHint') +
+            authPasswordField('security', 'confirmPassword', 'auth.reset.confirmPassword') +
+            '<button class="btn ghost small" type="submit">' + esc(T('auth.security.changePassword')) + '</button>' +
+          '</form>' +
+          (state.securityPasswordChanged
+            ? '<p class="callout" style="margin-top:10px;border-color:var(--positive);color:var(--positive)">' + esc(T('auth.security.passwordChanged')) + '</p>'
+            : '') +
+        '</div>' +
+        '<div class="sub" style="margin-top:24px">' +
+          '<h4 class="sub-head">' + esc(T('auth.security.sessions')) + '</h4>' +
+          '<table class="kv"><thead><tr><th>' + esc(T('auth.security.device')) + '</th><th>' + esc(T('auth.security.firstSeen')) + '</th><th>' + esc(T('auth.security.lastSeen')) + '</th></tr></thead><tbody>' +
+            sessions.map(function (s) {
+              return '<tr><td>' + esc(s.label) + (s.here ? ' ' + badge('plain', T('auth.security.thisDevice')) : '') + '</td><td>' + esc(s.first) + '</td><td>' + esc(s.last) + '</td></tr>';
+            }).join('') +
+          '</tbody></table>' +
+          '<p class="note" style="margin-top:8px">' + esc(T('auth.security.signOutAllNote')) + '</p>' +
+          '<button class="btn small ghost" type="button" id="security-signout-all" style="margin-top:10px">' + esc(T('auth.security.signOutAll')) + '</button>' +
+        '</div>' +
+        '<div class="sub" style="margin-top:24px">' +
+          '<h4 class="sub-head">' + esc(T('user2.data')) + '</h4>' +
+          '<p class="note">' + esc(T('user2.dataNote')) + '</p>' +
+          // spec §3.6.4: link to the export/delete controls that already
+          // exist on /me rather than duplicating them here.
+          '<p class="sub"><button class="link-btn" type="button" data-goto="me">' + esc(T('user2.data')) + '</button></p>' +
+        '</div>' +
+      '</section>';
+  }
+
+  // STORY-AUTH-001: masthead account entry (spec §1). Never accent-filled -
+  // the write CTA stays the only accent-filled control in the patient chrome.
+  function renderAccountEntry() {
+    var btn = $('#account');
+    if (!btn) { return; }
+    var span = btn.querySelector('span');
+    var sess = state.session;
+    if (!sess) {
+      btn.classList.remove('account');
+      btn.removeAttribute('data-verified');
+      btn.title = T('auth.signIn');
+      if (span) {
+        span.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>';
+      }
+      return;
+    }
+    btn.classList.add('account');
+    btn.setAttribute('data-verified', String(!!sess.verified));
+    // ASSUMPTION(D-001): no spec key names the masthead control's title
+    // when signed in; using the display name is the narrower, reversible
+    // choice over inventing new copy. ISS-022.
+    btn.title = P(sess.display) || sess.username;
+    if (span) { span.textContent = initials({ author: sess.display, identity: 'real' }); }
+  }
+
+  // STORY-AUTH-001: openAuthGate - the sheet contribution actions open when
+  // signed out or unverified (spec §3.7)
+  function openAuthGate() {
+    if (state.session && !state.session.verified) {
+      openSheet(T('auth.gate.title'), '<p>' + esc(T('auth.gate.verifyToAct')) + '</p>');
+      return;
+    }
+    openSheet(T('auth.gate.title'),
+      '<p>' + esc(T('auth.gate.body')) + '</p>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">' +
+        '<button class="btn small ghost" type="button" data-gate-goto="sign-in">' + esc(T('auth.signIn')) + '</button>' +
+        '<button class="btn small ghost" type="button" data-gate-goto="register">' + esc(T('auth.gate.register')) + '</button>' +
+      '</div>');
+  }
+
+  // STORY-AUTH-002: openStepUp - password recheck before a sensitive action
+  // (spec §4.4; reused by the patient console for delete-account and
+  // sign-out-everywhere, per the task's owned-paths note).
+  function openStepUp(onConfirm) {
+    if (state.stepUpUntil > Date.now()) { onConfirm(); return; }
+    state.pendingStepUp = onConfirm;
+    openSheet(T('staff.stepUp.title'),
+      '<p class="note">' + esc(T('staff.stepUp.body')) + '</p>' +
+      '<div class="field"><label for="f-stepup-password">' + esc(T('auth.password')) + '</label>' +
+        '<input id="f-stepup-password" type="password"></div>' +
+      '<button class="btn ghost" type="button" id="stepup-confirm">' + esc(T('staff.stepUp.confirm')) + '</button>');
   }
 
   /* =====================================================================
@@ -2467,6 +2881,8 @@
 
   // STORY-MOD-001: report sheet with reasons + protected reporter identity
   function openReport(target) {
+    // STORY-AUTH-001: reporting needs a confirmed account (spec §3.7)
+    if (!state.session || !state.session.verified) { openAuthGate(); return; }
     var reasons = ['privacy', 'threat', 'unsafeFile', 'dangerous', 'factual', 'spam', 'impersonation'];
     openSheet(T('report.title'),
       '<div class="field"><span class="lbl">' + esc(T('report.reason')) + '</span>' +
@@ -2508,6 +2924,9 @@
     renderPerson(); renderDoctorIndex(); renderFacilityIndex();
     renderTopicIndex(); renderExperienceIndex(); renderSaved(); renderNotifications();
     renderTray();
+    /* STORY-AUTH-001/002 */
+    renderRegister(); renderSignin(); renderVerify(); renderReset(); renderSecurity();
+    renderAccountEntry();
     setTitle(titleForView(document.body.getAttribute('data-view')));
   }
 
@@ -2547,11 +2966,15 @@
       renderProfile(); return;
     }
     if (e.target.closest('#claim')) {
+      // STORY-AUTH-001: claim is a contribution action, gated same as write
+      if (!state.session || !state.session.verified) { openAuthGate(); return; }
       openSheet(T('profile.claimThis'), '<p>' + esc(T('profile.claimNote')) + '</p>');
       return;
     }
 
     if ((el = e.target.closest('[data-react]'))) {
+      // STORY-AUTH-001: reactions need a confirmed account (spec §3.7)
+      if (!state.session || !state.session.verified) { openAuthGate(); return; }
       var rk = el.getAttribute('data-react');
       /* FR-REA-001: one current reaction. Selecting one clears the other;
          clicking the active one clears it entirely. */
@@ -2582,12 +3005,15 @@
       state.editingComment = null; renderAccount(); return;
     }
     if ((el = e.target.closest('[data-reply]'))) {
+      // STORY-AUTH-001: the comment box is a contribution action
+      if (!state.session || !state.session.verified) { openAuthGate(); return; }
       state.replyTo = el.getAttribute('data-reply'); renderAccount();
       var rb = $('#reply-text'); if (rb) { rb.focus(); rb.selectionStart = rb.value.length; }
       return;
     }
     if (e.target.closest('[data-reply-cancel]')) { state.replyTo = null; renderAccount(); return; }
     if ((el = e.target.closest('[data-post-reply]'))) {
+      if (!state.session || !state.session.verified) { openAuthGate(); return; }
       var prParent = el.getAttribute('data-post-reply');
       var rBox = $('#reply-text'), rText = rBox && rBox.value.trim();
       if (!rText) { if (rBox) { rBox.focus(); } return; }
@@ -2606,11 +3032,14 @@
       state.replyTo = null; renderAccount(); return;
     }
     if ((el = e.target.closest('[data-bookmark]'))) {
+      // STORY-AUTH-001: bookmark needs a confirmed account (spec §3.7)
+      if (!state.session || !state.session.verified) { openAuthGate(); return; }
       var bId = el.getAttribute('data-bookmark'), bList = bookmarks(), bAt = bList.indexOf(bId);
       if (bAt === -1) { bList.push(bId); } else { bList.splice(bAt, 1); }
       renderAccount(); return;
     }
     if ((el = e.target.closest('[data-post-comment]'))) {
+      if (!state.session || !state.session.verified) { openAuthGate(); return; }
       var pcId = el.getAttribute('data-post-comment');
       var box = $('#new-comment'), text = box && box.value.trim();
       if (!text) { if (box) { box.focus(); } return; }
@@ -2651,10 +3080,17 @@
       var ta = $('#user-feedback'); if (ta) { ta.value = ''; }
       return;
     }
-    if (e.target.closest('#user-data-export') || e.target.closest('#user-data-delete')) {
-      var dca = e.target.closest('#user-data-export') ? 'export' : 'delete';
+    if (e.target.closest('#user-data-export')) {
       openSheet(T('user2.data'), '<p class="callout">' + esc(T('user2.dataCallout')) + '</p>' +
-        '<p class="note">' + esc(dca === 'export' ? T('user2.dataExportNote') : T('user2.dataDeleteNote')) + '</p>');
+        '<p class="note">' + esc(T('user2.dataExportNote')) + '</p>');
+      return;
+    }
+    if (e.target.closest('#user-data-delete')) {
+      // STORY-AUTH-002: account deletion is a step-up (password recheck) action
+      openStepUp(function () {
+        openSheet(T('user2.data'), '<p class="callout">' + esc(T('user2.dataCallout')) + '</p>' +
+          '<p class="note">' + esc(T('user2.dataDeleteNote')) + '</p>');
+      });
       return;
     }
     if (e.target.closest('#pref-lang')) { setLang(state.lang === 'en' ? 'bn' : 'en'); renderMine(); return; }
@@ -2723,7 +3159,11 @@
       if (target) { target.state = 'quarantine'; delete target.failAt; renderCompose(); advanceFile(target); }
       return;
     }
-    if (e.target.closest('#publish')) { state.published = true; renderCompose(); return; }
+    if (e.target.closest('#publish')) {
+      // STORY-AUTH-001: belt-and-braces - the button is also `disabled` in the DOM
+      if (!state.session || !state.session.verified) { return; }
+      state.published = true; renderCompose(); return;
+    }
     if (e.target.closest('#save-draft')) {
       var flag = $('#saved-flag');
       if (flag) { flag.classList.add('on'); setTimeout(function () { flag.classList.remove('on'); }, 1800); }
@@ -2753,6 +3193,96 @@
     if (e.target.closest('#demo-reset')) {
       try { localStorage.clear(); } catch (e) {}
       location.reload();
+      return;
+    }
+
+    /* =====================================================================
+       STORY-AUTH-001/002: account entry, demo session toggle, auth forms
+       ===================================================================== */
+    if (e.target.closest('#account')) {
+      if (!state.session) { go('sign-in'); return; }
+      var menu = [];
+      if (!state.session.verified) { menu.push(['#verify-email', T('auth.verifyPending')]); }
+      menu.push(['#me', T('nav.mine')]);
+      menu.push(['#saved', T('mine.bookmarks')]);
+      menu.push(['#notifications', T('mine.notifications')]);
+      menu.push(['#me/security', T('auth.security.nav')]);
+      if (state.session.staff) { menu.push(['../../admin/index.html', T('nav.admin')]); }
+      openSheet(P(state.session.display) || state.session.username,
+        menu.map(function (mi) {
+          return '<p class="sub"><a class="link-btn" href="' + mi[0] + '">' + esc(mi[1]) + '</a></p>';
+        }).join('') +
+        '<p class="sub" style="margin-top:10px"><button class="link-btn" type="button" id="account-signout">' + esc(T('auth.signOut')) + '</button></p>');
+      return;
+    }
+    if (e.target.closest('#account-signout')) {
+      state.session = null;
+      closeSheet();
+      renderAccountEntry(); renderCompose(); renderMine(); renderSecurity();
+      announce('Signed out');
+      return;
+    }
+    // STORY-AUTH-001: demo-only signed-in/out toggle (spec §0). Nothing here
+    // is a real session; it only flips state.session for the walkthrough.
+    if ((el = e.target.closest('[data-session]'))) {
+      var wantSession = el.getAttribute('data-session');
+      if (wantSession === 'in') {
+        state.session = { username: RK.user.username, display: RK.user.display, verified: true, staff: false, email: 'shirin.rahman@example.com' };
+      } else {
+        state.session = null;
+      }
+      $$('#demo-panel [data-session]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-session') === wantSession)); });
+      renderAccountEntry(); renderCompose(); renderMine(); renderSecurity();
+      announce('Session: ' + wantSession);
+      return;
+    }
+    if ((el = e.target.closest('[data-toggle-pw]'))) {
+      var pwEl = document.getElementById(el.getAttribute('data-toggle-pw'));
+      if (pwEl) {
+        var showingPw = pwEl.type === 'text';
+        pwEl.type = showingPw ? 'password' : 'text';
+        el.setAttribute('aria-pressed', String(!showingPw));
+        el.textContent = showingPw ? T('auth.showPassword') : T('auth.hidePassword');
+      }
+      return;
+    }
+    if ((el = e.target.closest('[data-reg-lang]'))) {
+      captureRegDraft();
+      state.regDraft.lang = el.getAttribute('data-reg-lang');
+      renderRegister();
+      return;
+    }
+    if (e.target.closest('[data-verify-simulate]')) {
+      if (state.session) { state.session.verified = true; }
+      state.verifyToken = 1;
+      state.verifyWelcome = true;
+      renderAccountEntry(); renderCompose();
+      go('me');
+      return;
+    }
+    if (e.target.closest('#verify-resend')) {
+      var vFlag = $('#verify-resent-flag');
+      if (vFlag) { vFlag.classList.add('on'); setTimeout(function () { vFlag.classList.remove('on'); }, 1800); }
+      return;
+    }
+    if (e.target.closest('[data-reset-simulate]')) { state.resetToken = true; renderReset(); return; }
+    if ((el = e.target.closest('[data-gate-goto]'))) { closeSheet(); go(el.getAttribute('data-gate-goto')); return; }
+    if (e.target.closest('#security-signout-all')) {
+      openStepUp(function () {
+        state.session = null;
+        renderAccountEntry(); renderCompose();
+        go('sign-in');
+      });
+      return;
+    }
+    if (e.target.closest('#stepup-confirm')) {
+      var stepPw = $('#f-stepup-password');
+      if (!stepPw || stepPw.value.length < 10) { if (stepPw) { stepPw.focus(); } return; }
+      state.stepUpUntil = Date.now() + 5 * 60 * 1000;
+      var stepCb = state.pendingStepUp;
+      state.pendingStepUp = null;
+      closeSheet();
+      if (stepCb) { stepCb(); }
       return;
     }
   });
@@ -2786,6 +3316,11 @@
           esc(T('compose.publishedNote')) + '</span></div>';
       }
     }
+    // STORY-AUTH-001: live @username preview under the register field
+    if (e.target.id === 'f-register-username') {
+      var upv = $('#username-preview');
+      if (upv) { upv.textContent = e.target.value ? '@' + e.target.value : ''; }
+    }
   });
 
   document.addEventListener('submit', function (e) {
@@ -2793,6 +3328,114 @@
       e.preventDefault();
       state.query = $('#q').value.trim();
       renderResults(); go('results');
+    }
+
+    // STORY-AUTH-001: register - client-only validation mirrors spec §3.1
+    if (e.target.id === 'register-form') {
+      e.preventDefault();
+      // ISS-020: email and display name have no dedicated errors.auth.* key
+      // in spec §5, so they rely on native constraint validation instead of
+      // the custom summary+inline pattern used for the other four fields.
+      if (!e.target.checkValidity()) { e.target.reportValidity(); return; }
+      var d = captureRegDraft();
+      var email = (d.email || '').trim();
+      var password = $('#f-register-password').value || '';
+      var username = (d.username || '').trim();
+      var displayName = (d.displayName || '').trim();
+      var fields = {};
+      if (password.length < 10) { fields.password = T('errors.auth.passwordTooShort'); }
+      if (!/^[a-z0-9_]{3,24}$/.test(username)) { fields.username = T('errors.auth.usernameInvalid'); }
+      else if (username === RK.user.username) { fields.username = T('errors.auth.usernameTaken'); }
+      if (!d.age) { fields.age = T('errors.auth.ageRequired'); }
+      if (!d.terms) { fields.terms = T('errors.auth.termsRequired'); }
+      if (Object.keys(fields).length) {
+        state.authError = { view: 'register', fields: fields };
+        renderRegister();
+        focusAuthSummary('register');
+        return;
+      }
+      if (!email || !displayName) { return; } // native required/type=email covers these (ISS-020)
+      state.authError = null;
+      /* STORY-AUTH-001: always the pending screen, win or lose - the app
+         never confirms whether an email was already registered. */
+      state.registeredEmails.push(email);
+      state.session = { username: username, display: { en: displayName, bn: displayName }, verified: false, staff: false, email: email };
+      state.verifyEmail = email;
+      var chosenLang = d.lang;
+      state.regDraft = null;
+      if (chosenLang && chosenLang !== state.lang) { setLang(chosenLang); }
+      renderAccountEntry(); renderCompose();
+      go('verify-email');
+      return;
+    }
+
+    // STORY-AUTH-001: sign-in - any email + password >= 10 chars succeeds
+    if (e.target.id === 'signin-form') {
+      e.preventDefault();
+      var siEmail = ($('#f-signin-email').value || '').trim();
+      var siPassword = $('#f-signin-password').value || '';
+      if (!siEmail || siPassword.length < 10) {
+        state.authError = { view: 'signin', fields: { password: T('errors.auth.invalidCredentials') } };
+        renderSignin();
+        focusAuthSummary('signin');
+        return;
+      }
+      state.authError = null;
+      state.session = { username: RK.user.username, display: RK.user.display, verified: true, staff: false, email: siEmail };
+      renderAccountEntry(); renderCompose();
+      go('me');
+      return;
+    }
+
+    // STORY-AUTH-002: reset request - always the same neutral message
+    if (e.target.id === 'reset-request-form') {
+      e.preventDefault();
+      state.resetSent = true;
+      state.authError = null;
+      renderReset();
+      return;
+    }
+    // STORY-AUTH-002: reset set - matching passwords, then sign out everywhere
+    if (e.target.id === 'reset-set-form') {
+      e.preventDefault();
+      var rNew = $('#f-reset-newPassword').value || '';
+      var rConfirm = $('#f-reset-confirmPassword').value || '';
+      var rFields = {};
+      if (rNew.length < 10) { rFields.newPassword = T('errors.auth.passwordTooShort'); }
+      else if (rNew !== rConfirm) { rFields.confirmPassword = T('auth.reset.mismatch'); }
+      if (Object.keys(rFields).length) {
+        state.authError = { view: 'reset', fields: rFields };
+        renderReset();
+        focusAuthSummary('reset');
+        return;
+      }
+      state.authError = null;
+      state.session = null;
+      state.resetToken = false;
+      state.resetSent = false;
+      state.resetDone = true;
+      renderAccountEntry(); renderCompose();
+      go('sign-in');
+      return;
+    }
+    // STORY-AUTH-002: security > change password - revokes other sessions (simulated)
+    if (e.target.id === 'security-password-form') {
+      e.preventDefault();
+      var spNew = $('#f-security-newPassword').value || '';
+      var spConfirm = $('#f-security-confirmPassword').value || '';
+      var spFields = {};
+      if (spNew.length < 10) { spFields.newPassword = T('errors.auth.passwordTooShort'); }
+      else if (spNew !== spConfirm) { spFields.confirmPassword = T('auth.reset.mismatch'); }
+      if (Object.keys(spFields).length) {
+        state.authError = { view: 'security', fields: spFields };
+        renderSecurity();
+        focusAuthSummary('security');
+        return;
+      }
+      state.authError = null;
+      state.securityPasswordChanged = true;
+      renderSecurity();
+      return;
     }
   });
 

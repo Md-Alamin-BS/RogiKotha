@@ -136,11 +136,12 @@ Read `00-master-plan.md` §1–§4 and §7, `01-conventions.md` (all), `04-hando
    commits to `build/demo` outside a merge.)
 3. Remove the worktrees you created (`git worktree remove ../rk-<task>`); the branches stay on origin.
 4. Print, as the last thing you say (fill `<model · effort>` from the tier table for the queued
-   tasks' classes — validate column):
+   tasks' classes — validate column; `<tasks>` is the literal Queue `tasks:` line you just wrote to
+   `NEXT.md`, so the printed line is self-contained and needs no cross-reference to find the task ids):
 
    ```
    Implemented: <tasks> (<done|partial each>). Questions for you: <list or none>.
-   Open a NEW session on <model · effort> (validation of <classes>) and paste:
+   Open a NEW session on <model · effort> to VALIDATE <tasks> and paste:
    Read docs/implementation/LOOP.md and do exactly what it says. Ask me only when it tells you to.
    ```
    (If a parallel lane session is still `[running]`, say instead: "Wait for the Lane <X> session to
@@ -174,8 +175,11 @@ sub-agents, each in its own worktree of the task branch, or one after the other)
 4. Write `docs/validation/<task>.md` from `templates/validation-template.md` with verdict
    `PASS | PASS WITH FOLLOW-UP | FAIL`; add an `ISS-` row per finding with severity
    (`S1` breaks demo/hard rule/private data/red check; `S2` storyboard behaviour wrong; `S3` polish;
-   `S4` debt). Commit on the task branch (`<task>: validation record`, author check as in §1.2.6),
-   rebase, push.
+   `S4` debt). A finding in already-merged code that no currently queued task owns follows
+   `04-handoff-and-validation.md` §4.1: fix it now, in its own small branch, if it's small and
+   mechanical; otherwise write a `CR-nnn` mini task file so a later session can pick it up — never
+   leave it only as an open `ISS-` row with no path forward. Commit on the task branch (`<task>:
+   validation record`, author check as in §1.2.6), rebase, push.
 5. **Merge on PASS** (also PASS WITH FOLLOW-UP when every follow-up has an `ISS-` row with an owner):
    in the main checkout, `git switch build/demo && git pull --ff-only origin build/demo`,
    `git merge --no-ff <branch> -m "Merge <task>: <title>"`, run `pnpm check` on `build/demo`; if
@@ -193,11 +197,13 @@ sub-agents, each in its own worktree of the task branch, or one after the other)
    Commit the register files on `build/demo` (`loop: queue implement <tasks>`), push.
 2. Remove your worktrees.
 3. Print, as the last thing you say (fill `<model · effort>` from the tier table — implement
-   column — for the classes of the tasks you just queued):
+   column — for the classes of the tasks you just queued; `<tasks>` is the literal Queue `tasks:`
+   line you just wrote to `NEXT.md`, so the printed line is self-contained and needs no
+   cross-reference to find the task ids):
 
    ```
    Validated: <task: verdict, …>. Merged: <tasks>. Needs your decision: <list or none>.
-   Open a NEW session on <model · effort> (implementing <classes>) and paste:
+   Open a NEW session on <model · effort> to IMPLEMENT <tasks> and paste:
    Read docs/implementation/LOOP.md and do exactly what it says. Ask me only when it tells you to.
    ```
    Then stop.
@@ -242,6 +248,8 @@ and `docs/validation/DEMO-GATES.md`, and stop. Do not print a next prompt.
   replying in the session that asked); the next session reads the file, not the chat.
 - Read `NEXT.md` and the open `S1`/`S2` rows in `ISSUES.md` when you have five minutes. Add your own
   wishes to `06-change-requests.md`; the next implement session picks up `S`-size rows for the task
-  it is working on and larger ones become `CR-` tasks queued by §4.
+  it is working on and larger ones become `CR-` tasks queued by §4. A `CR-nnn` row logged
+  `Status: needs queueing` (from `04-handoff-and-validation.md` §4.1 — a session's own out-of-scope
+  finding, not a founder wish) is queued the same way once you approve it or answer its question.
 - At the end of each phase (the validator writes "phase gate reached" in `NEXT.md`), open the running
   demo and walk the storyboard steps it lists; write what you saw into `docs/validation/PHASE-n.md`.

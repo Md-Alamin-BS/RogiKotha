@@ -1,0 +1,67 @@
+name: rogikotha
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rogikotha
+    # ISS-084: host port 5433, not 5432 — a native Windows PostgreSQL service (postgresql-x64-18,
+    # auto-start) already owns 5432 on developer machines that have one installed, so the
+    # container's own default port was silently unreachable from the host. The container's
+    # internal port stays 5432 (nothing inside the compose network needs to change).
+    ports: ["5433:5432"]
+    volumes:
+      # ASSUMPTION(T-002): task file's inline snippet said `pgdata:/var/lib/postgresql/data`.
+      # The current `postgres:18` image (PG_VERSION 18.6-1.pgdg13+2) changed its default PGDATA
+      # to a versioned subdirectory (`/var/lib/postgresql/18/docker`) and declares its own image
+      # VOLUME at `/var/lib/postgresql`, not `.../data` — mounting at `.../data` makes the
+      # entrypoint refuse to start ("PostgreSQL data in /var/lib/postgresql/data (unused
+      # mount/volume)"), confirmed live against a freshly pulled image. Mounting the named volume
+      # one level up, at `/var/lib/postgresql`, is the image's own documented fix and is what
+      # this file does. See ISS-040.
+      - pgdata:/var/lib/postgresql
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d rogikotha"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  mailpit:
+    # ASSUMPTION(T-002): task file's inline snippet said `axllent/mailpit:latest`;
+    # overridden to the pinned tag per the dependency check dated 2026-09-13
+    # (docs/status/dependency-check-log.md) — see ISS-039.
+    image: axllent/mailpit:v1.31.1
+    ports: ["1025:1025", "8025:8025"]
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    volumes:
+      - mailpit:/data
+  clamav:
+    image: clamav/clamav:1.5.4
+    ports: ["3310:3310"]
+    environment:
+      CLAMAV_NO_FRESHCLAMD: "false"
+    volumes:
+      - clamdb:/var/lib/clamav
+      # Custom test signature (Scope change 2026-09-12 / CR-001 / FD-036): bind-mounted
+      # alongside the official signature database so `ROGIKOTHA-MALWARE-TEST-MARKER` is
+      # flagged without needing a real malicious sample. See infra/compose/README.md.
+      # ASSUMPTION(T-002): the task text said to mount this read-only (`:ro`), but the image's
+      # own entrypoint (`/init`) unconditionally runs `chown -R clamav:clamav /var/lib/clamav`
+      # on every start, which fails hard against a read-only bind mount ("Read-only file
+      # system", confirmed live — the container exited 1). Mounted read-write instead so the
+      # entrypoint's chown succeeds; the source file on the host is still the only writable
+      # copy the developer can edit, and nothing in the app writes to it. See ISS-041.
+      - ./clamav/rogikotha-test.ndb:/var/lib/clamav/rogikotha-test.ndb
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      start_period: 600s
+      retries: 5
+volumes:
+  pgdata:
+  mailpit:
+  clamdb:

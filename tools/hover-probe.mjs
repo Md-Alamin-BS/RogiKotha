@@ -11,9 +11,9 @@
  * hover styles in a real browser can).
  *
  * Preconditions (skip cleanly with exit 0 if any are missing):
- *   - puppeteer-core is installed   (npm install)
+ *   - puppeteer-core is installed   (pnpm install)
  *   - chromium binary is present    (npx playwright install chromium)
- *   - prototype server is up        (npm start)
+ *   - prototype server is up        (pnpm tools:serve)
  *
  * Exits non-zero if any LOW-contrast hover state is found. Exits zero
  * otherwise, even if it had to skip.
@@ -28,7 +28,7 @@ let PUPPETEER_OK = true;
 try { await import('puppeteer-core'); }
 catch {
   console.log('SKIPPED - puppeteer-core is not installed.');
-  console.log('  npm install        (once, at the repo root)');
+  console.log('  pnpm install       (once, at the repo root)');
   process.exit(0);
 }
 PUPPETEER_OK = true;
@@ -51,7 +51,7 @@ async function probeServer() {
 }
 if (!(await probeServer())) {
   console.log('SKIPPED - prototype server not running on http://localhost:8137');
-  console.log('  npm start        (in another terminal)');
+  console.log('  pnpm tools:serve  (in another terminal)');
   process.exit(0);
 }
 

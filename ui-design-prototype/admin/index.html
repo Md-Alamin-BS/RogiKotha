@@ -46,8 +46,11 @@
   <div class="controls">
     <button type="button" id="lang"   class="ctl" data-i18n="a11y.lang"   data-i18n-attr="title" aria-pressed="false"><span>অ</span></button>
     <button type="button" id="theme"  class="ctl" data-i18n="a11y.theme"  data-i18n-attr="title"><span>◐</span></button>
-    <!-- STORY-ADMIN-001: role switcher demo control -->
+    <!-- STORY-ADMIN-001: role switcher demo control (kept in the prototype;
+         T-103 removes it from the shipped product) -->
     <button type="button" id="role"   class="ctl" data-i18n="admin.role.current" data-i18n-attr="title"><span>SA</span></button>
+    <!-- STORY-AUTH-002: account entry - security page + sign out -->
+    <button type="button" id="staff-account" class="ctl" data-i18n="auth.signIn" data-i18n-attr="title"><span></span></button>
     <a class="ctl" href="../index.html" data-i18n="admin.backToGallery" data-i18n-attr="title"><span>↗</span></a>
   </div>
 </header>
@@ -66,6 +69,11 @@
     <section class="view" id="view-config" hidden></section> <!-- STORY-ADMIN-001: #view-config markup -->
     <!-- STORY-NOTIF-001: notification triage surface -->
     <section class="view" id="view-notifications" hidden></section>
+    <!-- STORY-AUTH-001/002: staff auth screens (static simulation; not in
+         NAV_GROUPS - these are not navigation) -->
+    <section class="view" id="view-signin"   hidden></section>
+    <section class="view" id="view-approve"  hidden></section>
+    <section class="view" id="view-security" hidden></section>
   </div>
 </main>
 

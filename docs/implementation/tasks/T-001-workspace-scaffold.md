@@ -137,13 +137,92 @@ Modify: `package.json` (root), `package-lock.json` (delete — pnpm replaces it)
 
 ## Hard-rule checklist
 
-- [ ] No agent/tool attribution in any file or commit.
+- [x] No agent/tool attribution in any file or commit.
 
 ## Hand-off (implementer fills in)
 
 ### What changed
+
+Created the pnpm workspace exactly as scoped: `pnpm-workspace.yaml`, `.npmrc`, `.nvmrc`,
+`tsconfig.base.json`, `eslint.config.mjs`, `prettier.config.mjs`, `.prettierignore`,
+`vitest.workspace.ts`, `.editorconfig`; `apps/web` and `apps/worker` (`package.json`,
+`tsconfig.json`; worker also gets `src/index.ts`); the seven `packages/*` (`package.json`,
+`tsconfig.json`, `src/index.ts`, `vitest.config.ts` each). Rewrote root `package.json` (name
+`rogikotha`, all listed scripts plus `smoke`), added the pinned devDependencies, updated
+`.gitignore`, deleted `package-lock.json`. Added one smoke test,
+`packages/contracts/src/workspace.smoke.test.ts` (Finish step 2 of my brief).
+
 ### Not done and why
+
+Nothing from the task's Steps 1-14 was skipped. Out-of-scope items (Next.js, Drizzle, Better
+Auth, boundary lint rules, CI, docker-compose, `.env.example`) were correctly left untouched, per
+"Not in scope".
+
+### Deviations from the task file (all narrower/reversible, `// ASSUMPTION(T-001)` where the file
+### format allows a comment; logged as `ISS-002`..`ISS-007`)
+
+1. **Vitest 4.1.11 has no `defineWorkspace`/auto-loaded `vitest.workspace.ts`** (`vitest/config`
+   exports no such symbol in this version — confirmed by inspecting its type declarations). Kept
+   the file name and the two globs the task specified, but it is now a normal Vitest config with
+   `test.projects`, and every root script that runs tests passes `--config vitest.workspace.ts`
+   explicitly. A future package is picked up automatically once it has its own
+   `vitest.config.ts` — no further change needed. `ISS-004`.
+2. `apps/web` has no `src/index.ts` (not in this task's owned paths — T-008 owns the app's real
+   source). `tsc -p apps/web/tsconfig.json` fails with TS18003 on an empty `src/`, so
+   `apps/web`'s `typecheck` script is `echo "T-008"`, matching its existing `dev`/`build`
+   placeholders, until T-008 adds source. `ISS-005`.
+3. ESLint's `ignores` needed `.agents/**`, `.claude/**`, `.github/**`, `.impeccable/**` beyond the
+   task's list — this checkout already has agent-tooling skill scripts under those directories
+   that are not repo/product source and were failing lint (`no-undef`, unparseable `.js` files).
+   `ISS-003`.
+4. Added a `disableTypeChecked` override for `**/*.mjs`, `**/*.cjs`, `**/*.config.ts` and
+   `vitest.workspace.ts` — none of these are covered by any package `tsconfig.json`'s `include`,
+   which `parserOptions.projectService: true` requires. This is the fix the task's own "known
+   gotchas" section anticipated; I picked the exact file patterns. `ISS-002`.
+5. `pnpm smoke`'s filter is the substring `smoke.test`, not the glob `**/*.smoke.test.*` — the
+   Vitest CLI's positional filter argument is a substring match, not a glob; the glob matched zero
+   files. `ISS-006`.
+
+None of these touch a hard rule, a data boundary, a founder decision, or a different pinned
+library/version — typescript-eslint's peer range (`>=4.8.4 <6.1.0`) already accepts the pinned
+`typescript@~6.0.0` (installed `6.0.3`), so no typescript-eslint pin was needed.
+
 ### Questions for the human
+
+None open. (Noting `ISS-007`: `pnpm install --frozen-lockfile` reports "10 workspace projects",
+not "nine" — pnpm counts the workspace root package itself in addition to the 9 `apps/*` +
+`packages/*` projects. Informational only, no action needed.)
+
 ### Follow-ups
+
+- T-008: replace `apps/web`'s placeholder `dev`/`build`/`typecheck` scripts with real ones once
+  `src/` exists.
+- T-009: replace `apps/worker`'s placeholder `dev`/`build` scripts with real ones.
+- T-010: fill the `// T-010 adds boundaries here` block in `eslint.config.mjs` with
+  `eslint-plugin-boundaries` rules enforcing `01-conventions.md` §2.
+- Whoever lands `packages/i18n`'s real `check` script (T-006) makes `pnpm i18n:check` — and so
+  `pnpm check` — green; T-001 confirmed that step 3's stated exception ("`i18n:check` ... will
+  fail until their packages exist") is exactly what happens today, and nothing else in `pnpm check`
+  is red.
+
 ### `pnpm check` output summary
+
+Individual acceptance-table commands (below) are all green. The combined `pnpm check` script
+fails, exactly where the task file says it will and for no other reason:
+`typecheck` (green) → `lint` (green) → `test` (green) → `i18n:check` →
+`ERR_PNPM_RECURSIVE_RUN_NO_SCRIPT: None of the selected packages has a "check" script` (expected;
+`packages/i18n` gets a real `check` script in T-006) → `build` never runs. No other step failed.
+
 ### Hard-rule evidence
+
+- No agent/tool attribution anywhere: verified with
+  `git log -1 --format='%an <%ae>%n%cn <%ce>%n%B'` on the task commit — author/committer are
+  `Md. Al-Amin <102671792+Md-Alamin-BS@users.noreply.github.com>` (the repo's configured identity)
+  and the message body has no tool/model name or `Co-Authored-By` trailer. `AGENTS.md`,
+  `eslint.config.mjs`, `vitest.workspace.ts`, `docs/implementation/handoffs/T-001.md`,
+  `docs/implementation/ISSUES.md`, and this file were grepped by hand for "Claude"/"Codex"/"GPT"/
+  "Sonnet"/"Opus" outside of the run-record lines this protocol requires (which are validation
+  evidence, not attribution, per `04-handoff-and-validation.md` §2) — none found.
+
+Run record: Claude Code · claude-sonnet-5 · effort high · start commit 56ed036 · end commit
+2f35801.

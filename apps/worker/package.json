@@ -1,0 +1,21 @@
+{
+  "name": "@rogikotha/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "echo \"T-009\"",
+    "build": "echo \"T-009\"",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rogikotha/application": "workspace:*",
+    "@rogikotha/contracts": "workspace:*",
+    "@rogikotha/database": "workspace:*",
+    "@rogikotha/adapters": "workspace:*"
+  }
+}

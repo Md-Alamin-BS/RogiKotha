@@ -1,0 +1,6 @@
+# These files are bind-mounted directly into Linux containers (postgres-init/*.sql via
+# docker-entrypoint-initdb.d, rogikotha-test.ndb into ClamAV's signature directory). A CRLF line
+# ending on the .ndb file breaks its line-based `Name:TargetType:Offset:HexSignature` parser (a
+# trailing \r becomes part of the hex field). Force LF regardless of core.autocrlf so a checkout
+# on Windows (this repo's default core.autocrlf=true) doesn't silently corrupt them.
+* text eol=lf

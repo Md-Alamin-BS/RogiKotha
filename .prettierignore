@@ -1,0 +1,9 @@
+node_modules
+**/dist
+**/.next
+ui-design-prototype/**
+tools/**
+_bmad/**
+.data/**
+docs/**
+pnpm-lock.yaml

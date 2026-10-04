@@ -3,7 +3,7 @@
  * tools/check-detector.mjs — run the impeccable detector, drop documented
  * false-positives, exit non-zero only on residual real findings.
  *
- *   node tools/check-detector.mjs        # or: invoked by `npm run check`
+ *   node tools/check-detector.mjs        # or: invoked by `pnpm tools:check`
  *
  * Why this exists: the static detector emits 3 documented false-positive
  * findings on the current `main` (per
