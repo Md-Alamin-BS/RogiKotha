@@ -1,0 +1,18 @@
+# Root git attributes (CR-008 / ISS-178). Without this file, `pnpm
+# --filter @rogikotha/test-support port` and `pnpm fixtures:build` always
+# write LF, `core.autocrlf=true` checks the same files out CRLF on
+# Windows, and every regeneration leaves `git status --porcelain` dirty
+# with EOL-only changes even though the content is byte-identical.
+#
+# `infra/compose/.gitattributes` already forces LF for the files bind-
+# mounted into Linux containers there (a more specific path wins over this
+# file); this one is the repo-wide default.
+* text=auto eol=lf
+
+# Fixture/derivative binaries: never let git's text auto-detection or EOL
+# normalisation touch these, or a real binary payload gets corrupted the
+# way `report.pdf` (T-007 / ISS-178) was.
+*.pdf binary
+*.jpg binary
+*.jpeg binary
+*.png binary

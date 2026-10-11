@@ -54,23 +54,68 @@ async function writePrescriptionJpg(filename, label) {
   await sharp(prescriptionSvg(label)).jpeg({ quality: 90 }).toFile(path.join(fixturesDir, filename));
 }
 
+/**
+ * True if the given EXIF buffer (as returned by `sharp(file).metadata().exif`
+ * — a TIFF-formatted blob, optionally prefixed with the 6-byte `Exif\0\0`
+ * APP1 marker) carries tag `0x8825` (GPSInfo, IFD0's pointer to the GPS
+ * sub-IFD) in its 0th IFD. CR-008 / ISS-175: a fixture that claims a
+ * property must prove it, or T-304's metadata-stripping test would pass
+ * vacuously — verified by hand-parsing the bytes rather than trusting
+ * `withExif`'s input was honoured.
+ */
+function exifHasGpsInfoTag(exif) {
+  const tiffStart = exif.toString('ascii', 0, 4) === 'Exif' ? 6 : 0;
+  const byteOrder = exif.toString('ascii', tiffStart, tiffStart + 2);
+  if (byteOrder !== 'II' && byteOrder !== 'MM') return false;
+  const littleEndian = byteOrder === 'II';
+  const readU16 = (offset) => (littleEndian ? exif.readUInt16LE(offset) : exif.readUInt16BE(offset));
+  const readU32 = (offset) => (littleEndian ? exif.readUInt32LE(offset) : exif.readUInt32BE(offset));
+  const ifd0Offset = tiffStart + readU32(tiffStart + 4);
+  const numEntries = readU16(ifd0Offset);
+  for (let i = 0; i < numEntries; i += 1) {
+    const entryOffset = ifd0Offset + 2 + i * 12;
+    if (readU16(entryOffset) === 0x8825) return true;
+  }
+  return false;
+}
+
 async function writePhotoWithExifGps() {
   // A synthetic "photo" with EXIF GPS coordinates, to prove metadata
   // stripping in the real pipeline (T-304). GPS tags per the EXIF/TIFF
   // spec: GPSLatitudeRef/GPSLatitude, GPSLongitudeRef/GPSLongitude.
+  //
+  // ASSUMPTION(CR-008): sharp 0.35.4's `withExif` only recognises the
+  // literal IFD-number keys its own documented example uses (`IFD0`,
+  // `IFD3`, ...) — the previous, equally plausible-looking `GPS` key was
+  // silently dropped rather than rejected (ISS-175). `IFD3` is sharp's
+  // documented name for the GPS IFD (sharp.pixelplumbing.com/api-output/
+  // #withexif's own example sets `GPSLatitudeRef`/`GPSLatitude` under
+  // `IFD3`); confirmed empirically here too — re-reading the written file
+  // with `sharp(file).metadata()` shows EXIF tag `0x8825` (GPSInfo) in
+  // IFD0 only when the GPS block is keyed `IFD3`, never `GPS`.
   const svg = prescriptionSvg('Photograph of the prescription');
+  const outPath = path.join(fixturesDir, 'photo.jpg');
   await sharp(svg)
     .jpeg({ quality: 90 })
     .withExif({
       IFD0: { Software: 'RogiKotha fixture generator' },
-      GPS: {
+      IFD3: {
         GPSLatitudeRef: 'N',
         GPSLatitude: '23/1 45/1 0/1',
         GPSLongitudeRef: 'E',
         GPSLongitude: '90/1 23/1 0/1',
       },
     })
-    .toFile(path.join(fixturesDir, 'photo.jpg'));
+    .toFile(outPath);
+
+  // Re-read the file just written and fail the script unless the GPS IFD
+  // really landed — a fixture that claims a property must prove it.
+  const { exif } = await sharp(outPath).metadata();
+  if (!exif || !exifHasGpsInfoTag(exif)) {
+    throw new Error(
+      'writePhotoWithExifGps: fixtures/photo.jpg has no EXIF tag 0x8825 (GPSInfo) after writing — GPS metadata did not round-trip through sharp.withExif()',
+    );
+  }
 }
 
 async function writeNotAPng() {

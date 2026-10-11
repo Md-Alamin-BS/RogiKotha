@@ -64,6 +64,8 @@ export class FakeAccountRepository {
   readonly devices = new MapStore<Row>();
   readonly deviceApprovals = new MapStore<Row>();
   readonly bookmarks = new MapStore<Row>();
+  // CR-008 / ISS-177 (T-401's blocked-users feature).
+  readonly blocks = new MapStore<Row>();
 
   findByAuthUserId(authUserId: string): Promise<Row | undefined> {
     return Promise.resolve(this.profiles.findOne((r) => r.authUserId === authUserId));
@@ -117,6 +119,20 @@ export class FakeAccountRepository {
 
   listBookmarks(accountId: string): Promise<Row[]> {
     return Promise.resolve(this.bookmarks.find((b) => b.accountId === accountId));
+  }
+
+  setBlock(blockerAccountId: string, blockedAccountId: string): Promise<Row> {
+    return Promise.resolve(
+      this.blocks.insert({ id: `${blockerAccountId}:${blockedAccountId}`, blockerAccountId, blockedAccountId }),
+    );
+  }
+
+  unsetBlock(blockerAccountId: string, blockedAccountId: string): Promise<boolean> {
+    return Promise.resolve(this.blocks.delete(`${blockerAccountId}:${blockedAccountId}`));
+  }
+
+  isBlocked(blockerAccountId: string, blockedAccountId: string): Promise<boolean> {
+    return Promise.resolve(this.blocks.get(`${blockerAccountId}:${blockedAccountId}`) !== undefined);
   }
 }
 
@@ -256,6 +272,11 @@ export class FakeReviewRepository {
   readonly drafts = new MapStore<Row>();
   readonly reviews = new MapStore<Row>();
   readonly followUps = new MapStore<Row>();
+  // CR-008 / ISS-177: a separate store from `reviews` on purpose — facility
+  // feedback never enters a doctor's aggregates (hard rule), so
+  // `criteriaDistribution` below reads only this store and
+  // `sentimentDistribution`/`outcomeDistribution` read only `reviews`.
+  readonly facilityReviews = new MapStore<Row>();
 
   saveDraft(input: Row): Promise<Row> {
     return Promise.resolve(this.drafts.insert(input));
@@ -311,6 +332,66 @@ export class FakeReviewRepository {
 
   listForCondition(conditionId: string): Promise<Row[]> {
     return Promise.resolve(this.reviews.find((r) => r.conditionId === conditionId));
+  }
+
+  listExperiences(query: Row): Promise<Row[]> {
+    return Promise.resolve(
+      this.reviews.find((r) => {
+        if (query.doctorId !== undefined && r.doctorId !== query.doctorId) return false;
+        if (query.branchId !== undefined && r.branchId !== query.branchId) return false;
+        if (query.conditionId !== undefined && r.conditionId !== query.conditionId) return false;
+        return true;
+      }),
+    );
+  }
+
+  // Counts only this fake's own `reviews` — never `facilityReviews` (hard
+  // rule: facility feedback never touches a doctor's aggregates).
+  sentimentDistribution(doctorId: string): Promise<Record<string, number>> {
+    const dist: Record<string, number> = {};
+    for (const r of this.reviews.find((row) => row.doctorId === doctorId)) {
+      const sentiment = r.sentiment as string | undefined;
+      if (!sentiment) continue;
+      dist[sentiment] = (dist[sentiment] ?? 0) + 1;
+    }
+    return Promise.resolve(dist);
+  }
+
+  outcomeDistribution(doctorId: string): Promise<Record<string, number>> {
+    const dist: Record<string, number> = {};
+    for (const r of this.reviews.find((row) => row.doctorId === doctorId)) {
+      const outcome = r.outcome as string | undefined;
+      if (!outcome) continue;
+      dist[outcome] = (dist[outcome] ?? 0) + 1;
+    }
+    return Promise.resolve(dist);
+  }
+
+  // Counts only `facilityReviews` — never `reviews` (same hard rule, other
+  // direction: a doctor's own reviews never inflate a facility's criteria).
+  criteriaDistribution(branchId: string): Promise<Record<string, Record<string, number>>> {
+    const dist: Record<string, Record<string, number>> = {};
+    for (const fr of this.facilityReviews.find((row) => row.branchId === branchId)) {
+      const criteria = (fr.criteria as Record<string, string | null | undefined> | undefined) ?? {};
+      for (const [criterion, value] of Object.entries(criteria)) {
+        if (!value) continue;
+        const byValue = (dist[criterion] ??= {});
+        byValue[value] = (byValue[value] ?? 0) + 1;
+      }
+    }
+    return Promise.resolve(dist);
+  }
+
+  insertFacilityReview(input: Row): Promise<Row> {
+    return Promise.resolve(this.facilityReviews.insert(input));
+  }
+
+  softDeleteFacilityReview(reviewId: string): Promise<Row | undefined> {
+    return Promise.resolve(this.facilityReviews.update(reviewId, { deletedAt: new Date() }));
+  }
+
+  restoreFacilityReview(reviewId: string): Promise<Row | undefined> {
+    return Promise.resolve(this.facilityReviews.update(reviewId, { deletedAt: null }));
   }
 }
 

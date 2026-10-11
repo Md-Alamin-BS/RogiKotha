@@ -15,6 +15,7 @@ export const MODERATION_CASES = [
     "seedRef": "MOD-2041",
     "lane": "critical",
     "ageHours": 3,
+    "reportCount": 2,
     "reportReasons": [
       "dangerous",
       "spam"
@@ -37,6 +38,7 @@ export const MODERATION_CASES = [
     "seedRef": "MOD-2038",
     "lane": "critical",
     "ageHours": 9,
+    "reportCount": 1,
     "reportReasons": [
       "privacy"
     ],
@@ -58,6 +60,7 @@ export const MODERATION_CASES = [
     "seedRef": "MOD-2033",
     "lane": "standard",
     "ageHours": 41,
+    "reportCount": 6,
     "reportReasons": [
       "factual",
       "factual",
@@ -81,6 +84,7 @@ export const MODERATION_CASES = [
     "seedRef": "MOD-2029",
     "lane": "standard",
     "ageHours": 62,
+    "reportCount": 1,
     "reportReasons": [
       "impersonation"
     ],
@@ -102,6 +106,7 @@ export const MODERATION_CASES = [
     "seedRef": "MOD-2011",
     "lane": "appeals",
     "ageHours": 96,
+    "reportCount": 0,
     "reportReasons": [],
     "autoHidden": false,
     "coordinated": false,
