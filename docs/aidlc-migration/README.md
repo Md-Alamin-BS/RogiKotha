@@ -109,6 +109,10 @@ upstream source and docs) and `.../inventory.md` (this file's §5 checked agains
 
 ## 4. Next: start the first intent
 
+**Run it with `docs/aidlc-migration/RUNBOOK.md`** — paste `Read docs/aidlc-migration/RUNBOOK.md and do
+exactly what it says.` into a fresh Claude Code session. The runbook holds the decisions (made
+2026-10-11) and every remaining step; the outline below is the summary.
+
 1. Exit this Claude Code session, start `claude` again from a terminal in the repo, run
    `/aidlc --doctor`. In Codex: `/hooks`, `t`, Esc, then `$aidlc --doctor`.
 2. Start the intent (one line; if the engine rejects the combined flags, use `/aidlc compose` and set
