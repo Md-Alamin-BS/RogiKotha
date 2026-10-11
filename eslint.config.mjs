@@ -9,7 +9,8 @@ export default tseslint.config(
     // ui-design-prototype, tools, _bmad, .data, docs) did not anticipate the
     // agent-tooling directories already present in this checkout
     // (.agents, .claude, .github, .impeccable) — they hold third-party skill
-    // scripts, not repo source, so they are ignored too (see ISS-003).
+    // scripts, not repo source, so they are ignored too (see ISS-003). .codex
+    // holds the AI-DLC Codex hooks and tools, likewise not repo source (ISS-220).
     ignores: [
       'node_modules',
       '**/dist',
@@ -21,6 +22,7 @@ export default tseslint.config(
       'docs/**',
       '.agents/**',
       '.claude/**',
+      '.codex/**',
       '.github/**',
       '.impeccable/**',
     ],
