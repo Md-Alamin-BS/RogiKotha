@@ -2,8 +2,8 @@
 /**
  * tools/smoke.mjs
  *
- *   npm install          # once - installs jsdom (the only dependency)
- *   node tools/smoke.mjs # or: npm run smoke
+ *   pnpm install         # once - jsdom comes from the root workspace
+ *   node tools/smoke.mjs # or: pnpm tools:smoke
  *
  * Drives Concept 04b in a real DOM and clicks through the journeys the
  * coverage matrix claims are Done. It exists because "the file parses" and
@@ -25,7 +25,7 @@ let JSDOM, VirtualConsole;
 try { ({ JSDOM, VirtualConsole } = await import('jsdom')); }
 catch {
   console.log('SKIPPED - jsdom is not installed.');
-  console.log('  npm install        (once, at the repo root)');
+  console.log('  pnpm install       (once, at the repo root)');
   console.log('  node tools/smoke.mjs');
   process.exit(0);
 }

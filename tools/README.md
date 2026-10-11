@@ -42,8 +42,8 @@ reactions, bookmarks, draft delete/restore, the public profile, and the
 language switch.
 
 ```
-npm install          # once — jsdom is the only dependency
-npm run smoke
+pnpm install         # once — jsdom comes from the root workspace
+pnpm tools:smoke
 ```
 
 It exists because "the file parses" and "the button works" are different
