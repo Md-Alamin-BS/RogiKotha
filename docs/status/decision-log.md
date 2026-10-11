@@ -1,6 +1,6 @@
 # RogiKotha decision log
 
-**As of:** 2026-09-12  
+**As of:** 2026-10-11  
 **Rule:** A recommendation is not a confirmed product decision. Founder confirmation, source authority, and mandatory specialist sign-offs are recorded separately.
 
 ## Confirmed source-authority decisions
@@ -115,6 +115,20 @@ TypeScript stays on 6.x (TypeScript 7 breaks the lint toolchain until 7.1), pnpm
 ### Model routing taken with these decisions
 
 `docs/planning/research/model-assignment-2026-09-10/research.md` and `docs/implementation/00-master-plan.md` §7 replace the 2026-08-30 assignment classes for the demo build: Sonnet 5 / GPT-5.6 Terra for routine and frontend-port work, Opus 5 (alternate Sol) for high-risk work with cross-vendor validation and founder approval, Luna / Haiku 4.5 for mechanical ports, Fable 5.1 not used for implementation.
+
+## Delegated decisions — round 5 (2026-10-11, AI-DLC migration)
+
+Each decided by delegation from the owner, 2026-10-11 (`docs/aidlc-migration/RUNBOOK.md` §B). The owner can overturn any of them later.
+
+| ID | Decision | Reason / status |
+|---|---|---|
+| FD-038 | `CR-011` / `ISS-201`: the outbox relay becomes **transactional** — it enqueues with pg-boss `send(..., { db })` inside the same transaction that sets `processed_at`; `singletonKey` stays; handlers stay idempotent. | Removes the duplicate window instead of narrowing it. Verified: pg-boss 12.31.0 `SendOptions = JobOptions & QueueOptions & ConnectionOptions`, `ConnectionOptions.db?: IDatabase` (`dist/types.d.ts:425,459`). Decided by delegation from the owner, 2026-10-11; applied in the CR-011 unit (with `ISS-202`, `ISS-203`) |
+| FD-039 | `ISS-158` + `ISS-176` + `ISS-221`: **correct the storyboard to match the data** (the code is right). The alias-isolation proof uses an anonymous review (r2/r8/r12); MOD-2041 is in the critical lane; MOD-2033's three extra reports cite `factual`, so the case reads as the factual disagreement its summary describes. Verify against the prototype data before changing the seed. | The prototype is the source of truth for demo data (`rogikotha-dev-spec.md`). Decided by delegation from the owner, 2026-10-11; applied in a small storyboard/seed unit in the delivery plan |
+| FD-040 | `ISS-226`: seed files may import `@rogikotha/database` as a **dev-only edge**: `packages/test-support/src/seed/** → database`, written into `01-conventions.md` §2 and T-010's boundary lint. Nothing in `apps/*` may import `test-support`. | Seeding writes the database by definition; this is the narrow, reversible option. Decided by delegation from the owner, 2026-10-11; applied in the T-010 unit |
+| FD-041 | `ISS-140` / `CR-006`: **revoke** `rk_worker`'s `SELECT (id, email)` on `auth_users` in a forward-only migration; the worker reads recipients from `email_deliveries.to_email_enc` as designed. | Matches `02-data-model.md` §16 and `01-conventions.md` §11 (least privilege). Decided by delegation from the owner, 2026-10-11; applied in the CR-006 unit |
+| FD-042 | `CR-004`: the theme/language toggle announcements to `#sr-live` are **localized**. Bengali copy is drafted in the unit and flagged for the owner's bilingual review at the phase gate, together with `ISS-050`. | The equal-language rule (ADR 0011) forbids English-only strings. Decided by delegation from the owner, 2026-10-11; applied in the CR-004 unit |
+| FD-043 | `CR-007` (`test:int` hang): **queued** as its own unit. | The cause is known; no product decision is needed. Decided by delegation from the owner, 2026-10-11; applied in the delivery plan |
+| FD-044 | `ISS-135`: Terms/Privacy keep `nav.about` as their kicker; closed as **won't fix**. | Matches the ported prototype, which is the visual source of truth; ships either way. Decided by delegation from the owner, 2026-10-11 |
 
 ## Provisional technical recommendations
 

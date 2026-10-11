@@ -69,7 +69,7 @@ in `docs/status/decision-log.md`; the owner can overturn any of them later.
 
 | Step | What | Who | State |
 |---|---|---|---|
-| 1 | Preflight checks | agent (+ HUMAN only if a check fails) | todo |
+| 1 | Preflight checks | agent (+ HUMAN only if a check fails) | done 2026-10-11 — 2.11.0, doctor 0 problems, hooks firing, Postgres up; Codex question asked at step 3 |
 | 2 | Housekeeping and record the decisions | agent | todo |
 | 3 | Start the intent; Practices Discovery | agent + HUMAN gates | todo |
 | 4 | Reverse Engineering | agent + HUMAN gate | todo |
