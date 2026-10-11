@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-1ea9-72e7-ba51-df9f87b82b18",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/implementation/05-demo-storyboard.md"
+  },
+  "sha256": "a35e1baadf5bc8f14b41593a53f293f5624783e0302222dba66cec2ee5537a96",
+  "bytes": 9191,
+  "indexed_at": "2026-10-11T10:57:16.945Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 8983,
+    "truncated": false,
+    "source_revision": "a35e1baadf5bc8f14b41593a53f293f5624783e0302222dba66cec2ee5537a96"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-1ea9-72e7-ba51-df9f87b82b18/content.md",
+  "content_sha256": "a35e1baadf5bc8f14b41593a53f293f5624783e0302222dba66cec2ee5537a96",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

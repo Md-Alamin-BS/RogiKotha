@@ -1,0 +1,864 @@
+{
+  "schema_version": 1,
+  "documents": [
+    {
+      "id": "01a12a9c-182c-7312-8f49-efbf09e5ea9d",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/ARCHITECTURE-SPINE.md"
+      },
+      "sha256": "c8981f2419cfba1b40c43c49b00fb72bb0194bb5aa1121e23ecb80c47a743471",
+      "bytes": 16596,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 16538,
+        "truncated": false,
+        "source_revision": "c8981f2419cfba1b40c43c49b00fb72bb0194bb5aa1121e23ecb80c47a743471"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-182c-7312-8f49-efbf09e5ea9d/content.md",
+      "content_sha256": "c8981f2419cfba1b40c43c49b00fb72bb0194bb5aa1121e23ecb80c47a743471"
+    },
+    {
+      "id": "01a12a9c-1830-77d5-8d0d-1124a13756bf",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/DEPENDENCY-SELECTIONS.md"
+      },
+      "sha256": "7eae02474b95bf9f6ed774f4fdb1e5dbf4239b6c5c7e2d84427022d01dce96df",
+      "bytes": 6843,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 6842,
+        "truncated": false,
+        "source_revision": "7eae02474b95bf9f6ed774f4fdb1e5dbf4239b6c5c7e2d84427022d01dce96df"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1830-77d5-8d0d-1124a13756bf/content.md",
+      "content_sha256": "7eae02474b95bf9f6ed774f4fdb1e5dbf4239b6c5c7e2d84427022d01dce96df"
+    },
+    {
+      "id": "01a12a9c-1834-7cd5-a981-75fc8d37efc1",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0001-use-ports-and-adapters-modular-monolith.md"
+      },
+      "sha256": "739c52907e2ca7b2d1a1156416e792c5f1872712a70b326a5475e9c27b11198e",
+      "bytes": 985,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 985,
+        "truncated": false,
+        "source_revision": "739c52907e2ca7b2d1a1156416e792c5f1872712a70b326a5475e9c27b11198e"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1834-7cd5-a981-75fc8d37efc1/content.md",
+      "content_sha256": "739c52907e2ca7b2d1a1156416e792c5f1872712a70b326a5475e9c27b11198e"
+    },
+    {
+      "id": "01a12a9c-183c-75d0-9898-7878b97de66d",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0002-use-nextjs-typescript-and-postgresql.md"
+      },
+      "sha256": "fc9feec113817f4bf9444aa041e889f85b571d56e713514356da9eb25d3220d0",
+      "bytes": 749,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 749,
+        "truncated": false,
+        "source_revision": "fc9feec113817f4bf9444aa041e889f85b571d56e713514356da9eb25d3220d0"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-183c-75d0-9898-7878b97de66d/content.md",
+      "content_sha256": "fc9feec113817f4bf9444aa041e889f85b571d56e713514356da9eb25d3220d0"
+    },
+    {
+      "id": "01a12a9c-1840-7999-8674-6936a38af740",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0003-use-better-auth-behind-application-policy.md"
+      },
+      "sha256": "a649c1cb0010d1ccc36f75285918765e4fa7aa04d6196c07aa734e4f42946efd",
+      "bytes": 841,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 837,
+        "truncated": false,
+        "source_revision": "a649c1cb0010d1ccc36f75285918765e4fa7aa04d6196c07aa734e4f42946efd"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1840-7999-8674-6936a38af740/content.md",
+      "content_sha256": "a649c1cb0010d1ccc36f75285918765e4fa7aa04d6196c07aa734e4f42946efd"
+    },
+    {
+      "id": "01a12a9c-1846-7671-a778-7c6e776b1627",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0004-use-postgresql-search-first.md"
+      },
+      "sha256": "11159aa172ced9151ca7b0d3cc8b8d545cd7dd3e9ae782e34b13fa740f09ca88",
+      "bytes": 713,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 709,
+        "truncated": false,
+        "source_revision": "11159aa172ced9151ca7b0d3cc8b8d545cd7dd3e9ae782e34b13fa740f09ca88"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1846-7671-a778-7c6e776b1627/content.md",
+      "content_sha256": "11159aa172ced9151ca7b0d3cc8b8d545cd7dd3e9ae782e34b13fa740f09ca88"
+    },
+    {
+      "id": "01a12a9c-184a-74dc-abc3-41f58a657e2d",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0005-use-quarantine-first-evidence-pipeline.md"
+      },
+      "sha256": "09db85be96470a47a68f6384b7be5cdf7adcf501aaa2ce87bdf22e13c8471b06",
+      "bytes": 858,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 854,
+        "truncated": false,
+        "source_revision": "09db85be96470a47a68f6384b7be5cdf7adcf501aaa2ce87bdf22e13c8471b06"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-184a-74dc-abc3-41f58a657e2d/content.md",
+      "content_sha256": "09db85be96470a47a68f6384b7be5cdf7adcf501aaa2ce87bdf22e13c8471b06"
+    },
+    {
+      "id": "01a12a9c-184d-7394-b42c-89c864688dce",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0006-use-storage-port-and-conditionally-garage.md"
+      },
+      "sha256": "15f3e6ada36db1c21cea4738d72d9420549fcacea4a867426b7ad073ff44138a",
+      "bytes": 801,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 801,
+        "truncated": false,
+        "source_revision": "15f3e6ada36db1c21cea4738d72d9420549fcacea4a867426b7ad073ff44138a"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-184d-7394-b42c-89c864688dce/content.md",
+      "content_sha256": "15f3e6ada36db1c21cea4738d72d9420549fcacea4a867426b7ad073ff44138a"
+    },
+    {
+      "id": "01a12a9c-1851-7562-b606-50414f9cfe4d",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0007-use-pg-boss-for-durable-jobs.md"
+      },
+      "sha256": "095a503b2af896d7a642a53d6a36f432d1693cc45efd0ee22d630a61e00b4bf5",
+      "bytes": 680,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 680,
+        "truncated": false,
+        "source_revision": "095a503b2af896d7a642a53d6a36f432d1693cc45efd0ee22d630a61e00b4bf5"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1851-7562-b606-50414f9cfe4d/content.md",
+      "content_sha256": "095a503b2af896d7a642a53d6a36f432d1693cc45efd0ee22d630a61e00b4bf5"
+    },
+    {
+      "id": "01a12a9c-1854-79e7-a754-98c63c7d5776",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0008-separate-public-persona-from-private-identity.md"
+      },
+      "sha256": "7e4d73b5243fd06a9c7478ed07d58dd4c5c91365e14381b22049628164d469dd",
+      "bytes": 839,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 839,
+        "truncated": false,
+        "source_revision": "7e4d73b5243fd06a9c7478ed07d58dd4c5c91365e14381b22049628164d469dd"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1854-79e7-a754-98c63c7d5776/content.md",
+      "content_sha256": "7e4d73b5243fd06a9c7478ed07d58dd4c5c91365e14381b22049628164d469dd"
+    },
+    {
+      "id": "01a12a9c-1857-7b8b-99d5-1af43fe491d4",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0009-version-runtime-configuration-and-retention.md"
+      },
+      "sha256": "ed89261c899ce13defb58c827e9dd911d10336deaf34f12dd32c2f14b517bc5a",
+      "bytes": 838,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 838,
+        "truncated": false,
+        "source_revision": "ed89261c899ce13defb58c827e9dd911d10336deaf34f12dd32c2f14b517bc5a"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1857-7b8b-99d5-1af43fe491d4/content.md",
+      "content_sha256": "ed89261c899ce13defb58c827e9dd911d10336deaf34f12dd32c2f14b517bc5a"
+    },
+    {
+      "id": "01a12a9c-185a-7816-b067-2b6ebc1a465b",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0010-separate-demo-and-production-compositions.md"
+      },
+      "sha256": "c5ea356e996636e224bd1c2e3accd15e18ae9cfa78b25d5b02eb08c5d6ac2a58",
+      "bytes": 709,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 709,
+        "truncated": false,
+        "source_revision": "c5ea356e996636e224bd1c2e3accd15e18ae9cfa78b25d5b02eb08c5d6ac2a58"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-185a-7816-b067-2b6ebc1a465b/content.md",
+      "content_sha256": "c5ea356e996636e224bd1c2e3accd15e18ae9cfa78b25d5b02eb08c5d6ac2a58"
+    },
+    {
+      "id": "01a12a9c-185d-74eb-b581-8b87de9985d2",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0011-treat-bengali-and-english-equally.md"
+      },
+      "sha256": "45a2a4e952d82f28308fc8ad0ac1cabaa8132b6c68518a5a3b5e29a3c7b3d153",
+      "bytes": 756,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 756,
+        "truncated": false,
+        "source_revision": "45a2a4e952d82f28308fc8ad0ac1cabaa8132b6c68518a5a3b5e29a3c7b3d153"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-185d-74eb-b581-8b87de9985d2/content.md",
+      "content_sha256": "45a2a4e952d82f28308fc8ad0ac1cabaa8132b6c68518a5a3b5e29a3c7b3d153"
+    },
+    {
+      "id": "01a12a9c-1862-7a3c-b478-2d9f7b739c94",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0012-require-independent-validation.md"
+      },
+      "sha256": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c",
+      "bytes": 726,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 726,
+        "truncated": false,
+        "source_revision": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1862-7a3c-b478-2d9f7b739c94/content.md",
+      "content_sha256": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c"
+    },
+    {
+      "id": "01a12a9c-1867-70f6-905b-dc39c9a1bbf5",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0013-orchestrate-deletion-across-owning-modules.md"
+      },
+      "sha256": "9d5b47a65f3c62ffb11dc55f36b3507b38621f8b52a9a66ccc6976e28cd983f9",
+      "bytes": 1470,
+      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 1470,
+        "truncated": false,
+        "source_revision": "9d5b47a65f3c62ffb11dc55f36b3507b38621f8b52a9a66ccc6976e28cd983f9"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1867-70f6-905b-dc39c9a1bbf5/content.md",
+      "content_sha256": "9d5b47a65f3c62ffb11dc55f36b3507b38621f8b52a9a66ccc6976e28cd983f9"
+    },
+    {
+      "id": "01a12a9c-1e9d-778c-bc32-18a9f1090fd7",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/implementation/00-master-plan.md"
+      },
+      "sha256": "52ac7487cc611b4d1e60283a1fb1ecd09ff63cc3802cf574316e7407eecae673",
+      "bytes": 29474,
+      "indexed_at": "2026-10-11T10:57:16.945Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 29131,
+        "truncated": false,
+        "source_revision": "52ac7487cc611b4d1e60283a1fb1ecd09ff63cc3802cf574316e7407eecae673"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1e9d-778c-bc32-18a9f1090fd7/content.md",
+      "content_sha256": "52ac7487cc611b4d1e60283a1fb1ecd09ff63cc3802cf574316e7407eecae673"
+    },
+    {
+      "id": "01a12a9c-1ea0-752c-b297-2ec3e45b02cf",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/implementation/01-conventions.md"
+      },
+      "sha256": "61b29238e900af4d3b498b53f01a198f27a1be2f36a0df881221b2cf2bd00fac",
+      "bytes": 20617,
+      "indexed_at": "2026-10-11T10:57:16.945Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 20482,
+        "truncated": false,
+        "source_revision": "61b29238e900af4d3b498b53f01a198f27a1be2f36a0df881221b2cf2bd00fac"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1ea0-752c-b297-2ec3e45b02cf/content.md",
+      "content_sha256": "61b29238e900af4d3b498b53f01a198f27a1be2f36a0df881221b2cf2bd00fac"
+    },
+    {
+      "id": "01a12a9c-1ea4-7bf7-b57b-de7967dc5148",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/implementation/02-data-model.md"
+      },
+      "sha256": "9d55606bdaebe944c1ae466a43390afaba451f30ddcff02c5c3b3a0e68b1f598",
+      "bytes": 27913,
+      "indexed_at": "2026-10-11T10:57:16.945Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 27750,
+        "truncated": false,
+        "source_revision": "9d55606bdaebe944c1ae466a43390afaba451f30ddcff02c5c3b3a0e68b1f598"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1ea4-7bf7-b57b-de7967dc5148/content.md",
+      "content_sha256": "9d55606bdaebe944c1ae466a43390afaba451f30ddcff02c5c3b3a0e68b1f598"
+    },
+    {
+      "id": "01a12a9c-1ea6-73ba-88bd-19e25a04fabc",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/implementation/03-routes-and-contracts.md"
+      },
+      "sha256": "57b094b95285afdeb0a6ebe25ee87bb1517e83a37a239cd1accaf803f640de18",
+      "bytes": 30785,
+      "indexed_at": "2026-10-11T10:57:16.945Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 30257,
+        "truncated": false,
+        "source_revision": "57b094b95285afdeb0a6ebe25ee87bb1517e83a37a239cd1accaf803f640de18"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1ea6-73ba-88bd-19e25a04fabc/content.md",
+      "content_sha256": "57b094b95285afdeb0a6ebe25ee87bb1517e83a37a239cd1accaf803f640de18"
+    },
+    {
+      "id": "01a12a9c-1ea9-72e7-ba51-df9f87b82b18",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/implementation/05-demo-storyboard.md"
+      },
+      "sha256": "a35e1baadf5bc8f14b41593a53f293f5624783e0302222dba66cec2ee5537a96",
+      "bytes": 9191,
+      "indexed_at": "2026-10-11T10:57:16.945Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 8983,
+        "truncated": false,
+        "source_revision": "a35e1baadf5bc8f14b41593a53f293f5624783e0302222dba66cec2ee5537a96"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1ea9-72e7-ba51-df9f87b82b18/content.md",
+      "content_sha256": "a35e1baadf5bc8f14b41593a53f293f5624783e0302222dba66cec2ee5537a96"
+    },
+    {
+      "id": "01a12a9c-1eab-7e38-a3cb-351366c02fa7",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/implementation/07-phase-2-document-evidence.md"
+      },
+      "sha256": "6e0355d37a5b3fae4730b95daf7b27868ba4dda1ade0f064a4723fc5583863c6",
+      "bytes": 5391,
+      "indexed_at": "2026-10-11T10:57:16.945Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 5354,
+        "truncated": false,
+        "source_revision": "6e0355d37a5b3fae4730b95daf7b27868ba4dda1ade0f064a4723fc5583863c6"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1eab-7e38-a3cb-351366c02fa7/content.md",
+      "content_sha256": "6e0355d37a5b3fae4730b95daf7b27868ba4dda1ade0f064a4723fc5583863c6"
+    },
+    {
+      "id": "01a12a9c-235e-7ca7-a288-c602fd84aecd",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/planning/00-source-inventory.md"
+      },
+      "sha256": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9",
+      "bytes": 6055,
+      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 6055,
+        "truncated": false,
+        "source_revision": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-235e-7ca7-a288-c602fd84aecd/content.md",
+      "content_sha256": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9"
+    },
+    {
+      "id": "01a12a9c-2361-7716-b600-fcdc24d6ab19",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/planning/01-requirement-baseline.md"
+      },
+      "sha256": "3c63032f24fe98576ba9ed436d606aac2ad233bbb5ee68ec59aaedd1777dfd0f",
+      "bytes": 23572,
+      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 23553,
+        "truncated": false,
+        "source_revision": "3c63032f24fe98576ba9ed436d606aac2ad233bbb5ee68ec59aaedd1777dfd0f"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-2361-7716-b600-fcdc24d6ab19/content.md",
+      "content_sha256": "3c63032f24fe98576ba9ed436d606aac2ad233bbb5ee68ec59aaedd1777dfd0f"
+    },
+    {
+      "id": "01a12a9c-2363-7ff2-9cea-095f08796295",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/planning/06-requirement-traceability-matrix.md"
+      },
+      "sha256": "4dbb6ecd6a8ef28ff61f9a354cdfac9a3f91de448ecfafb635450a1106212f2a",
+      "bytes": 14851,
+      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 14816,
+        "truncated": false,
+        "source_revision": "4dbb6ecd6a8ef28ff61f9a354cdfac9a3f91de448ecfafb635450a1106212f2a"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-2363-7ff2-9cea-095f08796295/content.md",
+      "content_sha256": "4dbb6ecd6a8ef28ff61f9a354cdfac9a3f91de448ecfafb635450a1106212f2a"
+    },
+    {
+      "id": "01a12a9c-2366-79b5-b4e5-ebdcbbfaf6a8",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/planning/08-product-backlog.md"
+      },
+      "sha256": "0226d14410d46901303dd7253f4d1be6d1b6acb8c2f0efaf79f89e7e143b85ee",
+      "bytes": 46925,
+      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 46742,
+        "truncated": false,
+        "source_revision": "0226d14410d46901303dd7253f4d1be6d1b6acb8c2f0efaf79f89e7e143b85ee"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-2366-79b5-b4e5-ebdcbbfaf6a8/content.md",
+      "content_sha256": "0226d14410d46901303dd7253f4d1be6d1b6acb8c2f0efaf79f89e7e143b85ee"
+    },
+    {
+      "id": "01a12a9c-2368-7f09-819b-048c31af5ca9",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/planning/10-validation-strategy.md"
+      },
+      "sha256": "3072d6b16c88a07428a9b217428e371b792ff26a138644e7903b8a6daad21b9f",
+      "bytes": 8620,
+      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 8599,
+        "truncated": false,
+        "source_revision": "3072d6b16c88a07428a9b217428e371b792ff26a138644e7903b8a6daad21b9f"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-2368-7f09-819b-048c31af5ca9/content.md",
+      "content_sha256": "3072d6b16c88a07428a9b217428e371b792ff26a138644e7903b8a6daad21b9f"
+    },
+    {
+      "id": "01a12a9c-236b-7a73-b8ce-98e9500cedb6",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/planning/ux/DESIGN.md"
+      },
+      "sha256": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845",
+      "bytes": 25126,
+      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 25011,
+        "truncated": false,
+        "source_revision": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-236b-7a73-b8ce-98e9500cedb6/content.md",
+      "content_sha256": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845"
+    },
+    {
+      "id": "01a12a9c-236d-723c-96a4-f303a422a14e",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/planning/ux/EXPERIENCE.md"
+      },
+      "sha256": "89418f1f5c2da22421381704361f34666ad5d0af8ca9e51b49e3b9d0d3e8c107",
+      "bytes": 12919,
+      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 12853,
+        "truncated": false,
+        "source_revision": "89418f1f5c2da22421381704361f34666ad5d0af8ca9e51b49e3b9d0d3e8c107"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-236d-723c-96a4-f303a422a14e/content.md",
+      "content_sha256": "89418f1f5c2da22421381704361f34666ad5d0af8ca9e51b49e3b9d0d3e8c107"
+    },
+    {
+      "id": "01a12a9c-27f8-7f82-bd28-aea1632e8617",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/status/decision-log.md"
+      },
+      "sha256": "e4709c1ec2911566c27eaf7787890e5d1855ea8620daa3cedc99e07396865859",
+      "bytes": 25743,
+      "indexed_at": "2026-10-11T10:57:19.345Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 25669,
+        "truncated": false,
+        "source_revision": "e4709c1ec2911566c27eaf7787890e5d1855ea8620daa3cedc99e07396865859"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-27f8-7f82-bd28-aea1632e8617/content.md",
+      "content_sha256": "e4709c1ec2911566c27eaf7787890e5d1855ea8620daa3cedc99e07396865859"
+    },
+    {
+      "id": "01a12a9c-2c0e-73c2-8692-2c1030899e2c",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/design/auth-screens-spec.md"
+      },
+      "sha256": "2c2e004a04a4bbf030b4b64eb9b55121e042592eb5ca04ea8e91fbefb3725905",
+      "bytes": 32350,
+      "indexed_at": "2026-10-11T10:57:20.391Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 25752,
+        "truncated": false,
+        "source_revision": "2c2e004a04a4bbf030b4b64eb9b55121e042592eb5ca04ea8e91fbefb3725905"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-2c0e-73c2-8692-2c1030899e2c/content.md",
+      "content_sha256": "2c2e004a04a4bbf030b4b64eb9b55121e042592eb5ca04ea8e91fbefb3725905"
+    },
+    {
+      "id": "01a12a9c-4a96-7bc4-8bd3-a6e13eb001c7",
+      "source": {
+        "kind": "managed",
+        "path": "documents/DESIGN.md"
+      },
+      "sha256": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e",
+      "bytes": 18636,
+      "indexed_at": "2026-10-11T10:57:28.072Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 18458,
+        "truncated": false,
+        "source_revision": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-4a96-7bc4-8bd3-a6e13eb001c7/content.md",
+      "content_sha256": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e"
+    },
+    {
+      "id": "01a12a9c-4a99-7a65-8bf6-170f42db332d",
+      "source": {
+        "kind": "managed",
+        "path": "documents/PRODUCT.md"
+      },
+      "sha256": "6feac1b349fe8efa48d5654bedd7e78eb46597aacc60dc89c9f9e92a8bad37d5",
+      "bytes": 8029,
+      "indexed_at": "2026-10-11T10:57:28.072Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 7949,
+        "truncated": false,
+        "source_revision": "6feac1b349fe8efa48d5654bedd7e78eb46597aacc60dc89c9f9e92a8bad37d5"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-4a99-7a65-8bf6-170f42db332d/content.md",
+      "content_sha256": "6feac1b349fe8efa48d5654bedd7e78eb46597aacc60dc89c9f9e92a8bad37d5"
+    },
+    {
+      "id": "01a12a9c-4a9b-7ca9-9a51-e2e11f585049",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/RogiKotha_BRD_v1.0.docx"
+      },
+      "sha256": "6c0e340f12480b92faf62c5f2f22b10fb708a387bcd09190b7dd7ac1a10bbbf5",
+      "bytes": 64369,
+      "indexed_at": "2026-10-11T10:57:28.072Z",
+      "extraction": {
+        "state": "unsupported_type",
+        "detectedType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      },
+      "summary": {
+        "state": "absent"
+      }
+    },
+    {
+      "id": "01a12a9c-4a9d-7767-816c-fee2357f8894",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/RogiKotha_PRD_v1.0.docx"
+      },
+      "sha256": "a106fac422bf8131b18d9c0fe896650c79ad4bd436877ecaa285060d72f2d2e7",
+      "bytes": 71051,
+      "indexed_at": "2026-10-11T10:57:28.072Z",
+      "extraction": {
+        "state": "unsupported_type",
+        "detectedType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      },
+      "summary": {
+        "state": "absent"
+      }
+    },
+    {
+      "id": "01a12a9c-4a9f-76e7-9fd4-c9e3a9b51558",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/scope-of-work.md"
+      },
+      "sha256": "55e05977d59cf4f46317207aac5638b31351516ddfbe6c772536127e8270c4e8",
+      "bytes": 12078,
+      "indexed_at": "2026-10-11T10:57:28.072Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 12036,
+        "truncated": false,
+        "source_revision": "55e05977d59cf4f46317207aac5638b31351516ddfbe6c772536127e8270c4e8"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-4a9f-76e7-9fd4-c9e3a9b51558/content.md",
+      "content_sha256": "55e05977d59cf4f46317207aac5638b31351516ddfbe6c772536127e8270c4e8"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-1eab-7e38-a3cb-351366c02fa7",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/implementation/07-phase-2-document-evidence.md"
+  },
+  "sha256": "6e0355d37a5b3fae4730b95daf7b27868ba4dda1ade0f064a4723fc5583863c6",
+  "bytes": 5391,
+  "indexed_at": "2026-10-11T10:57:16.945Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 5354,
+    "truncated": false,
+    "source_revision": "6e0355d37a5b3fae4730b95daf7b27868ba4dda1ade0f064a4723fc5583863c6"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-1eab-7e38-a3cb-351366c02fa7/content.md",
+  "content_sha256": "6e0355d37a5b3fae4730b95daf7b27868ba4dda1ade0f064a4723fc5583863c6",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

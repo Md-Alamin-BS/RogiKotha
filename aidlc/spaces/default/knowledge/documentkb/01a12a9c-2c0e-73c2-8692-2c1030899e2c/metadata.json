@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-2c0e-73c2-8692-2c1030899e2c",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/design/auth-screens-spec.md"
+  },
+  "sha256": "2c2e004a04a4bbf030b4b64eb9b55121e042592eb5ca04ea8e91fbefb3725905",
+  "bytes": 32350,
+  "indexed_at": "2026-10-11T10:57:20.391Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 25752,
+    "truncated": false,
+    "source_revision": "2c2e004a04a4bbf030b4b64eb9b55121e042592eb5ca04ea8e91fbefb3725905"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-2c0e-73c2-8692-2c1030899e2c/content.md",
+  "content_sha256": "2c2e004a04a4bbf030b4b64eb9b55121e042592eb5ca04ea8e91fbefb3725905",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

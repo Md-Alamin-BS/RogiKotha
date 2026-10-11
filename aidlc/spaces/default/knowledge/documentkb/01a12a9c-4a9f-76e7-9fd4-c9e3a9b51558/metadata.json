@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-4a9f-76e7-9fd4-c9e3a9b51558",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/scope-of-work.md"
+  },
+  "sha256": "55e05977d59cf4f46317207aac5638b31351516ddfbe6c772536127e8270c4e8",
+  "bytes": 12078,
+  "indexed_at": "2026-10-11T10:57:28.072Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 12036,
+    "truncated": false,
+    "source_revision": "55e05977d59cf4f46317207aac5638b31351516ddfbe6c772536127e8270c4e8"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-4a9f-76e7-9fd4-c9e3a9b51558/content.md",
+  "content_sha256": "55e05977d59cf4f46317207aac5638b31351516ddfbe6c772536127e8270c4e8",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

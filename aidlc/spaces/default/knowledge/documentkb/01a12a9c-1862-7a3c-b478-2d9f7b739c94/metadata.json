@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-1862-7a3c-b478-2d9f7b739c94",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/architecture/decisions/0012-require-independent-validation.md"
+  },
+  "sha256": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c",
+  "bytes": 726,
+  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 726,
+    "truncated": false,
+    "source_revision": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-1862-7a3c-b478-2d9f7b739c94/content.md",
+  "content_sha256": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-4a9b-7ca9-9a51-e2e11f585049",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/RogiKotha_BRD_v1.0.docx"
+  },
+  "sha256": "6c0e340f12480b92faf62c5f2f22b10fb708a387bcd09190b7dd7ac1a10bbbf5",
+  "bytes": 64369,
+  "indexed_at": "2026-10-11T10:57:28.072Z",
+  "extraction": {
+    "state": "unsupported_type",
+    "detectedType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

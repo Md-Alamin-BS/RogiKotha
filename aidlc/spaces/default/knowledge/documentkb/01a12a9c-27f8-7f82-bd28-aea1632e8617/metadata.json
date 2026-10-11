@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-27f8-7f82-bd28-aea1632e8617",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/status/decision-log.md"
+  },
+  "sha256": "e4709c1ec2911566c27eaf7787890e5d1855ea8620daa3cedc99e07396865859",
+  "bytes": 25743,
+  "indexed_at": "2026-10-11T10:57:19.345Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 25669,
+    "truncated": false,
+    "source_revision": "e4709c1ec2911566c27eaf7787890e5d1855ea8620daa3cedc99e07396865859"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-27f8-7f82-bd28-aea1632e8617/content.md",
+  "content_sha256": "e4709c1ec2911566c27eaf7787890e5d1855ea8620daa3cedc99e07396865859",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

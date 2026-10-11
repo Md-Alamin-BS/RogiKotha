@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-235e-7ca7-a288-c602fd84aecd",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/planning/00-source-inventory.md"
+  },
+  "sha256": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9",
+  "bytes": 6055,
+  "indexed_at": "2026-10-11T10:57:18.162Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 6055,
+    "truncated": false,
+    "source_revision": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-235e-7ca7-a288-c602fd84aecd/content.md",
+  "content_sha256": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

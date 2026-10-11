@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-2363-7ff2-9cea-095f08796295",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/planning/06-requirement-traceability-matrix.md"
+  },
+  "sha256": "4dbb6ecd6a8ef28ff61f9a354cdfac9a3f91de448ecfafb635450a1106212f2a",
+  "bytes": 14851,
+  "indexed_at": "2026-10-11T10:57:18.162Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 14816,
+    "truncated": false,
+    "source_revision": "4dbb6ecd6a8ef28ff61f9a354cdfac9a3f91de448ecfafb635450a1106212f2a"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-2363-7ff2-9cea-095f08796295/content.md",
+  "content_sha256": "4dbb6ecd6a8ef28ff61f9a354cdfac9a3f91de448ecfafb635450a1106212f2a",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

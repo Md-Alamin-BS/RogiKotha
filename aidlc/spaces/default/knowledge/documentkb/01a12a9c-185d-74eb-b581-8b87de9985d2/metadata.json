@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-185d-74eb-b581-8b87de9985d2",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/architecture/decisions/0011-treat-bengali-and-english-equally.md"
+  },
+  "sha256": "45a2a4e952d82f28308fc8ad0ac1cabaa8132b6c68518a5a3b5e29a3c7b3d153",
+  "bytes": 756,
+  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 756,
+    "truncated": false,
+    "source_revision": "45a2a4e952d82f28308fc8ad0ac1cabaa8132b6c68518a5a3b5e29a3c7b3d153"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-185d-74eb-b581-8b87de9985d2/content.md",
+  "content_sha256": "45a2a4e952d82f28308fc8ad0ac1cabaa8132b6c68518a5a3b5e29a3c7b3d153",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

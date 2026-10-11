@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-236b-7a73-b8ce-98e9500cedb6",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/planning/ux/DESIGN.md"
+  },
+  "sha256": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845",
+  "bytes": 25126,
+  "indexed_at": "2026-10-11T10:57:18.162Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 25011,
+    "truncated": false,
+    "source_revision": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-236b-7a73-b8ce-98e9500cedb6/content.md",
+  "content_sha256": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

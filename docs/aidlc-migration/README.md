@@ -1,9 +1,10 @@
-# AI-DLC migration — pending
+# AI-DLC migration — in progress
 
-**Status:** PENDING. AI-DLC is installed but nothing has been converted yet.
+**Status:** IN PROGRESS. AI-DLC 2.11.0 is installed, the in-flight work is merged, and the source
+documents are in the knowledge catalog. The first intent has not been started yet (§4).
 **Decided:** 2026-10-04, by the project owner: from now on implementation follows AWS AI-DLC
 (`awslabs/aidlc-workflows`), not the BMAD / grill-me / `LOOP.md` process the existing docs were
-written for.
+written for. On 2026-10-11 the owner accepted the recommended answers to the open decisions (§3).
 
 Until this file says **DONE**, every agent (Claude Code, Codex, Puku CLI, Cursor, anything else)
 must, before starting any implementation, build, loop or task work:
@@ -18,93 +19,139 @@ must, before starting any implementation, build, loop or task work:
 3. Do only what the human answers. Never start implementation silently on the old process.
 
 Reading, research, planning and answering questions do not need the warning — only work that
-builds, changes product code, or runs the loop.
+builds, changes product code, or runs the loop. Running `/aidlc` for the conversion itself is the
+migration, not a bypass of it.
 
 When the migration is finished, set **Status: DONE** above, and remove the warning blocks from
 `AGENTS.md`, `docs/implementation/LOOP.md` §0 and `docs/implementation/NEXT.md`.
 
+Research behind this file: `docs/planning/research/aidlc-adoption-2026-10-04/research.md` (install),
+`docs/planning/research/aidlc-migration-2026-10-11/research.md` (2.11.0 runbook, verified against
+upstream source and docs) and `.../inventory.md` (this file's §5 checked against the repo).
+
 ---
 
-## 1. What is installed
+## 1. Progress
+
+| # | Step | State |
+|---|---|---|
+| 1 | Install AI-DLC, pin, flag the migration | done 2026-10-04 (`1561022`) |
+| 2 | Finish the in-flight work on the old process | done 2026-10-11: T-009 and CR-008 validated (PASS WITH FOLLOW-UP) and merged; CR-010 fixed the red lint the install caused; CR-011 written up |
+| 3 | Upgrade to 2.11.0 (current stable, 2026-10-08) | done 2026-10-11: `aidlc update`, `aidlc config --pin 2.11.0`, dry run per harness (`remove=0`, `conflict=0`), refresh both, `aidlc doctor` 0 problems |
+| 4 | Load the source documents as knowledge | done 2026-10-11: 35 documents in `aidlc/spaces/default/knowledge/documents/` (copies — see §6), 33 extracted, the two `.docx` catalogued as originals only |
+| 5 | Restart Claude Code; trust Codex hooks | **to do (human)** — see §4 |
+| 6 | First intent: Practices Discovery → Reverse Engineering → transcribe the planning set → Delivery Planning | **to do** — §4 |
+| 7 | Retire or keep the BMAD / grill-me skills; freeze `LOOP.md`, `NEXT.md`, `BUILD-LOG.md`, `ISSUES.md` | to do after step 6's Delivery Planning gate |
+| 8 | Set **Status: DONE**, remove the three warning blocks | last |
+
+## 2. What is installed
 
 | Item | Value |
 |---|---|
-| Version | AI-DLC **2.10.0** (stable, 2026-09-24), pinned in `.aidlc-version` |
-| Harnesses | Claude Code (`/aidlc`), Codex CLI (`$aidlc`, needs Codex ≥ 0.145.0; hook trust pending) |
-| Not supported | Puku CLI — AI-DLC has no Puku harness; Puku only sees `AGENTS.md` |
+| Version | AI-DLC **2.11.0** (stable, 2026-10-08), pinned in `.aidlc-version`; 2.10.0 kept in `%LOCALAPPDATA%\aidlc\versions\` for rollback (`aidlc config --pin 2.10.0 --yes`, then refresh both harnesses) |
+| Harnesses | Claude Code (`/aidlc`), Codex CLI (`$aidlc`, needs Codex ≥ 0.145.0; hooks must be trusted once with `/hooks` → `t`) |
+| Not supported | Puku CLI — AI-DLC has no Puku harness; Puku only sees `AGENTS.md`. Use Claude Code or Codex for AI-DLC work |
 | Workspace | `aidlc/` (spaces, intents, knowledge, memory) |
-| Machine | `aidlc` command in `%LOCALAPPDATA%\aidlc\`; check with `aidlc doctor` |
-| MCP | `.mcp.json` keeps `context7` only (needs `CONTEXT7_API_KEY`); the AWS servers were removed because this project does not run on AWS |
+| Machine | `aidlc` in `%LOCALAPPDATA%\aidlc\bin\` (official Git Bash launcher since 2.11.0); check with `aidlc doctor` |
+| MCP | `.mcp.json` keeps `context7` only (needs `CONTEXT7_API_KEY`); project-owned, AI-DLC leaves it alone |
 
-Background, sources and the install analysis: `docs/planning/research/aidlc-adoption-2026-10-04/research.md`.
+### Known problems and how to work with them (2.11.0)
 
-### Install problems found on 2026-10-04 (read before running any `aidlc config` command)
+1. **Preview every config change.** Run `aidlc config --harness <claude|codex> --dry-run --json`
+   first; apply only if `remove` lists AI-DLC files only and `conflict=0`. The 2.10.0 ownership bug
+   (it claimed our BMAD/Impeccable/grill files) is fixed in 2.11.0 (#1589, PR #1526).
+   `--harness` is required on every config call because two harnesses are configured; `--pin`
+   takes no `--harness`.
+2. **Restart after a refresh.** Hooks in `.claude/settings.json` change; an open Claude Code session
+   keeps the old ones. Launch Claude Code from a terminal — hooks do not fire from the desktop app or
+   the VS Code extension (#1575, #1548). Run one AI-DLC session per checkout (#1631).
+3. **The old hand-made Git Bash forwarder** is kept as `%LOCALAPPDATA%\aidlc\bin\aidlc.bak-handmade-20261011`;
+   2.11.0's own launcher replaced it (`aidlc doctor` flags a foreign launcher).
+4. **`AGENTS.md`:** never edit inside the `BEGIN/END AI-DLC` markers; text above them is ours.
+5. **Impeccable agents carry `display_name`** (added for 2.10.0). In 2.11.0 that makes AI-DLC treat
+   them as personas; nothing breaks. Removing the line is optional; reinstalling Impeccable removes it.
+6. **Codex skills** live only in `.agents/skills/` (the earlier note about a duplicate copy under
+   `.codex/skills/` was wrong — the Codex manifest never ships there).
+7. **Knowledge batches** are capped at 20 documents per `onboard`/`sync`; onboard by subdirectory.
+8. **A guard hook** refuses Bash commands that write under `aidlc/spaces/` through a shell variable
+   (it cannot tell the target is not the audit trail). Write such paths literally.
+9. **`.env` is loaded into every process `aidlc` starts** (#1278) — local dev secrets only; never
+   put real secrets in `.env`.
+10. **Code Generation can refuse to complete** on "unclaimed source changes" from caches (#2244):
+    delete `.vitest/`, `*.tsbuildinfo`, `test-results/`, `.data/` before approving a Code Generation
+    gate. On the first turn AI-DLC may wrongly claim hooks are off and offer to write
+    `settings.local.json` (#2263) — decline.
 
-1. **Preview every config change.** In 2.10.0, `aidlc config project --harness claude …` rewrote
-   `.claude/tools/data/aidlc-manifest.json` so that it claimed all 415 project-owned files in
-   `.claude/skills/` and `.claude/agents/` (BMAD, grill-me, Impeccable, …). The next
-   `aidlc config --harness claude` would have **deleted them**. The 415 entries were removed from
-   the manifest by hand. Before any `aidlc config …` that writes, run it with `--dry-run` first and
-   continue only if it reports `remove=0`. Avoid `aidlc config project` until upstream fixes this.
-2. **Git Bash cannot find `aidlc`** (upstream issue awslabs/aidlc-workflows#1545, fixed on `main`,
-   not yet released). Claude Code runs hooks in Git Bash, so every hook failed with
-   `aidlc: command not found`. Workaround on this machine: an extensionless forwarder
-   `%LOCALAPPDATA%\aidlc\bin\aidlc` that runs `aidlc.cmd`. A later AI-DLC install or update
-   replaces it (keeping `aidlc.bak-<time>`). Other machines need the same until the fix ships.
-3. **The installer did not add `%LOCALAPPDATA%\aidlc\bin` to the user PATH**; it was added by hand.
-   Run the installer with PowerShell 7 (`pwsh`), not Windows PowerShell 5.1, when started from a
-   PowerShell 7 environment: 5.1 then loads the wrong module and fails on `Get-FileHash`.
-4. **`AGENTS.md`:** the first `aidlc config` refuses to run if text mentioning AI-DLC sits in
-   `AGENTS.md` without its `BEGIN/END AI-DLC` markers ("legacy root integration ambiguous"). Now that
-   the managed block exists, the warning section above it is accepted. Never edit inside the markers.
-5. **Agents need `display_name`.** AI-DLC validates every file in `.claude/agents/`. The four
-   `impeccable-*` agents got a `display_name` line; reinstalling Impeccable removes it again and
-   blocks AI-DLC until it is re-added.
-6. **Codex:** hook trust is still pending — after installing Codex ≥ 0.145.0, run
-   `aidlc config trust`. A Codex refresh (`aidlc config --harness codex`) would also add a second
-   copy of the 37 `aidlc-*` skills under `.codex/skills/` (they already live in `.agents/skills/`);
-   do not refresh Codex unless something is broken.
-7. **MCP:** recorded as `none` in AI-DLC; `.mcp.json` is hand-written with `context7` only. AI-DLC
-   preserves it on refresh.
+## 3. Decisions (accepted 2026-10-11)
 
-## 2. Resources to convert
+1. **Commit identity.** Keep `Unit Ownership: solo` and serial execution (both defaults). Solo mode
+   never creates the `AI-DLC Unit Claims <aidlc-unit@local>` commits, and serial execution avoids the
+   swarm commits authored `AI-DLC <aidlc@localhost>`. Do not enable team ownership or parallel
+   ("swarm") Construction while `AGENTS.md`'s no-tool-identity rule stands. The fixed claim identity
+   is fixed upstream (PR #2131) but only in 2.11.1 previews. Bolt merges are committed under the
+   human's identity but with `--no-verify` (no repo commit hooks exist today).
+2. **The loop.** `LOOP.md` / `NEXT.md` stop being the driver once the first intent reaches
+   Construction; `/aidlc` state, gates and the audit trail replace them. Until then `NEXT.md` stays
+   current. `BUILD-LOG.md`, `ISSUES.md`, `docs/validation/` and `handoffs/` stay as history; the open
+   `S1`/`S2` rows carry into the delivery plan.
+3. **Model tiers and cross-vendor validation** (`LOOP.md` §0, ADR 0012) map to AI-DLC's reviewer
+   agents plus `/aidlc --collaborators on` for high-risk (M3) units; record the rule in `team.md` at
+   Practices Discovery. Model ids in records conflict with `AGENTS.md` (`04-handoff-and-validation.md:29`);
+   settle that there too.
+4. **Puku CLI** is not used for AI-DLC work.
+5. **In-flight work** was finished on the old process (§1 step 2). AI-DLC starts **brownfield** from
+   `main` and reverse-engineers the existing `apps/`, `packages/`, `infra/`.
+6. **Scope.** `classic`, brownfield, minimal depth, skipping Refined Mockups, NFR Requirements, NFR
+   Design and Infrastructure Design (the planning set already covers them). Requirements Analysis,
+   User Stories, Domain Design, Units Generation and Delivery Planning cannot be skipped — Code
+   Generation needs their artifacts — so they **transcribe** the existing documents rather than
+   re-derive them. Skipping User Stories also triggers upstream bug #2282.
 
-AI-DLC phases: 0 Initialization · 1 Ideation · 2 Inception · 3 Construction · 4 Operation. Work
-happens inside an *intent* (`aidlc/spaces/default/intents/<date>-<label>/`). Existing source
-documents go into `aidlc/spaces/default/knowledge/documents/`. There is no automatic importer;
-each row below is a manual conversion.
+## 4. Next: start the first intent
+
+1. Exit this Claude Code session, start `claude` again from a terminal in the repo, run
+   `/aidlc --doctor`. In Codex: `/hooks`, `t`, Esc, then `$aidlc --doctor`.
+2. Start the intent (one line; if the engine rejects the combined flags, use `/aidlc compose` and set
+   the same grid at its approval gate):
+
+   ```text
+   /aidlc --project-type brownfield --scope classic --depth minimal --skip refined-mockups,nfr-requirements,nfr-design,infrastructure-design "Adopt AI-DLC for the RogiKotha demo build already in progress. Reverse-engineer apps/, packages/ and infra/ on main. Requirements, stories, architecture, data model and contracts already exist and are authoritative: transcribe them from the knowledge documents (start with docs/planning/01-requirement-baseline.md, then 08-product-backlog.md, ARCHITECTURE-SPINE.md with ADRs 0001-0013, 02-data-model.md, 03-routes-and-contracts.md, decision-log.md FD-001..FD-037) instead of re-deriving them. Delivery planning continues docs/implementation/00-master-plan.md from where it stands: T-001..T-009, T-207a, D-001 merged; CR-009 next and alone; then T-010, CR-011 and Phase 1."
+   ```
+3. At **Practices Discovery**, affirm `team.md` from `01-conventions.md` and the `AGENTS.md` rules, and
+   resolve the four conflicts with `org.md` listed in `docs/planning/research/aidlc-migration-2026-10-11/inventory.md`:
+   merge style (task merges are `--no-ff`; AI-DLC squashes Bolts), coverage floor (none today vs the
+   80 % default), deployment (local Docker demo only, no CI/CD yet) and model ids in records.
+4. Approve each gate. After Delivery Planning, do §1 step 7, then step 8.
+
+## 5. Resources and where they go
+
+There is no automatic importer; each row is converted by the stage named, from the knowledge copy.
 
 | Existing resource | AI-DLC target |
 |---|---|
-| `docs/RogiKotha_BRD_v1.0.docx`, `docs/RogiKotha_PRD_v1.0.docx`, `PRODUCT.md`, `docs/scope-of-work.md` | knowledge documents; 1.1 Intent Capture, 1.4 Scope Definition |
-| `docs/planning/00`–`01` (source inventory, requirement baseline), `06` traceability matrix, `09-coverage-matrix.md` | 2.3 Requirements Analysis (`requirements.md`) and traceability |
-| `docs/planning/08-product-backlog.md`, `docs/planning/backlog.yaml` | 2.4 User Stories, 2.7 Units Generation (units of work, DAG, story map) |
-| `docs/architecture/ARCHITECTURE-SPINE.md`, `docs/architecture/decisions/0001`–`0013`, `DEPENDENCY-SELECTIONS.md`, `docs/planning/05-recommended-architecture.md` | 2.6 Domain Design (components, ADRs) |
-| `docs/implementation/02-data-model.md`, `03-routes-and-contracts.md` | 2.8 Contract Design |
-| `docs/implementation/00-master-plan.md`, `tasks/T-*.md`, `D-*.md`, `06-change-requests.md`, `07-phase-2-document-evidence.md` | 2.9 Delivery Planning (bolt plan); per-unit Construction 3.1–3.5 |
-| `docs/implementation/01-conventions.md`, `AGENTS.md` rules | `aidlc/spaces/default/memory/` (the method / rules); 2.2 Practices Discovery |
-| `docs/implementation/LOOP.md`, `NEXT.md`, `04-handoff-and-validation.md`, `08-agent-prompts.md`, `BUILD-LOG.md`, `ISSUES.md`, `handoffs/` | replaced by `/aidlc` state, approval gates and audit trail — decide what survives (§3) |
-| `docs/planning/10-validation-strategy.md`, `docs/validation/`, `docs/security/` | Construction NFR stages (3.2–3.3), 3.6 Build and Test |
-| `DESIGN.md`, `docs/design/`, `docs/planning/ux/`, `ui-design-prototype/`, `.impeccable/` | 1.6 Rough Mockups, 2.5 Refined Mockups |
-| `docs/status/decision-log.md`, `current-status.md` | intent state and audit records |
-| Product code already built (`apps/`, `packages/`, `infra/` on `main`, plus open `task/*` branches) | brownfield: 2.1 Reverse Engineering |
-| `_bmad/`, `bmad-*` skills in `.claude/skills/` and `.agents/skills/` | decide: retire, or keep as helpers inside AI-DLC stages |
-| grill-me family (`grill-me`, `grilling`, `batch-grill-me`, `grill-with-docs`) and other planning skills (`to-spec`, `to-tickets`, `triage`, `handoff`, `loop-me`, …) | decide: keep as helpers, or retire |
+| `docs/RogiKotha_PRD_v1.0.docx`, `..._BRD_v1.0.docx` | knowledge originals only (no Word extractor); their content is read through `00-source-inventory.md` and `01-requirement-baseline.md`, the Gate 1 extraction |
+| `PRODUCT.md`, `docs/scope-of-work.md` | knowledge; hard rules feed `project.md` and every unit's checklist |
+| `docs/planning/01-requirement-baseline.md`, `06-requirement-traceability-matrix.md` | 2.3 Requirements Analysis (`requirements.md`) and traceability |
+| `docs/planning/08-product-backlog.md` (`backlog.yaml` is partly superseded by the master plan) | 2.4 User Stories, 2.7 Units Generation |
+| `docs/architecture/ARCHITECTURE-SPINE.md`, `decisions/0001`–`0013`, `DEPENDENCY-SELECTIONS.md` (FD-032 replaced its UI rows), `docs/planning/05-recommended-architecture.md` | 2.6 Domain Design |
+| `docs/implementation/02-data-model.md` | 2.6 Domain Design / 3.1 Functional Design |
+| `docs/implementation/03-routes-and-contracts.md` | 2.8 Contract Design |
+| `docs/status/decision-log.md` (FD-001..FD-037, binding) | knowledge; seeds `project.md` "Decided" |
+| `docs/implementation/00-master-plan.md`, `README.md` §5 tracker (the only record of what is merged), `tasks/T-*.md`, `CR-*.md`, `06-change-requests.md` | 2.9 Delivery Planning; per-unit Construction 3.1–3.5 |
+| `docs/implementation/07-phase-2-document-evidence.md` | deferred scope (FD-036), not in this intent's delivery plan |
+| `docs/implementation/05-demo-storyboard.md`, `docs/planning/10-validation-strategy.md`, `docs/validation/` | 3.6 Build and Test acceptance |
+| `docs/implementation/01-conventions.md`, `AGENTS.md` rules | `aidlc/spaces/default/memory/team.md` via 2.2 Practices Discovery |
+| `DESIGN.md`, `docs/planning/ux/`, `docs/design/`, `ui-design-prototype/`, `.impeccable/` | design contracts (Refined Mockups is skipped: Gate 4 already chose Concept 04b) |
+| `LOOP.md`, `NEXT.md`, `04-handoff-and-validation.md`, `08-agent-prompts.md`, `BUILD-LOG.md`, `ISSUES.md`, `handoffs/` | replaced by `/aidlc` state, gates and audit (§3.2) |
+| `docs/status/current-status.md`, `docs/planning/09-coverage-matrix.md` | stale — not onboarded; refresh or retire at §1 step 7 |
+| Product code on `main` (`apps/`, `packages/`, `infra/`) | 2.1 Reverse Engineering |
+| `_bmad/`, `bmad-*` skills, grill-me family and other planning skills | decide at §1 step 7 |
+| `../rogikotha-gate4` worktree (275 untracked files, an early Gate 4 Next.js prototype) | owner to decide: keep, archive or delete |
 
-## 3. Decisions needed before converting
+## 6. Knowledge snapshot
 
-1. **Commit identity during Construction.** AI-DLC's unit-claim registry (`core/tools/aidlc-unit.ts`)
-   makes git commits authored as `AI-DLC Unit Claims <aidlc-unit@local>` on a separate claim ref
-   and can push them to the remote. That conflicts with the no-tool-identity rule in `AGENTS.md`.
-   Decide whether to avoid unit claims, accept them as an exception, or find a supported way to
-   change it — before the first Construction bolt.
-2. **The loop.** Keep `LOOP.md` / `NEXT.md` as a thin driver around `/aidlc`, or retire them.
-3. **Model tiers and cross-vendor validation** (`LOOP.md` §0, ADR 0012). Map M0–M4 and the
-   "other vendor validates M3" rule onto AI-DLC's reviewer agents and approval gates.
-4. **Puku CLI.** Not an AI-DLC harness. Decide whether Puku is still used for implementation.
-5. **In-flight work.** The product code on `main` (merged from `build/demo`, deleted 2026-10-04)
-   was built on the old process. `task/t-009-worker-skeleton` and `task/cr-008-seed-and-fixture-gaps`
-   are still unmerged, queued for validation, and now target `main`. Decide whether AI-DLC starts
-   from this code (reverse engineering) or only covers new work.
-6. **Scope.** AI-DLC's Claude harness defaults to `classic` scope (`AWS_AIDLC_DEFAULT_SCOPE`).
-   Pick the scope (classic, feature, mvp, …) for the first intent.
+AI-DLC refuses to index files outside `knowledge/documents/`, so the 35 documents there are
+**copies** taken on 2026-10-11 from `main` at `8033e57`, with their repo paths preserved
+(`documents/docs/...`, `documents/PRODUCT.md`, `documents/DESIGN.md`). The originals in `docs/`
+stay the source of truth. When an original changes, copy it over the snapshot and run
+`aidlc engine knowledge sync` (≤ 20 changed files per run).

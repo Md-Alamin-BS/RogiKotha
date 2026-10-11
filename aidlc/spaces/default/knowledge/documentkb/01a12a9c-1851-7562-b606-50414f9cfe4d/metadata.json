@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-1851-7562-b606-50414f9cfe4d",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/architecture/decisions/0007-use-pg-boss-for-durable-jobs.md"
+  },
+  "sha256": "095a503b2af896d7a642a53d6a36f432d1693cc45efd0ee22d630a61e00b4bf5",
+  "bytes": 680,
+  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 680,
+    "truncated": false,
+    "source_revision": "095a503b2af896d7a642a53d6a36f432d1693cc45efd0ee22d630a61e00b4bf5"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-1851-7562-b606-50414f9cfe4d/content.md",
+  "content_sha256": "095a503b2af896d7a642a53d6a36f432d1693cc45efd0ee22d630a61e00b4bf5",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

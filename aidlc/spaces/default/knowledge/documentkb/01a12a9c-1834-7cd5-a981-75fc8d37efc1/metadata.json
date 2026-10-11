@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-1834-7cd5-a981-75fc8d37efc1",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/architecture/decisions/0001-use-ports-and-adapters-modular-monolith.md"
+  },
+  "sha256": "739c52907e2ca7b2d1a1156416e792c5f1872712a70b326a5475e9c27b11198e",
+  "bytes": 985,
+  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 985,
+    "truncated": false,
+    "source_revision": "739c52907e2ca7b2d1a1156416e792c5f1872712a70b326a5475e9c27b11198e"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-1834-7cd5-a981-75fc8d37efc1/content.md",
+  "content_sha256": "739c52907e2ca7b2d1a1156416e792c5f1872712a70b326a5475e9c27b11198e",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

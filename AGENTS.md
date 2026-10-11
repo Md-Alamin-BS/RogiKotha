@@ -2,9 +2,9 @@
 
 ## ⚠️ STOP — AI-DLC migration pending (read before any implementation)
 
-This project now follows AWS **AI-DLC** (installed, pinned to 2.10.0). The existing plan,
-backlog, tasks, skills and build loop (BMAD, grill-me, `docs/implementation/LOOP.md`) have **not**
-been converted to AI-DLC yet.
+This project now follows AWS **AI-DLC** (installed, pinned to 2.11.0). The conversion of the
+existing plan, backlog, tasks, skills and build loop (BMAD, grill-me, `docs/implementation/LOOP.md`)
+is **in progress** — see the progress table in `docs/aidlc-migration/README.md`.
 
 Before you start any implementation, build, loop or task work — in any tool (Claude Code, Codex,
 Puku CLI, Cursor, …):
@@ -138,7 +138,7 @@ For full documentation, see `docs/guide/` (User Guide), `docs/harness-engineerin
 
 ## Session Resumption
 
-On startup, resolve the active intent (the `aidlc/spaces/<active-space>/intents/active-intent` cursor) and check for its `<record>/aidlc-state.md`. If found, load prior context and offer to resume from last checkpoint. (A brand-new project has no work recorded yet; the first AI-DLC run creates that record for you.)
+On startup, resolve the active intent (the `aidlc/spaces/<active-space>/intents/active-intent` cursor) and check for its `<record>/aidlc-state.md`. If found, load prior context and wait for the person: when they invoke AI-DLC, the work carries on from the last checkpoint with no resume menu, and they can ask to redo, jump to a stage, or start fresh. (A brand-new project has no work recorded yet; the first AI-DLC run creates that record for you.)
 
 ## Git Integration
 

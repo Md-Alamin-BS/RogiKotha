@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-1830-77d5-8d0d-1124a13756bf",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/architecture/DEPENDENCY-SELECTIONS.md"
+  },
+  "sha256": "7eae02474b95bf9f6ed774f4fdb1e5dbf4239b6c5c7e2d84427022d01dce96df",
+  "bytes": 6843,
+  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 6842,
+    "truncated": false,
+    "source_revision": "7eae02474b95bf9f6ed774f4fdb1e5dbf4239b6c5c7e2d84427022d01dce96df"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-1830-77d5-8d0d-1124a13756bf/content.md",
+  "content_sha256": "7eae02474b95bf9f6ed774f4fdb1e5dbf4239b6c5c7e2d84427022d01dce96df",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

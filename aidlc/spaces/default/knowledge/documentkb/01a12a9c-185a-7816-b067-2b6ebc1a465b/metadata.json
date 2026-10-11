@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-185a-7816-b067-2b6ebc1a465b",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/architecture/decisions/0010-separate-demo-and-production-compositions.md"
+  },
+  "sha256": "c5ea356e996636e224bd1c2e3accd15e18ae9cfa78b25d5b02eb08c5d6ac2a58",
+  "bytes": 709,
+  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 709,
+    "truncated": false,
+    "source_revision": "c5ea356e996636e224bd1c2e3accd15e18ae9cfa78b25d5b02eb08c5d6ac2a58"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-185a-7816-b067-2b6ebc1a465b/content.md",
+  "content_sha256": "c5ea356e996636e224bd1c2e3accd15e18ae9cfa78b25d5b02eb08c5d6ac2a58",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

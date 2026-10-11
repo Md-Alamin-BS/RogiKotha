@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a12a9c-4a96-7bc4-8bd3-a6e13eb001c7",
+  "source": {
+    "kind": "managed",
+    "path": "documents/DESIGN.md"
+  },
+  "sha256": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e",
+  "bytes": 18636,
+  "indexed_at": "2026-10-11T10:57:28.072Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 18458,
+    "truncated": false,
+    "source_revision": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a12a9c-4a96-7bc4-8bd3-a6e13eb001c7/content.md",
+  "content_sha256": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}
