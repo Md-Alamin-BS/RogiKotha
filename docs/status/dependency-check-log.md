@@ -27,6 +27,25 @@ Rules:
 
 ## Entries
 
+### 2026-10-11 (AWS AI-DLC 2.11.0 — process tooling upgrade)
+
+- Scope: upgrade AI-DLC from 2.10.0 to 2.11.0 for both harnesses (Claude Code, Codex CLI) before
+  the first intent.
+- Checked: GitHub releases of `awslabs/aidlc-workflows` — 2.11.0 marked Latest (2026-10-08); newer
+  builds are `2.11.1-preview.*` pre-releases only. Release notes, upgrade guide
+  (`docs/guide/18-install-and-lifecycle.md` @ v2.11.0) and the issues/PRs that matter here:
+  #1545 (Git Bash launcher) and #1589 / PR #1526 (ownership manifest claimed project files) are fixed
+  in 2.11.0; #2117 / PR #2131 (fixed claim-commit identity) is fixed only after 2.11.0 and is moot in
+  solo Unit ownership. Open and relevant: #2244 (cache files block Code Generation completion),
+  #2263, #1631, #1575/#1548, #1278, #2282. Details:
+  `docs/planning/research/aidlc-migration-2026-10-11/research.md`.
+- Findings: 2.11.0 defaults Guard Policy `off` and lead-agent-only stages outside `enterprise`;
+  knowledge onboarding requires copies under `knowledge/documents/` and has no Word extractor.
+- Decision: upgrade and pin 2.11.0; stay off the preview channel. Result: `aidlc update`,
+  `aidlc config --pin 2.11.0`, per-harness dry runs (`remove=0`, `conflict=0`; Claude 15 create /
+  194 update, Codex 15 create / 203 update), refresh, `aidlc doctor` 0 problems after replacing the
+  hand-made Git Bash forwarder with 2.11.0's launcher.
+
 ### 2026-10-04 (AWS AI-DLC — process tooling)
 
 - Scope: Install AWS AI-DLC (`awslabs/aidlc-workflows`) as the project's development method,
