@@ -2,7 +2,7 @@
 /**
  * tools/bangla-metrics.mjs
  *
- *   node tools/bangla-metrics.mjs      # or: npm run bangla
+ *   node tools/bangla-metrics.mjs      # or: pnpm tools:bangla
  *
  * Bengali needs a taller line box than Latin: the vowel signs and the matra
  * sit above the ascender line, so Latin-tight leading clips them and a

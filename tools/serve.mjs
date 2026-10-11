@@ -2,7 +2,7 @@
 /**
  * tools/serve.mjs — tiny static server for the prototype. No dependencies.
  *
- *   node tools/serve.mjs        # or: npm start   (default port 8137)
+ *   node tools/serve.mjs        # or: pnpm tools:serve   (default port 8137)
  *
  * The prototype is plain files and opens fine from file://, but a server
  * keeps hash routes, localStorage origins and the two apps behaving the way

@@ -1,7 +1,8 @@
 # tools/
 
 Zero-dependency Node.js helpers that support the prototype build. All scripts
-run from the repo root with `node tools/<name>.mjs` and have no npm install
+run from the repo root with `node tools/<name>.mjs` and, apart from
+`smoke.mjs` (jsdom) and `hover-probe.mjs` (puppeteer-core), need no install
 step — they read source files directly so they can be used inside CI without
 provisioning a workspace.
 
@@ -61,7 +62,7 @@ Computes WCAG contrast from the 04b tokens as they ship, with no browser and no
 dependencies. Exits non-zero if a **text** pair falls below 4.5:1.
 
 ```
-npm run contrast
+pnpm tools:contrast
 ```
 
 The hairline rules are reported but never fail the run — they are decorative
@@ -72,17 +73,18 @@ the docs claimed AA.
 ## Running everything
 
 ```
-npm run check
+pnpm tools:check
 ```
 
-Runs coverage, i18n, proof-check, contrast and smoke in order.
+Runs tokens:check, coverage, i18n, proof-check, contrast, bangla, the
+impeccable detector, the hover probe and smoke in order.
 
 ## `serve.mjs`
 
 Tiny dependency-free static server for the prototype.
 
 ```
-npm start        # http://localhost:8137  (PORT env var to change)
+pnpm tools:serve  # http://localhost:8137  (PORT env var to change)
 ```
 
 Prints the gallery, patient and admin URLs. The prototype opens fine from
@@ -98,8 +100,8 @@ stylesheet, so both apps share one palette, type stack, rules and surface
 tiers. The patient stylesheet is the only thing you edit.
 
 ```
-npm run tokens         # regenerate after editing the patient tokens
-npm run tokens:check   # part of npm run check — fails if tokens.css is stale
+pnpm tools:tokens         # regenerate after editing the patient tokens
+pnpm tools:tokens:check   # part of pnpm tools:check — fails if tokens.css is stale
 ```
 
 ## `bangla-metrics.mjs`
@@ -110,7 +112,7 @@ box crops them. This checks that every heading leading is raised under
 `[data-lang="bn"]`, and that no rule pairs a fixed `height` with a `font-size`.
 
 ```
-npm run bangla     # part of npm run check
+pnpm tools:bangla     # part of pnpm tools:check
 ```
 
 It caught the staff console scoping `--lh-ui` and `--lh-prose` to Bengali but

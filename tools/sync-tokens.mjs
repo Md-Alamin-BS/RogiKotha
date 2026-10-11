@@ -3,7 +3,7 @@
  * tools/sync-tokens.mjs
  *
  *   node tools/sync-tokens.mjs          # regenerate ui-design-prototype/shared/tokens.css
- *   node tools/sync-tokens.mjs --check  # exit 1 if tokens.css is stale (used by npm run check)
+ *   node tools/sync-tokens.mjs --check  # exit 1 if tokens.css is stale (used by pnpm tools:check)
  *
  * WHY
  * ---
@@ -68,7 +68,7 @@ const out = `/* ================================================================
 
    Source: ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/styles.css
            (the Concept 04b identity block, FD-027).
-   Regenerate: node tools/sync-tokens.mjs      Verify: npm run check
+   Regenerate: node tools/sync-tokens.mjs      Verify: pnpm tools:check
 
    Loaded by the staff console before its own stylesheet so both apps share
    one palette, one type stack, one set of rules and surface tiers, in light

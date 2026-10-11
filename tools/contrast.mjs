@@ -2,7 +2,7 @@
 /**
  * tools/contrast.mjs
  *
- *   node tools/contrast.mjs      # or: npm run contrast
+ *   node tools/contrast.mjs      # or: pnpm tools:contrast
  *
  * Computes WCAG contrast ratios directly from the Concept 04b tokens as they
  * ship in styles.css - no browser, no dependencies. Reads the LAST definition
