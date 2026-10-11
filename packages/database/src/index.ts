@@ -19,3 +19,4 @@ export * from './repositories/retention.js';
 export * from './repositories/data-requests.js';
 export * from './repositories/outbox.js';
 export * from './search/index.js';
+export * from './queue/index.js';

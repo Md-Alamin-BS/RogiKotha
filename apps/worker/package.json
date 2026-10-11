@@ -7,15 +7,23 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "dev": "echo \"T-009\"",
-    "build": "echo \"T-009\"",
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
+    "@rogikotha/adapters": "workspace:*",
     "@rogikotha/application": "workspace:*",
     "@rogikotha/contracts": "workspace:*",
     "@rogikotha/database": "workspace:*",
-    "@rogikotha/adapters": "workspace:*"
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "0.45.2",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.4",
+    "tsx": "^4.23.13"
   }
 }

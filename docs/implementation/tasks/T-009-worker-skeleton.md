@@ -69,15 +69,123 @@ Modify: `apps/worker/package.json`, `apps/worker/tsconfig.json`, `packages/datab
 
 ## Hard-rule checklist
 
-- [ ] Original evidence / private linkage never reaches the worker (connects as `rk_worker` only; refuses the app URL).
-- [ ] Logs carry opaque ids only (redaction tested).
-- [ ] No agent/tool attribution in any file or commit.
+- [x] Original evidence / private linkage never reaches the worker (connects as `rk_worker` only; refuses the app URL).
+- [x] Logs carry opaque ids only (redaction tested).
+- [x] No agent/tool attribution in any file or commit.
 
 ## Hand-off (implementer fills in)
 
 ### What changed
+
+`apps/worker` is a real runnable process: `env.ts` (zod-validated, `DATABASE_URL_WORKER`-only,
+refuses to start without it), `logger.ts` (`JsonLogger`, redacts `email|token|body|filename|password`
+fields), `container.ts` (composition root — `db`, `PgOutbox`, an `outboxSource` adapter closing over
+`db`, `PgBossQueue`, `logger`, a placeholder `SystemClock`), `registry.ts` (`JobName` union, `JOBS`
+registry seeded with `outbox.relay`), `handlers/outbox-relay.ts` (`RELAY`/`OUTBOX_EVENTS` from
+03-routes-and-contracts.md §5, `relayOnce` — claim, enqueue mapped jobs, mark processed, 5-attempt
+dead-letter give-up), `health.ts` (60 s `worker.heartbeat`), `main.ts` (starts the queue, runs
+`outbox.relay` on a 2 s `setInterval` poller guarded against overlap, handles
+SIGINT/SIGTERM/SIGBREAK/`message:'shutdown'`, graceful `queue.stop()` + pool close). New
+`packages/database/src/queue/pg-boss-queue.ts` (`PgBossQueue` — lazy `ensureQueue`, `enqueue`,
+`work` wrapping a thrown handler error as `job.failed` + rethrow, `schedule`, `stop`) and
+`installPgBoss` (installs/migrates the `pgboss` schema as `rk_app`).
+
+**Beyond the literal "Owned paths" list, with the task's own explicit permission** (step 2's "add it
+to Owned paths in the hand-off"): `packages/database/src/migrate.ts` now calls `installPgBoss(url)`
+before the SQL migrations run, and a new `packages/database/src/migrations/0006_pgboss_grants.sql`
+grants `rk_worker` USAGE + DML (+ default privileges for future pg-boss schema versions) on schema
+`pgboss` — the Option B path from 02-data-model.md §16 note 2 ("the `pgboss` schema is created by
+migration … run as `rk_app`, with USAGE/DML grants to `rk_worker`"), not the task's other listed
+option (`GRANT CREATE ON DATABASE`). Also touched, one line each, for the same reason:
+`packages/database/src/migrations.int.test.ts` (hardcoded migration count 6 → 7 — `ISS-194`) and
+`packages/database/src/queue/pg-boss-queue.ts`'s sibling `.int.test.ts`.
+
+`ISS-144`/`ISS-145` (the two rows this task explicitly owned): `ISS-145` fixed — `OUTBOX_EVENTS`
+tuple + tests. `ISS-144` deferred, not fixed — see "Not done and why".
+
 ### Not done and why
+
+- **`ISS-144` (at-most-once outbox delivery) not fixed.** The task offered a real choice here. A
+  correct fix needs either a `claimed_at`/lease column on `outbox_events` (a schema change —
+  `01-conventions.md` §15's stop-and-ask "data-model boundary" category, and `outbox.ts`'s table is
+  owned by T-005, not this task) or holding a database transaction open across an async pg-boss
+  `send()` call (unspecified timeout/retry behaviour, connection-pool-exhaustion risk for a single M1
+  task to design from scratch). Both are bigger and riskier than this task's 1.5–2 h budget. Left
+  `packages/database/src/repositories/outbox.ts` untouched; logged `ISS-185` explaining the reasoning
+  so the next session does not have to re-derive it.
+- **`build`/`start` compile but are not the supported way to run the worker yet.** `apps/worker`'s
+  `tsc -p tsconfig.build.json` is green (needed for `pnpm check`'s `pnpm -r build`), but every
+  workspace package's `package.json` "exports" still points at its own TS source, not a compiled
+  `dist/` — so `node dist/main.js` in isolation cannot actually resolve `@rogikotha/database`'s own
+  `.js`-suffixed-but-not-really relative imports (same gap `ISS-183`/`CR-009` already tracks for
+  `apps/web`). `pnpm dev:worker` (`tsx watch`) is the verified, supported path; every acceptance check
+  in this task's own table uses it. Logged as `ISS-193`.
+- **`dataRequest.created` maps to both `data.export` and `data.delete`** in `RELAY` — §5 lists them as
+  alternatives depending on the request's `kind`, but no payload shape or command layer exists yet
+  (T-410) to branch on it. Harmless today (T-009 registers no handler for either). `ISS-188`.
+
 ### Questions for the human
+
+None that block this task — every ambiguity encountered had a narrower, reversible reading available
+(see the `ISS-` rows below) and this session took it rather than stopping. The one item worth a
+founder glance when convenient: `ISS-144`'s deferral (above) — confirm the "due Phase 1 gate" owner
+stays on the phase-gate timeline rather than needing to move earlier.
+
 ### Follow-ups
+
+- `ISS-144` — fix at-most-once outbox delivery (lease column or held-transaction claim), before the
+  Phase 1 gate.
+- `ISS-187` — confirm the `setInterval`-poller reading of "self-rescheduling poller" is the intended
+  design, or switch `outbox.relay` to a pg-boss-chained job if a future task needs multi-process
+  workers (today's single-process assumption would otherwise double-relay).
+- `ISS-193` / `CR-009` — worker `build`+`start` need every workspace package to ship compiled output
+  (or a bundler) before `node dist/main.js` is truly standalone-runnable.
+- `ISS-195` — widen `test-support`'s `ListOutbox` fake with `claimBatch`/`markProcessed`/`markFailed`
+  so worker tests can reuse it instead of a local double.
+
 ### `pnpm check` output summary
+
+```
+pnpm typecheck   — 9/9 workspace projects, exit 0
+pnpm lint        — 0 errors, 1 pre-existing warning (packages/i18n/src/routing.ts, not touched here)
+pnpm test        — 42 files / 165 tests (163 passed, 2 expected-fail), all green
+pnpm i18n:check  — 777 keys, both locales, parity OK
+pnpm build       — apps/worker + apps/web, both green
+```
+
+`pnpm test:int -t pg-boss` — 1 file / 3 tests green (`enqueue then work runs the handler once`,
+`a thrown handler error is retried`, `stop is graceful`), run against the compose PostgreSQL as
+`rk_worker` with `migrate: false` — the same restricted-role path the real worker uses.
+
+`pnpm smoke` — 8 files / 11 tests green (`apps/worker/src/worker.smoke.test.ts` is this task's new
+assertion: a `review.published` outbox event relays to `search.refresh` + `notification.deliver`).
+
+Manual verification (task step 10, both directions): `pnpm infra:up && pnpm db:migrate &&
+pnpm dev:worker` logs `worker.started {"jobs":["outbox.relay"]}`; inserting
+`outbox_events(name='doctor.changed', payload='{"id":"x"}')` produces a `search.refresh` row in
+`pgboss.job` keyed `<eventId>:search.refresh` within 2 s, and `outbox_events.processed_at` is set;
+inserting an unmapped `name` logs `outbox.unmapped` and is marked processed. Graceful shutdown was
+verified via a `child_process.fork()` IPC `'shutdown'` message (see `ISS-`-free note: on this Windows
+host, `kill`/`child.kill('SIGTERM')` from outside a real console does not reliably deliver the signal
+to a native `node.exe` process — a known Windows/Node limitation, not a bug in the handler — so the
+`message:'shutdown'` path, which the task explicitly asked for, was used to verify the shutdown logic
+programmatically: `worker.stopping` → `worker.stopped` → exit 0, well inside the 10 s budget).
+
 ### Hard-rule evidence
+
+- **Worker connects as `rk_worker` only; refuses `DATABASE_URL`.** `apps/worker/src/env.ts:32-34`
+  (checks `DATABASE_URL_WORKER` before anything else, never reads `DATABASE_URL`); verified live —
+  `DATABASE_URL_WORKER= pnpm dev:worker` exits 1 with "DATABASE_URL_WORKER is required (the worker
+  never falls back to DATABASE_URL)". `packages/database/src/queue/pg-boss-queue.int.test.ts` runs
+  every test through `workerUrlForTestDb()` (the `rk_worker` role) with `migrate: false`, proving the
+  restricted role actually works end to end, not just that the app role would.
+- **Logs carry opaque ids only; redaction tested.** `apps/worker/src/logger.ts` — `logger.test.ts`
+  "redacts email, token, body, filename and password fields" and "a field named event, level or ts
+  never overwrites the envelope" (`ISS-192` — a real bug found and fixed during manual verification:
+  a field literally named `event` silently clobbered the log line's own event name).
+  `container.test.ts` greps `apps/worker/src` for `better-auth`/`identity.reveal`/`dataRequest.delete`
+  — no source-file matches (`ISS-196`: the literal grep matches `container.test.ts` itself, which must
+  quote those strings to define the check).
+- **No agent/tool attribution in any file or commit.** No AI/tool/model name appears in any file this
+  task touched; commit author/committer and message verified with `git log -1
+  --format='%an <%ae>%n%cn <%ce>%n%B'` before pushing (see `handoffs/T-009.md`).
