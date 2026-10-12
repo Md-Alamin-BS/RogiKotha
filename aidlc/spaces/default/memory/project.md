@@ -66,3 +66,4 @@
 
 <!-- Project-specific corrections from human feedback. -->
 <!-- Format: NEVER/ALWAYS [behavior] (learned [date]) -->
+- Where docs/architecture/ARCHITECTURE-SPINE.md and the code disagree on package layout or stack, the code and decision-log FD-032/FD-033/FD-036 win: the spine's packages/{auth,evidence,search,ui} and its stack table are superseded, so never restructure code to match them. (learned 2026-10-12) <!-- cid:261011-aidlc-adoption:reverse-engineering:7351e913548c82a5074b896e79284a54f5a5835a1a002b07aeb5c35876d9a499 -->

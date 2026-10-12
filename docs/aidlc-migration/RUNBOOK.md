@@ -69,10 +69,10 @@ in `docs/status/decision-log.md`; the owner can overturn any of them later.
 
 | Step | What | Who | State |
 |---|---|---|---|
-| 1 | Preflight checks | agent (+ HUMAN only if a check fails) | done 2026-10-11 — 2.11.0, doctor 0 problems, hooks firing, Postgres up; Codex question asked at step 3 |
-| 2 | Housekeeping and record the decisions | agent | todo |
-| 3 | Start the intent; Practices Discovery | agent + HUMAN gates | todo |
-| 4 | Reverse Engineering | agent + HUMAN gate | todo |
+| 1 | Preflight checks | agent (+ HUMAN only if a check fails) | done 2026-10-11 — 2.11.0, doctor 0 problems, hooks firing, Postgres up; Codex not used (owner, 2026-10-12) — `4f05dc0` |
+| 2 | Housekeeping and record the decisions | agent | done 2026-10-11 (`4f05dc0`) — FD-038..FD-044, ISSUES/CR rows, NEXT.md; gate4 zip verified 275/275; worktree removal left to the owner (permission check blocked it) |
+| 3 | Start the intent; Practices Discovery | agent + HUMAN gates | in progress — intent `261011-aidlc-adoption` created 2026-10-12; AI-DLC runs Reverse Engineering before Practices Discovery |
+| 4 | Reverse Engineering | agent + HUMAN gate | done 2026-10-12 — approved; codekb in `aidlc/spaces/default/codekb/rogikotha/` (commit: this step) |
 | 5 | Requirements, Stories, Domain, Units, Contracts, Delivery Planning | agent + HUMAN gates | todo |
 | 6 | Close the migration and delete this file | agent | todo |
 
