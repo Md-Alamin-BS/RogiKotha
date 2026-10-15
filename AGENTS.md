@@ -33,6 +33,12 @@ in this repository. This applies everywhere, including but not limited to:
 - Pull request titles/descriptions.
 - Any generated file (logs, reports, docs) committed to the repo.
 
+One exception: AI-DLC writes the cost entries in `aidlc/spaces/*/intents/*/audit/*.md` itself.
+These are the `By Model` and `Tokens By Model` lines on stage-completion events, and they may
+name models. The owner decided on 2026-10-15 to keep usage tracking on and to keep these
+entries as append-only history. Do not flag them, remove them, or copy model names from them
+anywhere else.
+
 If your tooling defaults to injecting a `Co-Authored-By` trailer or setting
 its own git author identity, disable that behavior before committing. If it
 cannot be disabled, ask the user before committing rather than pushing

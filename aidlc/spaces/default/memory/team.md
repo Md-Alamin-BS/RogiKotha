@@ -7,21 +7,47 @@
 
 ## Way of Working
 
-<!-- Affirmed during practices-discovery. Example: -->
-<!-- We use GitHub Flow with feature branches. Branches live 3-5 days max. -->
-<!-- Hotfixes branch from main and merge back via expedited review. -->
+
+- We use trunk-based development on `main`. Every piece of work starts from `main` on a short-lived branch (one per Bolt, resolved within one to two days) and merges back to `main`. We keep no long-lived branches; `main` is the only integration branch (it replaced `build/demo`).
+- For Construction worktrees the base branch is `main` and the merge target is `main`.
+- We squash-merge each Bolt into `main` as one commit, named by the Bolt slug and carrying the task or change-request id it delivers (for example `CR-009`). The Bolt branch keeps its full commit history until its worktree is discarded. The earlier `--no-ff` task merges on `main` stay as they are; we do not rewrite history (D9). We squash-merge locally and push `main`; we open no pull request per Bolt (the owner's answer, 2026-10-15).
+- Nothing merges unless `pnpm check` is green on the Bolt branch, and we run `pnpm check` again on `main` after the merge. The compose PostgreSQL must be running (`pnpm infra:up`), because `pnpm test` includes the database project.
+- Every stage gets an AI-DLC reviewer pass. Units in the high-risk class (auth, identity, evidence, moderation, retention, deletion) also run with collaborators on (`/aidlc --collaborators on`). The human's approval at the gate is the independent validation that ADR 0012 asks for; no second vendor's tool is used (D12).
+- Unit ownership is `solo` and Construction execution is `serial`: one Unit at a time, no team ownership and no parallel swarm, for as long as the no-identity rule stands (D13).
+- There is no human team. AI agents do all building, reviewing and testing; one human, the owner, directs them and is the only approver at every gate. Agent sessions start without memory of earlier sessions, so everything an agent needs is written down, in this file, `project.md` and the intent record, never left in chat. A question for the owner is asked at a gate or written into the record, with each option explained and a suggestion; agents do not decide open points themselves.
+- Every Unit goes through the same implementation and validation steps. These replace the gates G1–G5 of `04-handoff-and-validation.md` §3 without dropping any:
+  1. **Before building**: `pnpm check` is green on the Bolt branch (baseline); open `ISSUES.md` rows in the Unit's area are read.
+  2. **Code Generation**: the owner approves the plan; the agent builds inside the Unit's owned paths, adds at least one smoke assertion, and ends with `pnpm check` (G1) and `pnpm smoke` (G3) green.
+  3. **Build and Test**: a fresh run of `pnpm check` and the whole cumulative `pnpm smoke` (G1, G3); every acceptance row of the Unit's task file is executed and recorded as expected against observed (G2).
+  4. **Review**: the AI-DLC reviewer, a separate agent, reads the full diff for authorization, audit rows, Bengali/English parity, import boundaries, private data in view models or logs, files outside owned paths, and tool or model identity (G4).
+  5. **High-risk Units** (auth, identity, evidence, moderation, retention, deletion): collaborators are on, a separate agent writes and runs 3–5 adversarial tests that try to break the Unit, and the owner adds a written sign-off in the Unit's record before the phase gate.
+  6. **Merge**: only after the owner approves the Unit; squash-merge locally into `main`, run `pnpm check` on `main`, push.
+  7. **Phase gate** (G5): the owner walks the demo storyboard steps the phase unlocks in both `en` and `bn` (`05-demo-storyboard.md`); every step is observed as written or logged as an issue.
+- Defects stay in `docs/implementation/ISSUES.md`, the one live register, with severities `S1` (breaks the demo, a hard rule, private data, or a red check), `S2` (storyboard behaviour wrong or missing), `S3` (polish) and `S4` (debt, `ASSUMPTION` markers, deferrals). Every defect, workaround or assumption found by any agent gets a row. Each row is linked to its Unit and Bolt: `Found in` names the Unit/Bolt id, and `Status` names the Unit/Bolt that fixed it. Each Unit's Build and Test record lists the `ISS-` ids found and fixed in that Unit, so the AI-DLC record shows which Unit had which issues. An open `S1` blocks that Unit's Build and Test; an open `S2` blocks the phase gate. This changes migration decision 2, which had frozen `ISSUES.md` as history (owner, 2026-10-15).
+- A plain-language guide to this process for the owner is written at migration step 7, when `LOOP.md` and `NEXT.md` are retired (owner, 2026-10-15).
+- Commits carry only the human's own git identity. We never run `git reset --hard`, `git checkout --` or `git clean` on a dirty tree, and we commit only the paths the unit owns, after reading `git diff --cached`.
+- Before first-time or big work we check the dependency-check log and research the approach (see the Mandated rules); when a step is unclear we pick the reversible, narrower option and mark it `ASSUMPTION(<unit id>): ...` in the code.
 
 ## Walking Skeleton
 
-<!-- Affirmed during practices-discovery. Example: -->
-<!-- We don't run a walking skeleton — our deployment pipeline is mature -->
-<!-- and the slice cost outweighs the value at our maturity stage. -->
+
+- Off for this intent: no skeleton ceremony and no bootstrap checkpoint. The build is already past its skeleton. The Phase 0 foundation (T-001 to T-009, plus T-207a, D-001 and CR-002/003/005/008/010) is merged on `main` and already runs end to end locally: the web shell renders `/en` and `/bn`, migrations apply from empty, the seed loads the synthetic corpus, and the worker relays outbox events to pg-boss jobs.
+- This matches the `classic` scope, which declares `skeleton: off`. At Construction entry we choose between continuing automatically and reviewing each checkpoint.
+- For future greenfield work (a new app or service in this space), the stance is scope-dependent: we follow the active scope's `skeleton:` setting and do not decide it here.
 
 ## Testing Posture
 
-<!-- Affirmed during practices-discovery. Example: -->
-<!-- We use BDD. Specifications drive scenarios; scenarios drive code. -->
-<!-- Each Unit ships with feature files in /features/. -->
+
+- **Methodology**: test-after
+- **Methodology evidence**: `01-conventions.md` §10 sets per-level test minimums that each task delivers together with its code, and §13's definition of done requires them green before hand-off. In git history, tests land in the same task commit as the implementation (for example T-007 and T-009). No source asks for tests to be written before the code, and test-after is the `org.md` default for the `classic` scope.
+- **Ordering**: Implement each testable layer, then write and run its unit tests, its integration tests against the isolated PostgreSQL test database (reset to a freshly migrated schema on every run), and extend the cumulative smoke suite.
+- Test levels follow `01-conventions.md` §10: domain (every state-transition table and policy function), application (each command's happy path, each authorization refusal and one audit assertion, using `test-support` fakes), database (`*.int.test.ts`, each repository method, migrations apply from empty), component (renders in both `en` and `bn`), and end-to-end with Playwright and axe from T-503.
+- Cumulative smoke suite: each unit adds at least one smoke assertion for what it delivered (`*.smoke.test.ts(x)`, and from T-503 also `apps/web/e2e/smoke/*.spec.ts`). `pnpm smoke` runs the whole suite every time. The suite only grows: removing or skipping a smoke assertion needs a recorded reason.
+- Integration tests: `pnpm test:int` runs the database project against `DATABASE_URL_TEST` (the `rogikotha_test` database, separate from the development database). It resets that database to an empty, freshly migrated schema and runs test files serially. It needs the compose PostgreSQL running.
+- Coverage: an 80% line-coverage floor per package, measured with Vitest `@vitest/coverage-v8` (already installed). T-010 adds the thresholds and the CI run before merge, and raises any package below 80%. Until T-010 lands, the floor cannot be measured: no Vitest config has a coverage block yet. Work before T-010 (CR-009) records "coverage not measured yet" at Build and Test; from T-010 on the floor is enforced, and it applies to a package once that package has source code (the empty `domain`, `application` and `adapters` packages are exempt until then). We do not claim a coverage figure we have not measured, and once the floor exists it is never lowered to make a step pass (D10).
+- Existing suites stay green: `pnpm check` (typecheck, lint, unit and integration tests, i18n parity, build) and `pnpm smoke` must pass after every unit, with no assertion removed or skipped. In brownfield work we run the full suite before changing anything, to record a baseline.
+- Test names read as sentences. We use builders, not hand-written fixture objects, and we never assert on implementation details (class names, internal calls). A test must be able to fail.
+- UI units also pass `npx impeccable detect apps/web/src --no-advisory` and `pnpm contrast` cleanly before they are done (`01-conventions.md` §7.8).
 
 ## Guard Policy
 
@@ -29,14 +55,24 @@
 
 ## Deployment
 
-<!-- Affirmed during practices-discovery. -->
+
+- In this intent we deploy only to the local Docker demo. `pnpm infra:up` starts PostgreSQL 18, Mailpit and ClamAV from `infra/compose/`. `pnpm demo` migrates, seeds the synthetic corpus and runs the web app and the worker. `pnpm demo:reset` rebuilds the demo data. This is the local-development composition of FD-031 (D11).
+- No staging or production environment exists yet, and the Operation phase is out of scope (the `classic` scope skips it). This is a project specialisation, not a replacement of the org default. Once a staging environment exists, the `org.md` practice applies: deploy on merge to staging, with production gated by a separate manual approval.
+- "Deployed" here means that `main` after the squash merge runs locally with `pnpm demo` and that `pnpm check` and `pnpm smoke` are green on it.
+- Rollback of the local demo: revert the Bolt's squash commit on `main`, then rebuild the database with `pnpm db:reset && pnpm db:seed`. Migrations are forward-only, so reverting code does not undo an applied migration; the reset rebuilds from empty.
+- Demo safety stays on: `migrate`, `reset` and `seed` refuse `APP_MODE=production`, and the demo marker stays visible (AD-14).
 
 ## Code Style
 
-<!-- Team-specific conventions beyond the linter. Example: -->
-<!-- - Prefer named exports over default exports -->
-<!-- - All async functions return Result<T, E>, never throw -->
 
+- Formatter: Prettier 3.9 (`prettier.config.mjs`: single quotes, semicolons, print width 100, trailing commas), with `eslint-config-prettier` last in the ESLint config. There is no `format:check` script yet, and `pnpm check` does not run Prettier; T-010 adds `format:check` (Prettier `--check`) to `pnpm check` and CI, so formatting becomes part of the gate (the owner's answer, 2026-10-15).
+- Linter: ESLint 10 flat config (`eslint.config.mjs`) with `typescript-eslint` `recommendedTypeChecked` and the project service, plus `consistent-type-imports`, `no-floating-promises` and `no-console` (only `warn` and `error` allowed). Every inline suppression carries its reason.
+- Boundaries: imports follow the dependency direction in `01-conventions.md` §2. `domain` imports nothing. `contracts` imports zod only. `application` imports only `domain` and `contracts`. `database` and `adapters` import application ports and `contracts`. Components never import `database`, `adapters`, `test-support` or `node:` modules. `apps/web` instantiates adapters only in `server/container.ts`. The worker never imports Better Auth or any identity-reveal or deletion command. The one dev-only exception is `packages/test-support/src/seed/** → database` (FD-040), and nothing in `apps/*` imports `test-support`. Lint enforcement through `eslint-plugin-boundaries` arrives with T-010 (the `// T-010 adds boundaries here` slot). Until then the rules are kept by convention and by the worker's forbidden-import test.
+- TypeScript 6.x in strict mode (`tsconfig.base.json`: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `isolatedModules`), ESM throughout.
+- Gate: `pnpm check` (typecheck, lint including boundaries once T-010 lands, unit and integration tests, i18n parity, build) is the single local gate. Linter findings come first: a style suggestion applies only where the linter does not already decide.
+- Naming per `01-conventions.md`: the fixed module names (`account`, `identity`, `directory`, `taxonomy`, `review`, `evidence`, `community`, `moderation`, `notification`, `search`, `administration`, `retention`, `data-requests`); one command per file `commands/<verb-noun>.ts` exporting `<verbNoun>Command` built with `defineCommand`; one query per file `queries/<get-noun>.ts`; snake_case tables and columns; camelCase TypeScript; a component file per prototype render function, named in PascalCase; `as const` enum arrays in `contracts`.
+- Expected failures return `Result` (`err(...)`), never throw; throws are reserved for programmer errors. Logging goes through the logger port, with allowlisted fields only.
+- CSS is ported verbatim from the prototype as plain CSS, with the prototype's class names. No Tailwind, CSS-in-JS, icon or animation library (FD-032). A new class is added to the ported stylesheet with a `/* added: <unit id> reason */` comment.
 ## Forbidden
 
 <!-- Team-specific forbidden patterns -->
