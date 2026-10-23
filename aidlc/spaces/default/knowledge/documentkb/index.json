@@ -7,24 +7,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/ARCHITECTURE-SPINE.md"
       },
-      "sha256": "c8981f2419cfba1b40c43c49b00fb72bb0194bb5aa1121e23ecb80c47a743471",
-      "bytes": 16596,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "9bcb221349cb396cb8d62cb62e6f4160666fc35c0212417de6f0ff17938fc9c7",
+      "bytes": 16336,
+      "indexed_at": "2026-10-23T07:20:27.091Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 16538,
+        "chars": 16278,
         "truncated": false,
-        "source_revision": "c8981f2419cfba1b40c43c49b00fb72bb0194bb5aa1121e23ecb80c47a743471"
+        "source_revision": "9bcb221349cb396cb8d62cb62e6f4160666fc35c0212417de6f0ff17938fc9c7"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-182c-7312-8f49-efbf09e5ea9d/content.md",
-      "content_sha256": "c8981f2419cfba1b40c43c49b00fb72bb0194bb5aa1121e23ecb80c47a743471"
+      "content_sha256": "9bcb221349cb396cb8d62cb62e6f4160666fc35c0212417de6f0ff17938fc9c7"
     },
     {
       "id": "01a12a9c-1830-77d5-8d0d-1124a13756bf",
@@ -32,24 +32,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/DEPENDENCY-SELECTIONS.md"
       },
-      "sha256": "7eae02474b95bf9f6ed774f4fdb1e5dbf4239b6c5c7e2d84427022d01dce96df",
-      "bytes": 6843,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "5e83471e531b336beaa804627f21c6b7f3717e1cf8b3018fe77e3ff297fc40e3",
+      "bytes": 6793,
+      "indexed_at": "2026-10-23T07:20:48.499Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 6842,
+        "chars": 6792,
         "truncated": false,
-        "source_revision": "7eae02474b95bf9f6ed774f4fdb1e5dbf4239b6c5c7e2d84427022d01dce96df"
+        "source_revision": "5e83471e531b336beaa804627f21c6b7f3717e1cf8b3018fe77e3ff297fc40e3"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1830-77d5-8d0d-1124a13756bf/content.md",
-      "content_sha256": "7eae02474b95bf9f6ed774f4fdb1e5dbf4239b6c5c7e2d84427022d01dce96df"
+      "content_sha256": "5e83471e531b336beaa804627f21c6b7f3717e1cf8b3018fe77e3ff297fc40e3"
     },
     {
       "id": "01a12a9c-1834-7cd5-a981-75fc8d37efc1",
@@ -57,24 +57,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/decisions/0001-use-ports-and-adapters-modular-monolith.md"
       },
-      "sha256": "739c52907e2ca7b2d1a1156416e792c5f1872712a70b326a5475e9c27b11198e",
-      "bytes": 985,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "24dd7ab18dc8cf57819097b34cdea73dc79e06adeb7582cf6996556042bd1ab1",
+      "bytes": 965,
+      "indexed_at": "2026-10-23T07:20:40.228Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 985,
+        "chars": 965,
         "truncated": false,
-        "source_revision": "739c52907e2ca7b2d1a1156416e792c5f1872712a70b326a5475e9c27b11198e"
+        "source_revision": "24dd7ab18dc8cf57819097b34cdea73dc79e06adeb7582cf6996556042bd1ab1"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1834-7cd5-a981-75fc8d37efc1/content.md",
-      "content_sha256": "739c52907e2ca7b2d1a1156416e792c5f1872712a70b326a5475e9c27b11198e"
+      "content_sha256": "24dd7ab18dc8cf57819097b34cdea73dc79e06adeb7582cf6996556042bd1ab1"
     },
     {
       "id": "01a12a9c-183c-75d0-9898-7878b97de66d",
@@ -82,24 +82,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/decisions/0002-use-nextjs-typescript-and-postgresql.md"
       },
-      "sha256": "fc9feec113817f4bf9444aa041e889f85b571d56e713514356da9eb25d3220d0",
-      "bytes": 749,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "42e93066d52eaceb04d5f0c05a7ab8be3810c7378659c5d51da3d66c61869217",
+      "bytes": 734,
+      "indexed_at": "2026-10-23T07:20:40.860Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 749,
+        "chars": 734,
         "truncated": false,
-        "source_revision": "fc9feec113817f4bf9444aa041e889f85b571d56e713514356da9eb25d3220d0"
+        "source_revision": "42e93066d52eaceb04d5f0c05a7ab8be3810c7378659c5d51da3d66c61869217"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-183c-75d0-9898-7878b97de66d/content.md",
-      "content_sha256": "fc9feec113817f4bf9444aa041e889f85b571d56e713514356da9eb25d3220d0"
+      "content_sha256": "42e93066d52eaceb04d5f0c05a7ab8be3810c7378659c5d51da3d66c61869217"
     },
     {
       "id": "01a12a9c-1840-7999-8674-6936a38af740",
@@ -107,24 +107,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/decisions/0003-use-better-auth-behind-application-policy.md"
       },
-      "sha256": "a649c1cb0010d1ccc36f75285918765e4fa7aa04d6196c07aa734e4f42946efd",
-      "bytes": 841,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "c50e4c148f590b3544155bc2fe21be70f14f407b9ac05093b9270eb7bd2893a0",
+      "bytes": 826,
+      "indexed_at": "2026-10-23T07:20:41.482Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 837,
+        "chars": 822,
         "truncated": false,
-        "source_revision": "a649c1cb0010d1ccc36f75285918765e4fa7aa04d6196c07aa734e4f42946efd"
+        "source_revision": "c50e4c148f590b3544155bc2fe21be70f14f407b9ac05093b9270eb7bd2893a0"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1840-7999-8674-6936a38af740/content.md",
-      "content_sha256": "a649c1cb0010d1ccc36f75285918765e4fa7aa04d6196c07aa734e4f42946efd"
+      "content_sha256": "c50e4c148f590b3544155bc2fe21be70f14f407b9ac05093b9270eb7bd2893a0"
     },
     {
       "id": "01a12a9c-1846-7671-a778-7c6e776b1627",
@@ -132,24 +132,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/decisions/0004-use-postgresql-search-first.md"
       },
-      "sha256": "11159aa172ced9151ca7b0d3cc8b8d545cd7dd3e9ae782e34b13fa740f09ca88",
-      "bytes": 713,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "b40dd4cc5a577482d85c1bdd42b9a164624ef6a152fca8c0cdc35348c000af05",
+      "bytes": 698,
+      "indexed_at": "2026-10-23T07:20:42.149Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 709,
+        "chars": 694,
         "truncated": false,
-        "source_revision": "11159aa172ced9151ca7b0d3cc8b8d545cd7dd3e9ae782e34b13fa740f09ca88"
+        "source_revision": "b40dd4cc5a577482d85c1bdd42b9a164624ef6a152fca8c0cdc35348c000af05"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1846-7671-a778-7c6e776b1627/content.md",
-      "content_sha256": "11159aa172ced9151ca7b0d3cc8b8d545cd7dd3e9ae782e34b13fa740f09ca88"
+      "content_sha256": "b40dd4cc5a577482d85c1bdd42b9a164624ef6a152fca8c0cdc35348c000af05"
     },
     {
       "id": "01a12a9c-184a-74dc-abc3-41f58a657e2d",
@@ -157,84 +157,9 @@
         "kind": "managed",
         "path": "documents/docs/architecture/decisions/0005-use-quarantine-first-evidence-pipeline.md"
       },
-      "sha256": "09db85be96470a47a68f6384b7be5cdf7adcf501aaa2ce87bdf22e13c8471b06",
-      "bytes": 858,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
-      "extraction": {
-        "state": "extracted",
-        "extractor": {
-          "name": "builtin-text",
-          "version": "1"
-        },
-        "chars": 854,
-        "truncated": false,
-        "source_revision": "09db85be96470a47a68f6384b7be5cdf7adcf501aaa2ce87bdf22e13c8471b06"
-      },
-      "summary": {
-        "state": "absent"
-      },
-      "content": "documentkb/01a12a9c-184a-74dc-abc3-41f58a657e2d/content.md",
-      "content_sha256": "09db85be96470a47a68f6384b7be5cdf7adcf501aaa2ce87bdf22e13c8471b06"
-    },
-    {
-      "id": "01a12a9c-184d-7394-b42c-89c864688dce",
-      "source": {
-        "kind": "managed",
-        "path": "documents/docs/architecture/decisions/0006-use-storage-port-and-conditionally-garage.md"
-      },
-      "sha256": "15f3e6ada36db1c21cea4738d72d9420549fcacea4a867426b7ad073ff44138a",
-      "bytes": 801,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
-      "extraction": {
-        "state": "extracted",
-        "extractor": {
-          "name": "builtin-text",
-          "version": "1"
-        },
-        "chars": 801,
-        "truncated": false,
-        "source_revision": "15f3e6ada36db1c21cea4738d72d9420549fcacea4a867426b7ad073ff44138a"
-      },
-      "summary": {
-        "state": "absent"
-      },
-      "content": "documentkb/01a12a9c-184d-7394-b42c-89c864688dce/content.md",
-      "content_sha256": "15f3e6ada36db1c21cea4738d72d9420549fcacea4a867426b7ad073ff44138a"
-    },
-    {
-      "id": "01a12a9c-1851-7562-b606-50414f9cfe4d",
-      "source": {
-        "kind": "managed",
-        "path": "documents/docs/architecture/decisions/0007-use-pg-boss-for-durable-jobs.md"
-      },
-      "sha256": "095a503b2af896d7a642a53d6a36f432d1693cc45efd0ee22d630a61e00b4bf5",
-      "bytes": 680,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
-      "extraction": {
-        "state": "extracted",
-        "extractor": {
-          "name": "builtin-text",
-          "version": "1"
-        },
-        "chars": 680,
-        "truncated": false,
-        "source_revision": "095a503b2af896d7a642a53d6a36f432d1693cc45efd0ee22d630a61e00b4bf5"
-      },
-      "summary": {
-        "state": "absent"
-      },
-      "content": "documentkb/01a12a9c-1851-7562-b606-50414f9cfe4d/content.md",
-      "content_sha256": "095a503b2af896d7a642a53d6a36f432d1693cc45efd0ee22d630a61e00b4bf5"
-    },
-    {
-      "id": "01a12a9c-1854-79e7-a754-98c63c7d5776",
-      "source": {
-        "kind": "managed",
-        "path": "documents/docs/architecture/decisions/0008-separate-public-persona-from-private-identity.md"
-      },
-      "sha256": "7e4d73b5243fd06a9c7478ed07d58dd4c5c91365e14381b22049628164d469dd",
-      "bytes": 839,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "327d50cef68b51ecad879cbd304c53c3319950f3c709f13c820720979c68e52c",
+      "bytes": 843,
+      "indexed_at": "2026-10-23T07:20:42.787Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
@@ -243,13 +168,88 @@
         },
         "chars": 839,
         "truncated": false,
-        "source_revision": "7e4d73b5243fd06a9c7478ed07d58dd4c5c91365e14381b22049628164d469dd"
+        "source_revision": "327d50cef68b51ecad879cbd304c53c3319950f3c709f13c820720979c68e52c"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-184a-74dc-abc3-41f58a657e2d/content.md",
+      "content_sha256": "327d50cef68b51ecad879cbd304c53c3319950f3c709f13c820720979c68e52c"
+    },
+    {
+      "id": "01a12a9c-184d-7394-b42c-89c864688dce",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0006-use-storage-port-and-conditionally-garage.md"
+      },
+      "sha256": "6ff5f4ed309f8d0606625f7a53cdb2f7d35c2646bcddfacee54ae07ff1262332",
+      "bytes": 786,
+      "indexed_at": "2026-10-23T07:20:43.414Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 786,
+        "truncated": false,
+        "source_revision": "6ff5f4ed309f8d0606625f7a53cdb2f7d35c2646bcddfacee54ae07ff1262332"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-184d-7394-b42c-89c864688dce/content.md",
+      "content_sha256": "6ff5f4ed309f8d0606625f7a53cdb2f7d35c2646bcddfacee54ae07ff1262332"
+    },
+    {
+      "id": "01a12a9c-1851-7562-b606-50414f9cfe4d",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0007-use-pg-boss-for-durable-jobs.md"
+      },
+      "sha256": "29d72042d17cf46845bd7156fa5929c7965b2455059b5191a3ca83002cf3877e",
+      "bytes": 665,
+      "indexed_at": "2026-10-23T07:20:44.033Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 665,
+        "truncated": false,
+        "source_revision": "29d72042d17cf46845bd7156fa5929c7965b2455059b5191a3ca83002cf3877e"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a12a9c-1851-7562-b606-50414f9cfe4d/content.md",
+      "content_sha256": "29d72042d17cf46845bd7156fa5929c7965b2455059b5191a3ca83002cf3877e"
+    },
+    {
+      "id": "01a12a9c-1854-79e7-a754-98c63c7d5776",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/architecture/decisions/0008-separate-public-persona-from-private-identity.md"
+      },
+      "sha256": "66cd7d8f0f14876ced161c8142b85f5c3b8a2efd648b1261bc4f1cb05439fe65",
+      "bytes": 824,
+      "indexed_at": "2026-10-23T07:20:44.687Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 824,
+        "truncated": false,
+        "source_revision": "66cd7d8f0f14876ced161c8142b85f5c3b8a2efd648b1261bc4f1cb05439fe65"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1854-79e7-a754-98c63c7d5776/content.md",
-      "content_sha256": "7e4d73b5243fd06a9c7478ed07d58dd4c5c91365e14381b22049628164d469dd"
+      "content_sha256": "66cd7d8f0f14876ced161c8142b85f5c3b8a2efd648b1261bc4f1cb05439fe65"
     },
     {
       "id": "01a12a9c-1857-7b8b-99d5-1af43fe491d4",
@@ -257,24 +257,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/decisions/0009-version-runtime-configuration-and-retention.md"
       },
-      "sha256": "ed89261c899ce13defb58c827e9dd911d10336deaf34f12dd32c2f14b517bc5a",
-      "bytes": 838,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "11a9fdd710cf71261be868087735ac33a602737822848cdb1b98a06f6626df5c",
+      "bytes": 823,
+      "indexed_at": "2026-10-23T07:20:45.330Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 838,
+        "chars": 823,
         "truncated": false,
-        "source_revision": "ed89261c899ce13defb58c827e9dd911d10336deaf34f12dd32c2f14b517bc5a"
+        "source_revision": "11a9fdd710cf71261be868087735ac33a602737822848cdb1b98a06f6626df5c"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1857-7b8b-99d5-1af43fe491d4/content.md",
-      "content_sha256": "ed89261c899ce13defb58c827e9dd911d10336deaf34f12dd32c2f14b517bc5a"
+      "content_sha256": "11a9fdd710cf71261be868087735ac33a602737822848cdb1b98a06f6626df5c"
     },
     {
       "id": "01a12a9c-185a-7816-b067-2b6ebc1a465b",
@@ -282,24 +282,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/decisions/0010-separate-demo-and-production-compositions.md"
       },
-      "sha256": "c5ea356e996636e224bd1c2e3accd15e18ae9cfa78b25d5b02eb08c5d6ac2a58",
-      "bytes": 709,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "c9fc7b34571754d897e720125fb1a4d026af2ab12e8c30a77dccdeb1b4ee4dd6",
+      "bytes": 694,
+      "indexed_at": "2026-10-23T07:20:45.977Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 709,
+        "chars": 694,
         "truncated": false,
-        "source_revision": "c5ea356e996636e224bd1c2e3accd15e18ae9cfa78b25d5b02eb08c5d6ac2a58"
+        "source_revision": "c9fc7b34571754d897e720125fb1a4d026af2ab12e8c30a77dccdeb1b4ee4dd6"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-185a-7816-b067-2b6ebc1a465b/content.md",
-      "content_sha256": "c5ea356e996636e224bd1c2e3accd15e18ae9cfa78b25d5b02eb08c5d6ac2a58"
+      "content_sha256": "c9fc7b34571754d897e720125fb1a4d026af2ab12e8c30a77dccdeb1b4ee4dd6"
     },
     {
       "id": "01a12a9c-185d-74eb-b581-8b87de9985d2",
@@ -307,24 +307,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/decisions/0011-treat-bengali-and-english-equally.md"
       },
-      "sha256": "45a2a4e952d82f28308fc8ad0ac1cabaa8132b6c68518a5a3b5e29a3c7b3d153",
-      "bytes": 756,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "72835e7707a7a984af7d1c2bda61f7323e383994319559b6a89f4faa22dc2791",
+      "bytes": 741,
+      "indexed_at": "2026-10-23T07:20:46.586Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 756,
+        "chars": 741,
         "truncated": false,
-        "source_revision": "45a2a4e952d82f28308fc8ad0ac1cabaa8132b6c68518a5a3b5e29a3c7b3d153"
+        "source_revision": "72835e7707a7a984af7d1c2bda61f7323e383994319559b6a89f4faa22dc2791"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-185d-74eb-b581-8b87de9985d2/content.md",
-      "content_sha256": "45a2a4e952d82f28308fc8ad0ac1cabaa8132b6c68518a5a3b5e29a3c7b3d153"
+      "content_sha256": "72835e7707a7a984af7d1c2bda61f7323e383994319559b6a89f4faa22dc2791"
     },
     {
       "id": "01a12a9c-1862-7a3c-b478-2d9f7b739c94",
@@ -332,24 +332,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/decisions/0012-require-independent-validation.md"
       },
-      "sha256": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c",
-      "bytes": 726,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "a3aec679f6dc93597c4cd89952f278f79bf11ecdb1367549ded0e38b5e4bf247",
+      "bytes": 711,
+      "indexed_at": "2026-10-23T07:20:47.212Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 726,
+        "chars": 711,
         "truncated": false,
-        "source_revision": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c"
+        "source_revision": "a3aec679f6dc93597c4cd89952f278f79bf11ecdb1367549ded0e38b5e4bf247"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1862-7a3c-b478-2d9f7b739c94/content.md",
-      "content_sha256": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c"
+      "content_sha256": "a3aec679f6dc93597c4cd89952f278f79bf11ecdb1367549ded0e38b5e4bf247"
     },
     {
       "id": "01a12a9c-1867-70f6-905b-dc39c9a1bbf5",
@@ -357,24 +357,24 @@
         "kind": "managed",
         "path": "documents/docs/architecture/decisions/0013-orchestrate-deletion-across-owning-modules.md"
       },
-      "sha256": "9d5b47a65f3c62ffb11dc55f36b3507b38621f8b52a9a66ccc6976e28cd983f9",
-      "bytes": 1470,
-      "indexed_at": "2026-10-11T10:57:15.286Z",
+      "sha256": "33df3c2bc9d74ba67a0c9c4ab6f9f9b5e8d65954abf1b9dfd69464089db20327",
+      "bytes": 1447,
+      "indexed_at": "2026-10-23T07:20:47.856Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 1470,
+        "chars": 1447,
         "truncated": false,
-        "source_revision": "9d5b47a65f3c62ffb11dc55f36b3507b38621f8b52a9a66ccc6976e28cd983f9"
+        "source_revision": "33df3c2bc9d74ba67a0c9c4ab6f9f9b5e8d65954abf1b9dfd69464089db20327"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1867-70f6-905b-dc39c9a1bbf5/content.md",
-      "content_sha256": "9d5b47a65f3c62ffb11dc55f36b3507b38621f8b52a9a66ccc6976e28cd983f9"
+      "content_sha256": "33df3c2bc9d74ba67a0c9c4ab6f9f9b5e8d65954abf1b9dfd69464089db20327"
     },
     {
       "id": "01a12a9c-1e9d-778c-bc32-18a9f1090fd7",
@@ -432,24 +432,24 @@
         "kind": "managed",
         "path": "documents/docs/implementation/02-data-model.md"
       },
-      "sha256": "9d55606bdaebe944c1ae466a43390afaba451f30ddcff02c5c3b3a0e68b1f598",
-      "bytes": 27913,
-      "indexed_at": "2026-10-11T10:57:16.945Z",
+      "sha256": "158713ead47efdfbca6400f5a194259d4044c6ccfbfd5ea03c6b2b0656073901",
+      "bytes": 27679,
+      "indexed_at": "2026-10-23T07:20:51.066Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 27750,
+        "chars": 27516,
         "truncated": false,
-        "source_revision": "9d55606bdaebe944c1ae466a43390afaba451f30ddcff02c5c3b3a0e68b1f598"
+        "source_revision": "158713ead47efdfbca6400f5a194259d4044c6ccfbfd5ea03c6b2b0656073901"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1ea4-7bf7-b57b-de7967dc5148/content.md",
-      "content_sha256": "9d55606bdaebe944c1ae466a43390afaba451f30ddcff02c5c3b3a0e68b1f598"
+      "content_sha256": "158713ead47efdfbca6400f5a194259d4044c6ccfbfd5ea03c6b2b0656073901"
     },
     {
       "id": "01a12a9c-1ea6-73ba-88bd-19e25a04fabc",
@@ -457,24 +457,24 @@
         "kind": "managed",
         "path": "documents/docs/implementation/03-routes-and-contracts.md"
       },
-      "sha256": "57b094b95285afdeb0a6ebe25ee87bb1517e83a37a239cd1accaf803f640de18",
-      "bytes": 30785,
-      "indexed_at": "2026-10-11T10:57:16.945Z",
+      "sha256": "2b5876fc9a967f88e964f15811ff8547f650f61c7488e62837bb7ca2bdd5f310",
+      "bytes": 30516,
+      "indexed_at": "2026-10-23T07:20:51.699Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 30257,
+        "chars": 29988,
         "truncated": false,
-        "source_revision": "57b094b95285afdeb0a6ebe25ee87bb1517e83a37a239cd1accaf803f640de18"
+        "source_revision": "2b5876fc9a967f88e964f15811ff8547f650f61c7488e62837bb7ca2bdd5f310"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1ea6-73ba-88bd-19e25a04fabc/content.md",
-      "content_sha256": "57b094b95285afdeb0a6ebe25ee87bb1517e83a37a239cd1accaf803f640de18"
+      "content_sha256": "2b5876fc9a967f88e964f15811ff8547f650f61c7488e62837bb7ca2bdd5f310"
     },
     {
       "id": "01a12a9c-1ea9-72e7-ba51-df9f87b82b18",
@@ -482,24 +482,24 @@
         "kind": "managed",
         "path": "documents/docs/implementation/05-demo-storyboard.md"
       },
-      "sha256": "a35e1baadf5bc8f14b41593a53f293f5624783e0302222dba66cec2ee5537a96",
-      "bytes": 9191,
-      "indexed_at": "2026-10-11T10:57:16.945Z",
+      "sha256": "0eeab81ef92c2872aa2a55c8e255ee9cd2d874f032f1b6609b12032c9ecc684e",
+      "bytes": 9109,
+      "indexed_at": "2026-10-23T07:20:52.324Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 8983,
+        "chars": 8901,
         "truncated": false,
-        "source_revision": "a35e1baadf5bc8f14b41593a53f293f5624783e0302222dba66cec2ee5537a96"
+        "source_revision": "0eeab81ef92c2872aa2a55c8e255ee9cd2d874f032f1b6609b12032c9ecc684e"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1ea9-72e7-ba51-df9f87b82b18/content.md",
-      "content_sha256": "a35e1baadf5bc8f14b41593a53f293f5624783e0302222dba66cec2ee5537a96"
+      "content_sha256": "0eeab81ef92c2872aa2a55c8e255ee9cd2d874f032f1b6609b12032c9ecc684e"
     },
     {
       "id": "01a12a9c-1eab-7e38-a3cb-351366c02fa7",
@@ -507,24 +507,24 @@
         "kind": "managed",
         "path": "documents/docs/implementation/07-phase-2-document-evidence.md"
       },
-      "sha256": "6e0355d37a5b3fae4730b95daf7b27868ba4dda1ade0f064a4723fc5583863c6",
-      "bytes": 5391,
-      "indexed_at": "2026-10-11T10:57:16.945Z",
+      "sha256": "967c8717412966d85b28f24de931281d35a969d41df9957b6e5b9af0e02c7cf9",
+      "bytes": 5336,
+      "indexed_at": "2026-10-23T07:20:52.973Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 5354,
+        "chars": 5299,
         "truncated": false,
-        "source_revision": "6e0355d37a5b3fae4730b95daf7b27868ba4dda1ade0f064a4723fc5583863c6"
+        "source_revision": "967c8717412966d85b28f24de931281d35a969d41df9957b6e5b9af0e02c7cf9"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-1eab-7e38-a3cb-351366c02fa7/content.md",
-      "content_sha256": "6e0355d37a5b3fae4730b95daf7b27868ba4dda1ade0f064a4723fc5583863c6"
+      "content_sha256": "967c8717412966d85b28f24de931281d35a969d41df9957b6e5b9af0e02c7cf9"
     },
     {
       "id": "01a12a9c-235e-7ca7-a288-c602fd84aecd",
@@ -532,24 +532,24 @@
         "kind": "managed",
         "path": "documents/docs/planning/00-source-inventory.md"
       },
-      "sha256": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9",
-      "bytes": 6055,
-      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "sha256": "f98d4a05add723f21af136eaabdd9f536a694c3970eca79e8b81846d990c83d7",
+      "bytes": 6013,
+      "indexed_at": "2026-10-23T07:20:53.594Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 6055,
+        "chars": 6013,
         "truncated": false,
-        "source_revision": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9"
+        "source_revision": "f98d4a05add723f21af136eaabdd9f536a694c3970eca79e8b81846d990c83d7"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-235e-7ca7-a288-c602fd84aecd/content.md",
-      "content_sha256": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9"
+      "content_sha256": "f98d4a05add723f21af136eaabdd9f536a694c3970eca79e8b81846d990c83d7"
     },
     {
       "id": "01a12a9c-2361-7716-b600-fcdc24d6ab19",
@@ -557,24 +557,24 @@
         "kind": "managed",
         "path": "documents/docs/planning/01-requirement-baseline.md"
       },
-      "sha256": "3c63032f24fe98576ba9ed436d606aac2ad233bbb5ee68ec59aaedd1777dfd0f",
-      "bytes": 23572,
-      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "sha256": "df2c49ca77a884380ec95abdf758f4bc15f7c82fb05f0dea57f5a6a33ea985c2",
+      "bytes": 23284,
+      "indexed_at": "2026-10-23T07:20:54.226Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 23553,
+        "chars": 23265,
         "truncated": false,
-        "source_revision": "3c63032f24fe98576ba9ed436d606aac2ad233bbb5ee68ec59aaedd1777dfd0f"
+        "source_revision": "df2c49ca77a884380ec95abdf758f4bc15f7c82fb05f0dea57f5a6a33ea985c2"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-2361-7716-b600-fcdc24d6ab19/content.md",
-      "content_sha256": "3c63032f24fe98576ba9ed436d606aac2ad233bbb5ee68ec59aaedd1777dfd0f"
+      "content_sha256": "df2c49ca77a884380ec95abdf758f4bc15f7c82fb05f0dea57f5a6a33ea985c2"
     },
     {
       "id": "01a12a9c-2363-7ff2-9cea-095f08796295",
@@ -582,24 +582,24 @@
         "kind": "managed",
         "path": "documents/docs/planning/06-requirement-traceability-matrix.md"
       },
-      "sha256": "4dbb6ecd6a8ef28ff61f9a354cdfac9a3f91de448ecfafb635450a1106212f2a",
-      "bytes": 14851,
-      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "sha256": "6dc132c0a6751b7063b266a58f325276b1d3fab8f890144a8d8ae4bdd3c8e845",
+      "bytes": 14669,
+      "indexed_at": "2026-10-23T07:20:54.846Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 14816,
+        "chars": 14634,
         "truncated": false,
-        "source_revision": "4dbb6ecd6a8ef28ff61f9a354cdfac9a3f91de448ecfafb635450a1106212f2a"
+        "source_revision": "6dc132c0a6751b7063b266a58f325276b1d3fab8f890144a8d8ae4bdd3c8e845"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-2363-7ff2-9cea-095f08796295/content.md",
-      "content_sha256": "4dbb6ecd6a8ef28ff61f9a354cdfac9a3f91de448ecfafb635450a1106212f2a"
+      "content_sha256": "6dc132c0a6751b7063b266a58f325276b1d3fab8f890144a8d8ae4bdd3c8e845"
     },
     {
       "id": "01a12a9c-2366-79b5-b4e5-ebdcbbfaf6a8",
@@ -607,24 +607,24 @@
         "kind": "managed",
         "path": "documents/docs/planning/08-product-backlog.md"
       },
-      "sha256": "0226d14410d46901303dd7253f4d1be6d1b6acb8c2f0efaf79f89e7e143b85ee",
-      "bytes": 46925,
-      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "sha256": "d9bc4fa30a3779a097160c4b3e30293bf3814fe40e3734c0d31e2eed0e32dba3",
+      "bytes": 46530,
+      "indexed_at": "2026-10-23T07:20:55.477Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 46742,
+        "chars": 46347,
         "truncated": false,
-        "source_revision": "0226d14410d46901303dd7253f4d1be6d1b6acb8c2f0efaf79f89e7e143b85ee"
+        "source_revision": "d9bc4fa30a3779a097160c4b3e30293bf3814fe40e3734c0d31e2eed0e32dba3"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-2366-79b5-b4e5-ebdcbbfaf6a8/content.md",
-      "content_sha256": "0226d14410d46901303dd7253f4d1be6d1b6acb8c2f0efaf79f89e7e143b85ee"
+      "content_sha256": "d9bc4fa30a3779a097160c4b3e30293bf3814fe40e3734c0d31e2eed0e32dba3"
     },
     {
       "id": "01a12a9c-2368-7f09-819b-048c31af5ca9",
@@ -632,24 +632,24 @@
         "kind": "managed",
         "path": "documents/docs/planning/10-validation-strategy.md"
       },
-      "sha256": "3072d6b16c88a07428a9b217428e371b792ff26a138644e7903b8a6daad21b9f",
-      "bytes": 8620,
-      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "sha256": "9dd6e453bb1d927456402014bf2cdc184cf7f9c5eee109e7aa96bc271913c371",
+      "bytes": 8509,
+      "indexed_at": "2026-10-23T07:20:56.100Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 8599,
+        "chars": 8488,
         "truncated": false,
-        "source_revision": "3072d6b16c88a07428a9b217428e371b792ff26a138644e7903b8a6daad21b9f"
+        "source_revision": "9dd6e453bb1d927456402014bf2cdc184cf7f9c5eee109e7aa96bc271913c371"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-2368-7f09-819b-048c31af5ca9/content.md",
-      "content_sha256": "3072d6b16c88a07428a9b217428e371b792ff26a138644e7903b8a6daad21b9f"
+      "content_sha256": "9dd6e453bb1d927456402014bf2cdc184cf7f9c5eee109e7aa96bc271913c371"
     },
     {
       "id": "01a12a9c-236b-7a73-b8ce-98e9500cedb6",
@@ -657,24 +657,24 @@
         "kind": "managed",
         "path": "documents/docs/planning/ux/DESIGN.md"
       },
-      "sha256": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845",
-      "bytes": 25126,
-      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "sha256": "893a857d14f1e1ca224376fa7642ebf0c9e8db23d8dad46a7f5a3439b1aab9d6",
+      "bytes": 24872,
+      "indexed_at": "2026-10-23T07:20:58.028Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 25011,
+        "chars": 24757,
         "truncated": false,
-        "source_revision": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845"
+        "source_revision": "893a857d14f1e1ca224376fa7642ebf0c9e8db23d8dad46a7f5a3439b1aab9d6"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-236b-7a73-b8ce-98e9500cedb6/content.md",
-      "content_sha256": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845"
+      "content_sha256": "893a857d14f1e1ca224376fa7642ebf0c9e8db23d8dad46a7f5a3439b1aab9d6"
     },
     {
       "id": "01a12a9c-236d-723c-96a4-f303a422a14e",
@@ -682,24 +682,24 @@
         "kind": "managed",
         "path": "documents/docs/planning/ux/EXPERIENCE.md"
       },
-      "sha256": "89418f1f5c2da22421381704361f34666ad5d0af8ca9e51b49e3b9d0d3e8c107",
-      "bytes": 12919,
-      "indexed_at": "2026-10-11T10:57:18.162Z",
+      "sha256": "fb84ae63e3f5bc13bee735a27dd545d854dac9111bab7a52fe65e92d1360ff0e",
+      "bytes": 12772,
+      "indexed_at": "2026-10-23T07:20:58.667Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 12853,
+        "chars": 12706,
         "truncated": false,
-        "source_revision": "89418f1f5c2da22421381704361f34666ad5d0af8ca9e51b49e3b9d0d3e8c107"
+        "source_revision": "fb84ae63e3f5bc13bee735a27dd545d854dac9111bab7a52fe65e92d1360ff0e"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-236d-723c-96a4-f303a422a14e/content.md",
-      "content_sha256": "89418f1f5c2da22421381704361f34666ad5d0af8ca9e51b49e3b9d0d3e8c107"
+      "content_sha256": "fb84ae63e3f5bc13bee735a27dd545d854dac9111bab7a52fe65e92d1360ff0e"
     },
     {
       "id": "01a12a9c-27f8-7f82-bd28-aea1632e8617",
@@ -707,24 +707,24 @@
         "kind": "managed",
         "path": "documents/docs/status/decision-log.md"
       },
-      "sha256": "e4709c1ec2911566c27eaf7787890e5d1855ea8620daa3cedc99e07396865859",
-      "bytes": 25743,
-      "indexed_at": "2026-10-11T10:57:19.345Z",
+      "sha256": "25ffd8e58e3d759b7144219441b1ff2fe7d36436951d6cb2a31af2854f87b0a6",
+      "bytes": 32234,
+      "indexed_at": "2026-10-23T07:20:59.924Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 25669,
+        "chars": 32147,
         "truncated": false,
-        "source_revision": "e4709c1ec2911566c27eaf7787890e5d1855ea8620daa3cedc99e07396865859"
+        "source_revision": "25ffd8e58e3d759b7144219441b1ff2fe7d36436951d6cb2a31af2854f87b0a6"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-27f8-7f82-bd28-aea1632e8617/content.md",
-      "content_sha256": "e4709c1ec2911566c27eaf7787890e5d1855ea8620daa3cedc99e07396865859"
+      "content_sha256": "25ffd8e58e3d759b7144219441b1ff2fe7d36436951d6cb2a31af2854f87b0a6"
     },
     {
       "id": "01a12a9c-2c0e-73c2-8692-2c1030899e2c",
@@ -732,24 +732,24 @@
         "kind": "managed",
         "path": "documents/docs/design/auth-screens-spec.md"
       },
-      "sha256": "2c2e004a04a4bbf030b4b64eb9b55121e042592eb5ca04ea8e91fbefb3725905",
-      "bytes": 32350,
-      "indexed_at": "2026-10-11T10:57:20.391Z",
+      "sha256": "e6251c0528da40004069ba4ceb7cc86a26868043b3b485c52cb2973330dd7291",
+      "bytes": 32029,
+      "indexed_at": "2026-10-23T07:20:49.144Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 25752,
+        "chars": 25431,
         "truncated": false,
-        "source_revision": "2c2e004a04a4bbf030b4b64eb9b55121e042592eb5ca04ea8e91fbefb3725905"
+        "source_revision": "e6251c0528da40004069ba4ceb7cc86a26868043b3b485c52cb2973330dd7291"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-2c0e-73c2-8692-2c1030899e2c/content.md",
-      "content_sha256": "2c2e004a04a4bbf030b4b64eb9b55121e042592eb5ca04ea8e91fbefb3725905"
+      "content_sha256": "e6251c0528da40004069ba4ceb7cc86a26868043b3b485c52cb2973330dd7291"
     },
     {
       "id": "01a12a9c-4a96-7bc4-8bd3-a6e13eb001c7",
@@ -757,24 +757,24 @@
         "kind": "managed",
         "path": "documents/DESIGN.md"
       },
-      "sha256": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e",
-      "bytes": 18636,
-      "indexed_at": "2026-10-11T10:57:28.072Z",
+      "sha256": "ff5125bf8e000a7c9fe2a1b3d4b9694a850fd47dbd04276630f0b83edf705efb",
+      "bytes": 18227,
+      "indexed_at": "2026-10-23T07:20:39.018Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 18458,
+        "chars": 18049,
         "truncated": false,
-        "source_revision": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e"
+        "source_revision": "ff5125bf8e000a7c9fe2a1b3d4b9694a850fd47dbd04276630f0b83edf705efb"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-4a96-7bc4-8bd3-a6e13eb001c7/content.md",
-      "content_sha256": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e"
+      "content_sha256": "ff5125bf8e000a7c9fe2a1b3d4b9694a850fd47dbd04276630f0b83edf705efb"
     },
     {
       "id": "01a12a9c-4a99-7a65-8bf6-170f42db332d",
@@ -782,24 +782,24 @@
         "kind": "managed",
         "path": "documents/PRODUCT.md"
       },
-      "sha256": "6feac1b349fe8efa48d5654bedd7e78eb46597aacc60dc89c9f9e92a8bad37d5",
-      "bytes": 8029,
-      "indexed_at": "2026-10-11T10:57:28.072Z",
+      "sha256": "72d62989ecb8ce9c477307bf133ee325741ff48ee7b8b8d4353258f39e2cd6e4",
+      "bytes": 7877,
+      "indexed_at": "2026-10-23T07:21:00.579Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 7949,
+        "chars": 7797,
         "truncated": false,
-        "source_revision": "6feac1b349fe8efa48d5654bedd7e78eb46597aacc60dc89c9f9e92a8bad37d5"
+        "source_revision": "72d62989ecb8ce9c477307bf133ee325741ff48ee7b8b8d4353258f39e2cd6e4"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-4a99-7a65-8bf6-170f42db332d/content.md",
-      "content_sha256": "6feac1b349fe8efa48d5654bedd7e78eb46597aacc60dc89c9f9e92a8bad37d5"
+      "content_sha256": "72d62989ecb8ce9c477307bf133ee325741ff48ee7b8b8d4353258f39e2cd6e4"
     },
     {
       "id": "01a12a9c-4a9b-7ca9-9a51-e2e11f585049",
@@ -859,6 +859,56 @@
       },
       "content": "documentkb/01a12a9c-4a9f-76e7-9fd4-c9e3a9b51558/content.md",
       "content_sha256": "55e05977d59cf4f46317207aac5638b31351516ddfbe6c772536127e8270c4e8"
+    },
+    {
+      "id": "01a167a1-6b82-7ea0-9367-9bdc5111115d",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/planning/source-extracts/RogiKotha_PRD_v1.0.md"
+      },
+      "sha256": "2090fd4046eefd4657a785e414cc891c6aa52bee83c2ce6ee13cb19971089668",
+      "bytes": 66701,
+      "indexed_at": "2026-10-23T07:19:54.494Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 66611,
+        "truncated": false,
+        "source_revision": "2090fd4046eefd4657a785e414cc891c6aa52bee83c2ce6ee13cb19971089668"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a167a1-6b82-7ea0-9367-9bdc5111115d/content.md",
+      "content_sha256": "2090fd4046eefd4657a785e414cc891c6aa52bee83c2ce6ee13cb19971089668"
+    },
+    {
+      "id": "01a167a1-6e11-7a97-bafd-13830bdeeaf7",
+      "source": {
+        "kind": "managed",
+        "path": "documents/docs/planning/source-extracts/RogiKotha_BRD_v1.0.md"
+      },
+      "sha256": "83e5049bbb54588823ad89bf78253f86ef51b158845e81f96d74f2dc2cb11579",
+      "bytes": 47577,
+      "indexed_at": "2026-10-23T07:19:55.149Z",
+      "extraction": {
+        "state": "extracted",
+        "extractor": {
+          "name": "builtin-text",
+          "version": "1"
+        },
+        "chars": 47427,
+        "truncated": false,
+        "source_revision": "83e5049bbb54588823ad89bf78253f86ef51b158845e81f96d74f2dc2cb11579"
+      },
+      "summary": {
+        "state": "absent"
+      },
+      "content": "documentkb/01a167a1-6e11-7a97-bafd-13830bdeeaf7/content.md",
+      "content_sha256": "83e5049bbb54588823ad89bf78253f86ef51b158845e81f96d74f2dc2cb11579"
     }
   ]
 }

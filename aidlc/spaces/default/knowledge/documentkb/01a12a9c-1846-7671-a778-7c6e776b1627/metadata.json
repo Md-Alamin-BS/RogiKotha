@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/architecture/decisions/0004-use-postgresql-search-first.md"
   },
-  "sha256": "11159aa172ced9151ca7b0d3cc8b8d545cd7dd3e9ae782e34b13fa740f09ca88",
-  "bytes": 713,
-  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "sha256": "b40dd4cc5a577482d85c1bdd42b9a164624ef6a152fca8c0cdc35348c000af05",
+  "bytes": 698,
+  "indexed_at": "2026-10-23T07:20:42.149Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 709,
+    "chars": 694,
     "truncated": false,
-    "source_revision": "11159aa172ced9151ca7b0d3cc8b8d545cd7dd3e9ae782e34b13fa740f09ca88"
+    "source_revision": "b40dd4cc5a577482d85c1bdd42b9a164624ef6a152fca8c0cdc35348c000af05"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-1846-7671-a778-7c6e776b1627/content.md",
-  "content_sha256": "11159aa172ced9151ca7b0d3cc8b8d545cd7dd3e9ae782e34b13fa740f09ca88",
+  "content_sha256": "b40dd4cc5a577482d85c1bdd42b9a164624ef6a152fca8c0cdc35348c000af05",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

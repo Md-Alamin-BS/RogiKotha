@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/planning/01-requirement-baseline.md"
   },
-  "sha256": "3c63032f24fe98576ba9ed436d606aac2ad233bbb5ee68ec59aaedd1777dfd0f",
-  "bytes": 23572,
-  "indexed_at": "2026-10-11T10:57:18.162Z",
+  "sha256": "df2c49ca77a884380ec95abdf758f4bc15f7c82fb05f0dea57f5a6a33ea985c2",
+  "bytes": 23284,
+  "indexed_at": "2026-10-23T07:20:54.226Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 23553,
+    "chars": 23265,
     "truncated": false,
-    "source_revision": "3c63032f24fe98576ba9ed436d606aac2ad233bbb5ee68ec59aaedd1777dfd0f"
+    "source_revision": "df2c49ca77a884380ec95abdf758f4bc15f7c82fb05f0dea57f5a6a33ea985c2"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-2361-7716-b600-fcdc24d6ab19/content.md",
-  "content_sha256": "3c63032f24fe98576ba9ed436d606aac2ad233bbb5ee68ec59aaedd1777dfd0f",
+  "content_sha256": "df2c49ca77a884380ec95abdf758f4bc15f7c82fb05f0dea57f5a6a33ea985c2",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

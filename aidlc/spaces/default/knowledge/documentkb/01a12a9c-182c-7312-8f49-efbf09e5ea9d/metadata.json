@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/architecture/ARCHITECTURE-SPINE.md"
   },
-  "sha256": "c8981f2419cfba1b40c43c49b00fb72bb0194bb5aa1121e23ecb80c47a743471",
-  "bytes": 16596,
-  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "sha256": "9bcb221349cb396cb8d62cb62e6f4160666fc35c0212417de6f0ff17938fc9c7",
+  "bytes": 16336,
+  "indexed_at": "2026-10-23T07:20:27.091Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 16538,
+    "chars": 16278,
     "truncated": false,
-    "source_revision": "c8981f2419cfba1b40c43c49b00fb72bb0194bb5aa1121e23ecb80c47a743471"
+    "source_revision": "9bcb221349cb396cb8d62cb62e6f4160666fc35c0212417de6f0ff17938fc9c7"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-182c-7312-8f49-efbf09e5ea9d/content.md",
-  "content_sha256": "c8981f2419cfba1b40c43c49b00fb72bb0194bb5aa1121e23ecb80c47a743471",
+  "content_sha256": "9bcb221349cb396cb8d62cb62e6f4160666fc35c0212417de6f0ff17938fc9c7",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

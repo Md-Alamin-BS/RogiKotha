@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/architecture/decisions/0006-use-storage-port-and-conditionally-garage.md"
   },
-  "sha256": "15f3e6ada36db1c21cea4738d72d9420549fcacea4a867426b7ad073ff44138a",
-  "bytes": 801,
-  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "sha256": "6ff5f4ed309f8d0606625f7a53cdb2f7d35c2646bcddfacee54ae07ff1262332",
+  "bytes": 786,
+  "indexed_at": "2026-10-23T07:20:43.414Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 801,
+    "chars": 786,
     "truncated": false,
-    "source_revision": "15f3e6ada36db1c21cea4738d72d9420549fcacea4a867426b7ad073ff44138a"
+    "source_revision": "6ff5f4ed309f8d0606625f7a53cdb2f7d35c2646bcddfacee54ae07ff1262332"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-184d-7394-b42c-89c864688dce/content.md",
-  "content_sha256": "15f3e6ada36db1c21cea4738d72d9420549fcacea4a867426b7ad073ff44138a",
+  "content_sha256": "6ff5f4ed309f8d0606625f7a53cdb2f7d35c2646bcddfacee54ae07ff1262332",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

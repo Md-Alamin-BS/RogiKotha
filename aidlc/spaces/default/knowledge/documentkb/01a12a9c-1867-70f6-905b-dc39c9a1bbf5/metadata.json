@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/architecture/decisions/0013-orchestrate-deletion-across-owning-modules.md"
   },
-  "sha256": "9d5b47a65f3c62ffb11dc55f36b3507b38621f8b52a9a66ccc6976e28cd983f9",
-  "bytes": 1470,
-  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "sha256": "33df3c2bc9d74ba67a0c9c4ab6f9f9b5e8d65954abf1b9dfd69464089db20327",
+  "bytes": 1447,
+  "indexed_at": "2026-10-23T07:20:47.856Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 1470,
+    "chars": 1447,
     "truncated": false,
-    "source_revision": "9d5b47a65f3c62ffb11dc55f36b3507b38621f8b52a9a66ccc6976e28cd983f9"
+    "source_revision": "33df3c2bc9d74ba67a0c9c4ab6f9f9b5e8d65954abf1b9dfd69464089db20327"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-1867-70f6-905b-dc39c9a1bbf5/content.md",
-  "content_sha256": "9d5b47a65f3c62ffb11dc55f36b3507b38621f8b52a9a66ccc6976e28cd983f9",
+  "content_sha256": "33df3c2bc9d74ba67a0c9c4ab6f9f9b5e8d65954abf1b9dfd69464089db20327",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

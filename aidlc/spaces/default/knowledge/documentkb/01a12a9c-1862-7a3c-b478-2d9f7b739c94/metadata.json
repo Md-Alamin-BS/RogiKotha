@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/architecture/decisions/0012-require-independent-validation.md"
   },
-  "sha256": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c",
-  "bytes": 726,
-  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "sha256": "a3aec679f6dc93597c4cd89952f278f79bf11ecdb1367549ded0e38b5e4bf247",
+  "bytes": 711,
+  "indexed_at": "2026-10-23T07:20:47.212Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 726,
+    "chars": 711,
     "truncated": false,
-    "source_revision": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c"
+    "source_revision": "a3aec679f6dc93597c4cd89952f278f79bf11ecdb1367549ded0e38b5e4bf247"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-1862-7a3c-b478-2d9f7b739c94/content.md",
-  "content_sha256": "2e4d4becd11ebb5d5f23b03ded38a12b78f8aad6990b3b4e21e77dd34fc0915c",
+  "content_sha256": "a3aec679f6dc93597c4cd89952f278f79bf11ecdb1367549ded0e38b5e4bf247",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

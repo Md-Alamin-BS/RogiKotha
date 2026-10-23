@@ -1,7 +1,9 @@
 # AI-DLC migration — in progress
 
 **Status:** IN PROGRESS. AI-DLC 2.11.0 is installed, the in-flight work is merged, and the source
-documents are in the knowledge catalog. The first intent has not been started yet (§4).
+documents are in the knowledge catalog. The first intent `261011-aidlc-adoption` is at Inception → Requirements
+Analysis; Reverse Engineering and Practices Discovery are approved. Before the remaining stages run, read
+`docs/planning/research/aidlc-migration-2026-10-23/readiness-report.md` (FD-045..FD-055).
 **Decided:** 2026-10-04, by the project owner: from now on implementation follows AWS AI-DLC
 (`awslabs/aidlc-workflows`), not the BMAD / grill-me / `LOOP.md` process the existing docs were
 written for. On 2026-10-11 the owner accepted the recommended answers to the open decisions (§3).
@@ -39,8 +41,8 @@ upstream source and docs) and `.../inventory.md` (this file's §5 checked agains
 | 2 | Finish the in-flight work on the old process | done 2026-10-11: T-009 and CR-008 validated (PASS WITH FOLLOW-UP) and merged; CR-010 fixed the red lint the install caused; CR-011 written up |
 | 3 | Upgrade to 2.11.0 (current stable, 2026-10-08) | done 2026-10-11: `aidlc update`, `aidlc config --pin 2.11.0`, dry run per harness (`remove=0`, `conflict=0`), refresh both, `aidlc doctor` 0 problems |
 | 4 | Load the source documents as knowledge | done 2026-10-11: 35 documents in `aidlc/spaces/default/knowledge/documents/` (copies — see §6), 33 extracted, the two `.docx` catalogued as originals only |
-| 5 | Restart Claude Code; trust Codex hooks | **to do (human)** — see §4 |
-| 6 | First intent: Practices Discovery → Reverse Engineering → transcribe the planning set → Delivery Planning | **to do** — §4 |
+| 5 | Restart Claude Code; trust Codex hooks | done 2026-10-12 on the work PC; Codex not used. On any other machine, run `aidlc config --pin 2.11.0` once and restart Claude Code from a terminal |
+| 6 | First intent: Practices Discovery → Reverse Engineering → transcribe the planning set → Delivery Planning | **in progress** — RE and PD approved; readiness check and its fixes done 2026-10-23; Requirements Analysis next (`RUNBOOK.md` §C) |
 | 7 | Retire or keep the BMAD / grill-me skills; freeze `LOOP.md`, `NEXT.md`, `BUILD-LOG.md`, `ISSUES.md` | to do after step 6's Delivery Planning gate |
 | 8 | Set **Status: DONE**, remove the three warning blocks | last |
 
@@ -140,7 +142,7 @@ There is no automatic importer; each row is converted by the stage named, from t
 | `docs/architecture/ARCHITECTURE-SPINE.md`, `decisions/0001`–`0013`, `DEPENDENCY-SELECTIONS.md` (FD-032 replaced its UI rows), `docs/planning/05-recommended-architecture.md` | 2.6 Domain Design |
 | `docs/implementation/02-data-model.md` | 2.6 Domain Design / 3.1 Functional Design |
 | `docs/implementation/03-routes-and-contracts.md` | 2.8 Contract Design |
-| `docs/status/decision-log.md` (FD-001..FD-037, binding) | knowledge; seeds `project.md` "Decided" |
+| `docs/status/decision-log.md` (FD-001 onward, binding) | knowledge; seeds `project.md` "Decided" |
 | `docs/implementation/00-master-plan.md`, `README.md` §5 tracker (the only record of what is merged), `tasks/T-*.md`, `CR-*.md`, `06-change-requests.md` | 2.9 Delivery Planning; per-unit Construction 3.1–3.5 |
 | `docs/implementation/07-phase-2-document-evidence.md` | deferred scope (FD-036), not in this intent's delivery plan |
 | `docs/implementation/05-demo-storyboard.md`, `docs/planning/10-validation-strategy.md`, `docs/validation/` | 3.6 Build and Test acceptance |

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "01a167a1-6b82-7ea0-9367-9bdc5111115d",
+  "source": {
+    "kind": "managed",
+    "path": "documents/docs/planning/source-extracts/RogiKotha_PRD_v1.0.md"
+  },
+  "sha256": "2090fd4046eefd4657a785e414cc891c6aa52bee83c2ce6ee13cb19971089668",
+  "bytes": 66701,
+  "indexed_at": "2026-10-23T07:19:54.494Z",
+  "extraction": {
+    "state": "extracted",
+    "extractor": {
+      "name": "builtin-text",
+      "version": "1"
+    },
+    "chars": 66611,
+    "truncated": false,
+    "source_revision": "2090fd4046eefd4657a785e414cc891c6aa52bee83c2ce6ee13cb19971089668"
+  },
+  "summary": {
+    "state": "absent"
+  },
+  "content": "documentkb/01a167a1-6b82-7ea0-9367-9bdc5111115d/content.md",
+  "content_sha256": "2090fd4046eefd4657a785e414cc891c6aa52bee83c2ce6ee13cb19971089668",
+  "content_trust": "untrusted",
+  "content_handling": "data-not-instructions"
+}

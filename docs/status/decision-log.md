@@ -1,6 +1,6 @@
 # RogiKotha decision log
 
-**As of:** 2026-10-11  
+**As of:** 2026-10-23  
 **Rule:** A recommendation is not a confirmed product decision. Founder confirmation, source authority, and mandatory specialist sign-offs are recorded separately.
 
 ## Confirmed source-authority decisions
@@ -129,6 +129,24 @@ Each decided by delegation from the owner, 2026-10-11 (`docs/aidlc-migration/RUN
 | FD-042 | `CR-004`: the theme/language toggle announcements to `#sr-live` are **localized**. Bengali copy is drafted in the unit and flagged for the owner's bilingual review at the phase gate, together with `ISS-050`. | The equal-language rule (ADR 0011) forbids English-only strings. Decided by delegation from the owner, 2026-10-11; applied in the CR-004 unit |
 | FD-043 | `CR-007` (`test:int` hang): **queued** as its own unit. | The cause is known; no product decision is needed. Decided by delegation from the owner, 2026-10-11; applied in the delivery plan |
 | FD-044 | `ISS-135`: Terms/Privacy keep `nav.about` as their kicker; closed as **won't fix**. | Matches the ported prototype, which is the visual source of truth; ships either way. Decided by delegation from the owner, 2026-10-11 |
+
+## Owner decisions — round 6 (2026-10-23, AI-DLC readiness check)
+
+Taken on the readiness check of the documents the AI-DLC Inception stages transcribe (`docs/planning/research/aidlc-migration-2026-10-23/readiness-report.md`). FD-045..FD-047 were chosen by the owner directly; FD-048..FD-055 are the check's recommendations, which the owner accepted as a set. Any of them can be revisited at the AI-DLC gate where it comes up.
+
+| ID | Decision | Reason / status |
+|---|---|---|
+| FD-045 | Each requirement ID's meaning comes from the **PRD text** (`docs/planning/source-extracts/RogiKotha_PRD_v1.0.md`, extracted from the `.docx`) with later FD decisions applied on top. The set is **115 requirements: 103 FR + 12 NFR**, original IDs kept. Where a `06-requirement-traceability-matrix.md` label disagrees with the PRD for its ID, the PRD wins and the owning story is re-linked. | The matrix labels drifted from the PRD for at least 35 IDs, and it omits FR-A11Y-001, FR-I18N-001 and FR-I18N-002. Owner, 2026-10-23 |
+| FD-046 | **FR-COM-003** (emergency-language banner) is **retired for the demo**: the static `/emergency` page covers it. Comment edit and delete stay under FR-EDIT-005. | FD-009/FD-017 rule out a content classifier. Owner, 2026-10-23 |
+| FD-047 | The optional email categories (`emailDiscussion`, `emailEvidence`, `emailModeration`) are **Phase 1**, overriding the PRD's FR-NOT-002 "future scope". Essential email stays content-free. | Already in `packages/database/src/schema/account.ts`, `packages/contracts/src/schemas/account.ts`, STORY-NOTIF-001 and T-405. Owner, 2026-10-23 |
+| FD-048 | **FR-ONB-001** (optional three-step intro) is a PRD Must **deferred from the demo**; no task delivers it. FR-I18N-001/002 map to STORY-PLAT-001; FR-A11Y-001 maps to STORY-PLAT-001 and STORY-PROT-003. | STORY-PLAT-001 cited FR-ONB-001 but describes FR-I18N-001. Owner accepted, 2026-10-23 |
+| FD-049 | An author's soft-delete is **domain-only state**: the stored publication state is unchanged and `deleted_at`/`restore_until` are set (T-302). `ISS-147` (add a `deleted` enum value) is closed. | Fits the existing columns; no migration. Owner accepted, 2026-10-23 |
+| FD-050 | `rk_worker`'s grants beyond `02-data-model.md` §16 (`0005_grants_part2.sql`: reviews `UPDATE(state, deleted_at)`, `review_versions` INSERT, comments SELECT/UPDATE, column SELECT on reports and account_profiles, `legal_holds` SELECT) are a **known deviation, reviewed in CR-006** together with FD-041. | The reviews UPDATE sits uneasily with AD-6. Owner accepted, 2026-10-23 |
+| FD-051 | Retention bulk actions stay **super_admin only**, as `03-routes-and-contracts.md` and `packages/contracts/src/actor.ts` already have it; T-103's task text is corrected. | Destructive action; contract and code agree. Owner accepted, 2026-10-23 |
+| FD-052 | `dataRequest.created` is **routed by the request's kind** (export or delete), fixed in the T-410 unit (`ISS-188`). Today the relay queues both jobs. | Owner accepted, 2026-10-23 |
+| FD-053 | The D-001 auth-screen review (both locales, both themes, 360 px) is an **explicit gate on the T-102 and T-103 units**. | Nothing records its approval. Owner accepted, 2026-10-23 |
+| FD-054 | `ISSUES.md` **stays live** (owner, 2026-10-15, `team.md`), amending RUNBOOK D15: it gets no "frozen" banner, and the delivery plan links open S1/S2 rows per unit instead of copying them. | Owner accepted, 2026-10-23 |
+| FD-055 | Reverse Engineering is **not redone**. The engine's "something it used changed" prompt is a false positive from the path case (`rogikotha` on the work PC, `RogiKotha` here); the scanned code is unchanged. | Owner accepted, 2026-10-23 |
 
 ## Provisional technical recommendations
 

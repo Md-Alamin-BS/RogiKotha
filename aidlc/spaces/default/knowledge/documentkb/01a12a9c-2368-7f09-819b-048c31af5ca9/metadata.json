@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/planning/10-validation-strategy.md"
   },
-  "sha256": "3072d6b16c88a07428a9b217428e371b792ff26a138644e7903b8a6daad21b9f",
-  "bytes": 8620,
-  "indexed_at": "2026-10-11T10:57:18.162Z",
+  "sha256": "9dd6e453bb1d927456402014bf2cdc184cf7f9c5eee109e7aa96bc271913c371",
+  "bytes": 8509,
+  "indexed_at": "2026-10-23T07:20:56.100Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 8599,
+    "chars": 8488,
     "truncated": false,
-    "source_revision": "3072d6b16c88a07428a9b217428e371b792ff26a138644e7903b8a6daad21b9f"
+    "source_revision": "9dd6e453bb1d927456402014bf2cdc184cf7f9c5eee109e7aa96bc271913c371"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-2368-7f09-819b-048c31af5ca9/content.md",
-  "content_sha256": "3072d6b16c88a07428a9b217428e371b792ff26a138644e7903b8a6daad21b9f",
+  "content_sha256": "9dd6e453bb1d927456402014bf2cdc184cf7f9c5eee109e7aa96bc271913c371",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

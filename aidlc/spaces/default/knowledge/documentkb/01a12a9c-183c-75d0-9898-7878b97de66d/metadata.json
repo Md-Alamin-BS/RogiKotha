@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/architecture/decisions/0002-use-nextjs-typescript-and-postgresql.md"
   },
-  "sha256": "fc9feec113817f4bf9444aa041e889f85b571d56e713514356da9eb25d3220d0",
-  "bytes": 749,
-  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "sha256": "42e93066d52eaceb04d5f0c05a7ab8be3810c7378659c5d51da3d66c61869217",
+  "bytes": 734,
+  "indexed_at": "2026-10-23T07:20:40.860Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 749,
+    "chars": 734,
     "truncated": false,
-    "source_revision": "fc9feec113817f4bf9444aa041e889f85b571d56e713514356da9eb25d3220d0"
+    "source_revision": "42e93066d52eaceb04d5f0c05a7ab8be3810c7378659c5d51da3d66c61869217"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-183c-75d0-9898-7878b97de66d/content.md",
-  "content_sha256": "fc9feec113817f4bf9444aa041e889f85b571d56e713514356da9eb25d3220d0",
+  "content_sha256": "42e93066d52eaceb04d5f0c05a7ab8be3810c7378659c5d51da3d66c61869217",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

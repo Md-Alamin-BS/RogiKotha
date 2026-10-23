@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/planning/00-source-inventory.md"
   },
-  "sha256": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9",
-  "bytes": 6055,
-  "indexed_at": "2026-10-11T10:57:18.162Z",
+  "sha256": "f98d4a05add723f21af136eaabdd9f536a694c3970eca79e8b81846d990c83d7",
+  "bytes": 6013,
+  "indexed_at": "2026-10-23T07:20:53.594Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 6055,
+    "chars": 6013,
     "truncated": false,
-    "source_revision": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9"
+    "source_revision": "f98d4a05add723f21af136eaabdd9f536a694c3970eca79e8b81846d990c83d7"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-235e-7ca7-a288-c602fd84aecd/content.md",
-  "content_sha256": "bc8f53983fc485ff19bbf502f1a04fcf6ee06d83b6711ad9a8f1dcdfa6b180e9",
+  "content_sha256": "f98d4a05add723f21af136eaabdd9f536a694c3970eca79e8b81846d990c83d7",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

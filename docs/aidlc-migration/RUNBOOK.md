@@ -57,7 +57,7 @@ in `docs/status/decision-log.md`; the owner can overturn any of them later.
 | D12 | Independent / cross-vendor validation (ADR 0012) | AI-DLC's reviewer agents on every stage (default); for M3 units (auth, identity, evidence, moderation, retention, deletion) also `/aidlc --collaborators on`, and a Codex `$aidlc` review when Codex is available — otherwise the human's approval at the gate is the fallback | Keeps ADR 0012's intent inside AI-DLC gates | Practices Discovery; M3 units |
 | D13 | Unit ownership / execution | `solo`, serial (defaults). Never team ownership or parallel swarm while the no-identity rule stands | Avoids the tool-identity claim and swarm commits | whole intent |
 | D14 | BMAD, grill-me and other planning skills, `_bmad/` | **Keep installed, not part of the process.** No deletion | User-owned and harmless; AI-DLC is the process | step 6 (README note) |
-| D15 | `LOOP.md`, `NEXT.md`, `04-handoff-and-validation.md`, `08-agent-prompts.md`, `BUILD-LOG.md`, `ISSUES.md`, `handoffs/` | **Freeze** with a one-line "superseded by AI-DLC" banner; keep as history. Open `S1`/`S2` rows go into the delivery plan | Nothing is lost; one process at a time | step 6 |
+| D15 | `LOOP.md`, `NEXT.md`, `04-handoff-and-validation.md`, `08-agent-prompts.md`, `BUILD-LOG.md`, `ISSUES.md`, `handoffs/` | **Freeze** with a one-line "superseded by AI-DLC" banner; keep as history. **Except `ISSUES.md`, which stays live (FD-054)**; the delivery plan links its open `S1`/`S2` rows per unit | Nothing is lost; one process at a time | step 6 |
 | D16 | `../rogikotha-gate4` worktree (275 untracked files, early Gate 4 Next.js prototype, ~21 MB, no secrets) | **Archive** to `C:\Users\BS01395\Documents\GitHub\rogikotha-archive\gate4-prototype-2026-10-11.zip`, verify the file count, then remove the worktree and the merged local branch `task/gate4-foundation` | Recoverable, keeps the repo light | step 2 |
 | D17 | Impeccable agents' `display_name` | Leave it | Works under 2.11.0; reinstalling Impeccable removes it anyway | — |
 | D18 | Puku CLI | Not used for AI-DLC work | No AI-DLC harness | — |
@@ -71,9 +71,9 @@ in `docs/status/decision-log.md`; the owner can overturn any of them later.
 |---|---|---|---|
 | 1 | Preflight checks | agent (+ HUMAN only if a check fails) | done 2026-10-11 — 2.11.0, doctor 0 problems, hooks firing, Postgres up; Codex not used (owner, 2026-10-12) — `4f05dc0` |
 | 2 | Housekeeping and record the decisions | agent | done 2026-10-11 (`4f05dc0`) — FD-038..FD-044, ISSUES/CR rows, NEXT.md; gate4 zip verified 275/275; worktree removal left to the owner (permission check blocked it) |
-| 3 | Start the intent; Practices Discovery | agent + HUMAN gates | in progress — intent `261011-aidlc-adoption` created 2026-10-12; AI-DLC runs Reverse Engineering before Practices Discovery |
-| 4 | Reverse Engineering | agent + HUMAN gate | done 2026-10-12 — approved; codekb in `aidlc/spaces/default/codekb/rogikotha/` (commit: this step) |
-| 5 | Requirements, Stories, Domain, Units, Contracts, Delivery Planning | agent + HUMAN gates | todo |
+| 3 | Start the intent; Practices Discovery | agent + HUMAN gates | done 2026-10-15 — intent `261011-aidlc-adoption` created 2026-10-12; Practices Discovery affirmed (`c785706`) |
+| 4 | Reverse Engineering | agent + HUMAN gate | done 2026-10-12 — approved; codekb in `aidlc/spaces/default/codekb/rogikotha/` (`cfa5d30`) |
+| 5 | Requirements, Stories, Domain, Units, Contracts, Delivery Planning | agent + HUMAN gates | in progress — readiness check done 2026-10-23 (`docs/planning/research/aidlc-migration-2026-10-23/readiness-report.md`; owner decisions FD-045..FD-055; PRD/BRD extracted and onboarded; knowledge re-indexed under LF). Requirements Analysis next. If the engine asks to redo Reverse Engineering, answer no (FD-055) |
 | 6 | Close the migration and delete this file | agent | todo |
 
 ---
@@ -87,7 +87,9 @@ in `docs/status/decision-log.md`; the owner can overturn any of them later.
 3. Check the hooks are live in this session: run `/aidlc --doctor` through the `aidlc` skill and
    confirm it reports hooks active.
 4. If 2 or 3 fails, **HUMAN**: tell them to (1) exit this session, (2) open a terminal in
-   `C:\Users\BS01395\Documents\GitHub\rogikotha`, (3) run `claude`, (4) paste the runbook line again.
+   `C:\Users\BS01395\Documents\GitHub\rogikotha` (work PC) or `D:\git_repos\RogiKotha` (lelin-pc), (3) run
+   `claude`, (4) paste the runbook line again. On a machine new to the project, run `aidlc config --pin 2.11.0`
+   first, or every hook fails with "pin is not registered on this machine".
    If the first AI-DLC turn offers to write `settings.local.json` because "hooks are off", decline
    it (upstream bug #2263).
 5. **HUMAN (only if they use Codex):** ask "Do you use Codex in this repo?" If yes: (1) run
@@ -146,9 +148,20 @@ in `docs/status/decision-log.md`; the owner can overturn any of them later.
 For each stage below: run it, check its output against the named source, then **HUMAN gate**,
 then commit and push. Mark step 5 done only after Delivery Planning is approved.
 
+Before each stage, give it that stage's instructions from §4 of
+`docs/planning/research/aidlc-migration-2026-10-23/readiness-report.md` and the decisions FD-045..FD-055.
+The two that change every stage:
+- **FD-036 overlay:** keep the source text, and mark PDF, HEIC and Office intake as Phase 2.
+- **Requirement meaning:** take it from `docs/planning/source-extracts/RogiKotha_PRD_v1.0.md`, never from
+  the matrix labels.
+
+The Units and Delivery inputs (`docs/implementation/README.md` §5, `06-change-requests.md`, `ISSUES.md`,
+`tasks/*.md`) are not in the knowledge snapshot. Those stages read them from the repo and say so in their
+gate summary.
+
 | Stage | Must match | Check |
 |---|---|---|
-| Requirements Analysis | `01-requirement-baseline.md`, `06-requirement-traceability-matrix.md` | 100 FR + 12 NFR, original IDs kept, nothing invented |
+| Requirements Analysis | PRD extract, `01-requirement-baseline.md`, `06-requirement-traceability-matrix.md` | 115 requirements (103 FR + 12 NFR, FD-045), original IDs kept, PRD wording, nothing invented; re-keyed matrix rows listed |
 | User Stories | `08-product-backlog.md` | 34 stories / 12 epics, original story IDs kept |
 | Domain Design | `ARCHITECTURE-SPINE.md`, ADRs 0001–0013, `02-data-model.md` | no new architecture decision; ADRs referenced, not rewritten |
 | Units Generation | `00-master-plan.md` §5/§8, task files | units follow the task graph; merged work marked complete; D19 order |
@@ -161,7 +174,7 @@ Before any later Code Generation gate (not part of this runbook): delete `.vites
 ### Step 6 — Close the migration
 
 1. **D15:** add at the top of `LOOP.md`, `NEXT.md`, `04-handoff-and-validation.md`,
-   `08-agent-prompts.md`, `BUILD-LOG.md`, `ISSUES.md`: `> Frozen 2026-xx-xx — superseded by AI-DLC
+   `08-agent-prompts.md`, `BUILD-LOG.md` (not `ISSUES.md`, FD-054): `> Frozen 2026-xx-xx — superseded by AI-DLC
    (see docs/aidlc-migration/README.md). Kept as history.` Remove the old migration-gate block from
    `LOOP.md` §0 and the banner from `NEXT.md`.
 2. **D14:** note in `docs/aidlc-migration/README.md` §5 that BMAD/grill skills stay installed as

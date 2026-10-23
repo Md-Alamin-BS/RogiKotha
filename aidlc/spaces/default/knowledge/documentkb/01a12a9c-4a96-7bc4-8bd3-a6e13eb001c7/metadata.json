@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/DESIGN.md"
   },
-  "sha256": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e",
-  "bytes": 18636,
-  "indexed_at": "2026-10-11T10:57:28.072Z",
+  "sha256": "ff5125bf8e000a7c9fe2a1b3d4b9694a850fd47dbd04276630f0b83edf705efb",
+  "bytes": 18227,
+  "indexed_at": "2026-10-23T07:20:39.018Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 18458,
+    "chars": 18049,
     "truncated": false,
-    "source_revision": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e"
+    "source_revision": "ff5125bf8e000a7c9fe2a1b3d4b9694a850fd47dbd04276630f0b83edf705efb"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-4a96-7bc4-8bd3-a6e13eb001c7/content.md",
-  "content_sha256": "df455d5f19c1dfc7d72c4b8bfa4340629fabcde4ad56dcc8d97bf966b3225a6e",
+  "content_sha256": "ff5125bf8e000a7c9fe2a1b3d4b9694a850fd47dbd04276630f0b83edf705efb",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

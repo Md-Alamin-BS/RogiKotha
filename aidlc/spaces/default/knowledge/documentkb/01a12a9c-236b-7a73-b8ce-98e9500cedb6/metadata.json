@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/planning/ux/DESIGN.md"
   },
-  "sha256": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845",
-  "bytes": 25126,
-  "indexed_at": "2026-10-11T10:57:18.162Z",
+  "sha256": "893a857d14f1e1ca224376fa7642ebf0c9e8db23d8dad46a7f5a3439b1aab9d6",
+  "bytes": 24872,
+  "indexed_at": "2026-10-23T07:20:58.028Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 25011,
+    "chars": 24757,
     "truncated": false,
-    "source_revision": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845"
+    "source_revision": "893a857d14f1e1ca224376fa7642ebf0c9e8db23d8dad46a7f5a3439b1aab9d6"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-236b-7a73-b8ce-98e9500cedb6/content.md",
-  "content_sha256": "6e42c6e3227b285d9ea9fdbf47ebdfb03b16c0b9b25a562cb17ba796148d4845",
+  "content_sha256": "893a857d14f1e1ca224376fa7642ebf0c9e8db23d8dad46a7f5a3439b1aab9d6",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

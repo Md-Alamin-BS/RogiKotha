@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/architecture/decisions/0009-version-runtime-configuration-and-retention.md"
   },
-  "sha256": "ed89261c899ce13defb58c827e9dd911d10336deaf34f12dd32c2f14b517bc5a",
-  "bytes": 838,
-  "indexed_at": "2026-10-11T10:57:15.286Z",
+  "sha256": "11a9fdd710cf71261be868087735ac33a602737822848cdb1b98a06f6626df5c",
+  "bytes": 823,
+  "indexed_at": "2026-10-23T07:20:45.330Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 838,
+    "chars": 823,
     "truncated": false,
-    "source_revision": "ed89261c899ce13defb58c827e9dd911d10336deaf34f12dd32c2f14b517bc5a"
+    "source_revision": "11a9fdd710cf71261be868087735ac33a602737822848cdb1b98a06f6626df5c"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-1857-7b8b-99d5-1af43fe491d4/content.md",
-  "content_sha256": "ed89261c899ce13defb58c827e9dd911d10336deaf34f12dd32c2f14b517bc5a",
+  "content_sha256": "11a9fdd710cf71261be868087735ac33a602737822848cdb1b98a06f6626df5c",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

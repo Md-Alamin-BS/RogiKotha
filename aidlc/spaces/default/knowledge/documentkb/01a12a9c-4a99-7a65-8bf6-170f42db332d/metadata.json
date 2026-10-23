@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/PRODUCT.md"
   },
-  "sha256": "6feac1b349fe8efa48d5654bedd7e78eb46597aacc60dc89c9f9e92a8bad37d5",
-  "bytes": 8029,
-  "indexed_at": "2026-10-11T10:57:28.072Z",
+  "sha256": "72d62989ecb8ce9c477307bf133ee325741ff48ee7b8b8d4353258f39e2cd6e4",
+  "bytes": 7877,
+  "indexed_at": "2026-10-23T07:21:00.579Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 7949,
+    "chars": 7797,
     "truncated": false,
-    "source_revision": "6feac1b349fe8efa48d5654bedd7e78eb46597aacc60dc89c9f9e92a8bad37d5"
+    "source_revision": "72d62989ecb8ce9c477307bf133ee325741ff48ee7b8b8d4353258f39e2cd6e4"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-4a99-7a65-8bf6-170f42db332d/content.md",
-  "content_sha256": "6feac1b349fe8efa48d5654bedd7e78eb46597aacc60dc89c9f9e92a8bad37d5",
+  "content_sha256": "72d62989ecb8ce9c477307bf133ee325741ff48ee7b8b8d4353258f39e2cd6e4",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }

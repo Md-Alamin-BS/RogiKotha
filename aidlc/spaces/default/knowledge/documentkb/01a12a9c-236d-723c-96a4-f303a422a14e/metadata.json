@@ -5,24 +5,24 @@
     "kind": "managed",
     "path": "documents/docs/planning/ux/EXPERIENCE.md"
   },
-  "sha256": "89418f1f5c2da22421381704361f34666ad5d0af8ca9e51b49e3b9d0d3e8c107",
-  "bytes": 12919,
-  "indexed_at": "2026-10-11T10:57:18.162Z",
+  "sha256": "fb84ae63e3f5bc13bee735a27dd545d854dac9111bab7a52fe65e92d1360ff0e",
+  "bytes": 12772,
+  "indexed_at": "2026-10-23T07:20:58.667Z",
   "extraction": {
     "state": "extracted",
     "extractor": {
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 12853,
+    "chars": 12706,
     "truncated": false,
-    "source_revision": "89418f1f5c2da22421381704361f34666ad5d0af8ca9e51b49e3b9d0d3e8c107"
+    "source_revision": "fb84ae63e3f5bc13bee735a27dd545d854dac9111bab7a52fe65e92d1360ff0e"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-236d-723c-96a4-f303a422a14e/content.md",
-  "content_sha256": "89418f1f5c2da22421381704361f34666ad5d0af8ca9e51b49e3b9d0d3e8c107",
+  "content_sha256": "fb84ae63e3f5bc13bee735a27dd545d854dac9111bab7a52fe65e92d1360ff0e",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }
