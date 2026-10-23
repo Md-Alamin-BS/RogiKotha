@@ -125,3 +125,4 @@
 <!-- Project-specific corrections from human feedback. -->
 <!-- Format: NEVER/ALWAYS [behavior] (learned [date]) -->
 - Where docs/architecture/ARCHITECTURE-SPINE.md and the code disagree on package layout or stack, the code and decision-log FD-032/FD-033/FD-036 win: the spine's packages/{auth,evidence,search,ui} and its stack table are superseded, so never restructure code to match them. (learned 2026-10-12) <!-- cid:261011-aidlc-adoption:reverse-engineering:7351e913548c82a5074b896e79284a54f5a5835a1a002b07aeb5c35876d9a499 -->
+- Traceability keys (FR<n>, NFR<n>, US<n>.<n>, AC<n>.<n>.<n>, Unit IDs) are frozen once assigned: never reused, renumbered or reordered; a retired item keeps its key and a new item takes the next free number. The PRD and backlog IDs beside them stay the permanent identifiers. (learned 2026-10-23) <!-- cid:261011-aidlc-adoption:requirements-analysis:06d2bbaee1d87e1faf1fec77d98efd9702835873cd4a9e069ba97a491d311b81 -->
