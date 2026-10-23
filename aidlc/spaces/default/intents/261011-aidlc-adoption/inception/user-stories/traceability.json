@@ -1,0 +1,697 @@
+{
+  "stage": "user-stories",
+  "upstream_ids": [
+    "FR1",
+    "FR2",
+    "FR3",
+    "FR4",
+    "FR5",
+    "FR6",
+    "FR7",
+    "FR8",
+    "FR9",
+    "FR10",
+    "FR11",
+    "FR12",
+    "FR13",
+    "FR14",
+    "FR15",
+    "FR16",
+    "FR17",
+    "FR18",
+    "FR19",
+    "FR20",
+    "FR21",
+    "FR22",
+    "FR23",
+    "FR24",
+    "FR25",
+    "FR26",
+    "FR27",
+    "FR28",
+    "FR29",
+    "FR30",
+    "FR31",
+    "FR32",
+    "FR33",
+    "FR34",
+    "FR35",
+    "FR36",
+    "FR37",
+    "FR38",
+    "FR39",
+    "FR40",
+    "FR41",
+    "FR42",
+    "FR43",
+    "FR44",
+    "FR45",
+    "FR46",
+    "FR47",
+    "FR48",
+    "FR49",
+    "FR50",
+    "FR51",
+    "FR52",
+    "FR53",
+    "FR54",
+    "FR55",
+    "FR56",
+    "FR57",
+    "FR58",
+    "FR59",
+    "FR60",
+    "FR61",
+    "FR62",
+    "FR63",
+    "FR64",
+    "FR65",
+    "FR66",
+    "FR67",
+    "FR68",
+    "FR69",
+    "FR70",
+    "FR71",
+    "FR72",
+    "FR73",
+    "FR74",
+    "FR75",
+    "FR76",
+    "FR77",
+    "FR78",
+    "FR79",
+    "FR80",
+    "FR81",
+    "FR82",
+    "FR83",
+    "FR84",
+    "FR85",
+    "FR86",
+    "FR87",
+    "FR88",
+    "FR89",
+    "FR90",
+    "FR91",
+    "FR92",
+    "FR93",
+    "FR94",
+    "FR95",
+    "FR96",
+    "FR97",
+    "FR98",
+    "FR99",
+    "FR100",
+    "FR101",
+    "FR102",
+    "FR103",
+    "NFR1",
+    "NFR2",
+    "NFR3",
+    "NFR4",
+    "NFR5",
+    "NFR6",
+    "NFR7",
+    "NFR8",
+    "NFR9",
+    "NFR10",
+    "NFR11",
+    "NFR12"
+  ],
+  "coverage": [
+    {
+      "id": "FR1",
+      "status": "OK",
+      "target": "US3.1"
+    },
+    {
+      "id": "FR2",
+      "status": "OK",
+      "target": "US3.1"
+    },
+    {
+      "id": "FR3",
+      "status": "OK",
+      "target": "US3.1"
+    },
+    {
+      "id": "FR4",
+      "status": "OK",
+      "target": "US3.1"
+    },
+    {
+      "id": "FR5",
+      "status": "OK",
+      "target": "US3.1"
+    },
+    {
+      "id": "FR6",
+      "status": "OK",
+      "target": "US3.2"
+    },
+    {
+      "id": "FR7",
+      "status": "OK",
+      "target": "US3.2"
+    },
+    {
+      "id": "FR8",
+      "status": "OK",
+      "target": "US3.1"
+    },
+    {
+      "id": "FR9",
+      "status": "OK",
+      "target": "US3.2"
+    },
+    {
+      "id": "FR10",
+      "status": "OK",
+      "target": "US3.3, US10.2"
+    },
+    {
+      "id": "FR11",
+      "status": "OK",
+      "target": "US10.2"
+    },
+    {
+      "id": "FR12",
+      "status": "OK",
+      "target": "US9.3"
+    },
+    {
+      "id": "FR13",
+      "status": "OK",
+      "target": "US10.3"
+    },
+    {
+      "id": "FR14",
+      "status": "OK",
+      "target": "US10.3"
+    },
+    {
+      "id": "FR15",
+      "status": "OK",
+      "target": "US4.1"
+    },
+    {
+      "id": "FR16",
+      "status": "OK",
+      "target": "US4.1"
+    },
+    {
+      "id": "FR17",
+      "status": "OK",
+      "target": "US4.1"
+    },
+    {
+      "id": "FR18",
+      "status": "OK",
+      "target": "US4.1"
+    },
+    {
+      "id": "FR19",
+      "status": "OK",
+      "target": "US4.2"
+    },
+    {
+      "id": "FR20",
+      "status": "OK",
+      "target": "US4.2 (staff-decided claim; the code path is deferred, FD-060)"
+    },
+    {
+      "id": "FR21",
+      "status": "OK",
+      "target": "US4.2"
+    },
+    {
+      "id": "FR22",
+      "status": "OK",
+      "target": "US8.1"
+    },
+    {
+      "id": "FR23",
+      "status": "OK",
+      "target": "US4.2"
+    },
+    {
+      "id": "FR24",
+      "status": "OK",
+      "target": "US4.3"
+    },
+    {
+      "id": "FR25",
+      "status": "OK",
+      "target": "US4.3"
+    },
+    {
+      "id": "FR26",
+      "status": "OK",
+      "target": "US4.3"
+    },
+    {
+      "id": "FR27",
+      "status": "OK",
+      "target": "US4.3"
+    },
+    {
+      "id": "FR28",
+      "status": "OK",
+      "target": "US5.1"
+    },
+    {
+      "id": "FR29",
+      "status": "OK",
+      "target": "US5.1"
+    },
+    {
+      "id": "FR30",
+      "status": "OK",
+      "target": "US5.1"
+    },
+    {
+      "id": "FR31",
+      "status": "OK",
+      "target": "US5.2"
+    },
+    {
+      "id": "FR32",
+      "status": "OK",
+      "target": "US5.2"
+    },
+    {
+      "id": "FR33",
+      "status": "OK",
+      "target": "US5.2"
+    },
+    {
+      "id": "FR34",
+      "status": "OK",
+      "target": "US5.1"
+    },
+    {
+      "id": "FR35",
+      "status": "OK",
+      "target": "US5.2"
+    },
+    {
+      "id": "FR36",
+      "status": "OK",
+      "target": "US5.3"
+    },
+    {
+      "id": "FR37",
+      "status": "OK",
+      "target": "US5.3"
+    },
+    {
+      "id": "FR38",
+      "status": "OK",
+      "target": "US5.3, US11.1"
+    },
+    {
+      "id": "FR39",
+      "status": "OK",
+      "target": "US6.1, US6.2"
+    },
+    {
+      "id": "FR40",
+      "status": "OK",
+      "target": "US6.1"
+    },
+    {
+      "id": "FR41",
+      "status": "OK",
+      "target": "US6.2"
+    },
+    {
+      "id": "FR42",
+      "status": "OK",
+      "target": "US6.2"
+    },
+    {
+      "id": "FR43",
+      "status": "OK",
+      "target": "US6.1"
+    },
+    {
+      "id": "FR44",
+      "status": "OK",
+      "target": "US6.1"
+    },
+    {
+      "id": "FR45",
+      "status": "OK",
+      "target": "US11.1, US6.2"
+    },
+    {
+      "id": "FR46",
+      "status": "OK",
+      "target": "US6.2"
+    },
+    {
+      "id": "FR47",
+      "status": "OK",
+      "target": "US11.1, US6.2"
+    },
+    {
+      "id": "FR48",
+      "status": "OK",
+      "target": "US6.4"
+    },
+    {
+      "id": "FR49",
+      "status": "OK",
+      "target": "US6.4"
+    },
+    {
+      "id": "FR50",
+      "status": "OK",
+      "target": "US6.4"
+    },
+    {
+      "id": "FR51",
+      "status": "OK",
+      "target": "US6.4"
+    },
+    {
+      "id": "FR52",
+      "status": "OK",
+      "target": "US6.4"
+    },
+    {
+      "id": "FR53",
+      "status": "OK",
+      "target": "US7.2"
+    },
+    {
+      "id": "FR54",
+      "status": "OK",
+      "target": "US7.2"
+    },
+    {
+      "id": "FR55",
+      "status": "OK",
+      "target": "US6.2"
+    },
+    {
+      "id": "FR56",
+      "status": "OK",
+      "target": "US7.2"
+    },
+    {
+      "id": "FR57",
+      "status": "OK",
+      "target": "US7.2"
+    },
+    {
+      "id": "FR58",
+      "status": "OK",
+      "target": "US5.2"
+    },
+    {
+      "id": "FR59",
+      "status": "OK",
+      "target": "US7.2"
+    },
+    {
+      "id": "FR60",
+      "status": "OK",
+      "target": "US7.1"
+    },
+    {
+      "id": "FR61",
+      "status": "OK",
+      "target": "US7.1"
+    },
+    {
+      "id": "FR62",
+      "status": "OK",
+      "target": "US7.1"
+    },
+    {
+      "id": "FR63",
+      "status": "OK",
+      "target": "US7.2"
+    },
+    {
+      "id": "FR64",
+      "status": "OK",
+      "target": "US7.2"
+    },
+    {
+      "id": "FR65",
+      "status": "OK",
+      "target": "US7.2, US7.3"
+    },
+    {
+      "id": "FR66",
+      "status": "OK",
+      "target": "US7.1"
+    },
+    {
+      "id": "FR67",
+      "status": "OK",
+      "target": "US7.3"
+    },
+    {
+      "id": "FR68",
+      "status": "OK",
+      "target": "US7.1"
+    },
+    {
+      "id": "FR69",
+      "status": "OK",
+      "target": "US6.3"
+    },
+    {
+      "id": "FR70",
+      "status": "OK",
+      "target": "US6.3"
+    },
+    {
+      "id": "FR71",
+      "status": "OK",
+      "target": "US6.3"
+    },
+    {
+      "id": "FR72",
+      "status": "OK",
+      "target": "US8.1"
+    },
+    {
+      "id": "FR73",
+      "status": "OK",
+      "target": "US8.1, US9.2"
+    },
+    {
+      "id": "FR74",
+      "status": "OK",
+      "target": "US8.1"
+    },
+    {
+      "id": "FR75",
+      "status": "OK",
+      "target": "US8.1, US9.1, US11.1"
+    },
+    {
+      "id": "FR76",
+      "status": "OK",
+      "target": "US12.1"
+    },
+    {
+      "id": "FR77",
+      "status": "OK",
+      "target": "US8.2"
+    },
+    {
+      "id": "FR78",
+      "status": "OK",
+      "target": "US8.2, US3.3"
+    },
+    {
+      "id": "FR79",
+      "status": "OK",
+      "target": "US9.1"
+    },
+    {
+      "id": "FR80",
+      "status": "OK",
+      "target": "US9.1"
+    },
+    {
+      "id": "FR81",
+      "status": "OK",
+      "target": "US9.1"
+    },
+    {
+      "id": "FR82",
+      "status": "OK",
+      "target": "US9.2"
+    },
+    {
+      "id": "FR83",
+      "status": "OK",
+      "target": "US9.2, US7.3"
+    },
+    {
+      "id": "FR84",
+      "status": "OK",
+      "target": "US9.3"
+    },
+    {
+      "id": "FR85",
+      "status": "OK",
+      "target": "US9.3"
+    },
+    {
+      "id": "FR86",
+      "status": "OK",
+      "target": "US7.3"
+    },
+    {
+      "id": "FR87",
+      "status": "OK",
+      "target": "US10.1"
+    },
+    {
+      "id": "FR88",
+      "status": "OK",
+      "target": "US10.1"
+    },
+    {
+      "id": "FR89",
+      "status": "OK",
+      "target": "US10.3"
+    },
+    {
+      "id": "FR90",
+      "status": "OK",
+      "target": "US10.3"
+    },
+    {
+      "id": "FR91",
+      "status": "OK",
+      "target": "US12.1"
+    },
+    {
+      "id": "FR92",
+      "status": "OK",
+      "target": "US12.1"
+    },
+    {
+      "id": "FR93",
+      "status": "OK",
+      "target": "US12.2"
+    },
+    {
+      "id": "FR94",
+      "status": "OK",
+      "target": "US12.2"
+    },
+    {
+      "id": "FR95",
+      "status": "OK",
+      "target": "US2.3, US12.1"
+    },
+    {
+      "id": "FR96",
+      "status": "N/A",
+      "target": "FR-ONB-001 is deferred for the demo: FD-048: a PRD Must that is deferred from the demo; no task delivers it."
+    },
+    {
+      "id": "FR97",
+      "status": "N/A",
+      "target": "FR-AN-001 is deferred for the demo: FD-019 and master plan §9: analytics is off in the demo."
+    },
+    {
+      "id": "FR98",
+      "status": "N/A",
+      "target": "FR-AN-002 is deferred for the demo: FD-019: no analytics, so there is no consent banner; essential cookies only."
+    },
+    {
+      "id": "FR99",
+      "status": "OK",
+      "target": "US12.4"
+    },
+    {
+      "id": "FR100",
+      "status": "OK",
+      "target": "US11.1"
+    },
+    {
+      "id": "FR101",
+      "status": "OK",
+      "target": "US11.1"
+    },
+    {
+      "id": "FR102",
+      "status": "OK",
+      "target": "US11.1"
+    },
+    {
+      "id": "FR103",
+      "status": "OK",
+      "target": "US11.2 (Beta metrics still open, carried to Domain Design)"
+    },
+    {
+      "id": "NFR1",
+      "status": "OK",
+      "target": "US2.3, US12.3"
+    },
+    {
+      "id": "NFR2",
+      "status": "OK",
+      "target": "US7.1"
+    },
+    {
+      "id": "NFR3",
+      "status": "OK",
+      "target": "US12.3"
+    },
+    {
+      "id": "NFR4",
+      "status": "OK",
+      "target": "US2.3"
+    },
+    {
+      "id": "NFR5",
+      "status": "OK",
+      "target": "US2.3"
+    },
+    {
+      "id": "NFR6",
+      "status": "OK",
+      "target": "US2.3, US12.1"
+    },
+    {
+      "id": "NFR7",
+      "status": "OK",
+      "target": "US2.3, US12.1"
+    },
+    {
+      "id": "NFR8",
+      "status": "OK",
+      "target": "US5.2"
+    },
+    {
+      "id": "NFR9",
+      "status": "OK",
+      "target": "US1.1"
+    },
+    {
+      "id": "NFR10",
+      "status": "OK",
+      "target": "US1.1, US12.3"
+    },
+    {
+      "id": "NFR11",
+      "status": "OK",
+      "target": "US1.1"
+    },
+    {
+      "id": "NFR12",
+      "status": "OK",
+      "target": "US12.3"
+    }
+  ]
+}
