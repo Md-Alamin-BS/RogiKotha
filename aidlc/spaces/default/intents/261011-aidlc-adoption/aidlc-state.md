@@ -45,6 +45,12 @@
 - **Construction Iteration**: unit-major
 - **Construction Execution**: serial
 
+- **Parked**: 2026-10-15T10:15:32Z
+
+- **Parked At Stage**: requirements-analysis
+
+- **Parked By**: person
+
 ## Phase Progress
 <!-- Status values: Pending, Active, Verified, Skipped -->
 
@@ -106,7 +112,7 @@ Per unit: [TBD]
 - **Current Stage**: requirements-analysis
 - **Next Stage**: user-stories
 - **Status**: Running
-- **Last Updated**: 2026-10-15T10:04:28Z
+- **Last Updated**: 2026-10-15T10:15:32Z
 
 ## Session Resume Point
 - **Last Completed Stage**: practices-discovery

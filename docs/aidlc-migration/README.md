@@ -152,7 +152,7 @@ There is no automatic importer; each row is converted by the stage named, from t
 | `docs/status/current-status.md`, `docs/planning/09-coverage-matrix.md` | stale — not onboarded; refresh or retire at §1 step 7 |
 | Product code on `main` (`apps/`, `packages/`, `infra/`) | 2.1 Reverse Engineering |
 | `_bmad/`, `bmad-*` skills, grill-me family and other planning skills | decide at §1 step 7 |
-| `../rogikotha-gate4` worktree (275 untracked files, an early Gate 4 Next.js prototype) | owner to decide: keep, archive or delete |
+| `../rogikotha-gate4` worktree (275 untracked files, an early Gate 4 Next.js prototype) | archived to `rogikotha-archive/gate4-prototype-2026-10-11.zip` (D16); worktree and branch removed 2026-10-23 |
 
 ## 6. Knowledge snapshot
 
