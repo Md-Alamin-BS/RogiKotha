@@ -132,7 +132,7 @@ Each decided by delegation from the owner, 2026-10-11 (`docs/aidlc-migration/RUN
 
 ## Owner decisions — round 6 (2026-10-23, AI-DLC readiness check)
 
-Taken on the readiness check of the documents the AI-DLC Inception stages transcribe (`docs/planning/research/aidlc-migration-2026-10-23/readiness-report.md`). FD-045..FD-047 were chosen by the owner directly; FD-048..FD-055 are the check's recommendations, which the owner accepted as a set. Any of them can be revisited at the AI-DLC gate where it comes up.
+Taken on the readiness check of the documents the AI-DLC Inception stages transcribe (`docs/planning/research/aidlc-migration-2026-10-23/readiness-report.md`). FD-045..FD-047 were chosen by the owner directly; FD-048..FD-055 are the check's recommendations, which the owner accepted as a set. FD-056..FD-059 were chosen by the owner at the Requirements Analysis gate. Any of them can be revisited at the AI-DLC gate where it comes up.
 
 | ID | Decision | Reason / status |
 |---|---|---|
@@ -147,6 +147,10 @@ Taken on the readiness check of the documents the AI-DLC Inception stages transc
 | FD-053 | The D-001 auth-screen review (both locales, both themes, 360 px) is an **explicit gate on the T-102 and T-103 units**. | Nothing records its approval. Owner accepted, 2026-10-23 |
 | FD-054 | `ISSUES.md` **stays live** (owner, 2026-10-15, `team.md`), amending RUNBOOK D15: it gets no "frozen" banner, and the delivery plan links open S1/S2 rows per unit instead of copying them. | Owner accepted, 2026-10-23 |
 | FD-055 | Reverse Engineering is **not redone**. The engine's "something it used changed" prompt is a false positive from the path case (`rogikotha` on the work PC, `RogiKotha` here); the scanned code is unchanged. | Owner accepted, 2026-10-23 |
+| FD-056 | **FR-AUTH-005**: the demo keeps "no automatic deletion" of unverified or inactive accounts (the PRD default). The optional Super Admin cleanup policy and its in-app/email notices are **deferred** to a later phase. | No task builds it; the default already holds. Owner, 2026-10-23 (Requirements Analysis) |
+| FD-057 | **FR-AUTH-006**: the demo ships 30-day sessions, the session list and "Sign out everywhere" (T-101, T-102). Recent successful logins and failed-login alerts are **deferred**. | No task builds them. Owner, 2026-10-23 (Requirements Analysis) |
+| FD-058 | **FR-AUTH-008**: progressive delay on repeated sign-in failures and the severe-activity email/in-app notice are **added to the demo** (T-101/T-502, carried into Units and Delivery Planning). The suspicious-activity challenge (CAPTCHA) is **deferred** to the production release; this narrows FD-013's "challenge only after suspicious repeated attempts" for the demo only. | Today only a fixed limit exists (the 11th attempt in a minute is refused). Owner, 2026-10-23 (Requirements Analysis) |
+| FD-059 | **FR-AUTH-009**: self-service email reset (FD-013, FD-034; T-101/T-102) is the demo's account recovery, and every reset is audited. The PRD's manual Admin recovery and the verified recovery phone / secondary email are **deferred** to a later phase. | No decision had dropped the manual path and no task builds it. Owner, 2026-10-23 (Requirements Analysis) |
 
 ## Provisional technical recommendations
 
