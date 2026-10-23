@@ -132,7 +132,7 @@ Each decided by delegation from the owner, 2026-10-11 (`docs/aidlc-migration/RUN
 
 ## Owner decisions — round 6 (2026-10-23, AI-DLC readiness check)
 
-Taken on the readiness check of the documents the AI-DLC Inception stages transcribe (`docs/planning/research/aidlc-migration-2026-10-23/readiness-report.md`). FD-045..FD-047 were chosen by the owner directly; FD-048..FD-055 are the check's recommendations, which the owner accepted as a set. FD-056..FD-059 were chosen by the owner at the Requirements Analysis gate, and FD-060..FD-063 at User Stories. Any of them can be revisited at the AI-DLC gate where it comes up.
+Taken on the readiness check of the documents the AI-DLC Inception stages transcribe (`docs/planning/research/aidlc-migration-2026-10-23/readiness-report.md`). FD-045..FD-047 were chosen by the owner directly; FD-048..FD-055 are the check's recommendations, which the owner accepted as a set. FD-056..FD-059 were chosen by the owner at the Requirements Analysis gate, FD-060..FD-063 at User Stories, and FD-064..FD-066 at Domain Design. Any of them can be revisited at the AI-DLC gate where it comes up.
 
 | ID | Decision | Reason / status |
 |---|---|---|
@@ -155,6 +155,9 @@ Taken on the readiness check of the documents the AI-DLC Inception stages transc
 | FD-061 | **FR-DOC-007 (protected fields)**: after a claim, changes to identity (name), BMDC number, **degrees and specialty** need Admin approval, as the PRD says. Schedule, fee, booking contact, languages and chamber details still publish immediately with history. Contract Design widens the protected-field list beyond `name` and `bmdc_number`. | Safer for trust; the contract under-specified it. Owner, 2026-10-24 (User Stories) |
 | FD-062 | **FR-REA-001 (reactions)**: comments take **Like and Dislike**, as reviews do, following the PRD. The data model's "comments accept `like` only" (`02-data-model.md` §8) and the prototype's like-only comments change in Domain Design / Contract Design. | Owner chose the PRD over the design, 2026-10-24 (User Stories) |
 | FD-063 | **FR-AUTH-008 numbers (with FD-058)**: the progressive delay and the severe-activity threshold are **runtime settings** (FD-018). Demo defaults: the delay doubles from 1 s after the 3rd failed sign-in in 15 minutes, capped at 30 s; 10 failures in 15 minutes count as severe and send the email/in-app notice. | No source gave the values. Owner, 2026-10-24 (User Stories) |
+| FD-064 | **Retention ownership**: the `retention` module owns `retention_policies`, `legal_holds` and `retention_bulk_actions` (the `retention.*` commands in `03-routes-and-contracts.md`). Evidence, review and community call it to check holds and expiry. This moves them out of `02-data-model.md` §7 (Evidence) in ownership only; the tables are unchanged. | Legal holds cover reviews and comments too (FR86, FD-021). Owner, 2026-10-24 (Domain Design) |
+| FD-065 | **Cross-cutting records**: `administration` owns `audit_events` (AD-10). Every module appends through one audit port, and moderation's case timeline is a stream within it. `notification` owns `outbox_events`, as `02-data-model.md` §12 has it; every module writes outbox rows in the same transaction as its change. | Owner, 2026-10-24 (Domain Design) |
+| FD-066 | **Beta metrics (FR-ADM-004)**: the staff dashboard shows aggregate counts computed from the product's own tables (accounts, published reviews, open and closed reports, evidence processed or failed), with no analytics and no per-user data (FD-019). `administration` owns the view. | The PRD names "Beta metrics" without defining them. Owner, 2026-10-24 (Domain Design) |
 
 ## Provisional technical recommendations
 

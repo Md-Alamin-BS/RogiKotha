@@ -3060,3 +3060,245 @@
 **Answer Mode**: guide (reused from practices-discovery)
 
 ---
+
+## Memory Empty
+**Timestamp**: 2026-10-23T20:28:44Z
+**Event**: MEMORY_EMPTY
+**Stage**: user-stories
+
+---
+
+## Artifact Created
+**Timestamp**: 2026-10-23T20:32:30Z
+**Event**: ARTIFACT_CREATED
+**Tool**: Write
+**File**: <project-dir>/aidlc/spaces/default/intents/261011-aidlc-adoption/inception/domain-design/domain-design-questions.md
+**Context**: inception > domain-design > domain-design-questions.md
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-23T20:32:32Z
+**Event**: DECISION_RECORDED
+**Stage**: domain-design
+**Decision**: Q1 component set; Q2 retention ownership; Q3 audit/outbox ownership; Q4 Beta metrics
+**Options**: Q1: 13 modules/Fewer/Other; Q2: Retention/Evidence/Other; Q3: Administration+Notification/Data-model placement/Other; Q4: Own-table counts/Defer/Other
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-23T20:46:05Z
+**Event**: HUMAN_TURN
+**Session**: fe15b653-0bc9-467d-a147-8d4bd81e9c90
+**Picked**: ["13 domain modules (Recommended)","Retention (Recommended)","Admin + Notification (Recommended)","Own-table counts (Recommended)"]
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-23T20:46:06Z
+**Event**: QUESTION_REPLIED
+**Session**: fe15b653-0bc9-467d-a147-8d4bd81e9c90
+**Question**: Q1. Which building blocks are the components?
+**Reply**: 13 domain modules (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-23T20:46:06Z
+**Event**: QUESTION_REPLIED
+**Session**: fe15b653-0bc9-467d-a147-8d4bd81e9c90
+**Question**: Q2. Who owns the retention records (policies, legal holds, bulk actions)? The data model puts them under Evidence; the contracts expose retention.* commands, and holds also cover reviews and comments.
+**Reply**: Retention (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-23T20:46:06Z
+**Event**: QUESTION_REPLIED
+**Session**: fe15b653-0bc9-467d-a147-8d4bd81e9c90
+**Question**: Q3. Who owns the audit log and the outbox? Every module writes both; the data model lists audit under Moderation and outbox under Notification.
+**Reply**: Admin + Notification (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-23T20:46:06Z
+**Event**: QUESTION_REPLIED
+**Session**: fe15b653-0bc9-467d-a147-8d4bd81e9c90
+**Question**: Q4. "Beta metrics" on the staff dashboard (FR103): no source defines them, and analytics is off (FD-019).
+**Reply**: Own-table counts (Recommended)
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-23T20:46:44Z
+**Event**: QUESTION_ANSWERED
+**Stage**: domain-design
+**Details**: Q1: 13 domain modules (Recommended); Q2: Retention (Recommended); Q3: Admin + Notification (Recommended); Q4: Own-table counts (Recommended)
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T20:48:14Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a93f03184eecbc2c9
+**Message**: Reading shared AI-DLC knowledge files
+
+---
+
+## Artifact Created
+**Timestamp**: 2026-10-23T20:48:37Z
+**Event**: ARTIFACT_CREATED
+**Tool**: Write
+**File**: <project-dir>/aidlc/spaces/default/intents/261011-aidlc-adoption/inception/domain-design/decisions.md
+**Context**: inception > domain-design > decisions.md
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T20:48:48Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a37395fde9dd6c9ff
+**Message**: Counting table names in packages/database/src/schema
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T20:49:22Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a9a4fc9b329f45ed1
+**Message**: Extracting columns from Drizzle schema files
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T20:49:56Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a36abae4eeee0c8a4
+**Message**: Listing story headings in stories.md
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T20:50:30Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a7cb2faa0d3d1d8ca
+**Message**: Inspecting test-support seed files
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T20:51:04Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a13257d8ae62a37e4
+**Message**: Grepping seed-config.ts for retention tables
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T20:52:08Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a9e74334d45016c74
+**Message**: Checking seed-moderation.ts audit_events writes
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T20:52:42Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a095755900f3073f9
+**Message**: Inspecting worker outbox-relay.ts handlers
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T20:58:21Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a2fc4b7e3f878dc3a
+**Message**: Checking email_deliveries writers in notification.ts
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T21:01:55Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a8d1e1b37c1af9e4b
+**Message**: Writing catalogue JSON to dd.json
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T21:02:30Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a6fec29c6adc9bdf1
+**Message**: Creating rk-dd scratch directory
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T21:03:05Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a98862b65e21e275e
+**Message**: Re-reading 02-data-model.md header
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T21:06:17Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a71d2175e08e25420
+**Message**: Writing domain catalogue to dd.json
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-23T21:06:48Z
+**Event**: HUMAN_TURN
+**Session**: fe15b653-0bc9-467d-a147-8d4bd81e9c90
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T21:06:53Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a0cd6344ea860968b
+**Message**: Validating dd.json with check.js
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-10-23T21:07:28Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: unknown
+**Agent ID**: a113896ff8ead2c4c
+**Message**: Cleaning up dd.json scratch files
+
+---
+
+## Workflow Parked
+**Timestamp**: 2026-10-23T21:07:33Z
+**Event**: WORKFLOW_PARKED
+**Stage**: domain-design
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-23T21:07:41Z
+**Event**: HUMAN_TURN
+**Session**: fe15b653-0bc9-467d-a147-8d4bd81e9c90
+
+---

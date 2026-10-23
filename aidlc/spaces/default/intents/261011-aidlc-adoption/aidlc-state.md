@@ -48,6 +48,12 @@
 
 
 
+- **Parked**: 2026-10-23T21:07:33Z
+
+- **Parked At Stage**: domain-design
+
+- **Parked By**: person
+
 ## Phase Progress
 <!-- Status values: Pending, Active, Verified, Skipped -->
 
@@ -109,7 +115,7 @@ Per unit: [TBD]
 - **Current Stage**: domain-design
 - **Next Stage**: units-generation
 - **Status**: Running
-- **Last Updated**: 2026-10-23T20:28:40Z
+- **Last Updated**: 2026-10-23T21:07:33Z
 
 ## Session Resume Point
 - **Last Completed Stage**: user-stories
