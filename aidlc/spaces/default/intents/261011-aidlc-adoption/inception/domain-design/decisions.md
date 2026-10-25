@@ -2,7 +2,7 @@
 
 These records cover the choices made at this stage. The system's architecture was decided earlier and is not re-decided here: ports-and-adapters modular monolith (ADR-0001), Next.js/TypeScript/PostgreSQL (ADR-0002), Better Auth behind application policy (ADR-0003), PostgreSQL search first (ADR-0004), quarantine-first evidence (ADR-0005), storage port (ADR-0006), pg-boss jobs (ADR-0007), persona separated from private identity (ADR-0008), versioned configuration and retention (ADR-0009), demo and production compositions (ADR-0010), equal Bengali and English (ADR-0011), independent validation (ADR-0012), and deletion orchestrated across owning modules (ADR-0013), all in `docs/architecture/decisions/`. Each ADR below says which of those it builds on.
 
-Sources: `requirements.md` (Requirements Analysis), `stories.md` (User Stories), the reverse-engineered `architecture.md` and `component-inventory.md` in `aidlc/spaces/default/codekb/rogikotha/`, the team practices in `team-practices.md`, and `docs/status/decision-log.md` (FD-001..FD-066).
+Sources: `requirements.md` (Requirements Analysis), `stories.md` (User Stories), the reverse-engineered `architecture.md` and `component-inventory.md` in `aidlc/spaces/default/codekb/rogikotha/`, the team practices in `team-practices.md`, and `docs/status/decision-log.md` (FD-001..FD-070).
 
 ## ADR-001: The thirteen domain modules are the components
 
@@ -51,7 +51,7 @@ Sources: `requirements.md` (Requirements Analysis), `stories.md` (User Stories),
   - A reaction is an outbox event written in the same transaction as the change and handled by a pg-boss job (style `event`).
   - No component reads or writes another component's tables.
 - **Consequences:**
-  - The dependency graph stays acyclic: where two modules interact both ways, one direction is an event.
+  - Interaction style alone does not keep the graph acyclic: where two modules need each other, the ports of ADR-010 invert one direction.
   - Reactions survive a crash because the outbox is transactional, and the relay is being made transactional by CR-011 (FD-038).
   - Reactions are eventually consistent, for example search lags a publish by one job run.
 - **Security:** jobs carry ids only in their payloads (the outbox stores ids, not content).
@@ -62,9 +62,10 @@ Sources: `requirements.md` (Requirements Analysis), `stories.md` (User Stories),
 ## ADR-005: Identity is a separate component from Account
 
 - **Context:** Public personas (named, pseudonymous, per-thread anonymous alias) must never link to the private account in any public projection, while staff reveal is a separately audited capability (ADR-0008, FD-015, FD-016, FD-022).
-- **Decision:** Identity owns personas, the private persona-to-account links and the reveal log. Every other component refers to authors only by persona id, and Identity alone resolves projections.
+- **Decision:** Identity owns personas, the private persona-to-account links and the reveal log, and Identity alone resolves public projections. Public content refers to authors only by persona id.
+- **Accepted exceptions** (inherited from `02-data-model.md`): `ReviewDraft.account_id`, `EvidenceItem.uploaded_by_account_id` (the worker may read it, only to notify the uploader in-app), `Reaction.account_id` and `Report.reporter_account_id` keep a private account id next to content. They are never projected publicly, never exported to anyone but their owner, and are covered by the adversarial tests of the Identity, Evidence, Review, Community and Moderation units.
 - **Consequences:**
-  - Alias isolation can be tested in one place: the adversarial fixtures of US3.3.
+  - Alias isolation is tested in Identity (the adversarial fixtures of US3.3) and, for the exceptions above, in the units that own them.
   - Every public read goes through Identity's projection.
 - **Security:** reveal requires the audited capability (Super Admin; Admin or Moderator only when enabled), and the reveal log is append-only.
 - **Alternatives rejected:** identity inside Account. That would put the private link and the public projection in the module that also handles sign-in, which widens who can reach the link.
@@ -110,6 +111,38 @@ Sources: `requirements.md` (Requirements Analysis), `stories.md` (User Stories),
 - **Alternatives rejected:**
   - Deferring the metrics, which the owner declined.
   - Matomo analytics, which stays deferred (FD-019).
+
+## ADR-010: Ports break the would-be cycles
+
+- **Context:** In nine places a module needs data from a module that already depends on it, for example the staff dashboard counts, a doctor profile's experience stats, the retention hold check on reviews and comments, and identity reveal targets. Calling each other directly would make the dependency graph cyclic.
+- **Decision:** The lower module declares a port (an interface) and the higher module implements it, so every `depends_on` edge points one way (FD-067). The ports are OperationalCounts (Administration), RecipientDirectory (Notification), RevealContact and RevealTarget (Identity), RetentionSubject (Retention), ConditionStats (Taxonomy), ProviderExperience and ProfileMergeParticipant (Directory), DiscussionPresence (Review) and ModerationSignals (Community). Contract Design pins their signatures.
+- **Consequences:** the graph stays acyclic and each module tests against its own port with fakes. The catalogue records each edge from the implementer, which at first reads backwards against the runtime call.
+- **Security:** a port exposes only the fields its consumer needs; reveal ports stay behind the audited capability (FD-016, FD-022).
+- **Alternatives rejected:** recording the cycles as deliberate (harder to test, against AD-1), and assembling those views in the web routes (spreads domain rules into the app).
+
+## ADR-011: retention_policies is the only source of retention periods
+
+- **Context:** The original, audit and notification retention periods were stored both in the runtime configuration and in `retention_policies`.
+- **Decision:** `retention_policies`, owned by Retention (FD-064), is the only source (FD-068). The configuration block becomes a read-only mirror or is dropped; Contract Design decides which.
+- **Consequences:** one versioned, prospective-only record of retention (FD-020). Retention's expiry job passes the notification cutoff to Notification, so Notification never calls Retention and the graph stays acyclic. Administration no longer validates retention periods as writable configuration.
+- **Security:** retention changes keep the password recheck and the audit trail of ADR-0009.
+- **Alternatives rejected:** the configuration as the source, which would make the versioned policy table a duplicate.
+
+## ADR-012: Account deletion de-identifies directory and moderation rows
+
+- **Context:** The deletion plan in `03-routes-and-contracts.md` had no step for the provider submissions, claims and field changes an account made, or for the reports and appeals it filed.
+- **Decision:** Those rows are kept and de-identified (the link to the account is removed), as retained reviews are (FR-USER-004, FD-069). The plan gains a Directory and a Moderation step that DataRequests calls (ADR-006), and legal holds still apply (FD-021).
+- **Consequences:** moderation history and directory provenance stay intact, and no deleted account can be traced through them.
+- **Security:** a reporter's identity is removed rather than retained, so it can never later be shown.
+- **Alternatives rejected:** deleting the rows (breaks moderation history and provenance) and keeping them linked (contradicts deletion).
+
+## ADR-013: Notifications started in the worker are in-app only
+
+- **Context:** Emails for events that start in the worker, such as evidence finished processing, need the author's address, but the worker may not read accounts (FD-041).
+- **Decision:** Worker-started events create in-app notifications only and send no email (FD-070). The optional evidence email category therefore sends nothing in the demo, and AC10.1.5 applies to the discussion and moderation categories.
+- **Consequences:** the worker never touches account contact data, and every email address is written in the web tier only. The evidence email category is inert in the demo, and the worker's `notification.deliver` creates in-app items only; the export-ready email and a `discussion` email category are open points for Contract Design; the stories approved at User Stories carry AC10.1.5 as written, so Units Generation records that its evidence category is narrowed by FD-070.
+- **Security:** the least-privilege worker grants of FD-041 stand unchanged.
+- **Alternatives rejected:** storing the encrypted contact with the pending notification (more data stored per notification) and a narrow worker grant (conflicts with FD-041).
 
 ## Not a component: the demo clock
 

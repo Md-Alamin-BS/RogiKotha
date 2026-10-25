@@ -1,0 +1,211 @@
+{
+  "stage": "domain-design",
+  "upstream_ids": [
+    "US1.1",
+    "US2.1",
+    "US2.2",
+    "US2.3",
+    "US3.1",
+    "US3.2",
+    "US3.3",
+    "US4.1",
+    "US4.2",
+    "US4.3",
+    "US5.1",
+    "US5.2",
+    "US5.3",
+    "US6.1",
+    "US6.2",
+    "US6.3",
+    "US6.4",
+    "US7.1",
+    "US7.2",
+    "US7.3",
+    "US8.1",
+    "US8.2",
+    "US9.1",
+    "US9.2",
+    "US9.3",
+    "US10.1",
+    "US10.2",
+    "US10.3",
+    "US11.1",
+    "US11.2",
+    "US12.1",
+    "US12.2",
+    "US12.3",
+    "US12.4"
+  ],
+  "coverage": [
+    {
+      "id": "US1.1",
+      "status": "OK",
+      "target": "Account, Identity, Directory, Taxonomy, Review, Evidence, Community, Moderation, Notification, Search, Administration, Retention, DataRequests"
+    },
+    {
+      "id": "US2.1",
+      "status": "OK",
+      "target": "Account, Identity, Directory, Taxonomy, Review, Evidence, Community, Moderation, Notification, Administration, Retention"
+    },
+    {
+      "id": "US2.2",
+      "status": "N/A",
+      "target": "Concept CSS lives in apps/web (FD-027, FD-032); no domain component"
+    },
+    {
+      "id": "US2.3",
+      "status": "OK",
+      "target": "Account, Search, Directory, Review, Evidence"
+    },
+    {
+      "id": "US3.1",
+      "status": "OK",
+      "target": "Account, Identity, Notification, Administration"
+    },
+    {
+      "id": "US3.2",
+      "status": "OK",
+      "target": "Account, Notification, Administration"
+    },
+    {
+      "id": "US3.3",
+      "status": "OK",
+      "target": "Identity, Review, Community, Administration"
+    },
+    {
+      "id": "US4.1",
+      "status": "OK",
+      "target": "Directory, Search"
+    },
+    {
+      "id": "US4.2",
+      "status": "OK",
+      "target": "Directory, Review, Notification, Administration"
+    },
+    {
+      "id": "US4.3",
+      "status": "OK",
+      "target": "Directory, Review"
+    },
+    {
+      "id": "US5.1",
+      "status": "OK",
+      "target": "Search, Taxonomy, Directory, Review"
+    },
+    {
+      "id": "US5.2",
+      "status": "OK",
+      "target": "Search, Review, Directory, Evidence"
+    },
+    {
+      "id": "US5.3",
+      "status": "OK",
+      "target": "Taxonomy, Review, Administration"
+    },
+    {
+      "id": "US6.1",
+      "status": "OK",
+      "target": "Review, Identity, Taxonomy, Directory, Evidence, Moderation"
+    },
+    {
+      "id": "US6.2",
+      "status": "OK",
+      "target": "Review, Directory"
+    },
+    {
+      "id": "US6.3",
+      "status": "OK",
+      "target": "Review, Community, Retention"
+    },
+    {
+      "id": "US6.4",
+      "status": "OK",
+      "target": "Review, Taxonomy, Directory, Moderation"
+    },
+    {
+      "id": "US7.1",
+      "status": "OK",
+      "target": "Evidence, Notification, Review"
+    },
+    {
+      "id": "US7.2",
+      "status": "OK",
+      "target": "Evidence, Review"
+    },
+    {
+      "id": "US7.3",
+      "status": "OK",
+      "target": "Retention, Evidence, Moderation, Administration"
+    },
+    {
+      "id": "US8.1",
+      "status": "OK",
+      "target": "Community, Identity, Directory, Moderation"
+    },
+    {
+      "id": "US8.2",
+      "status": "OK",
+      "target": "Community, Identity"
+    },
+    {
+      "id": "US9.1",
+      "status": "OK",
+      "target": "Moderation, Review, Community, Evidence, Directory, Account, Notification, Administration"
+    },
+    {
+      "id": "US9.2",
+      "status": "OK",
+      "target": "Moderation, Review, Community, Evidence, Administration"
+    },
+    {
+      "id": "US9.3",
+      "status": "OK",
+      "target": "Moderation, Account, Community, Notification, Administration"
+    },
+    {
+      "id": "US10.1",
+      "status": "OK",
+      "target": "Notification, Account"
+    },
+    {
+      "id": "US10.2",
+      "status": "OK",
+      "target": "Identity, Account, Review, Community"
+    },
+    {
+      "id": "US10.3",
+      "status": "OK",
+      "target": "DataRequests, Account, Identity, Review, Community, Evidence, Notification, Search, Retention, Directory, Moderation"
+    },
+    {
+      "id": "US11.1",
+      "status": "OK",
+      "target": "Administration, Taxonomy, Account"
+    },
+    {
+      "id": "US11.2",
+      "status": "OK",
+      "target": "Administration, Moderation, Evidence, Directory, Taxonomy, Notification, Retention, Account"
+    },
+    {
+      "id": "US12.1",
+      "status": "OK",
+      "target": "Account, Administration"
+    },
+    {
+      "id": "US12.2",
+      "status": "N/A",
+      "target": "The PWA cache is apps/web and its service worker; no domain component"
+    },
+    {
+      "id": "US12.3",
+      "status": "N/A",
+      "target": "/api/health and the logging adapters live in apps/web, adapters and infra; no domain component"
+    },
+    {
+      "id": "US12.4",
+      "status": "N/A",
+      "target": "Analytics is deferred (FD-019); its guard criteria are verified in apps/web and adapters"
+    }
+  ]
+}

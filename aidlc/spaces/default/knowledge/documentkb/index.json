@@ -707,24 +707,24 @@
         "kind": "managed",
         "path": "documents/docs/status/decision-log.md"
       },
-      "sha256": "6a8f67e41fa8ca6d6f7f2ddb0d61a53cfaf785b6f4edc85480603339d952a2a6",
-      "bytes": 36567,
-      "indexed_at": "2026-10-23T21:07:32.940Z",
+      "sha256": "a6077b35c1e8245695c3045e7c0ef112f8fe79861647ff5d2e18b294c4c76e46",
+      "bytes": 38381,
+      "indexed_at": "2026-10-25T07:33:54.084Z",
       "extraction": {
         "state": "extracted",
         "extractor": {
           "name": "builtin-text",
           "version": "1"
         },
-        "chars": 36475,
+        "chars": 38289,
         "truncated": false,
-        "source_revision": "6a8f67e41fa8ca6d6f7f2ddb0d61a53cfaf785b6f4edc85480603339d952a2a6"
+        "source_revision": "a6077b35c1e8245695c3045e7c0ef112f8fe79861647ff5d2e18b294c4c76e46"
       },
       "summary": {
         "state": "absent"
       },
       "content": "documentkb/01a12a9c-27f8-7f82-bd28-aea1632e8617/content.md",
-      "content_sha256": "6a8f67e41fa8ca6d6f7f2ddb0d61a53cfaf785b6f4edc85480603339d952a2a6"
+      "content_sha256": "a6077b35c1e8245695c3045e7c0ef112f8fe79861647ff5d2e18b294c4c76e46"
     },
     {
       "id": "01a12a9c-2c0e-73c2-8692-2c1030899e2c",

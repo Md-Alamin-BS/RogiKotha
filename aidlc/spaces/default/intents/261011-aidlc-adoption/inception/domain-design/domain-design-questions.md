@@ -46,3 +46,48 @@ B. Defer Beta metrics from the demo (record a decision)
 X. Other (please specify)
 
 [Answer]: A
+
+## Follow-up questions from the architect's draft
+
+## Question 5
+
+Some modules need data from a module that already depends on them (the dashboard counts, the profile page's experience stats, the hold check on reviews and comments, and so on). Calling each other directly would create cycles. How should those nine places be handled?
+
+A. The lower module declares a port (an interface) and the higher module implements it, so the dependency graph stays one-way (recommended: the standard ports-and-adapters fix; reversible)
+B. Allow the cycles and record them as deliberate
+C. Build those read-only views in the web app's route code instead of inside the modules
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 6
+
+Retention periods are stored twice: in the runtime configuration (`config_versions`) and in `retention_policies`, which Retention owns (FD-064). Which is the source of truth?
+
+A. `retention_policies` only; the configuration block becomes a read-only mirror or is dropped (recommended)
+B. The runtime configuration; `retention_policies` only records history
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 7
+
+When an account is deleted, the plan in `03-routes-and-contracts.md` has no step for the provider submissions, claims and field changes it made (Directory), or for the reports and appeals it filed (Moderation). What happens to them?
+
+A. Keep the rows and de-identify them: remove the link to the account, as retained reviews are (FR-USER-004); legal holds still apply (recommended)
+B. Delete them
+C. Keep them unchanged
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 8
+
+Emails for events that start in the worker (for example "your evidence finished processing") need the author's address, but the worker may not read accounts (FD-041). How should the address reach it?
+
+A. The web-tier command that starts the work stores the author's encrypted contact with the pending notification, so the worker never reads accounts (recommended)
+B. Worker-started events create in-app notifications only, with no email
+C. Give the worker a narrow read grant (conflicts with FD-041)
+X. Other (please specify)
+
+[Answer]: B
