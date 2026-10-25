@@ -1,0 +1,211 @@
+{
+  "stage": "units-generation",
+  "upstream_ids": [
+    "US1.1",
+    "US2.1",
+    "US2.2",
+    "US2.3",
+    "US3.1",
+    "US3.2",
+    "US3.3",
+    "US4.1",
+    "US4.2",
+    "US4.3",
+    "US5.1",
+    "US5.2",
+    "US5.3",
+    "US6.1",
+    "US6.2",
+    "US6.3",
+    "US6.4",
+    "US7.1",
+    "US7.2",
+    "US7.3",
+    "US8.1",
+    "US8.2",
+    "US9.1",
+    "US9.2",
+    "US9.3",
+    "US10.1",
+    "US10.2",
+    "US10.3",
+    "US11.1",
+    "US11.2",
+    "US12.1",
+    "US12.2",
+    "US12.3",
+    "US12.4"
+  ],
+  "coverage": [
+    {
+      "id": "US1.1",
+      "status": "OK",
+      "target": "U2"
+    },
+    {
+      "id": "US2.1",
+      "status": "OK",
+      "target": "U43"
+    },
+    {
+      "id": "US2.2",
+      "status": "OK",
+      "target": "U42"
+    },
+    {
+      "id": "US2.3",
+      "status": "OK",
+      "target": "U42"
+    },
+    {
+      "id": "US3.1",
+      "status": "OK",
+      "target": "U8"
+    },
+    {
+      "id": "US3.2",
+      "status": "OK",
+      "target": "U8"
+    },
+    {
+      "id": "US3.3",
+      "status": "OK",
+      "target": "U11"
+    },
+    {
+      "id": "US4.1",
+      "status": "OK",
+      "target": "U14"
+    },
+    {
+      "id": "US4.2",
+      "status": "OK",
+      "target": "U15"
+    },
+    {
+      "id": "US4.3",
+      "status": "OK",
+      "target": "U14"
+    },
+    {
+      "id": "US5.1",
+      "status": "OK",
+      "target": "U18"
+    },
+    {
+      "id": "US5.2",
+      "status": "OK",
+      "target": "U18"
+    },
+    {
+      "id": "US5.3",
+      "status": "OK",
+      "target": "U14"
+    },
+    {
+      "id": "US6.1",
+      "status": "OK",
+      "target": "U21"
+    },
+    {
+      "id": "US6.2",
+      "status": "OK",
+      "target": "U21"
+    },
+    {
+      "id": "US6.3",
+      "status": "OK",
+      "target": "U22"
+    },
+    {
+      "id": "US6.4",
+      "status": "OK",
+      "target": "U14"
+    },
+    {
+      "id": "US7.1",
+      "status": "OK",
+      "target": "U23"
+    },
+    {
+      "id": "US7.2",
+      "status": "OK",
+      "target": "U25"
+    },
+    {
+      "id": "US7.3",
+      "status": "OK",
+      "target": "U29"
+    },
+    {
+      "id": "US8.1",
+      "status": "OK",
+      "target": "U30"
+    },
+    {
+      "id": "US8.2",
+      "status": "OK",
+      "target": "U30"
+    },
+    {
+      "id": "US9.1",
+      "status": "OK",
+      "target": "U32"
+    },
+    {
+      "id": "US9.2",
+      "status": "OK",
+      "target": "U33"
+    },
+    {
+      "id": "US9.3",
+      "status": "OK",
+      "target": "U33"
+    },
+    {
+      "id": "US10.1",
+      "status": "OK",
+      "target": "U34"
+    },
+    {
+      "id": "US10.2",
+      "status": "OK",
+      "target": "U27"
+    },
+    {
+      "id": "US10.3",
+      "status": "OK",
+      "target": "U38"
+    },
+    {
+      "id": "US11.1",
+      "status": "OK",
+      "target": "U10"
+    },
+    {
+      "id": "US11.2",
+      "status": "OK",
+      "target": "U33"
+    },
+    {
+      "id": "US12.1",
+      "status": "OK",
+      "target": "U7"
+    },
+    {
+      "id": "US12.2",
+      "status": "OK",
+      "target": "U40"
+    },
+    {
+      "id": "US12.3",
+      "status": "OK",
+      "target": "U41"
+    },
+    {
+      "id": "US12.4",
+      "status": "OK",
+      "target": "U41"
+    }
+  ]
+}

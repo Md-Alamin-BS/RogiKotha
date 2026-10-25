@@ -10,6 +10,12 @@
 | Depends on | T-101, T-103, T-303, T-401, T-403, T-405, T-410, T-501 (so the CSP covers `sw.js` and the manifest routes) |
 | Parallel-safe with | T-503 (coordinate: T-503 reruns after this merges), T-406–T-409 (no shared files except `next.config.ts`, which only this task edits) |
 
+## Amendments — owner decisions (FD-045..FD-075)
+
+These decisions are binding and override the text below where they differ; the steps below are already corrected.
+
+- **FD-072** — T-502 builds **no** FD-058 code. T-101 builds the progressive sign-in delay and the severe-activity email and its outbox event, T-105 registers the settings, and T-405 creates the in-app notice. T-502 adds 3–5 adversarial tests that try to break the delay and the notice — timing bypass, account enumeration through delay differences, and counter reset — and keeps the rest of its scope. Changes Owned paths, Not in scope, new step 11, the acceptance checks, the tests and the threat notes.
+
 ## Goal
 
 Close the cross-cutting gaps that individual feature tasks were told not to own: a nonce-based
@@ -40,7 +46,7 @@ Create:
 - `packages/application/src/rate-limits.ts` (the single table `RATE_LIMITS: Record<commandName, {limit, windowSec, scope: 'account'|'network'|'email'}>`)
 - `packages/application/src/define-command.ts` (modify — see below) 
 - `apps/web/src/server/app-mode.ts` (`assertAppMode()`: reads `APP_MODE`, checks `demo_clock` table presence vs mode, refuses `production` with `MAILPIT`/localhost SMTP, refuses `demo|development` without the synthetic marker enabled)
-- `apps/web/src/lib/security/__tests__/*.test.ts`, `packages/adapters/src/logger/scrub.test.ts`, `apps/web/e2e/security-headers.spec.ts`
+- `apps/web/src/lib/security/__tests__/*.test.ts` (including `sign-in-delay.adversarial.int.test.ts`, FD-072), `packages/adapters/src/logger/scrub.test.ts`, `apps/web/e2e/security-headers.spec.ts`
 - `docs/security/local-demo-threat-notes.md` (the threat notes section below, expanded with test names — required by AD-16 for M3 work)
 
 Modify:
@@ -58,7 +64,10 @@ Modify:
 TLS/reverse proxy, WAF, production secrets management, ClamAV network isolation, backups
 (STORY-OPS-001 production half), Matomo/consent (STORY-OPS-002), MFA. A distributed rate limiter
 (the in-memory sliding window is enough for one process; note the Redis-free production path —
-a PostgreSQL-backed limiter — in follow-ups).
+a PostgreSQL-backed limiter — in follow-ups). Any FD-058 code: the progressive sign-in delay, the
+severe-activity email and its outbox event are T-101's, the setting keys T-105's and the in-app
+notice T-405's (FD-072); T-502 only tests them, and records each defect it finds as an `ISS-` row
+linked to the Unit that owns the code.
 
 ## Steps
 
@@ -72,6 +81,7 @@ a PostgreSQL-backed limiter — in follow-ups).
 8. **APP_MODE.** `assertAppMode()` at both composition roots: `APP_MODE ∈ {development, demo, production}`; `production` refuses `SMTP_HOST` in `{localhost, mailpit, 127.0.0.1}`, refuses `DEMO_*` env, refuses a database where `demo_clock` exists; `development|demo` require `DEMO_MARKER=1` (the layout reads it to render the synthetic marker — the marker cannot be disabled in these modes, AD-14). Log one structured `app.mode` event.
 9. **Sweep.** `grep -rn "dangerouslySetInnerHTML\|onclick=\|javascript:" apps/web/src` → each hit either removed or justified with a comment and the nonce; `grep -rn "unsafe-inline\|unsafe-eval" apps/web/src` → only the two documented occurrences.
 10. Run `pnpm check`, `pnpm e2e --grep security`, and a manual pass in Chrome with the console open: zero CSP violations across the storyboard's Part 1–3 pages in both locales.
+11. **Adversarial tests of the FD-058 delay and notice (FD-072).** Write 3–5 tests in `apps/web/src/lib/security/__tests__/sign-in-delay.adversarial.int.test.ts` against compose PostgreSQL and Mailpit, using synthetic accounts only. They try to break T-101's code; they do not change it. Cover at least: (a) **timing bypass** — after 3 failures, fire concurrent sign-in attempts for one address and check that none escapes the delay and that every one is counted; (b) **enumeration through delay differences** — the same failure sequence for an address with an account and one without gives the same delays, responses and timing (median difference < 15 %), and the severe-activity notice never changes the response; (c) **counter reset** — changing the network key or user agent, varying the address's letter case or surrounding whitespace, or requesting a password reset does not reset the counter or the delay. Optionally add (d) concurrent attempts around the 10th failure produce exactly one severe-activity email and one outbox event. Record each test's result against its expected outcome in the hand-off.
 
 ## Acceptance checks
 
@@ -85,12 +95,17 @@ a PostgreSQL-backed limiter — in follow-ups).
 | Server action origin | `curl -X POST localhost:3000/en/sign-in -H "Origin: https://evil.example" …` | rejected (Next returns 403/400 for disallowed origin) |
 | Upload route origin | `curl -X POST localhost:3000/api/evidence/upload -H "Origin: https://evil.example" -F file=@x.png` | 403 |
 | Upload overflow aborts | `pnpm test --filter web -- upload-limits` | 16 MB single file → 413 within the first 16 MB read; 11 parts → 413; `.exe` renamed `.png` → 415 before storage is touched |
-| Sign-in throttle | script 11 wrong passwords for one email | 11th returns `rate_limited` with `retryAfterSec`; another email from same network still allowed until 30 |
+| Sign-in throttle | script 11 wrong passwords for one email, waiting out each FD-058 delay (FD-072) | 11th returns `rate_limited` with `retryAfterSec`; another email from same network still allowed until 30 |
 | Comment throttle | `pnpm test --filter application -- rate-limits` | 31st `comment.post` in an hour refused; key differs per account |
 | Cookies | `pnpm e2e --grep cookies` | every row of the cookie table asserted |
 | Log scrub | `pnpm test --filter adapters -- scrub` and the integration-run buffer test | no `@`, bodies, filenames, tokens |
 | APP_MODE | `APP_MODE=production SMTP_HOST=mailpit pnpm --filter web start` | refuses to start with `app.mode.refused` |
 | Demo marker | `APP_MODE=demo DEMO_MARKER=0 pnpm --filter web start` | refuses to start |
+| FD-072: timing bypass (AC3.1.5) | `pnpm test:int -- sign-in-delay.adversarial` case (a): 3 failures for `shirin.demo@example.test`, then 5 concurrent attempts | no concurrent attempt completes without a delay; the next attempt after them gets the 9th-attempt delay (30 s), so all 5 were counted |
+| FD-072: no enumeration through delay differences (AC3.1.5) | case (b): the same 10-failure sequence for `shirin.demo@example.test` and `nobody.demo@example.test` | identical delay per attempt, identical response shape and status; median timing difference < 15 %; Mailpit has a severe-activity email only for the real address |
+| FD-072: counter cannot be reset by the attacker (AC3.1.5) | case (c): after 5 failures, retry from a new network key, with `Shirin.Demo@Example.test` and with surrounding spaces, and after a password-reset request | the next attempt is still delayed by the next step of the schedule each time |
+| FD-072: one severe notice under concurrency (AC3.1.5) | case (d), if written: 9 failures, then 3 concurrent wrong attempts | exactly one `email_deliveries` row (category `security`) and one outbox event for the severe-activity notice |
+| FD-072: T-502 adds no FD-058 code | `git diff --stat main...` on the T-502 branch | no change under `packages/application/src/modules/account/` or to the FD-058 setting keys; the FD-058 additions are tests only |
 | Quality gates | `pnpm check` | green |
 
 ## Tests to write
@@ -102,6 +117,7 @@ a PostgreSQL-backed limiter — in follow-ups).
 - `upload-limits.test.ts` (route handler with a streamed body) — overflow abort, part count, extension allowlist, origin.
 - `scrub.test.ts` + `log-scrub.int.test.ts` — as step 7.
 - `app-mode.test.ts` — the refusal matrix.
+- `sign-in-delay.adversarial.int.test.ts` — the 3–5 adversarial cases of step 11 against T-101's FD-058 code (FD-072).
 - `e2e/security-headers.spec.ts` — headers + cookie table + zero CSP violations captured via `page.on('console')` across five pages per locale.
 
 ## Threat notes
@@ -112,7 +128,7 @@ Write these into `docs/security/local-demo-threat-notes.md` with the test that c
 |---|---|---|
 | Stored XSS via review/comment body or display name | React escaping + strict `script-src` nonce; no `dangerouslySetInnerHTML` | csp test, sweep, e2e zero violations with a seeded `<script>` body fixture |
 | CSRF on server actions / upload | `allowedOrigins`, `assertSameOrigin`, SameSite cookies | origin tests, e2e cookie table |
-| Credential stuffing / enumeration | per-email + per-network sign-in limits, generic errors, identical timing on unknown email (T-101), rate check before authz | rate-limits test, T-106 record |
+| Credential stuffing / enumeration | per-email + per-network sign-in limits, the progressive per-email delay and severe-activity notice (T-101, FD-058), generic errors, identical timing on unknown email (T-101), rate check before authz | rate-limits test, T-106 record, `sign-in-delay.adversarial.int.test.ts` (FD-072) |
 | CGNAT lock-out (false positive DoS) | network key = IP + UA family, per-account keys preferred | network-key test |
 | Resource exhaustion via upload | edge byte counting + abort, part cap, pixel/page caps in worker (T-304) | upload-limits test |
 | Clickjacking of the console | `frame-ancestors 'none'`, `X-Frame-Options: DENY` | headers curl |

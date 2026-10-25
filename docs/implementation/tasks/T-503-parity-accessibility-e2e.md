@@ -7,7 +7,7 @@
 | Class → model | M2 → Claude Sonnet 5 (alt GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | `high` |
 | Estimate | 6–8 h agent; validation 2 h |
-| Depends on | every UI task (T-102, T-202, T-203, T-206, T-207, T-306, T-307, T-308, T-402, T-406, T-407, T-408, T-409), T-501, T-502 (rerun after it merges), T-007 (seed) |
+| Depends on | CR-004 (the live-region announcements `live-region.spec.ts` asserts), every UI task (T-102, T-202, T-203, T-206, T-207, T-306, T-307, T-308, T-402, T-406, T-407, T-408, T-409), T-501, T-502 (rerun after it merges), T-007 (seed) |
 | Parallel-safe with | T-502 (rerun the suite after T-502 merges), T-504 (T-504 consumes this suite's green run) |
 
 ## Scope change 2026-09-12 — images only (CR-001 / FD-036)

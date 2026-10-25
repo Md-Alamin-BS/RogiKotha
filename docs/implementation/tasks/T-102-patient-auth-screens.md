@@ -7,8 +7,15 @@
 | Class → model | M2 → Claude Sonnet 5 (alt GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | high |
 | Estimate | 4–6 h agent; validation 1.5 h |
-| Depends on | T-101 (commands + actions), T-008 (shell, ported CSS), D-001 reviewed by the founder |
+| Depends on | T-101 (commands + actions), T-008 (shell, ported CSS), D-001 auth-screen review (both locales, both themes, 360 px) approved by the owner and recorded in this Unit's record — an explicit gate (FD-053) |
 | Parallel-safe with | T-103, T-104, T-105 (lane A, disjoint paths), T-207 |
+
+## Amendments — owner decisions (FD-045..FD-075)
+
+These decisions are binding and override the text below where they differ; the steps below are already corrected.
+
+- **FD-053** — The D-001 auth-screen review (both locales, both themes, 360 px) is an explicit gate on this Unit: the owner's approval must be recorded in this Unit's record. Changes "Depends on" and the acceptance checks.
+- **FD-057** — The security page ships the session list and "Sign out everywhere" only, on top of T-101's 30-day sessions. Recent successful logins and failed-login alerts are deferred and get no UI. Changes Not in scope, step 8 and the acceptance checks.
 
 ## Goal
 
@@ -44,6 +51,7 @@ Implement the patient-side auth screens and the masthead account entry exactly a
 ## Not in scope
 
 - Staff screens, step-up sheet, role chip (T-103). Wiring the gate sheet into comment/react/bookmark/report/claim controls (T-402, T-409, T-202/T-204 do that; you export `useAuthGate()` and `AuthGateSheet`). Email-change. Workspace tabs other than the Security link.
+- A list of recent successful logins and any failed-login alert on `/me/security` (deferred, FD-057).
 
 ## Steps
 
@@ -54,7 +62,7 @@ Implement the patient-side auth screens and the masthead account entry exactly a
 5. **Reset page.** Two forms by presence of `token`; neutral `auth.reset.sent`; set form validates equality (`auth.reset.mismatch`) and length; success → `redirect('/sign-in?reset=done')` and the sign-in page renders `auth.reset.done`.
 6. **Sign-out.** A server action bound to a `<form method="post">` button in the account menu; redirect to `next` (current public path) or `/`.
 7. **Account entry.** `AccountEntry` (client) rendered in `Masthead` before the language control: three states from a small `viewer` prop `{ kind, initials, verified, unreadCount, staff }` computed in the layout from `getActor()`; signed-out → link to `/sign-in?next=<pathname>`; signed-in → opens `Sheet` with the §1 menu (`auth.verifyPending` first when unverified with the warn dot; `nav.admin` last for staff; `.count` on Notifications). Match the prototype's glyph SVG and `initials()`.
-8. **Security page.** `/me/security` under the workspace layout, `noindex`; sections per §3.6: email + verified badge, change-password form, sessions `.kv` table from `account.listSessions` (format dates with `packages/i18n`), **Sign out everywhere** revealing an inline password field then calling `signOutEverywhereAction` (T-103 will swap this for the shared step-up sheet; keep the inline version behind a prop so the swap is one line). Add `auth.security.nav` to `WorkspaceNav`.
+8. **Security page.** `/me/security` under the workspace layout, `noindex`; sections per §3.6: email + verified badge, change-password form, sessions `.kv` table from `account.listSessions` (format dates with `packages/i18n`; active sessions only, with no recent-login history and no failed-login alerts, FD-057), **Sign out everywhere** revealing an inline password field then calling `signOutEverywhereAction` (T-103 will swap this for the shared step-up sheet; keep the inline version behind a prop so the swap is one line). Add `auth.security.nav` to `WorkspaceNav`.
 9. **Gates.** `WriteGateCallout` (signed out: callout + two `.btn small`; unverified: pending banner) exported for the Composer; `AuthGateSheet` + `useAuthGate()` hook returning `guard(fn)` that runs `fn` when verified, opens the sheet with `auth.gate.body` when signed out, or `auth.gate.verifyToAct` when unverified. Render one `AuthGateSheet` in the patient layout so any component can call it.
 10. Policy pages (`/terms`, `/privacy`) reuse the About component's sections (from T-207 if landed; otherwise a minimal page reading the `aboutview.*` keys) — keep short; T-207 may replace.
 11. Tests, `pnpm check`, `npx impeccable detect apps/web/src --no-advisory`, hand-off, commit `T-102: …`.
@@ -73,6 +81,10 @@ Implement the patient-side auth screens and the masthead account entry exactly a
 | Both locales | every page under `/bn/` | Bengali strings, Bengali digits in dates/minutes, cap-drop, no overflow at 360 px |
 | noindex | curl each auth page | `<meta name="robots" content="noindex">` |
 | Detector + contrast | `npx impeccable detect apps/web/src --no-advisory`; `pnpm contrast` | clean |
+| FD-053: D-001 gate recorded | read this Unit's record before Code Generation starts | the owner's approval of the D-001 auth-screen review is recorded with its date and covers `en` and `bn`, both themes and 360 px width |
+| FD-053: built screens match the approved review | every auth page and `/me/security` in `en` and `bn`, in both themes, at 360 px | each matches the approved D-001 screen; no horizontal or Bengali text overflow |
+| FD-057: security page scope (AC3.2.3) | open `/me/security` signed in from two browsers | a sessions table with both sessions and a Sign out everywhere control; no recent-logins list and no failed-login alert anywhere on the page |
+| FD-057: sign out everywhere (AC3.2.3) | choose Sign out everywhere and confirm the password, then reload the other browser | both browsers are signed out; the next request in each is treated as signed out |
 | Checks | `pnpm check` | exit 0 |
 
 ## Tests to write

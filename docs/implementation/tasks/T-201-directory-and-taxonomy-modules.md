@@ -10,6 +10,14 @@
 | Depends on | T-005 (schema), T-007 (seed corpus), T-003 (contracts) |
 | Parallel-safe with | T-101, T-102, T-103, T-104, T-207 (no shared files); **not** with T-204 (same module folders) |
 
+## Amendments — owner decisions (FD-045..FD-075)
+
+These decisions are binding and override the text below where they differ; the steps below are already corrected.
+
+- **FD-067** — Directory and Taxonomy do not read Review's data directly, because Review already depends on them. The doctor and facility profile figures (account lists, distributions, condition counts, document counts) reach Directory through its `ProviderExperience` port, and the condition page figures reach Taxonomy through its `ConditionStats` port; Directory and Taxonomy declare the ports and Review implements them. Contract Design pins the port signatures and their file paths. Changes Owned paths, Step 2, Step 5 and Acceptance checks.
+
+FD-061 (protected fields) and FD-064, FD-065, FD-066, FD-068 and FD-069 do not change this task: it has no commands, no protected-field list, no retention, audit-ownership, metrics or deletion text.
+
 ## Goal
 
 Make every doctor, facility, branch and condition readable from PostgreSQL through typed queries and
@@ -40,6 +48,7 @@ Create/modify only:
 - `packages/application/src/ports/repositories/{directory.ts,taxonomy.ts}` and the read methods of `review.ts` listed in Steps 3
 - `packages/contracts/src/view-models/{doctor.ts,facility.ts,condition.ts,experience-card.ts}` (fill the `TODO(T-201)` markers T-003 left)
 - `packages/database/src/repositories/{directory.ts,taxonomy.ts}` and the read methods of `review.ts`
+- The `ProviderExperience` (Directory) and `ConditionStats` (Taxonomy) port declarations and their Review implementations, at the paths named in Contract Design (FD-067)
 - Tests under the same packages (`*.test.ts`, `*.int.test.ts`)
 
 ## Not in scope
@@ -53,7 +62,7 @@ Create/modify only:
 ## Steps
 
 1. **Domain policies.** In `domain/review/policies.ts` write `distribution(values: string[], keys: readonly string[]) → { counts, total, empty, limited? }` reproducing `distribution()` in the data file (a value outside `keys` is ignored; `total` counts only recognised values) and `isLimitedData(total, threshold) → total > 0 && total < threshold`. `pct` is **not** exported — the UI never shows a percentage without its count. In `domain/directory/policies.ts` write `omitEmptyFields(fields)` (drops `null`, `''`, empty arrays) and `registrationNotVerified = () => true as const` with a comment citing D-003/FD binding. In `domain/taxonomy/policies.ts` write `normalizeAliasKey(text)` = NFC → lowercase → strip spaces/punctuation (the same function T-205 will import; do not duplicate it later).
-2. **Repository ports.** `DirectoryRepository`: `findDoctorByPublicId`, `listDoctors({page, pageSize, sort:'name'})`, `findBranchByPublicId`, `listBranches`, `branchesOfFacility(facilityId)`, `doctorsAtBranch(branchId)`, `branchesForDoctor(doctorId)` (via `doctor_chambers.branch_id`), `chambersOf(doctorId)`, `findRedirect(fromPublicId)` (read only; T-204 writes). `TaxonomyRepository`: `findTermByPublicId`, `listTerms(kind)`, `aliasesOf(termId)`, `findByAlias(aliasKey)`. `ReviewRepository` read methods: `publishedForDoctor(doctorId, {termId?})`, `publishedForBranch(branchId)` (facility_reviews), `publishedForTerm(termId)`, `conditionCountsForDoctor(doctorId)` (group by review_tags.term_id where group='condition'), `doctorCountsForTerm(termId)`, `tagFrequencyForTerm(termId, group)` (counts distinct review per tag label: `coalesce(term name, free_text)`), `readyEvidenceCountForDoctor(doctorId)` (evidence_items.state = 'published' joined through reviews), `listRecentCards(limit)`. Every read applies `state = 'published'` in SQL.
+2. **Repository ports.** `DirectoryRepository`: `findDoctorByPublicId`, `listDoctors({page, pageSize, sort:'name'})`, `findBranchByPublicId`, `listBranches`, `branchesOfFacility(facilityId)`, `doctorsAtBranch(branchId)`, `branchesForDoctor(doctorId)` (via `doctor_chambers.branch_id`), `chambersOf(doctorId)`, `findRedirect(fromPublicId)` (read only; T-204 writes). `TaxonomyRepository`: `findTermByPublicId`, `listTerms(kind)`, `aliasesOf(termId)`, `findByAlias(aliasKey)`. `ReviewRepository` read methods: `publishedForDoctor(doctorId, {termId?})`, `publishedForBranch(branchId)` (facility_reviews), `publishedForTerm(termId)`, `conditionCountsForDoctor(doctorId)` (group by review_tags.term_id where group='condition'), `doctorCountsForTerm(termId)`, `tagFrequencyForTerm(termId, group)` (counts distinct review per tag label: `coalesce(term name, free_text)`), `readyEvidenceCountForDoctor(doctorId)` (evidence_items.state = 'published' joined through reviews), `listRecentCards(limit)`. Every read applies `state = 'published'` in SQL. The `ReviewRepository` read methods are used only inside the review module: Directory's queries obtain review-derived figures through the `ProviderExperience` port and Taxonomy's through the `ConditionStats` port, which Review implements on top of these methods (FD-067).
 3. **Drizzle repositories.** Implement the ports in `packages/database/src/repositories/`. Use joins, not N+1 loops. `doctorCountsForTerm` must count reviews, not tags (a review with the condition tagged twice counts once).
 4. **View models** (fill T-003's stubs):
    - `DoctorCardVM` — `{publicId, name, specialty, area, city, avatarHue, topConditions: [{publicId, name, count}] (max 3), documentsCount, sentiment: DistributionVM, registrationNotVerified: true}`. `avatarHue = hash(publicId) % 360` using the FNV-1a `hash` from the data file, ported into `contracts/ids.ts` as `stableHue(seed)`.
@@ -65,7 +74,7 @@ Create/modify only:
    - `ExperienceCardVM` — what `accountRow` needs: `{publicId, title, excerpt (190 graphemes, Intl.Segmenter), sentiment?, outcome?, condition: {publicId, name}, documentsCount, author: BylineVM, relationship, period: {year, month}, doctor: {publicId, name}}`. `BylineVM = {personaKind: identity_mode, displayName?, username?, initials?}` — for `anonymous` the VM carries **no** name at all.
    - `TopicIndexVM` — `[{publicId, name, accountsTotal}]` including zero-count topics (the prototype deliberately lists empty topics).
 5. **Queries** (`defineQuery`, all locale-aware: pass `locale` and pick `*_en`/`*_bn` in the repository mapper; VMs carry the resolved string, never both):
-   `directory.getDoctor({publicId, condition?, outcome?, relationship?, docs?})`, `directory.listDoctors({page})`, `directory.getFacility({publicId})`, `directory.listFacilities({page})`, `taxonomy.getCondition({publicId})`, `taxonomy.listConditions()`, `taxonomy.resolve({text})` (exact alias-key match only here; fuzzy is T-205), `review.sentimentDistribution({doctorId, termId?})`, `review.outcomeDistribution({doctorId, termId?})`, `review.criteriaDistribution({branchId, key})`, `review.listExperienceCards({limit, cursor?, doctorId?, termId?})`. `limited` is computed with `ConfigProvider.current().limitedDataThreshold`.
+   `directory.getDoctor({publicId, condition?, outcome?, relationship?, docs?})`, `directory.listDoctors({page})`, `directory.getFacility({publicId})`, `directory.listFacilities({page})`, `taxonomy.getCondition({publicId})`, `taxonomy.listConditions()`, `taxonomy.resolve({text})` (exact alias-key match only here; fuzzy is T-205), `review.sentimentDistribution({doctorId, termId?})`, `review.outcomeDistribution({doctorId, termId?})`, `review.criteriaDistribution({branchId, key})`, `review.listExperienceCards({limit, cursor?, doctorId?, termId?})`. `limited` is computed with `ConfigProvider.current().limitedDataThreshold`. `directory.getDoctor` / `getFacility` take their accounts, distributions and counts from `ProviderExperience`, and `taxonomy.getCondition` / `listConditions` take theirs from `ConditionStats`; neither module imports the review module or `ReviewRepository` (FD-067).
 6. **Redirect lookup.** `directory.resolvePublicId({kind, publicId}) → {publicId, redirected: boolean}` reading `profile_redirects` so T-202/T-203 pages can 301.
 7. **Tests** (see below), then `pnpm check`.
 
@@ -80,6 +89,7 @@ Create/modify only:
 | Zero-count topics listed | `pnpm vitest run -t "topic index"` | `taxonomy.listConditions` returns all 8 seed conditions, two with `accountsTotal: 0` |
 | Locale mapping | `pnpm vitest run -t "locale"` | `getDoctor` in `bn` returns Bengali names and no `_en` keys anywhere in the VM (deep assertion) |
 | No private data in VMs | `pnpm vitest run -t "projection"` | JSON of every VM contains no `accountId`, `email`, `reporter`, `originalFilename` keys |
+| FD-067: review figures only through ports | `pnpm lint` + `pnpm vitest run packages/application -t "doctor profile"` | no file under `modules/directory` or `modules/taxonomy` imports `modules/review` or `ReviewRepository`; with a fake `ProviderExperience` returning sentiment `{positive: 2, mixed: 1, negative: 1}` (total 4), `getDoctor` shows exactly those counts and total; with a fake `ConditionStats`, `getCondition` shows the fake's counts |
 | Full check | `pnpm check` | green |
 
 ## Tests to write

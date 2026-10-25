@@ -9,7 +9,15 @@
 | Estimate | 0.5–1 h agent once the founder has decided (the decision is the long pole) |
 | Depends on | T-005 (merged — the grant is in `0005_grants_part2.sql`) |
 | Parallel-safe with | anything not editing `packages/database/src/migrations/**` or `02-data-model.md` §16 |
-| Status | **needs queueing — blocked on a founder decision** |
+| Status | **decided** — option (a), revoke (FD-041); the review of the other worker grants is added (FD-050) |
+
+## Amendments — owner decisions (FD-045..FD-075)
+
+These decisions are binding and override the text below where they differ; the steps below are already corrected.
+
+- **FD-041** (round 5) — The owner's ruling is option **(a)**: revoke `rk_worker`'s `SELECT (id, email)` on `auth_users` in a forward-only migration; the worker reads recipients from `email_deliveries.to_email_enc`. Changes the Status row, "The decision the founder must make", steps 1–3 and the acceptance checks; option (b) is not taken.
+- **FD-071** — This supersedes the note that `mail.send` belongs to T-405: T-101 builds the worker's `mail.send` handler, reading the recipient from `email_deliveries.to_email_enc`, never from `auth_users`, and T-405 extends it with preference checks, the `suppressed` status and the per-key params allowlist. The web tier fills `to_email_enc` when it queues the email. T-101 depends on this unit. Changes option (a)'s text and the acceptance checks.
+- **FD-050** — `rk_worker`'s grants beyond `02-data-model.md` §16 in `0005_grants_part2.sql` (reviews `UPDATE(state, deleted_at)`, `review_versions` INSERT, comments SELECT/UPDATE, column SELECT on `reports` and `account_profiles`, `legal_holds` SELECT) are a known deviation and are reviewed in this unit together with FD-041. Adds step 7, an owned-path note and acceptance checks. The review is judged against the jobs planned in the later Units' task files, not only against the code on `main` (review R-17): a grant that a planned Unit needs is kept until that Unit lands, and only a grant no planned Unit needs is offered for revocation.
 
 ## Why this exists
 
@@ -51,14 +59,17 @@ next agent will trust whichever of the four sources it happens to read first.
 
 ## The decision the founder must make
 
+**Decided: (a)** — FD-041 (round 5). The two options stay below as the record of what was weighed.
+
 Pick **(a)** or **(b)**. Both ship; leaving the documents and the database contradicting each other
 is the only genuinely bad outcome.
 
 **(a) Revoke the grant (recommended — restores the designed boundary).**
 The worker reads recipients from `email_deliveries.to_email_enc` as `02-data-model.md` §16 note 3
-already describes, decrypting with `APP_ENCRYPTION_KEY`. Cost: `mail.send` (T-405) must be written
-against `email_deliveries`, and whoever enqueues a mail job must populate `to_email_enc` at enqueue
-time — which is the design the schema already anticipates. Nothing outside the worker changes.
+already describes, decrypting with `APP_ENCRYPTION_KEY`. Cost: `mail.send` (built by T-101 and
+extended by T-405, FD-071) must be written against `email_deliveries`, and whoever enqueues a mail job
+must populate `to_email_enc` at enqueue time — which is the design the schema already anticipates
+(the web tier fills it, FD-071). Nothing outside the worker changes.
 
 **(b) Keep the grant and amend the documents.**
 Record the exception in `02-data-model.md` §16 (both bullet 2 and note 3) and `01-conventions.md`
@@ -77,32 +88,47 @@ and `to_email_enc` becomes defence-in-depth rather than a boundary.
 
 - `packages/database/src/migrations/0006_*.sql` (new, forward-only) — option (a)
 - `packages/database/src/grants.smoke.test.ts`, `packages/database/src/validator-probes.int.test.ts`
-- `docs/implementation/02-data-model.md` §16, `docs/implementation/01-conventions.md` §11 — option (b) only
+- `docs/implementation/02-data-model.md` §16, `docs/implementation/01-conventions.md` §11 — option (b) only (not taken, FD-041), and for any FD-050 grant the owner keeps (FD-050)
 - `docs/status/decision-log.md` (the `FD-` entry recording the ruling), `docs/implementation/ISSUES.md`
 
 ## Steps
 
-1. Read the founder's ruling in `docs/status/decision-log.md` (a new `FD-` entry). If it is not
-   there, stop — this task is not ready.
-2. **Option (a):** add a forward-only migration `0006_revoke_worker_auth_users.sql` containing
+1. Read the founder's ruling in `docs/status/decision-log.md`: FD-041 chose option (a). Read FD-050
+   and FD-071 as well.
+2. **Option (a) — the decided option (FD-041):** add a forward-only migration `0006_revoke_worker_auth_users.sql` containing
    `REVOKE ALL ON auth_users FROM rk_worker;`. Do not edit `0005_grants_part2.sql` — migrations are
    append-only once merged.
-3. **Option (b):** edit `02-data-model.md` §16 bullet 2 and note 3 and `01-conventions.md` §11 to
+3. **Option (b) — not taken (FD-041):** edit `02-data-model.md` §16 bullet 2 and note 3 and `01-conventions.md` §11 to
    state the exception and why, citing the `FD-` entry. Leave the migration alone.
 4. Either way: update the SQL comment at `0005_grants_part2.sql:98` to point at the `FD-` entry.
 5. Add a test that asserts the decided state as a real `rk_worker` session (not a catalogue read).
    Under option (a) this replaces the `it.fails` tripwire; under option (b) it pins the exception so
    a later migration cannot widen it further.
 6. Close `ISS-140` as `fixed in CR-006` with which option was taken.
+7. **Review the other worker grants (FD-050).** For each grant FD-050 lists — reviews
+   `UPDATE(state, deleted_at)`, `review_versions` INSERT, comments SELECT/UPDATE, the column SELECT on
+   `reports` and on `account_profiles`, and `legal_holds` SELECT — record two things. First, which
+   worker job uses it today, or that none does. Second, which planned Unit needs it, read from the task
+   files of the later Units (for example T-302, T-401, T-309, T-403, T-405 and T-410) and from Contract
+   Design's worker-boundary decision; name the Unit and the task-file step, or write that no planned
+   Unit needs it. Then record how the grant compares with `02-data-model.md` §16 and AD-6, and the
+   options with a suggestion. A grant that a planned Unit needs is kept until that Unit lands, and the
+   record says so; only a grant no planned Unit needs is offered for revocation. Ask the owner to rule
+   on each grant; record the ruling as an `FD-` entry. Then apply it: a forward-only migration for
+   every grant revoked, and a §16 amendment with the reason for every grant kept. Add a
+   real-`rk_worker` probe for each grant to `validator-probes.int.test.ts`.
 
 ## Acceptance checks
 
 | Check | Expected |
 |---|---|
-| A real `rk_worker` session runs `select id, email from auth_users limit 1` | (a) permission denied · (b) succeeds, and a test pins exactly these two columns |
+| A real `rk_worker` session runs `select id, email from auth_users limit 1` | permission denied — option (a), FD-041 (option (b) not taken) |
 | `rk_worker` on `auth_sessions`, `auth_accounts`, `auth_verifications` | permission denied (unchanged either way) |
 | `02-data-model.md` §16 and `01-conventions.md` §11 vs the live database | agree — no remaining contradiction |
 | `docs/status/decision-log.md` | carries the `FD-` entry the SQL comment cites |
+| FD-071: the recipient path T-101's `mail.send` handler uses | a real `rk_worker` session runs `select id, to_email_enc from email_deliveries limit 1` | succeeds (no `auth_users` access needed to send mail) |
+| FD-050: every listed grant reviewed | read the decision log and this unit's hand-off | one owner ruling (keep or revoke, with reason) for each of the six grants FD-050 lists, recorded as an `FD-` entry; each grant's record names the worker job that uses it today and the planned Unit (with task-file step) that needs it, or says no planned Unit does; no grant is offered for revocation while a planned Unit needs it (R-17) |
+| FD-050: live database matches the rulings | a real `rk_worker` session probes each of the six grants | each revoked grant → permission denied; each kept grant → succeeds, and `02-data-model.md` §16 names it with its reason |
 | `pnpm check`, `pnpm test:int` | exit 0 |
 
 ## Hand-off

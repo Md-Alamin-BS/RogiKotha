@@ -7,8 +7,15 @@
 | Class → model | M3 → Claude Opus 5 (alt GPT-5.6 Sol); validator: GPT-5.6 Sol + human approval (T-106) |
 | Effort setting | xhigh |
 | Estimate | 5–7 h agent; validation 2 h |
-| Depends on | T-101, T-008 (admin layout + `admin.css`), D-001 reviewed |
+| Depends on | T-101, T-008 (admin layout + `admin.css`), D-001 auth-screen review (both locales, both themes, 360 px) approved by the owner and recorded in this Unit's record — an explicit gate (FD-053) |
 | Parallel-safe with | T-102 (lane B; only shared file is `packages/i18n/messages/*` — append, do not reorder), T-104 (disjoint modules; both add audit rows), T-201 |
+
+## Amendments — owner decisions (FD-045..FD-075)
+
+These decisions are binding and override the text below where they differ; the steps below are already corrected.
+
+- **FD-051** — Retention bulk actions are **super_admin only**, as `03-routes-and-contracts.md` and `packages/contracts/src/actor.ts` already have it. Step 1 no longer gives `admin` the `retention.bulk` capability; the capability table test and the acceptance checks assert it.
+- **FD-053** — The D-001 auth-screen review (both locales, both themes, 360 px) is an explicit gate on this Unit: the owner's approval must be recorded in this Unit's record. Changes "Depends on" and the acceptance checks.
 
 ## Goal
 
@@ -47,7 +54,7 @@ Staff sign in with the same accounts, distinguished by `account_profiles.staff_r
 
 ## Steps
 
-1. **Capabilities.** In `contracts/actor.ts` document the table: `super_admin` → all eight; `admin` → `reports.read`, `content.act`, `providers.decide`, `holds.manage`, `retention.bulk`, plus `identity.reveal` / `evidence.original` iff `config.capabilities.admin.*`; `moderator` → `reports.read`, `content.act`, plus the two toggles iff `config.capabilities.moderator.*`; no role → `[]`. Implement `resolveCapabilities(role, config)` with a table test for all 3 roles × 4 toggle states. Replace T-101's stub.
+1. **Capabilities.** In `contracts/actor.ts` document the table: `super_admin` → all eight (the only role with `retention.bulk` and `config.write`, FD-051); `admin` → `reports.read`, `content.act`, `providers.decide`, `holds.manage`, plus `identity.reveal` / `evidence.original` iff `config.capabilities.admin.*` (never `retention.bulk`, FD-051); `moderator` → `reports.read`, `content.act`, plus the two toggles iff `config.capabilities.moderator.*`; no role → `[]`. Implement `resolveCapabilities(role, config)` with a table test for all 3 roles × 4 toggle states. Replace T-101's stub.
 2. **Device cookie.** `rk_staff_device`: 32 random bytes base64url, `httpOnly`, `sameSite lax`, `secure` per `APP_URL`, `maxAge 90 d`, path `/`. Store `sha256(secret)` in `staff_devices.device_hash`. A `getStaffContext(actor, headers)` helper returns `{ device: 'approved' | 'unknown' | 'pending' | 'revoked' }` by looking up the hash for the actor's account. Device trust is per account: the same cookie on another staff account is `unknown`.
 3. **Console guard.** `app/[locale]/admin/layout.tsx`: if no actor or no `staffRole` → `redirect('/[locale]/admin/sign-in?next=')`; if device not approved → `redirect('/[locale]/admin/approve-device')`; else render the Chart Tray layout with `RoleChip` (`SA`/`AD`/`MO`, `title = staff.role.chipTitle {role}`) and `StaffAccountMenu` (Security, Sign out). `sign-in`, `approve-device` and `security` are route groups outside the guarded segment (`admin/(public)/sign-in` etc.) but still load `admin.css` and `noindex`.
 4. **Staff sign-in action.** Validate credentials through Better Auth's sign-in API **without** persisting a session yet if possible; if the library always creates a session, immediately revoke it when the account has no `staff_role` (`staff.notStaff`) or when the device is unknown (then run step 5). Reuse the T-101 rate limiter (key `staff-signin`). Non-staff never get a session from this route.
@@ -69,14 +76,18 @@ Staff sign in with the same accounts, distinguished by `account_profiles.staff_r
 | Known device | sign out, sign in again | straight to `/admin/queue` |
 | Revoke | `/admin/security` → Revoke current | signed out; next sign-in requires approval |
 | Cookie per account | same browser, sign in as `admin_nadia` | approval required again |
-| Capabilities | unit table test | 12 combinations correct; `super_admin` always all |
+| Capabilities | unit table test | 12 combinations correct; `super_admin` always all; no `admin` or `moderator` combination includes `retention.bulk` (FD-051) |
 | Step-up | call a test command with `requires.stepUp` without cookie | `auth.step_up_required`; after `account.stepUp`, allowed for 5 min, refused at 5:01 (FakeClock) |
 | Cookie flags | inspect `rk_staff_device`, `rk_stepup` | `HttpOnly`, `SameSite`, `Secure` only on https, sizes < 4 KB |
+| FD-051: bulk retention is super_admin only (AC7.3.4) | `resolveCapabilities` for `admin` and `moderator` with every toggle on; then a test command with `requires: { capability: 'retention.bulk' }` run as `admin_nadia` and as `mod_rashid` | neither capability set contains `retention.bulk`; both calls return `forbidden` and nothing is written |
+| FD-051: super_admin keeps bulk retention (AC7.3.3) | `resolveCapabilities('super_admin', config)` with every toggle off | the set contains `retention.bulk` |
+| FD-053: D-001 gate recorded | read this Unit's record before Code Generation starts | the owner's approval of the D-001 auth-screen review is recorded with its date and covers `en` and `bn`, both themes and 360 px width |
+| FD-053: built staff screens match the approved review | `/admin/sign-in`, `/admin/approve-device` (pending and recheck), `/admin/security` and the step-up sheet in `en` and `bn`, in both themes, at 360 px | each matches the approved D-001 screen; no horizontal or Bengali text overflow |
 | Checks | `pnpm check` | exit 0 |
 
 ## Tests to write
 
-- `capabilities.test.ts` table; `step-up.test.ts` (signature tamper → no stepUp; expiry; wrong account).
+- `capabilities.test.ts` table, including that only `super_admin` holds `retention.bulk` (FD-051); `step-up.test.ts` (signature tamper → no stepUp; expiry; wrong account).
 - `staff-*.test.ts` with fakes: begin/approve/revoke, 3-strike token invalidation, non-staff refusal, notification + audit rows.
 - `staff.int.test.ts`: full browser-less flow through the actions against compose PostgreSQL + Mailpit; device hash never equals the cookie value; revoked device refused.
 - Component tests for the four screens in both locales; `RoleChip` titles.

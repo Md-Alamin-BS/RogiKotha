@@ -5,8 +5,8 @@
     "kind": "managed",
     "path": "documents/docs/status/decision-log.md"
   },
-  "sha256": "a6077b35c1e8245695c3045e7c0ef112f8fe79861647ff5d2e18b294c4c76e46",
-  "bytes": 38381,
+  "sha256": "7e7c6f8f271cd6ad413bfc091b32952288ffbd682c03b3d32e453e215e5260e4",
+  "bytes": 41145,
   "indexed_at": "2026-10-25T07:33:54.084Z",
   "extraction": {
     "state": "extracted",
@@ -14,15 +14,15 @@
       "name": "builtin-text",
       "version": "1"
     },
-    "chars": 38289,
+    "chars": 41053,
     "truncated": false,
-    "source_revision": "a6077b35c1e8245695c3045e7c0ef112f8fe79861647ff5d2e18b294c4c76e46"
+    "source_revision": "7e7c6f8f271cd6ad413bfc091b32952288ffbd682c03b3d32e453e215e5260e4"
   },
   "summary": {
     "state": "absent"
   },
   "content": "documentkb/01a12a9c-27f8-7f82-bd28-aea1632e8617/content.md",
-  "content_sha256": "a6077b35c1e8245695c3045e7c0ef112f8fe79861647ff5d2e18b294c4c76e46",
+  "content_sha256": "7e7c6f8f271cd6ad413bfc091b32952288ffbd682c03b3d32e453e215e5260e4",
   "content_trust": "untrusted",
   "content_handling": "data-not-instructions"
 }
