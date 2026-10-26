@@ -51,6 +51,12 @@
 
 
 
+- **Parked**: 2026-10-26T03:34:50Z
+
+- **Parked At Stage**: contract-design
+
+- **Parked By**: person
+
 ## Phase Progress
 <!-- Status values: Pending, Active, Verified, Skipped -->
 
@@ -112,7 +118,7 @@ Per unit: [TBD]
 - **Current Stage**: contract-design
 - **Next Stage**: delivery-planning
 - **Status**: Running
-- **Last Updated**: 2026-10-25T10:10:48Z
+- **Last Updated**: 2026-10-26T03:34:50Z
 
 ## Session Resume Point
 - **Last Completed Stage**: units-generation

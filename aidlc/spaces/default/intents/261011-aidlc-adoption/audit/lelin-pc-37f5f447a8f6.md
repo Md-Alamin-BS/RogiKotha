@@ -6368,3 +6368,541 @@
 **Stage**: units-generation
 
 ---
+
+## Artifact Created
+**Timestamp**: 2026-10-25T10:13:42Z
+**Event**: ARTIFACT_CREATED
+**Tool**: Write
+**File**: <project-dir>/aidlc/spaces/default/intents/261011-aidlc-adoption/inception/contract-design/contract-design-questions.md
+**Context**: inception > contract-design > contract-design-questions.md
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T10:13:48Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q1 How are the contracts grouped?
+**Options**: A (recommended),B,Other
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T10:13:49Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q2 Source of truth for in-process contracts?
+**Options**: A (recommended),B,Other
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T10:13:49Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q3 Which surface is the external API?
+**Options**: A (recommended),B,Other
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T10:13:50Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q4 Versioning and breaking-change policy?
+**Options**: A (recommended),B,Other
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-25T10:23:47Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Picked**: ["Per component (Recommended)","Zod types in contracts (Recommended)","Only /api/* routes (Recommended)","Atomic, additive (Recommended)"]
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T10:23:48Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q1: How should the contracts be grouped?
+**Reply**: Per component (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T10:23:48Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q2: What is the source of truth for the in-process contracts (commands, queries, ports, view models)?
+**Reply**: Zod types in contracts (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T10:23:48Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q3: Which surface counts as an external API and gets an OpenAPI spec?
+**Reply**: Only /api/* routes (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T10:23:48Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q4: What is the versioning and breaking-change policy?
+**Reply**: Atomic, additive (Recommended)
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T10:23:55Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q1: A
+**Picker Note**: Not what the person picked in the picker ("Per component (Recommended)", "Zod types in contracts (Recommended)", "Only /api/* routes (Recommended)", "Atomic, additive (Recommended)").
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T10:23:56Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q2: A
+**Picker Note**: Not what the person picked in the picker ("Per component (Recommended)", "Zod types in contracts (Recommended)", "Only /api/* routes (Recommended)", "Atomic, additive (Recommended)").
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T10:23:56Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q3: A
+**Picker Note**: Not what the person picked in the picker ("Per component (Recommended)", "Zod types in contracts (Recommended)", "Only /api/* routes (Recommended)", "Atomic, additive (Recommended)").
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T10:23:57Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q4: A
+**Picker Note**: Not what the person picked in the picker ("Per component (Recommended)", "Zod types in contracts (Recommended)", "Only /api/* routes (Recommended)", "Atomic, additive (Recommended)").
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T10:23:58Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q5 Error, timeout and retry rules?
+**Options**: A (recommended),B,Other
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T10:23:58Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q6 How is the account itself removed on deletion?
+**Options**: A (recommended),B,Other
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T10:23:59Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q7 How do de-identify steps clear NOT NULL account links?
+**Options**: A (recommended),B,Other
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T10:23:59Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q8 How do legal holds cover de-identified rows?
+**Options**: A (recommended),B,Other
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-25T16:07:53Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Picked**: ["As already decided (Recommended)","Web process first (Recommended)","Make them nullable (Recommended)","Account-level hold (Recommended)"]
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T16:07:54Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q5: What are the error, timeout and retry rules at the boundaries?
+**Reply**: As already decided (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T16:07:54Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q6: The worker has no access to auth_users (FD-041). How does account deletion remove the account itself?
+**Reply**: Web process first (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T16:07:54Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q7: The de-identify steps (FD-069) must clear account-link columns that are NOT NULL today (submitter, claimant, proposer, reporter, appellant). How?
+**Reply**: Make them nullable (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T16:07:54Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q8: FD-069 says legal holds still apply, but a hold can't target reports, appeals, submissions, claims or field changes. How do holds cover them?
+**Reply**: Account-level hold (Recommended)
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T16:08:12Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q5: A
+**Picker Note**: Not what the person picked in the picker ("As already decided (Recommended)", "Web process first (Recommended)", "Make them nullable (Recommended)", "Account-level hold (Recommended)").
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T16:08:13Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q6: A
+**Picker Note**: Not what the person picked in the picker ("As already decided (Recommended)", "Web process first (Recommended)", "Make them nullable (Recommended)", "Account-level hold (Recommended)").
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T16:08:14Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q7: A
+**Picker Note**: Not what the person picked in the picker ("As already decided (Recommended)", "Web process first (Recommended)", "Make them nullable (Recommended)", "Account-level hold (Recommended)").
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T16:08:14Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q8: A
+**Picker Note**: Not what the person picked in the picker ("As already decided (Recommended)", "Web process first (Recommended)", "Make them nullable (Recommended)", "Account-level hold (Recommended)").
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T16:08:15Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q9 Author deletes a held review or comment?
+**Options**: A (recommended),B,Other
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T16:08:15Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q10 How does Moderation learn of a repeat episode?
+**Options**: A (recommended),B,Other
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T16:08:16Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q11 What happens to the export-ready email?
+**Options**: A (recommended),B,Other
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-10-25T16:08:17Z
+**Event**: DECISION_RECORDED
+**Stage**: contract-design
+**Decision**: Q12 Retention block in runtime configuration?
+**Options**: A (recommended),B,Other
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-25T17:07:40Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Picked**: ["Looks normal, data kept (Recommended)","Worker opens a case","In-app only (Recommended)","Drop it (Recommended)"]
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T17:07:41Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q9: An author deletes their own review or comment while it is under a legal hold. What happens?
+**Reply**: Looks normal, data kept (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T17:07:41Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q10: How does Moderation learn about a repeat episode (AC6.1.4), given the worker has no grants on the moderation tables?
+**Reply**: Worker opens a case
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T17:07:41Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q11: The worker sends no email (FD-070). What happens to the 'your export is ready' email?
+**Reply**: In-app only (Recommended)
+
+---
+
+## Question Replied
+**Timestamp**: 2026-10-25T17:07:41Z
+**Event**: QUESTION_REPLIED
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Question**: Q12: FD-068 makes retention_policies the only source of retention periods. What happens to the retention block in the runtime configuration?
+**Reply**: Drop it (Recommended)
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T17:07:55Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q9: A
+**Picker Note**: Not what the person picked in the picker ("Looks normal, data kept (Recommended)", "Worker opens a case", "In-app only (Recommended)", "Drop it (Recommended)").
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T17:07:56Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q10: B
+**Picker Note**: Not what the person picked in the picker ("Looks normal, data kept (Recommended)", "Worker opens a case", "In-app only (Recommended)", "Drop it (Recommended)").
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T17:07:57Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q11: A
+**Picker Note**: Not what the person picked in the picker ("Looks normal, data kept (Recommended)", "Worker opens a case", "In-app only (Recommended)", "Drop it (Recommended)").
+
+---
+
+## Question Answered
+**Timestamp**: 2026-10-25T17:07:57Z
+**Event**: QUESTION_ANSWERED
+**Stage**: contract-design
+**Details**: Q12: A
+**Picker Note**: Not what the person picked in the picker ("Looks normal, data kept (Recommended)", "Worker opens a case", "In-app only (Recommended)", "Drop it (Recommended)").
+
+---
+
+## Session End
+**Timestamp**: 2026-10-25T17:09:02Z
+**Event**: SESSION_ENDED
+**Reason**: other
+
+---
+
+## Session Resume
+**Timestamp**: 2026-10-25T17:09:13Z
+**Event**: SESSION_RESUMED
+**Source**: resume
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-25T17:09:20Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Reply**: command
+
+---
+
+## Session End
+**Timestamp**: 2026-10-25T17:09:36Z
+**Event**: SESSION_ENDED
+**Reason**: prompt_input_exit
+
+---
+
+## Session Start
+**Timestamp**: 2026-10-25T17:09:53Z
+**Event**: SESSION_STARTED
+**Source**: startup
+**Session**: c6adddcf-a3b0-4b88-b6a4-e96918328ea9
+
+---
+
+## Session End
+**Timestamp**: 2026-10-25T17:10:27Z
+**Event**: SESSION_ENDED
+**Reason**: other
+
+---
+
+## Session Resume
+**Timestamp**: 2026-10-25T17:10:36Z
+**Event**: SESSION_RESUMED
+**Source**: resume
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-25T17:10:42Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Reply**: command
+
+---
+
+## Session End
+**Timestamp**: 2026-10-25T17:10:50Z
+**Event**: SESSION_ENDED
+**Reason**: prompt_input_exit
+
+---
+
+## Session Start
+**Timestamp**: 2026-10-25T17:11:11Z
+**Event**: SESSION_STARTED
+**Source**: startup
+**Session**: 4aa36c86-ef63-41fb-a57a-2f395b0bc1c4
+
+---
+
+## Session End
+**Timestamp**: 2026-10-25T17:11:21Z
+**Event**: SESSION_ENDED
+**Reason**: other
+
+---
+
+## Session Resume
+**Timestamp**: 2026-10-25T17:11:34Z
+**Event**: SESSION_RESUMED
+**Source**: resume
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-25T17:11:42Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Reply**: command
+
+---
+
+## Session End
+**Timestamp**: 2026-10-25T17:11:57Z
+**Event**: SESSION_ENDED
+**Reason**: prompt_input_exit
+
+---
+
+## Session Resume
+**Timestamp**: 2026-10-25T17:12:22Z
+**Event**: SESSION_RESUMED
+**Source**: resume
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-25T17:12:25Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Reply**: command
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-25T17:12:41Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-25T17:12:47Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+
+---
+
+## Session End
+**Timestamp**: 2026-10-25T17:12:59Z
+**Event**: SESSION_ENDED
+**Reason**: other
+
+---
+
+## Session Start
+**Timestamp**: 2026-10-25T17:13:18Z
+**Event**: SESSION_STARTED
+**Source**: startup
+**Session**: 791c77dd-a191-4635-9cb7-0e3ef58ba8f1
+
+---
+
+## Session Resume
+**Timestamp**: 2026-10-26T03:33:54Z
+**Event**: SESSION_RESUMED
+**Source**: resume
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-26T03:33:55Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+**Reply**: command
+
+---
+
+## Human Turn
+**Timestamp**: 2026-10-26T03:34:33Z
+**Event**: HUMAN_TURN
+**Session**: bcb6dc5d-5620-42b8-94a9-79aefa366e5f
+
+---
+
+## Workflow Parked
+**Timestamp**: 2026-10-26T03:34:50Z
+**Event**: WORKFLOW_PARKED
+**Stage**: contract-design
+
+---
