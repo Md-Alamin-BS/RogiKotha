@@ -898,6 +898,84 @@
     }
   ];
 
+  /* FD-089: demo-data expansion. Records below are appended; d1–d6 above are unchanged. */
+  doctors.push(
+    {
+      id: 'd7',
+      name: { en: 'Dr. Tahmina Chowdhury', bn: 'ডা. তাহমিনা চৌধুরী' },
+      specialty: { en: 'Pulmonology', bn: 'পালমোনোলজি' },
+      qualifications: { en: 'MBBS, FCPS (Medicine), MD (Pulmonology)', bn: 'এমবিবিএস, এফসিপিএস (মেডিসিন), এমডি (পালমোনোলজি)' },
+      bmdc: 'A-44805',
+      gender: 'female',
+      languages: { en: 'Bangla, English', bn: 'বাংলা, ইংরেজি' },
+      fee: { en: '৳1,000', bn: '১,০০০ টাকা' },
+      city: { en: 'Rajshahi', bn: 'রাজশাহী' },
+      area: { en: 'Shaheb Bazar', bn: 'সাহেব বাজার' },
+      chambers: [
+        { name: { en: 'Kashful Community Hospital — Shaheb Bazar branch', bn: 'কাশফুল কমিউনিটি হাসপাতাল — সাহেব বাজার শাখা' }, hours: { en: 'Sat–Wed, 5–8 pm', bn: 'শনি–বুধ, বিকাল ৫–৮টা' }, provenance: 'provider' },
+        { name: { en: 'Kashful Community Hospital — Kazla branch', bn: 'কাশফুল কমিউনিটি হাসপাতাল — কাজলা শাখা' }, hours: { en: 'Thu, 10 am–1 pm', bn: 'বৃহস্পতি, সকাল ১০টা–দুপুর ১টা' }, provenance: 'community' }
+      ],
+      provenance: { name: 'community', specialty: 'community', bmdc: 'community', qualifications: 'provider', fee: 'community' },
+      claimed: false,
+      accent: 120
+    },
+    {
+      id: 'd8',
+      name: { en: 'Dr. Aminul Haque', bn: 'ডা. আমিনুল হক' },
+      specialty: { en: 'Neurology', bn: 'নিউরোলজি' },
+      qualifications: { en: 'MBBS, FCPS (Medicine), MD (Neurology)', bn: 'এমবিবিএস, এফসিপিএস (মেডিসিন), এমডি (নিউরোলজি)' },
+      bmdc: 'A-36129',
+      gender: 'male',
+      languages: { en: 'Bangla, English', bn: 'বাংলা, ইংরেজি' },
+      fee: { en: '৳1,300', bn: '১,৩০০ টাকা' },
+      city: { en: 'Rangpur', bn: 'রংপুর' },
+      area: { en: 'Modern More', bn: 'মডার্ন মোড়' },
+      chambers: [
+        { name: { en: 'Kashful Community Hospital — Rangpur branch', bn: 'কাশফুল কমিউনিটি হাসপাতাল — রংপুর শাখা' }, hours: { en: 'Sat–Thu, 4–8 pm', bn: 'শনি–বৃহস্পতি, বিকাল ৪–৮টা' }, provenance: 'admin' }
+      ],
+      provenance: { name: 'admin', specialty: 'provider', bmdc: 'admin', qualifications: 'provider', fee: 'provider' },
+      claimed: true,
+      accent: 250
+    },
+    {
+      id: 'd9',
+      name: { en: 'Dr. Golam Mostofa', bn: 'ডা. গোলাম মোস্তফা' },
+      specialty: { en: 'Endocrinology', bn: 'এন্ডোক্রিনোলজি' },
+      qualifications: { en: 'MBBS, MD (Endocrinology and Metabolism)', bn: 'এমবিবিএস, এমডি (এন্ডোক্রিনোলজি ও মেটাবলিজম)' },
+      bmdc: 'A-39874',
+      gender: 'male',
+      languages: { en: 'Bangla, English', bn: 'বাংলা, ইংরেজি' },
+      fee: { en: '৳900', bn: '৯০০ টাকা' },
+      city: { en: 'Cumilla', bn: 'কুমিল্লা' },
+      area: { en: 'Kandirpar', bn: 'কান্দিরপাড়' },
+      chambers: [
+        { name: { en: 'Jolrong Diagnostic Centre — Cumilla branch', bn: 'জলরং ডায়াগনস্টিক সেন্টার — কুমিল্লা শাখা' }, hours: { en: 'Sun–Thu, 5–9 pm', bn: 'রবি–বৃহস্পতি, সন্ধ্যা ৫–৯টা' }, provenance: 'community' },
+        { name: { en: 'Kotbari Doctors’ Chamber', bn: 'কোটবাড়ী ডক্টরস চেম্বার' }, hours: { en: 'Fri, 9 am–12 noon', bn: 'শুক্র, সকাল ৯টা–দুপুর ১২টা' }, provenance: 'community' }
+      ],
+      provenance: { name: 'community', specialty: 'community', bmdc: 'community', qualifications: 'community', fee: 'community' },
+      claimed: false,
+      accent: 50
+    },
+    {
+      id: 'd10',
+      name: { en: 'Dr. Lutfun Nahar', bn: 'ডা. লুৎফুন নাহার' },
+      specialty: { en: 'Paediatrics', bn: 'শিশুরোগ' },
+      qualifications: { en: 'MBBS, DCH, MD (Paediatrics)', bn: 'এমবিবিএস, ডিসিএইচ, এমডি (শিশুরোগ)' },
+      bmdc: 'A-48356',
+      gender: 'female',
+      languages: { en: 'Bangla, English', bn: 'বাংলা, ইংরেজি' },
+      fee: { en: '৳700', bn: '৭০০ টাকা' },
+      city: { en: 'Barishal', bn: 'বরিশাল' },
+      area: { en: 'Sadar Road', bn: 'সদর রোড' },
+      chambers: [
+        { name: { en: 'Shobuj Chhaya Family Clinic — Barishal Sadar branch', bn: 'সবুজ ছায়া ফ্যামিলি ক্লিনিক — বরিশাল সদর শাখা' }, hours: { en: 'Daily, 4–8 pm', bn: 'প্রতিদিন, বিকাল ৪–৮টা' }, provenance: 'provider' }
+      ],
+      provenance: { name: 'provider', specialty: 'provider', bmdc: 'community', qualifications: 'provider', fee: 'community' },
+      claimed: false,
+      accent: 310
+    }
+  );
+
   // STORY-SRCH-003: provisional bilingual taxonomy with aliases incl. Banglish
   var conditions = [
     { id: 'c1', name: { en: 'Type 2 diabetes', bn: 'টাইপ ২ ডায়াবেটিস' }, aliases: ['diabetes', 'ডায়াবেটিস', 'dayabetis', 'sugar', 'চিনি রোগ'] },
@@ -913,6 +991,11 @@
        'be the first' path. Without this row that difference is untestable. */
     { id: 'c8', name: { en: 'Gastric ulcer', bn: 'গ্যাস্ট্রিক আলসার' }, aliases: ['ulcer', 'গ্যাস্ট্রিক', 'gastric'] }
   ];
+
+  conditions.push(
+    { id: 'c9', name: { en: 'Asthma', bn: 'হাঁপানি' }, aliases: ['asthma', 'হাঁপানি', 'shash', 'শ্বাসকষ্ট', 'wheezing'] },
+    { id: 'c10', name: { en: 'Migraine', bn: 'মাইগ্রেন' }, aliases: ['migraine', 'মাইগ্রেন', 'আধকপালে', 'মাথাব্যথা', 'headache', 'mathabatha'] }
+  );
 
   /* Accounts. `body` fields are written the way people actually write —
      Bangla, English or mixed. They are never machine-translated; the `en`
@@ -1110,6 +1193,287 @@
     }
   ];
 
+  reviews.push(
+    {
+      id: 'r13', doctorId: 'd7', conditionId: 'c9', sentiment: 'positive', outcome: 'helped',
+      relationship: 'self', identity: 'pseudo', author: { en: 'rajshahi_rina', bn: 'rajshahi_rina' },
+      period: { en: 'April 2026', bn: 'এপ্রিল ২০২৬' }, posted: { en: 'Posted May 2026', bn: 'প্রকাশ মে ২০২৬' },
+      detailed: true, evidence: 1, likes: 26, dislikes: 1, comments: 3, claims: [],
+      title: { en: 'She watched me use the inhaler before changing anything', bn: 'কিছু বদলানোর আগে উনি আমাকে ইনহেলার ব্যবহার করতে দেখলেন' },
+      body: {
+        en: 'I had been using a blue inhaler almost daily for two years and assumed the night cough was just something I had to live with. She asked me to show her how I used it, found I was not breathing out first or holding my breath afterwards, and corrected that before talking about stronger medicine. She also explained the difference between the inhaler for emergencies and the one for every day.',
+        bn: 'দুই বছর ধরে প্রায় প্রতিদিন নীল ইনহেলার ব্যবহার করছিলাম, ভেবেছিলাম রাতের কাশি নিয়েই থাকতে হবে। উনি আমাকে ইনহেলার ব্যবহার করে দেখাতে বললেন, দেখলেন আমি আগে শ্বাস ছাড়ছি না এবং পরে শ্বাস ধরে রাখছি না, আর কড়া ওষুধের কথা বলার আগে সেটাই ঠিক করে দিলেন। জরুরি দরকারের ইনহেলার আর প্রতিদিনের ইনহেলারের পার্থক্যও বুঝিয়ে বললেন।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'Night cough and wheezing three or four times a week, breathless on the stairs, for about two years.', bn: 'সপ্তাহে তিন-চারবার রাতে কাশি ও শোঁ শোঁ শব্দ, সিঁড়িতে উঠলে হাঁপিয়ে যাওয়া, প্রায় দুই বছর ধরে।' },
+        { k: 'diagnosis', en: 'Asthma that was not well controlled. A breathing test (spirometry) was done in the chamber.', bn: 'হাঁপানি, যা ঠিকমতো নিয়ন্ত্রণে ছিল না। চেম্বারেই শ্বাসের পরীক্ষা (স্পাইরোমেট্রি) করা হয়।' },
+        { k: 'treatment', en: 'Inhaler technique corrected, a low-dose daily preventer inhaler added, and a written plan for what to do on a bad day.', bn: 'ইনহেলার ব্যবহারের পদ্ধতি ঠিক করা, প্রতিদিনের জন্য কম মাত্রার প্রতিরোধক ইনহেলার যোগ, আর খারাপ দিনে কী করতে হবে তার লিখিত পরিকল্পনা।' },
+        { k: 'after', en: 'After eight weeks the night cough was down to once or twice a month and I stopped using the blue inhaler every day.', bn: 'আট সপ্তাহ পর রাতের কাশি মাসে এক-দুইবারে নামল এবং নীল ইনহেলার আর রোজ লাগছে না।' }
+      ],
+      tags: [
+        { g: 'condition', en: 'Asthma', bn: 'হাঁপানি' },
+        { g: 'symptom', en: 'Night cough', bn: 'রাতের কাশি' },
+        { g: 'medicine', en: 'Salbutamol', bn: 'সালবিউটামল' },
+        { g: 'treatment', en: 'Spirometry', bn: 'স্পাইরোমেট্রি' }
+      ]
+    },
+    {
+      id: 'r14', doctorId: 'd7', conditionId: 'c9', sentiment: 'mixed', outcome: 'uncertain',
+      relationship: 'parent', identity: 'real', author: { en: 'Farida Yasmin', bn: 'ফরিদা ইয়াসমিন' },
+      period: { en: 'February 2026', bn: 'ফেব্রুয়ারি ২০২৬' }, posted: { en: 'Posted March 2026', bn: 'প্রকাশ মার্চ ২০২৬' },
+      detailed: true, evidence: 0, likes: 13, dislikes: 1, comments: 2, claims: [],
+      title: { en: 'Thorough with my daughter, though the follow-up timing was unclear', bn: 'মেয়ের ব্যাপারে খুঁটিয়ে দেখেছেন, তবে ফলো-আপের সময় স্পষ্ট ছিল না' },
+      body: {
+        en: 'My daughter is eleven and wheezes every winter. The doctor took a long history, asked about dust and pets at home, and did not rush to steroids. What I did not get was a clear answer on when to come back: first she said one month, then the receptionist said three. We are still deciding whether the new inhaler is helping because winter has only just ended.',
+        bn: 'আমার মেয়ের বয়স এগারো, প্রতি শীতে ওর শ্বাসের শব্দ হয়। ডাক্তার অনেকক্ষণ ধরে ইতিহাস শুনলেন, ঘরে ধুলো ও পোষা প্রাণী আছে কি না জিজ্ঞেস করলেন, তাড়াহুড়ো করে স্টেরয়েডে যাননি। যেটা পাইনি তা হলো কবে আবার আসব তার পরিষ্কার উত্তর: উনি বললেন এক মাস, রিসেপশনিস্ট বললেন তিন মাস। শীত সবে শেষ হয়েছে, তাই নতুন ইনহেলারে কাজ হচ্ছে কি না এখনো বুঝতে পারছি না।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'Wheezing and a dry cough at night every winter for three years, worse after cold mornings.', bn: 'তিন বছর ধরে প্রতি শীতে রাতে শোঁ শোঁ শব্দ ও শুকনো কাশি, ঠান্ডা সকালের পর বেশি।' },
+        { k: 'diagnosis', en: 'Childhood asthma, triggered by cold air and dust. No tests were ordered at the first visit.', bn: 'শিশুদের হাঁপানি, ঠান্ডা বাতাস ও ধুলোয় বাড়ে। প্রথম ভিজিটে কোনো পরীক্ষা দেওয়া হয়নি।' },
+        { k: 'treatment', en: 'A low-dose preventer inhaler with a spacer, and advice about bedding and dust at home.', bn: 'স্পেসারসহ কম মাত্রার প্রতিরোধক ইনহেলার এবং বিছানা ও ঘরের ধুলো নিয়ে পরামর্শ।' },
+        { k: 'after', en: 'Fewer night coughs since February, but it is too early in the season to say whether the inhaler is the reason.', bn: 'ফেব্রুয়ারি থেকে রাতের কাশি কমেছে, কিন্তু মৌসুম সবে শেষ হয়েছে বলে ইনহেলারের কারণে কমেছে কি না বলা যাচ্ছে না।' }
+      ],
+      tags: [
+        { g: 'condition', en: 'Asthma', bn: 'হাঁপানি' },
+        { g: 'symptom', en: 'Wheezing', bn: 'শোঁ শোঁ শব্দ' },
+        { g: 'medicine', en: 'Budesonide', bn: 'বুডেসোনাইড' },
+        { g: 'treatment', en: 'Spacer device', bn: 'স্পেসার' }
+      ]
+    },
+    {
+      id: 'r15', doctorId: 'd7', conditionId: 'c9', sentiment: 'negative', outcome: 'none',
+      relationship: 'self', identity: 'anon', author: { en: 'Anonymous', bn: 'নাম প্রকাশ না করে' },
+      period: { en: 'December 2025', bn: 'ডিসেম্বর ২০২৫' }, posted: { en: 'Posted January 2026', bn: 'প্রকাশ জানুয়ারি ২০২৬' },
+      detailed: true, evidence: 1, likes: 16, dislikes: 4, comments: 2, claims: ['secondOpinion'],
+      title: { en: 'A rushed visit and no breathing test', bn: 'তাড়াহুড়োর ভিজিট, শ্বাসের পরীক্ষা হয়নি' },
+      body: {
+        en: 'I came with a cough that had lasted six weeks. The consultation took about five minutes, I was given an inhaler and an antibiotic, and no breathing test was done. When it did not settle I saw a chest physician in another town, who ordered spirometry and said the antibiotic had not been needed. This is only what I was told — I am sharing it as my own experience.',
+        bn: 'ছয় সপ্তাহ ধরে কাশি নিয়ে গিয়েছিলাম। পরামর্শ প্রায় পাঁচ মিনিটের, একটি ইনহেলার ও একটি অ্যান্টিবায়োটিক দেওয়া হয়, শ্বাসের কোনো পরীক্ষা হয়নি। কমছে না দেখে অন্য শহরের একজন বক্ষব্যাধি বিশেষজ্ঞের কাছে গেলে উনি স্পাইরোমেট্রি করান এবং বলেন অ্যান্টিবায়োটিকের দরকার ছিল না। আমাকে যা বলা হয়েছে এটি সেটুকুই — নিজের অভিজ্ঞতা হিসেবে জানাচ্ছি।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'A dry cough for six weeks and tightness in the chest in the early morning.', bn: 'ছয় সপ্তাহ ধরে শুকনো কাশি এবং ভোরের দিকে বুকে চাপ।' },
+        { k: 'diagnosis', en: 'Told it was a lingering infection with an allergic part. No tests that day.', bn: 'বলা হলো এটি সংক্রমণের জের, সঙ্গে অ্যালার্জির অংশ আছে। সেদিন কোনো পরীক্ষা হয়নি।' },
+        { k: 'treatment', en: 'One inhaler and a five-day antibiotic course.', bn: 'একটি ইনহেলার ও পাঁচ দিনের অ্যান্টিবায়োটিক কোর্স।' },
+        { k: 'after', en: 'No change after two weeks. A second doctor ordered spirometry, found asthma, and changed the plan.', bn: 'দুই সপ্তাহেও কোনো পরিবর্তন হয়নি। দ্বিতীয় ডাক্তার স্পাইরোমেট্রি করিয়ে হাঁপানি পেলেন এবং পরিকল্পনা বদলালেন।' }
+      ],
+      tags: [
+        { g: 'condition', en: 'Asthma', bn: 'হাঁপানি' },
+        { g: 'symptom', en: 'Persistent cough', bn: 'টানা কাশি' },
+        { g: 'medicine', en: 'Antibiotic', bn: 'অ্যান্টিবায়োটিক' },
+        { g: 'treatment', en: 'Spirometry', bn: 'স্পাইরোমেট্রি' }
+      ]
+    },
+    {
+      id: 'r16', doctorId: 'd8', conditionId: 'c10', sentiment: 'positive', outcome: 'helped',
+      relationship: 'self', identity: 'real', author: { en: 'Mostafizur Rahman', bn: 'মোস্তাফিজুর রহমান' },
+      period: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, posted: { en: 'Posted April 2026', bn: 'প্রকাশ এপ্রিল ২০২৬' },
+      detailed: true, evidence: 2, likes: 38, dislikes: 2, comments: 3, claims: [],
+      title: { en: 'He asked about sleep and meals before prescribing', bn: 'ওষুধ লেখার আগে ঘুম আর খাবার নিয়ে জিজ্ঞেস করলেন' },
+      body: {
+        en: 'I had a throbbing headache on one side two or three times a month and took painkillers every time. He asked me to keep a headache diary for four weeks, and that is what showed the pattern: skipped meals and short sleep before almost every attack. He explained the difference between a medicine for the attack and one to prevent it, and let me choose whether to start the preventer.',
+        bn: 'মাসে দুই-তিনবার এক পাশে দপদপ করা মাথাব্যথা হতো, প্রতিবারই ব্যথার ওষুধ খেতাম। উনি চার সপ্তাহ মাথাব্যথার ডায়েরি রাখতে বললেন, আর তাতেই ধরা পড়ল প্রায় প্রতিটি আক্রমণের আগে খাবার বাদ দেওয়া ও কম ঘুম। আক্রমণের সময়ের ওষুধ আর প্রতিরোধের ওষুধের পার্থক্য বুঝিয়ে বললেন, প্রতিরোধের ওষুধ শুরু করব কি না তা আমাকেই ঠিক করতে দিলেন।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'One-sided throbbing headache with nausea and light sensitivity, two or three times a month for almost three years.', bn: 'প্রায় তিন বছর ধরে মাসে দুই-তিনবার এক পাশে দপদপ করা মাথাব্যথা, সঙ্গে বমি বমি ভাব ও আলোতে অস্বস্তি।' },
+        { k: 'diagnosis', en: 'Migraine without aura. He said a brain scan was not needed because there were no warning signs.', bn: 'অরা ছাড়া মাইগ্রেন। উনি বললেন কোনো বিপদ-লক্ষণ নেই বলে ব্রেইন স্ক্যানের দরকার নেই।' },
+        { k: 'treatment', en: 'A headache diary, regular meals and sleep, one tablet at the start of an attack, and a low-dose preventer that I chose to try.', bn: 'মাথাব্যথার ডায়েরি, নিয়মিত খাবার ও ঘুম, আক্রমণের শুরুতে একটি ট্যাবলেট, আর কম মাত্রার একটি প্রতিরোধক ওষুধ যা আমি চেষ্টা করে দেখব বলে ঠিক করেছিলাম।' },
+        { k: 'after', en: 'Over four months, attacks dropped from about three a month to one every six weeks.', bn: 'চার মাসে আক্রমণ মাসে প্রায় তিনবার থেকে ছয় সপ্তাহে একবারে নেমেছে।' }
+      ],
+      tags: [
+        { g: 'condition', en: 'Migraine', bn: 'মাইগ্রেন' },
+        { g: 'symptom', en: 'Light sensitivity', bn: 'আলোতে অস্বস্তি' },
+        { g: 'medicine', en: 'Propranolol', bn: 'প্রোপ্রানোলল' },
+        { g: 'treatment', en: 'Headache diary', bn: 'মাথাব্যথার ডায়েরি' }
+      ]
+    },
+    {
+      id: 'r17', doctorId: 'd8', conditionId: 'c10', sentiment: 'mixed', outcome: 'helped',
+      relationship: 'family', identity: 'pseudo', author: { en: 'rangpur_mon', bn: 'rangpur_mon' },
+      period: { en: 'January 2026', bn: 'জানুয়ারি ২০২৬' }, posted: { en: 'Posted February 2026', bn: 'প্রকাশ ফেব্রুয়ারি ২০২৬' },
+      detailed: true, evidence: 0, likes: 14, dislikes: 1, comments: 2, claims: [],
+      title: { en: 'It helped my mother, but the explanation used English medical terms', bn: 'মায়ের উপকার হয়েছে, তবে ব্যাখ্যা ছিল ইংরেজি চিকিৎসা-শব্দে' },
+      body: {
+        en: 'My mother is sixty-two and gets severe headaches behind the eye. The new medicine worked well. But much of the explanation used English terms she did not follow, and I had to ask him twice to repeat the instructions in plain Bangla. He did so politely when asked.',
+        bn: 'আমার মায়ের বয়স বাষট্টি, চোখের পেছনে প্রচণ্ড মাথাব্যথা হয়। নতুন ওষুধে ভালো কাজ হয়েছে। তবে ব্যাখ্যার বেশিরভাগই ইংরেজি শব্দে ছিল যা মা বুঝছিলেন না, আমাকে দুবার সহজ বাংলায় আবার বলতে অনুরোধ করতে হয়েছে। বললে উনি ভদ্রভাবেই বলে দিয়েছেন।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'Severe headaches behind the right eye, lasting most of a day, about twice a month.', bn: 'ডান চোখের পেছনে প্রচণ্ড মাথাব্যথা, প্রায় সারাদিন থাকে, মাসে দুবার।' },
+        { k: 'diagnosis', en: 'Migraine, after her blood pressure and eyesight were checked. Her pressure was normal.', bn: 'রক্তচাপ ও দৃষ্টি পরীক্ষার পর মাইগ্রেন। রক্তচাপ স্বাভাবিক ছিল।' },
+        { k: 'treatment', en: 'A tablet at the start of an attack, and advice to avoid long gaps between meals.', bn: 'আক্রমণের শুরুতে একটি ট্যাবলেট এবং খাবারের মাঝে লম্বা ফাঁক না রাখার পরামর্শ।' },
+        { k: 'after', en: 'Attacks became shorter and milder within two months. She is still unsure which instruction is for what.', bn: 'দুই মাসের মধ্যে আক্রমণ ছোট ও হালকা হয়েছে। কোন নির্দেশ কীসের জন্য তা এখনো মা পুরোপুরি বুঝে উঠতে পারেননি।' }
+      ],
+      followUp: { date: { en: 'May 2026', bn: 'মে ২০২৬' }, en: 'Three months on the attacks are still milder. I now read the instructions out to her in Bangla every morning.', bn: 'তিন মাস পরেও আক্রমণ হালকাই আছে। এখন আমি রোজ সকালে মাকে নির্দেশগুলো বাংলায় পড়ে শোনাই।' },
+      tags: [
+        { g: 'condition', en: 'Migraine', bn: 'মাইগ্রেন' },
+        { g: 'symptom', en: 'Headache behind the eye', bn: 'চোখের পেছনে মাথাব্যথা' },
+        { g: 'medicine', en: 'Sumatriptan', bn: 'সুমাট্রিপটান' },
+        { g: 'treatment', en: 'Blood pressure check', bn: 'রক্তচাপ পরীক্ষা' }
+      ]
+    },
+    {
+      id: 'r18', doctorId: 'd8', conditionId: 'c10', sentiment: 'negative', outcome: 'worse',
+      relationship: 'self', identity: 'pseudo', author: { en: 'nadia_k', bn: 'nadia_k' },
+      period: { en: 'June 2026', bn: 'জুন ২০২৬' }, posted: { en: 'Posted July 2026', bn: 'প্রকাশ জুলাই ২০২৬' },
+      detailed: true, evidence: 0, likes: 17, dislikes: 9, comments: 3, claims: ['wrongRx'],
+      title: { en: 'The preventer made me dizzy and I was told to push through', bn: 'প্রতিরোধের ওষুধে মাথা ঘুরত, বলা হলো সয়ে নিতে' },
+      body: {
+        en: 'He started a preventer for my migraines. From the third day I felt dizzy when standing up and twice nearly fell. When I phoned, the assistant said it settles in a week and to continue. It did not settle. I stopped it myself after ten days and called again, and only then was I given an appointment. I do not know whether a different dose would have helped. I am sharing what happened to me, not saying the medicine is wrong for everyone.',
+        bn: 'আমার মাইগ্রেনের জন্য উনি একটি প্রতিরোধক ওষুধ শুরু করেন। তৃতীয় দিন থেকে উঠে দাঁড়ালে মাথা ঘুরত, দুবার প্রায় পড়ে যাচ্ছিলাম। ফোন করলে সহকারী বললেন এক সপ্তাহে ঠিক হয়ে যায়, চালিয়ে যেতে। ঠিক হয়নি। দশ দিন পর নিজেই বন্ধ করে আবার ফোন করলে তবেই সময় পেলাম। অন্য মাত্রায় কাজ হতো কি না জানি না। আমার যা হয়েছে সেটাই জানাচ্ছি, ওষুধটি সবার জন্য ভুল বলছি না।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'Migraine twice a month, and a new problem: dizziness on standing, from the third day of the preventer.', bn: 'মাসে দুবার মাইগ্রেন, আর নতুন সমস্যা: প্রতিরোধক ওষুধের তৃতীয় দিন থেকে উঠে দাঁড়ালে মাথা ঘোরা।' },
+        { k: 'diagnosis', en: 'At the second visit he said the dizziness was a side effect of the preventer.', bn: 'দ্বিতীয় ভিজিটে উনি বললেন মাথা ঘোরা প্রতিরোধক ওষুধেরই পার্শ্বপ্রতিক্রিয়া।' },
+        { k: 'treatment', en: 'The preventer was stopped and a different one was started at a lower dose.', bn: 'ওষুধটি বন্ধ করে কম মাত্রায় অন্য একটি শুরু করা হয়।' },
+        { k: 'after', en: 'The dizziness went away within four days of stopping. The new one has been tolerable so far.', bn: 'বন্ধ করার চার দিনের মধ্যে মাথা ঘোরা চলে গেছে। নতুনটা এখন পর্যন্ত সহনীয়।' }
+      ],
+      tags: [
+        { g: 'condition', en: 'Migraine', bn: 'মাইগ্রেন' },
+        { g: 'symptom', en: 'Dizziness', bn: 'মাথা ঘোরা' },
+        { g: 'medicine', en: 'Amitriptyline', bn: 'অ্যামিট্রিপটাইলিন' },
+        { g: 'treatment', en: 'Dose reduction', bn: 'ডোজ কমানো' }
+      ]
+    },
+    {
+      id: 'r19', doctorId: 'd9', conditionId: 'c1', sentiment: 'positive', outcome: 'helped',
+      relationship: 'self', identity: 'pseudo', author: { en: 'rumana_h', bn: 'rumana_h' },
+      period: { en: 'February 2026', bn: 'ফেব্রুয়ারি ২০২৬' }, posted: { en: 'Posted March 2026', bn: 'প্রকাশ মার্চ ২০২৬' },
+      detailed: true, evidence: 1, likes: 29, dislikes: 1, comments: 2, claims: [],
+      title: { en: 'He explained the numbers in a way my family could follow', bn: 'সংখ্যাগুলো এমনভাবে বুঝিয়ে দিলেন যে পরিবারের সবাই বুঝল' },
+      body: {
+        en: 'I brought my husband and my son-in-law along, and he drew a simple chart on the back of the prescription showing what the fasting number and the after-meal number are for. He did not raise the dose until we had two weeks of readings. The visit was long, but it is the first time my family understood why I check at all.',
+        bn: 'স্বামী ও জামাইকে সঙ্গে নিয়ে গিয়েছিলাম, উনি প্রেসক্রিপশনের পেছনে একটা সহজ ছক এঁকে বোঝালেন খালি পেটের সংখ্যা আর খাবারের পরের সংখ্যা কীসের জন্য। দুই সপ্তাহের রিডিং না দেখে ডোজ বাড়াননি। ভিজিট লম্বা হয়েছে, কিন্তু আমি কেন রিডিং নিই তা এই প্রথম আমার পরিবার বুঝল।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'Tiredness, getting up at night to pass urine, and a slow-healing cut on the foot for about three months.', bn: 'প্রায় তিন মাস ধরে ক্লান্তি, রাতে প্রস্রাবের জন্য উঠতে হওয়া, আর পায়ের একটি কাটা দেরিতে শুকানো।' },
+        { k: 'diagnosis', en: 'Type 2 diabetes, newly found. HbA1c was 8.9.', bn: 'টাইপ ২ ডায়াবেটিস, নতুন ধরা পড়ল। HbA1c ছিল ৮.৯।' },
+        { k: 'treatment', en: 'Metformin at a low dose, a walk after dinner, and a diet plan built on foods we already cook at home.', bn: 'কম মাত্রায় মেটফরমিন, রাতের খাবারের পর হাঁটা, আর বাড়িতে যা রান্না হয় তা দিয়েই খাদ্য পরিকল্পনা।' },
+        { k: 'after', en: 'Fasting readings between 6 and 7.5 after ten weeks. HbA1c 6.9 at the follow-up.', bn: 'দশ সপ্তাহ পর খালি পেটে রিডিং ৬ থেকে ৭.৫-এর মধ্যে। ফলো-আপে HbA1c ৬.৯।' }
+      ],
+      tags: [
+        { g: 'condition', en: 'Type 2 diabetes', bn: 'টাইপ ২ ডায়াবেটিস' },
+        { g: 'symptom', en: 'Frequent urination', bn: 'ঘন ঘন প্রস্রাব' },
+        { g: 'medicine', en: 'Metformin', bn: 'মেটফরমিন' },
+        { g: 'treatment', en: 'Diet plan', bn: 'খাদ্য পরিকল্পনা' }
+      ]
+    },
+    {
+      id: 'r20', doctorId: 'd9', conditionId: 'c1', sentiment: 'mixed', outcome: 'uncertain',
+      relationship: 'witness', identity: 'pseudo', author: { en: 'cumilla_jh', bn: 'cumilla_jh' },
+      period: { en: 'May 2026', bn: 'মে ২০২৬' }, posted: { en: 'Posted June 2026', bn: 'প্রকাশ জুন ২০২৬' },
+      detailed: true, evidence: 0, likes: 7, dislikes: 0, comments: 1, claims: [],
+      title: { en: 'Clear advice for my neighbour, but I could not tell if it worked', bn: 'প্রতিবেশীকে পরিষ্কার পরামর্শ দিয়েছেন, তবে কাজ হলো কি না বুঝিনি' },
+      body: {
+        en: 'I went with my elderly neighbour, who cannot hear well. The doctor spoke slowly, wrote the timings in large numbers and had me repeat everything back. I have not seen my neighbour’s readings since, so I cannot say whether the plan worked. I am only describing the visit.',
+        bn: 'কানে কম শোনেন এমন বয়স্ক প্রতিবেশীর সঙ্গে গিয়েছিলাম। ডাক্তার ধীরে কথা বললেন, সময়গুলো বড় সংখ্যায় লিখে দিলেন এবং আমাকে দিয়ে সবকিছু আবার বলিয়ে নিলেন। এরপর প্রতিবেশীর রিডিং দেখিনি, তাই পরিকল্পনা কাজ করেছে কি না বলতে পারি না। শুধু ভিজিটটার কথা লিখছি।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'My neighbour has had diabetes for nine years and his morning readings had been high.', bn: 'আমার প্রতিবেশী নয় বছর ধরে ডায়াবেটিসে ভুগছেন, সকালের রিডিং বেশি আসছিল।' },
+        { k: 'diagnosis', en: 'Long-standing type 2 diabetes. The doctor changed the timing of the evening dose.', bn: 'দীর্ঘদিনের টাইপ ২ ডায়াবেটিস। ডাক্তার সন্ধ্যার ডোজের সময় বদলালেন।' },
+        { k: 'treatment', en: 'The evening tablet moved earlier, dose times written in large numbers, and a blood test booked.', bn: 'সন্ধ্যার ট্যাবলেট আগে খাওয়ার ব্যবস্থা, ডোজের সময় বড় সংখ্যায় লেখা, আর একটি রক্ত পরীক্ষার তারিখ।' },
+        { k: 'after', en: 'I do not know the result. We have not been back.', bn: 'ফলাফল জানি না। আমরা আর যাইনি।' }
+      ],
+      tags: [
+        { g: 'condition', en: 'Type 2 diabetes', bn: 'টাইপ ২ ডায়াবেটিস' },
+        { g: 'symptom', en: 'High morning readings', bn: 'সকালে বেশি রিডিং' },
+        { g: 'medicine', en: 'Metformin', bn: 'মেটফরমিন' },
+        { g: 'treatment', en: 'Dose timing', bn: 'ডোজের সময় সমন্বয়' }
+      ]
+    },
+    {
+      id: 'r21', doctorId: 'd9', conditionId: 'c2', sentiment: 'mixed', outcome: 'none',
+      relationship: 'self', identity: 'real', author: { en: 'Nasima Akter', bn: 'নাসিমা আক্তার' },
+      period: { en: 'April 2026', bn: 'এপ্রিল ২০২৬' }, posted: { en: 'Posted May 2026', bn: 'প্রকাশ মে ২০২৬' },
+      detailed: true, evidence: 0, likes: 10, dislikes: 2, comments: 2, claims: ['secondOpinion'],
+      title: { en: 'Same dose after two visits and I still feel tired', bn: 'দুই ভিজিটের পরও ডোজ একই, আর আমি এখনো ক্লান্ত' },
+      body: {
+        en: 'My TSH was high and he started levothyroxine. At the second visit three months later my TSH had come down but I still felt tired and my hair was still falling. He said the number was now in range, so the dose would stay. I went to another doctor for a second opinion, who also kept the dose but tested my iron and vitamin D, which had not been checked. I feel no better yet.',
+        bn: 'আমার টিএসএইচ বেশি ছিল, উনি লেভোথাইরক্সিন শুরু করলেন। তিন মাস পর দ্বিতীয় ভিজিটে টিএসএইচ নেমেছে, কিন্তু ক্লান্তি আর চুল পড়া রয়ে গেছে। উনি বললেন সংখ্যা এখন সীমার মধ্যে, তাই ডোজ একই থাকবে। দ্বিতীয় মতের জন্য অন্য ডাক্তারের কাছে গেলাম; উনিও ডোজ একই রাখলেন, তবে আয়রন ও ভিটামিন ডি পরীক্ষা করালেন যা আগে হয়নি। এখনো ভালো লাগছে না।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'Constant tiredness, feeling cold, weight gain and thinning hair over about six months.', bn: 'প্রায় ছয় মাস ধরে অবিরাম ক্লান্তি, শীত শীত লাগা, ওজন বাড়া ও চুল পাতলা হওয়া।' },
+        { k: 'diagnosis', en: 'Hypothyroidism, TSH 14.', bn: 'হাইপোথাইরয়েড, টিএসএইচ ১৪।' },
+        { k: 'treatment', en: 'Levothyroxine 50 micrograms, with the TSH retested after three months.', bn: 'লেভোথাইরক্সিন ৫০ মাইক্রোগ্রাম, তিন মাস পর টিএসএইচ আবার পরীক্ষা।' },
+        { k: 'after', en: 'TSH came down to 3.1 but the tiredness and hair loss are unchanged. A second doctor tested iron and vitamin D.', bn: 'টিএসএইচ নেমে ৩.১ হয়েছে কিন্তু ক্লান্তি ও চুল পড়া একই। দ্বিতীয় ডাক্তার আয়রন ও ভিটামিন ডি পরীক্ষা করান।' }
+      ],
+      tags: [
+        { g: 'condition', en: 'Hypothyroidism', bn: 'হাইপোথাইরয়েড' },
+        { g: 'symptom', en: 'Tiredness', bn: 'ক্লান্তি' },
+        { g: 'medicine', en: 'Levothyroxine', bn: 'লেভোথাইরক্সিন' },
+        { g: 'treatment', en: 'TSH retest', bn: 'টিএসএইচ পুনরায় পরীক্ষা' }
+      ]
+    },
+    {
+      id: 'r22', doctorId: 'd10', conditionId: 'c7', sentiment: 'positive', outcome: 'helped',
+      relationship: 'parent', identity: 'pseudo', author: { en: 'ammu_of_tuli', bn: 'ammu_of_tuli' },
+      period: { en: 'July 2026', bn: 'জুলাই ২০২৬' }, posted: { en: 'Posted August 2026', bn: 'প্রকাশ আগস্ট ২০২৬' },
+      detailed: true, evidence: 0, likes: 18, dislikes: 0, comments: 2, claims: [],
+      title: { en: 'She told us exactly which signs meant coming back at once', bn: 'ঠিক কোন লক্ষণ দেখলে সঙ্গে সঙ্গে ফিরে আসতে হবে, পরিষ্কার বলে দিলেন' },
+      body: {
+        en: 'Our daughter is seven and had a fever for six days. The doctor ordered a blood culture rather than guessing, explained why we should wait for it, and wrote a list of warning signs on a card: swollen belly, confusion, black stools. She also told us the cost of each test before we agreed. The fever settled on the fifth day of treatment.',
+        bn: 'আমাদের মেয়ের বয়স সাত, ছয় দিন ধরে জ্বর। ডাক্তার আন্দাজে না গিয়ে ব্লাড কালচার করালেন, কেন রিপোর্টের জন্য অপেক্ষা করতে হবে বুঝিয়ে বললেন, আর একটি কার্ডে বিপদের লক্ষণগুলো লিখে দিলেন: পেট ফুলে যাওয়া, অসংলগ্ন কথা, কালো পায়খানা। রাজি হওয়ার আগে প্রতিটি পরীক্ষার খরচও বলে দিলেন। চিকিৎসার পঞ্চম দিনে জ্বর নামল।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'Fever for six days, loss of appetite, stomach ache and a coated tongue.', bn: 'ছয় দিন জ্বর, খিদে না থাকা, পেটে ব্যথা ও জিভে সাদা আস্তরণ।' },
+        { k: 'diagnosis', en: 'Typhoid fever, based on the blood culture and her symptoms.', bn: 'ব্লাড কালচার ও লক্ষণ দেখে টাইফয়েড জ্বর।' },
+        { k: 'treatment', en: 'An oral antibiotic for fourteen days, plenty of fluids, soft food, and a recheck visit on day seven.', bn: 'চোদ্দো দিনের খাওয়ার অ্যান্টিবায়োটিক, প্রচুর পানীয়, নরম খাবার, আর সপ্তম দিনে আবার দেখানো।' },
+        { k: 'after', en: 'The fever was gone by day five of treatment. She was back at school after three weeks.', bn: 'চিকিৎসার পঞ্চম দিনে জ্বর ছেড়ে যায়। তিন সপ্তাহ পর মেয়ে আবার স্কুলে যায়।' }
+      ],
+      tags: [
+        { g: 'condition', en: 'Typhoid fever', bn: 'টাইফয়েড জ্বর' },
+        { g: 'symptom', en: 'Prolonged fever', bn: 'দীর্ঘস্থায়ী জ্বর' },
+        { g: 'medicine', en: 'Azithromycin', bn: 'অ্যাজিথ্রোমাইসিন' },
+        { g: 'treatment', en: 'Blood culture', bn: 'ব্লাড কালচার' }
+      ]
+    },
+    {
+      id: 'r23', doctorId: 'd10', conditionId: 'c7', sentiment: 'mixed', outcome: 'helped',
+      relationship: 'parent', identity: 'anon', author: { en: 'Anonymous', bn: 'নাম প্রকাশ না করে' },
+      period: { en: 'June 2026', bn: 'জুন ২০২৬' }, posted: { en: 'Posted July 2026', bn: 'প্রকাশ জুলাই ২০২৬' },
+      detailed: true, evidence: 0, likes: 5, dislikes: 0, comments: 1, claims: [],
+      title: { en: 'Good care for my son, but a morning slot was hard to get', bn: 'ছেলের যত্ন ভালো ছিল, তবে সকালের সময় পাওয়া কঠিন' },
+      body: {
+        en: 'My son recovered well from typhoid and the doctor spoke to him, not just to me, which he appreciated. The difficulty was appointments: the morning slots were gone two weeks ahead, so we saw her on a crowded evening and waited more than two hours.',
+        bn: 'আমার ছেলে টাইফয়েড থেকে ভালোভাবে সেরে উঠেছে, আর ডাক্তার শুধু আমার সঙ্গে নয়, ওর সঙ্গেও কথা বলেছেন, যা ও পছন্দ করেছে। সমস্যা ছিল সিরিয়াল: সকালের সময় দুই সপ্তাহ আগেই শেষ, তাই ভিড়ের সন্ধ্যায় দেখাতে হলো আর দুই ঘণ্টার বেশি অপেক্ষা করতে হলো।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'Fever for eight days with a headache and constipation.', bn: 'আট দিন জ্বর, সঙ্গে মাথাব্যথা ও কোষ্ঠকাঠিন্য।' },
+        { k: 'diagnosis', en: 'Typhoid fever. The doctor went through the test result with him in simple words.', bn: 'টাইফয়েড জ্বর। পরীক্ষার ফল ডাক্তার ওকে সহজ কথায় বুঝিয়ে দেন।' },
+        { k: 'treatment', en: 'Antibiotics for two weeks, rest at home, and a diet of soft food.', bn: 'দুই সপ্তাহের অ্যান্টিবায়োটিক, বাড়িতে বিশ্রাম ও নরম খাবার।' },
+        { k: 'after', en: 'The fever settled within a week and he was back to normal in three weeks.', bn: 'এক সপ্তাহের মধ্যে জ্বর কমে, তিন সপ্তাহে সে স্বাভাবিক হয়।' }
+      ],
+      tags: [
+        { g: 'condition', en: 'Typhoid fever', bn: 'টাইফয়েড জ্বর' },
+        { g: 'symptom', en: 'Prolonged fever', bn: 'দীর্ঘস্থায়ী জ্বর' },
+        { g: 'medicine', en: 'Antibiotic course', bn: 'অ্যান্টিবায়োটিক কোর্স' },
+        { g: 'treatment', en: 'Rest and soft diet', bn: 'বিশ্রাম ও নরম খাবার' }
+      ]
+    },
+    {
+      id: 'r24', doctorId: 'd10', conditionId: 'c9', sentiment: 'positive', outcome: 'helped',
+      relationship: 'family', identity: 'real', author: { en: 'Shahana Parvin', bn: 'শাহানা পারভীন' },
+      period: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, posted: { en: 'Posted April 2026', bn: 'প্রকাশ এপ্রিল ২০২৬' },
+      detailed: true, evidence: 0, likes: 21, dislikes: 1, comments: 2, claims: [],
+      title: { en: 'She taught my grandson to use the spacer in two minutes', bn: 'দুই মিনিটে নাতিকে স্পেসার ব্যবহার শিখিয়ে দিলেন' },
+      body: {
+        en: 'My grandson is five and was frightened of the inhaler. The doctor let him hold the spacer and blow into it like a toy first, then showed me how to count his breaths. His parents work during the day, so she wrote the plan in Bangla for me to follow. He has had no night wheeze since.',
+        bn: 'আমার নাতির বয়স পাঁচ, ইনহেলার দেখে ভয় পেত। ডাক্তার আগে ওকে খেলনার মতো স্পেসার ধরতে ও ফুঁ দিতে দিলেন, তারপর আমাকে দেখালেন ওর শ্বাস গুনতে। ওর বাবা-মা দিনে কাজে থাকেন, তাই আমার অনুসরণের জন্য পরিকল্পনা বাংলায় লিখে দিলেন। এরপর থেকে রাতে ওর আর শোঁ শোঁ শব্দ হয়নি।'
+      },
+      timeline: [
+        { k: 'symptoms', en: 'Wheezing at night and after running about, and a cough that kept him awake, for two winters.', bn: 'দুই শীত ধরে রাতে ও দৌড়ঝাঁপের পর শোঁ শোঁ শব্দ, কাশিতে ঘুম ভেঙে যাওয়া।' },
+        { k: 'diagnosis', en: 'Childhood asthma, with dust as the main trigger.', bn: 'শিশুদের হাঁপানি, প্রধান কারণ ধুলো।' },
+        { k: 'treatment', en: 'A reliever inhaler with a spacer and mask, a preventer for the winter months, and advice to wash bedding every week.', bn: 'স্পেসার ও মাস্কসহ জরুরি ইনহেলার, শীতের মাসগুলোর জন্য প্রতিরোধক ইনহেলার, আর প্রতি সপ্তাহে বিছানার চাদর ধোয়ার পরামর্শ।' },
+        { k: 'after', en: 'No night wheeze since the first month. One short cough with a cold in June cleared in three days.', bn: 'প্রথম মাসের পর রাতে আর শোঁ শোঁ শব্দ হয়নি। জুনে সর্দির সঙ্গে অল্প কাশি তিন দিনে সেরে যায়।' }
+      ],
+      followUp: { date: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, en: 'Five months on. No night wheeze. We went back once for a check and the dose stayed the same.', bn: 'পাঁচ মাস পরেও রাতে শোঁ শোঁ শব্দ নেই। একবার দেখাতে গিয়েছিলাম, ডোজ একই আছে।' },
+      tags: [
+        { g: 'condition', en: 'Asthma', bn: 'হাঁপানি' },
+        { g: 'symptom', en: 'Night wheeze', bn: 'রাতে শোঁ শোঁ শব্দ' },
+        { g: 'medicine', en: 'Salbutamol', bn: 'সালবিউটামল' },
+        { g: 'treatment', en: 'Spacer device', bn: 'স্পেসার' }
+      ]
+    }
+  );
+
   /* ---------------------------------------------------------------
    * Facilities. Their feedback is a separate world from doctor
    * feedback and must never feed a doctor's summaries — the data is
@@ -1159,6 +1523,54 @@
       doctors: ['d5'], accent: 340
     }
   ];
+
+  facilities.push(
+    {
+      id: 'f6', type: 'hospital',
+      name: { en: 'Kashful Community Hospital', bn: 'কাশফুল কমিউনিটি হাসপাতাল' },
+      branch: { en: 'Shaheb Bazar branch', bn: 'সাহেব বাজার শাখা' },
+      parent: { en: 'Kashful Health Group', bn: 'কাশফুল হেলথ গ্রুপ' },
+      city: { en: 'Rajshahi', bn: 'রাজশাহী' }, area: { en: 'Shaheb Bazar', bn: 'সাহেব বাজার' },
+      provenance: { name: 'admin', branch: 'admin', address: 'community' },
+      doctors: ['d7'], accent: 128
+    },
+    {
+      id: 'f7', type: 'hospital',
+      name: { en: 'Kashful Community Hospital', bn: 'কাশফুল কমিউনিটি হাসপাতাল' },
+      branch: { en: 'Kazla branch', bn: 'কাজলা শাখা' },
+      parent: { en: 'Kashful Health Group', bn: 'কাশফুল হেলথ গ্রুপ' },
+      city: { en: 'Rajshahi', bn: 'রাজশাহী' }, area: { en: 'Kazla', bn: 'কাজলা' },
+      provenance: { name: 'admin', branch: 'community', address: 'community' },
+      doctors: ['d7'], accent: 98
+    },
+    {
+      id: 'f8', type: 'hospital',
+      name: { en: 'Kashful Community Hospital', bn: 'কাশফুল কমিউনিটি হাসপাতাল' },
+      branch: { en: 'Rangpur branch', bn: 'রংপুর শাখা' },
+      parent: { en: 'Kashful Health Group', bn: 'কাশফুল হেলথ গ্রুপ' },
+      city: { en: 'Rangpur', bn: 'রংপুর' }, area: { en: 'Modern More', bn: 'মডার্ন মোড়' },
+      provenance: { name: 'community', branch: 'community', address: 'community' },
+      doctors: ['d8'], accent: 238
+    },
+    {
+      id: 'f9', type: 'diagnostic',
+      name: { en: 'Jolrong Diagnostic Centre', bn: 'জলরং ডায়াগনস্টিক সেন্টার' },
+      branch: { en: 'Cumilla branch', bn: 'কুমিল্লা শাখা' },
+      parent: { en: 'Jolrong Diagnostics Network', bn: 'জলরং ডায়াগনস্টিকস নেটওয়ার্ক' },
+      city: { en: 'Cumilla', bn: 'কুমিল্লা' }, area: { en: 'Kandirpar', bn: 'কান্দিরপাড়' },
+      provenance: { name: 'admin', branch: 'community', address: 'admin' },
+      doctors: ['d9'], accent: 185
+    },
+    {
+      id: 'f10', type: 'clinic',
+      name: { en: 'Shobuj Chhaya Family Clinic', bn: 'সবুজ ছায়া ফ্যামিলি ক্লিনিক' },
+      branch: { en: 'Barishal Sadar branch', bn: 'বরিশাল সদর শাখা' },
+      parent: { en: 'Shobuj Chhaya Care Network', bn: 'সবুজ ছায়া কেয়ার নেটওয়ার্ক' },
+      city: { en: 'Barishal', bn: 'বরিশাল' }, area: { en: 'Sadar Road', bn: 'সদর রোড' },
+      provenance: { name: 'provider', branch: 'provider', address: 'provider' },
+      doctors: ['d10'], accent: 355
+    }
+  );
 
   var CRITERIA = ['staff', 'waiting', 'cleanliness', 'billing', 'reportTime', 'reportTrust', 'admission', 'recommend', 'overall'];
   var CRIT_VALUES = ['good', 'mixed', 'poor'];
@@ -1223,6 +1635,86 @@
     }
   ];
 
+  facilityReviews.push(
+    {
+      id: 'fr9', facilityId: 'f6', identity: 'pseudo', author: { en: 'rajshahi_rina', bn: 'rajshahi_rina' },
+      period: { en: 'April 2026', bn: 'এপ্রিল ২০২৬' }, posted: { en: 'Posted May 2026', bn: 'প্রকাশ মে ২০২৬' },
+      likes: 8, dislikes: 0,
+      body: { en: 'I stayed four hours in the day-care ward for a breathing test and observation. The ward was clean, the nurses explained each step, and the discharge slip was ready before I asked. The lab report came within the hour and the bill matched what the counter quoted. Finding the lift to the second floor was the one confusing part.', bn: 'শ্বাসের পরীক্ষা ও পর্যবেক্ষণের জন্য চার ঘণ্টা ডে-কেয়ার ওয়ার্ডে ছিলাম। ওয়ার্ড পরিচ্ছন্ন, নার্সরা প্রতিটি ধাপ বুঝিয়েছেন, না চাইতেই ছাড়পত্র তৈরি ছিল। ল্যাবের রিপোর্ট এক ঘণ্টার মধ্যে এল এবং কাউন্টারের বলা টাকার সঙ্গে বিল মিলেছে। দোতলার লিফট খুঁজে পাওয়াটাই একমাত্র বিভ্রান্তিকর ছিল।' },
+      criteria: { staff: 'good', waiting: 'good', cleanliness: 'good', billing: 'good', reportTime: 'good', reportTrust: 'good', admission: 'good', recommend: 'good', overall: 'good' }
+    },
+    {
+      id: 'fr10', facilityId: 'f6', identity: 'real', author: { en: 'Farida Yasmin', bn: 'ফরিদা ইয়াসমিন' },
+      period: { en: 'February 2026', bn: 'ফেব্রুয়ারি ২০২৬' }, posted: { en: 'Posted March 2026', bn: 'প্রকাশ মার্চ ২০২৬' },
+      likes: 5, dislikes: 1,
+      body: { en: 'We waited almost two hours past our slot because the serial list was handed out on paper and often skipped. Staff were polite once we were seen. The blood test report was a day late but matched what the doctor expected. My daughter’s observation stay was short, and the discharge papers had a mistake in her age that took twenty minutes to fix.', bn: 'সিরিয়াল তালিকা কাগজে দেওয়া হয় আর প্রায়ই বাদ পড়ে, তাই আমাদের সময়ের প্রায় দুই ঘণ্টা পর ডাক পড়েছে। ডাক পাওয়ার পর কর্মীরা ভদ্র ছিলেন। রক্ত পরীক্ষার রিপোর্ট একদিন দেরিতে এসেছে, তবে ডাক্তার যা আশা করেছিলেন তার সঙ্গে মিলেছে। মেয়ের পর্যবেক্ষণের থাকা ছোট ছিল, ছাড়পত্রে বয়স ভুল লেখা ছিল, ঠিক করতে কুড়ি মিনিট লেগেছে।' },
+      criteria: { staff: 'good', waiting: 'poor', cleanliness: 'mixed', billing: 'good', reportTime: 'mixed', reportTrust: 'good', admission: 'mixed', recommend: 'mixed', overall: 'mixed' }
+    },
+    {
+      id: 'fr11', facilityId: 'f6', identity: 'anon', author: { en: 'Anonymous', bn: 'নাম প্রকাশ না করে' },
+      period: { en: 'December 2025', bn: 'ডিসেম্বর ২০২৫' }, posted: { en: 'Posted January 2026', bn: 'প্রকাশ জানুয়ারি ২০২৬' },
+      likes: 11, dislikes: 2,
+      body: { en: 'The corridor outside the observation room had water on the floor all afternoon and nobody put out a sign. I was asked to pay a deposit before anyone examined me, and the amount changed twice at the counter. The nurses on the ward were attentive, but the bill and the waiting were hard on a worried family.', bn: 'পর্যবেক্ষণ কক্ষের বাইরের বারান্দায় সারা বিকাল মেঝেতে পানি ছিল, কেউ সতর্কবার্তা রাখেননি। পরীক্ষার আগেই জমা দিতে বলা হয়, কাউন্টারে অঙ্কটা দুবার বদলাল। ওয়ার্ডের নার্সরা মনোযোগী ছিলেন, কিন্তু বিল আর অপেক্ষা চিন্তিত পরিবারের জন্য কঠিন ছিল।' },
+      criteria: { staff: 'good', waiting: 'poor', cleanliness: 'poor', billing: 'poor', reportTime: 'mixed', reportTrust: 'mixed', admission: 'mixed', recommend: 'poor', overall: 'poor' }
+    },
+    {
+      id: 'fr12', facilityId: 'f7', identity: 'pseudo', author: { en: 'rajshahi_rina', bn: 'rajshahi_rina' },
+      period: { en: 'June 2026', bn: 'জুন ২০২৬' }, posted: { en: 'Posted July 2026', bn: 'প্রকাশ জুলাই ২০২৬' },
+      likes: 6, dislikes: 0,
+      body: { en: 'The Kazla branch is smaller and quieter than the Shaheb Bazar one. Same group, but I waited twenty minutes instead of two hours. The lab was slower with reports, nearly a full day, though the doctor said the result agreed with her examination. A short stay for a nebuliser treatment was handled calmly, and the bill was printed and itemised.', bn: 'কাজলা শাখা সাহেব বাজারেরটার চেয়ে ছোট ও শান্ত। একই গ্রুপ, কিন্তু দুই ঘণ্টার বদলে বিশ মিনিট অপেক্ষা করেছি। ল্যাব রিপোর্ট দিতে প্রায় পুরো একদিন নিয়েছে, তবে ডাক্তার বলেছেন ফল তাঁর পরীক্ষার সঙ্গে মিলেছে। নেবুলাইজার চিকিৎসার জন্য ছোট একটি থাকা শান্তভাবে সামলানো হয়েছে, আর বিল ছাপানো ও আইটেম ধরে ধরে।' },
+      criteria: { staff: 'good', waiting: 'good', cleanliness: 'good', billing: 'good', reportTime: 'mixed', reportTrust: 'good', admission: 'good', recommend: 'good', overall: 'good' }
+    },
+    {
+      id: 'fr13', facilityId: 'f7', identity: 'real', author: { en: 'Jesmin Ara', bn: 'জেসমিন আরা' },
+      period: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, posted: { en: 'Posted April 2026', bn: 'প্রকাশ এপ্রিল ২০২৬' },
+      likes: 3, dislikes: 1,
+      body: { en: 'Admission was quick, but the room was cold and the bed linen had not been changed. I asked, and it was changed within the hour. The cashier made an arithmetic mistake in our favour and told us about it, which I appreciated. The lab report came on time. I cannot judge whether the numbers were right.', bn: 'ভর্তি দ্রুত হয়েছে, কিন্তু ঘরটা ঠান্ডা ছিল আর বিছানার চাদর বদলানো হয়নি। বলার পর এক ঘণ্টার মধ্যে বদলানো হয়েছে। ক্যাশিয়ার হিসাবে ভুল করেছিলেন আমাদের পক্ষেই, নিজেই জানিয়েছেন, ভালো লেগেছে। ল্যাব রিপোর্ট সময়মতো এসেছে। সংখ্যাগুলো ঠিক ছিল কি না আমি বিচার করতে পারব না।' },
+      criteria: { staff: 'good', waiting: 'good', cleanliness: 'mixed', billing: 'good', reportTime: 'good', reportTrust: 'mixed', admission: 'good', recommend: 'good', overall: 'good' }
+    },
+    {
+      id: 'fr14', facilityId: 'f8', identity: 'real', author: { en: 'Mostafizur Rahman', bn: 'মোস্তাফিজুর রহমান' },
+      period: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, posted: { en: 'Posted April 2026', bn: 'প্রকাশ এপ্রিল ২০২৬' },
+      likes: 9, dislikes: 0,
+      body: { en: 'I came for a migraine consultation and a blood test before starting a new medicine. The reception had a numbered token system that worked, the cleaner kept the floor dry, and the blood test report was on my phone by evening. I stayed two hours for a drip after I felt faint, and the nurse stayed with me. The bill was clear.', bn: 'মাইগ্রেনের পরামর্শ ও নতুন ওষুধ শুরুর আগে রক্ত পরীক্ষার জন্য এসেছিলাম। রিসেপশনে নম্বর-টোকেন ব্যবস্থা ঠিকমতো চলেছে, পরিচ্ছন্নতাকর্মী মেঝে শুকনো রেখেছেন, সন্ধ্যার মধ্যে রক্ত পরীক্ষার রিপোর্ট ফোনে চলে এসেছে। মাথা ঝিমঝিম করায় দুই ঘণ্টা ড্রিপ নিতে হয়, নার্স পাশে ছিলেন। বিল স্পষ্ট ছিল।' },
+      criteria: { staff: 'good', waiting: 'good', cleanliness: 'good', billing: 'good', reportTime: 'good', reportTrust: 'good', admission: 'good', recommend: 'good', overall: 'good' }
+    },
+    {
+      id: 'fr15', facilityId: 'f8', identity: 'pseudo', author: { en: 'rangpur_mon', bn: 'rangpur_mon' },
+      period: { en: 'January 2026', bn: 'জানুয়ারি ২০২৬' }, posted: { en: 'Posted February 2026', bn: 'প্রকাশ ফেব্রুয়ারি ২০২৬' },
+      likes: 4, dislikes: 2,
+      body: { en: 'The pharmacy inside ran out of my mother’s medicine twice, so we had to buy it outside for more. The lab told us the reports would be ready at 4 pm and they came at 7. The ward staff were gentle with her, but the call bell by her bed did not work and I had to go and find a nurse.', bn: 'ভেতরের ফার্মেসিতে মায়ের ওষুধ দুবার ফুরিয়ে গিয়েছিল, বাইরে থেকে বেশি দামে কিনতে হয়েছে। ল্যাব বলেছিল রিপোর্ট বিকেল ৪টায় হবে, এসেছে সন্ধ্যা ৭টায়। ওয়ার্ডের কর্মীরা মায়ের প্রতি কোমল ছিলেন, কিন্তু বিছানার পাশের কলবেল কাজ করেনি, নার্সকে খুঁজে আনতে হয়েছে।' },
+      criteria: { staff: 'good', waiting: 'mixed', cleanliness: 'mixed', billing: 'mixed', reportTime: 'poor', reportTrust: 'mixed', admission: 'mixed', recommend: 'mixed', overall: 'mixed' }
+    },
+    {
+      id: 'fr16', facilityId: 'f9', identity: 'pseudo', author: { en: 'rumana_h', bn: 'rumana_h' },
+      period: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, posted: { en: 'Posted April 2026', bn: 'প্রকাশ এপ্রিল ২০২৬' },
+      likes: 12, dislikes: 1,
+      body: { en: 'Check-in took five minutes. The HbA1c and kidney test reports came in four hours, as promised on the slip. The sample collector found my vein on the first try and explained the fasting rules in Bangla. When I repeated one test elsewhere the numbers were close, which reassured me, though I am not qualified to judge.', bn: 'চেক-ইন পাঁচ মিনিটে হয়েছে। HbA1c ও কিডনি পরীক্ষার রিপোর্ট স্লিপে যেমন বলা ছিল, চার ঘণ্টায় এসেছে। রক্ত নেওয়ার কর্মী প্রথমবারেই শিরা পেয়েছেন এবং বাংলায় খালি পেটে থাকার নিয়ম বুঝিয়েছেন। একটি পরীক্ষা অন্য জায়গায় করালে সংখ্যা কাছাকাছি এসেছে, তাতে ভরসা পেয়েছি, তবে বিচার করার যোগ্যতা আমার নেই।' },
+      criteria: { staff: 'good', waiting: 'good', cleanliness: 'good', billing: 'good', reportTime: 'good', reportTrust: 'good', admission: 'good', recommend: 'good', overall: 'good' }
+    },
+    {
+      id: 'fr17', facilityId: 'f9', identity: 'pseudo', author: { en: 'cumilla_jh', bn: 'cumilla_jh' },
+      period: { en: 'May 2026', bn: 'মে ২০২৬' }, posted: { en: 'Posted June 2026', bn: 'প্রকাশ জুন ২০২৬' },
+      likes: 5, dislikes: 1,
+      body: { en: 'Check-in was disorganised: two queues with no signs, and my neighbour was sent to the wrong one. The report came a day after the promised time, and one line on the printout was smudged, which the desk reprinted without fuss. Billing was fair and clear. I would use them for simple tests but ask for a second opinion on anything important.', bn: 'চেক-ইন এলোমেলো ছিল: দুটি লাইন, কোনো নির্দেশনা নেই, আমার প্রতিবেশীকে ভুল লাইনে পাঠানো হয়। রিপোর্ট কথা দেওয়া সময়ের একদিন পরে এসেছে, প্রিন্টআউটে একটা লাইন ঝাপসা ছিল যা ডেস্ক ঝামেলা ছাড়াই আবার ছাপিয়ে দিয়েছে। বিল ন্যায্য ও স্পষ্ট। সহজ পরীক্ষার জন্য যাব, তবে গুরুত্বপূর্ণ কিছুর জন্য দ্বিতীয় মত নেব।' },
+      criteria: { staff: 'mixed', waiting: 'mixed', cleanliness: 'good', billing: 'good', reportTime: 'poor', reportTrust: 'mixed', admission: 'poor', recommend: 'mixed', overall: 'mixed' }
+    },
+    {
+      id: 'fr18', facilityId: 'f10', identity: 'pseudo', author: { en: 'ammu_of_tuli', bn: 'ammu_of_tuli' },
+      period: { en: 'July 2026', bn: 'জুলাই ২০২৬' }, posted: { en: 'Posted August 2026', bn: 'প্রকাশ আগস্ট ২০২৬' },
+      likes: 7, dislikes: 0,
+      body: { en: 'Small and homely. The children’s waiting corner had books, and the nurse let our daughter keep her toy during the blood draw. We stayed two nights for observation and the nurse explained each medicine before giving it. The report was on time and the bill was a single printed page with every line explained.', bn: 'ছোট ও ঘরোয়া। শিশুদের অপেক্ষার কোণে বই ছিল, রক্ত নেওয়ার সময় নার্স আমাদের মেয়েকে খেলনা ধরে রাখতে দিয়েছেন। পর্যবেক্ষণের জন্য দুই রাত ছিলাম, নার্স প্রতিটি ওষুধ দেওয়ার আগে বুঝিয়ে বলেছেন। রিপোর্ট সময়মতো এসেছে আর বিল ছিল এক পাতায়, প্রতিটি লাইন ব্যাখ্যাসহ।' },
+      criteria: { staff: 'good', waiting: 'good', cleanliness: 'good', billing: 'good', reportTime: 'good', reportTrust: 'good', admission: 'good', recommend: 'good', overall: 'good' }
+    },
+    {
+      id: 'fr19', facilityId: 'f10', identity: 'anon', author: { en: 'Anonymous', bn: 'নাম প্রকাশ না করে' },
+      period: { en: 'June 2026', bn: 'জুন ২০২৬' }, posted: { en: 'Posted July 2026', bn: 'প্রকাশ জুলাই ২০২৬' },
+      likes: 4, dislikes: 1,
+      body: { en: 'Clean and quiet, but the clinic had only one cashier and one doctor on the day, so the evening wait stretched past two hours. The bill was explained after, not before. Discharge came with a handwritten sheet that was hard to read, and I had to phone to ask what one of the medicines was.', bn: 'পরিচ্ছন্ন ও শান্ত, কিন্তু সেদিন ক্লিনিকে একজনমাত্র ক্যাশিয়ার ও একজন ডাক্তার ছিলেন, তাই সন্ধ্যার অপেক্ষা দুই ঘণ্টার বেশি হয়ে গেল। বিলের ব্যাখ্যা আগে নয়, পরে দেওয়া হয়েছে। ছাড়পত্র হাতে লেখা ছিল, পড়া কঠিন, একটি ওষুধ কী তা জানতে ফোন করতে হয়েছে।' },
+      criteria: { staff: 'mixed', waiting: 'poor', cleanliness: 'good', billing: 'mixed', reportTime: 'mixed', reportTrust: 'mixed', admission: 'poor', recommend: 'mixed', overall: 'mixed' }
+    }
+  );
+
   /* ---------------------------------------------------------------
    * Follow-up chains, keyed by account. The newest entry is the
    * current reported status; older ones stay so the story reads in
@@ -1242,6 +1734,44 @@
     ]
   };
 
+  /* FD-089: follow-up chains for older accounts and the new ones. r17 and r24 carry the single inline shape. */
+  followUps.r3 = [
+    { date: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, en: 'Three months on. The plan has not changed, my readings are steady and I have not had to repeat any tests.', bn: 'তিন মাস পর। পরিকল্পনা বদলায়নি, রিডিং স্থির আছে, কোনো পরীক্ষা আবার করতে হয়নি।' }
+  ];
+  followUps.r5 = [
+    { date: { en: 'June 2026', bn: 'জুন ২০২৬' }, en: 'Two months in. His pressure is normal on the lowest dose and we go back every three months.', bn: 'দুই মাস হলো। সবচেয়ে কম ডোজেই ওর রক্তচাপ স্বাভাবিক, আর আমরা প্রতি তিন মাসে একবার দেখাতে যাই।' }
+  ];
+  followUps.r9 = [
+    { date: { en: 'May 2026', bn: 'মে ২০২৬' }, en: 'Seven months after finishing the physiotherapy I can tie my hair and sleep on that side again.', bn: 'ফিজিওথেরাপি শেষ করার সাত মাস পর আমি আবার চুল বাঁধতে পারি এবং ওই পাশ ফিরে ঘুমাতে পারি।' }
+  ];
+  followUps.r11 = [
+    { date: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, en: 'Two months later, avoiding the two triggers has kept the symptoms mild. No new tests were needed.', bn: 'দুই মাস পরে দুটি ট্রিগার এড়িয়ে চলায় লক্ষণ হালকা আছে। নতুন কোনো পরীক্ষা লাগেনি।' }
+  ];
+  followUps.r13 = [
+    { date: { en: 'July 2026', bn: 'জুলাই ২০২৬' }, en: 'Three months in. The night cough has nearly stopped and I have not needed the blue inhaler more than once a week.', bn: 'তিন মাস হলো। রাতের কাশি প্রায় বন্ধ, নীল ইনহেলার সপ্তাহে একবারের বেশি লাগেনি।' },
+    { date: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, en: 'Five months on. One mild flare in the first cold week, handled with the plan she wrote down. No hospital visit.', bn: 'পাঁচ মাস হলো। প্রথম ঠান্ডা সপ্তাহে একবার হালকা বাড়াবাড়ি হয়েছিল, উনি যে পরিকল্পনা লিখে দিয়েছিলেন তাতেই সামলেছি। হাসপাতালে যেতে হয়নি।' }
+  ];
+  followUps.r14 = [
+    { date: { en: 'June 2026', bn: 'জুন ২০২৬' }, en: 'Four months on: one cough-free spell of five weeks, then a few bad nights in a cold snap. I still cannot tell how much is the inhaler and how much is the weather.', bn: 'চার মাস পর: একটানা পাঁচ সপ্তাহ কাশিহীন ছিল, তারপর হঠাৎ ঠান্ডায় কয়েক রাত খারাপ গেছে। ইনহেলারের কতটা আর আবহাওয়ার কতটা, এখনো বলতে পারছি না।' }
+  ];
+  followUps.r15 = [
+    { date: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, en: 'Two months into the second doctor’s plan the cough has settled and I use the inhaler only on bad mornings.', bn: 'দ্বিতীয় ডাক্তারের পরিকল্পনায় দুই মাস পর কাশি থেমেছে, এখন শুধু খারাপ সকালে ইনহেলার ব্যবহার করি।' }
+  ];
+  followUps.r16 = [
+    { date: { en: 'June 2026', bn: 'জুন ২০২৬' }, en: 'Three months in. Two mild attacks since March, both after missed meals.', bn: 'তিন মাস হলো। মার্চের পর দুটি হালকা আক্রমণ হয়েছে, দুবারই খাবার বাদ দেওয়ার পর।' },
+    { date: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, en: 'Six months on. One attack in the last ten weeks. I am still taking the preventer at the same dose.', bn: 'ছয় মাস হলো। শেষ দশ সপ্তাহে একটি আক্রমণ হয়েছে। প্রতিরোধক ওষুধ একই ডোজে চলছে।' }
+  ];
+  followUps.r18 = [
+    { date: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, en: 'Two months on the lower-dose medicine: no dizziness, and attacks are down to two a month.', bn: 'কম মাত্রার ওষুধে দুই মাস: মাথা ঘোরা নেই, আক্রমণ মাসে দুবারে নেমেছে।' }
+  ];
+  followUps.r19 = [
+    { date: { en: 'June 2026', bn: 'জুন ২০২৬' }, en: 'Four months in. Fasting readings are still between 6 and 7 and I walk after dinner most days.', bn: 'চার মাস হলো। খালি পেটে রিডিং এখনো ৬ থেকে ৭-এর মধ্যে, বেশিরভাগ দিন রাতের খাবারের পর হাঁটি।' },
+    { date: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, en: 'Seven months on. HbA1c repeated at 6.7 and the dose has not changed.', bn: 'সাত মাস পর। HbA1c আবার করে ৬.৭ এসেছে, ডোজ বদলায়নি।' }
+  ];
+  followUps.r22 = [
+    { date: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, en: 'A month after treatment ended: no fever, appetite back to normal, and the recheck visit found nothing more to do.', bn: 'চিকিৎসা শেষের এক মাস পর: জ্বর নেই, খিদে স্বাভাবিক, আর শেষ দেখায় নতুন কিছু করার পাওয়া যায়নি।' }
+  ];
+
   /* Later or alternative care the author described themselves. Naming a
      provider here never creates a review for them. */
   var laterCare = {
@@ -1252,6 +1782,21 @@
     r4: { provider: { en: 'Another doctor at a different chamber', bn: 'অন্য চেম্বারের আরেকজন ডাক্তার' },
           en: 'Switched to a different group of medicine and the stomach pain stopped in four days.', bn: 'অন্য গ্রুপের ওষুধে বদলানো হয় এবং চার দিনে পেটে ব্যথা বন্ধ হয়।' }
   };
+
+  laterCare.r2 = { provider: { en: 'The family’s local doctor', bn: 'পরিবারের স্থানীয় ডাক্তার' },
+    en: 'Went through the side-effect questions at a ten-minute visit and kept the same dose.', bn: 'দশ মিনিটের ভিজিটে পার্শ্বপ্রতিক্রিয়ার প্রশ্নগুলো দেখে একই ডোজ রাখলেন।' };
+  laterCare.r5 = { provider: { en: 'A cardiologist for a baseline heart check', bn: 'হৃদ্‌যন্ত্রের প্রাথমিক পরীক্ষার জন্য একজন হৃদ্‌রোগ বিশেষজ্ঞ' },
+    en: 'An ECG and an echo were normal, so no further tests were advised.', bn: 'ইসিজি ও ইকো স্বাভাবিক এসেছে, তাই আর কোনো পরীক্ষার পরামর্শ দেওয়া হয়নি।' };
+  laterCare.r12 = { provider: { en: 'A paediatric clinic near our home', bn: 'বাড়ির কাছের একটি শিশু ক্লিনিক' },
+    en: 'A final check there found nothing more to treat, and a repeat test was not needed.', bn: 'সেখানে শেষ দেখায় নতুন কিছু পাওয়া যায়নি এবং আবার পরীক্ষা করার দরকার হয়নি।' };
+  laterCare.r14 = { provider: { en: 'A school nurse for the daily routine', bn: 'প্রতিদিনের রুটিনের জন্য স্কুলের নার্স' },
+    en: 'Helped my daughter use the spacer correctly before games class.', bn: 'খেলার ক্লাসের আগে মেয়েকে ঠিকভাবে স্পেসার ব্যবহার করতে সাহায্য করেন।' };
+  laterCare.r15 = { provider: { en: 'A chest physician in another town', bn: 'অন্য শহরের একজন বক্ষব্যাধি বিশেষজ্ঞ' },
+    en: 'Spirometry was done, asthma was found, and the antibiotic was stopped.', bn: 'স্পাইরোমেট্রি করা হয়, হাঁপানি ধরা পড়ে এবং অ্যান্টিবায়োটিক বন্ধ করা হয়।' };
+  laterCare.r21 = { provider: { en: 'A second doctor, for a second opinion', bn: 'দ্বিতীয় মতের জন্য আরেকজন ডাক্তার' },
+    en: 'Kept the same dose and tested iron and vitamin D, which had not been checked before.', bn: 'একই ডোজ রাখলেন এবং আয়রন ও ভিটামিন ডি পরীক্ষা করালেন, যা আগে হয়নি।' };
+  laterCare.r23 = { provider: { en: 'A diagnostic lab for the repeat blood test', bn: 'আবার রক্ত পরীক্ষার জন্য একটি ডায়াগনস্টিক ল্যাব' },
+    en: 'The repeat test after treatment was reported as clear.', bn: 'চিকিৎসার পর আবার করা পরীক্ষায় রিপোর্ট পরিষ্কার এসেছে।' };
 
   /* ---------------------------------------------------------------
    * Discussion. Flat replies only in Phase 1. One thread carries a
@@ -1307,6 +1852,168 @@
       body: { en: 'Twelve weeks is a long time to keep going with exercises. Did the pain get worse before it got better?', bn: 'বারো সপ্তাহ ব্যায়াম চালিয়ে যাওয়া অনেক সময়। ভালো হওয়ার আগে ব্যথা কি বেড়েছিল?' } }
   ];
 
+  /* FD-089: threads for the older accounts and the new ones. One reply level only. */
+  comments.push(
+    { id: 'k11', reviewId: 'r2', author: { en: 'nadia_k', bn: 'nadia_k' }, identity: 'pseudo',
+      when: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, likes: 4,
+      body: { en: 'The rushed questions part is familiar. Next time write them down and hand over the list at the start; some doctors will answer in writing.', bn: 'তাড়াহুড়োয় প্রশ্ন করতে না পারার ব্যাপারটা চেনা। পরের বার প্রশ্নগুলো লিখে নিয়ে শুরুতেই তালিকাটা হাতে দিন; কেউ কেউ লিখেও উত্তর দেন।' } },
+
+    { id: 'k12', reviewId: 'r2', parentId: 'k11', author: { en: 'rumana_h', bn: 'rumana_h' }, identity: 'pseudo',
+      when: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, likes: 1,
+      body: { en: 'A sheet of questions saved me from forgetting half of them. I would do the same for a thyroid review.', bn: 'প্রশ্নের একটা কাগজ থাকায় অর্ধেক প্রশ্ন ভুলে যাওয়া থেকে বেঁচেছি। থাইরয়েডের ফলো-আপেও এমনই করব।' } },
+
+    { id: 'k13', reviewId: 'r3', author: { en: 'abba_of_two', bn: 'abba_of_two' }, identity: 'pseudo',
+      when: { en: 'January 2026', bn: 'জানুয়ারি ২০২৬' }, likes: 3,
+      body: { en: 'Bringing the earlier results saved us money too. It is worth carrying the whole folder to the first visit.', bn: 'আগের রিপোর্টগুলো নিয়ে যাওয়ায় আমাদেরও টাকা বেঁচেছে। প্রথম ভিজিটে পুরো ফাইলটাই নিয়ে যাওয়া ভালো।' } },
+
+    { id: 'k14', reviewId: 'r4', author: { en: 'sylhet_nm', bn: 'sylhet_nm' }, identity: 'pseudo',
+      when: { en: 'July 2026', bn: 'জুলাই ২০২৬' }, likes: 6,
+      body: { en: 'I had the same stomach pain on a different medicine and calling the chamber got me the same answer. Did the second doctor change the dose or the group?', bn: 'অন্য একটি ওষুধে আমারও একই পেটব্যথা হয়েছিল, চেম্বারে ফোন করে একই উত্তর পেয়েছি। দ্বিতীয় ডাক্তার ডোজ বদলেছিলেন, নাকি গ্রুপ?' } },
+
+    { id: 'k15', reviewId: 'r4', parentId: 'k14', author: { en: 'r_ahmed', bn: 'r_ahmed' }, identity: 'pseudo',
+      when: { en: 'July 2026', bn: 'জুলাই ২০২৬' }, likes: 2,
+      body: { en: 'The group of medicine, not the dose. The pain stopped in four days.', bn: 'ডোজ নয়, ওষুধের গ্রুপ বদলেছে। চার দিনে ব্যথা থেমেছে।' } },
+
+    { id: 'k16', reviewId: 'r4', author: { en: 'Anonymous', bn: 'নাম প্রকাশ না করে' }, identity: 'anon',
+      when: { en: 'August 2026', bn: 'আগস্ট ২০২৬' }, likes: 1,
+      body: { en: 'Please do not stop a prescribed medicine on your own because of this account. Ask whoever prescribed it first.', bn: 'এই বিবরণ পড়ে নিজে থেকে নির্ধারিত ওষুধ বন্ধ করবেন না। আগে যিনি ওষুধ দিয়েছেন তাঁকে জিজ্ঞেস করুন।' } },
+
+    { id: 'k17', reviewId: 'r5', author: { en: 'mirpur_11', bn: 'mirpur_11' }, identity: 'pseudo',
+      when: { en: 'May 2026', bn: 'মে ২০২৬' }, likes: 3,
+      body: { en: 'Starting low and rechecking in two weeks is what we were told as well. It is slower, but it felt safer.', bn: 'আমাদেরও কম ডোজে শুরু করে দুই সপ্তাহ পর আবার দেখাতে বলা হয়েছিল। ধীর, কিন্তু নিরাপদ মনে হয়েছে।' } },
+
+    { id: 'k18', reviewId: 'r7', author: { en: 'Tanvir Ahmed', bn: 'তানভীর আহমেদ' }, identity: 'real',
+      when: { en: 'February 2026', bn: 'ফেব্রুয়ারি ২০২৬' }, likes: 4,
+      body: { en: 'Good to read this. Did you book by phone beforehand, or just walk in late?', bn: 'এটা পড়ে ভালো লাগল। আপনারা আগে ফোনে সিরিয়াল নিয়েছিলেন, নাকি দেরিতে সরাসরি গিয়েছিলেন?' } },
+
+    { id: 'k19', reviewId: 'r7', parentId: 'k18', author: { en: 'ctg_reader', bn: 'ctg_reader' }, identity: 'pseudo',
+      when: { en: 'February 2026', bn: 'ফেব্রুয়ারি ২০২৬' }, likes: 2,
+      body: { en: 'No booking. We walked in at about 9:40 pm and were seen.', bn: 'সিরিয়াল নেওয়া ছিল না। রাত প্রায় ৯টা ৪০-এ সরাসরি গিয়েছিলাম, দেখিয়েছেন।' } },
+
+    { id: 'k20', reviewId: 'r9', parentId: 'k7', author: { en: 'Sultana Begum', bn: 'সুলতানা বেগম' }, identity: 'real',
+      when: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, likes: 3,
+      body: { en: 'Yes, the pain was worse for the first two weeks and then eased. He told me to expect that, which made it easier to keep going.', bn: 'হ্যাঁ, প্রথম দুই সপ্তাহ ব্যথা বেড়েছিল, তারপর কমেছে। উনি আগেই বলেছিলেন এমন হবে, তাই চালিয়ে যেতে সহজ হয়েছে।' } },
+
+    { id: 'k21', reviewId: 'r10', author: { en: 'Dr. Mahmudul Hasan', bn: 'ডা. মাহমুদুল হাসান' }, identity: 'real',
+      providerFor: 'd4', when: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, likes: 8,
+      body: { en: 'Thank you for describing both the consultation and the queue. The queue is a fair criticism, and we are starting a numbered token system at the chamber door from next month.', bn: 'পরামর্শ আর সিরিয়াল দুটোর কথাই লেখার জন্য ধন্যবাদ। সিরিয়ালের সমালোচনা সঙ্গত, আগামী মাস থেকে চেম্বারের দরজায় নম্বর-টোকেন ব্যবস্থা চালু করছি।' } },
+
+    { id: 'k22', reviewId: 'r11', author: { en: 'nadia_k', bn: 'nadia_k' }, identity: 'pseudo',
+      when: { en: 'August 2026', bn: 'আগস্ট ২০২৬' }, likes: 2,
+      body: { en: 'How did you spot the triggers? Was it one food or a combination?', bn: 'ট্রিগারগুলো কীভাবে ধরলেন? একটা খাবার, নাকি কয়েকটার মিলিত প্রভাব?' } },
+
+    { id: 'k23', reviewId: 'r11', parentId: 'k22', author: { en: 'mirpur_11', bn: 'mirpur_11' }, identity: 'pseudo',
+      when: { en: 'August 2026', bn: 'আগস্ট ২০২৬' }, likes: 1,
+      body: { en: 'Two: very strong tea on an empty stomach and large evening meals. Not anything I would have guessed.', bn: 'দুটি: খালি পেটে খুব কড়া চা আর রাতে ভারী খাবার। আন্দাজ করতে পারতাম না।' } },
+
+    { id: 'k24', reviewId: 'r12', author: { en: 'ammu_of_tuli', bn: 'ammu_of_tuli' }, identity: 'pseudo',
+      when: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, likes: 3,
+      body: { en: 'Ask for a written estimate before agreeing to injections. Most chambers will give one if you ask.', bn: 'ইনজেকশনে রাজি হওয়ার আগে লিখিত আনুমানিক খরচ চেয়ে নিন। চাইলে বেশিরভাগ চেম্বারই দেয়।' } },
+
+    { id: 'k25', reviewId: 'r13', author: { en: 'Farida Yasmin', bn: 'ফরিদা ইয়াসমিন' }, identity: 'real',
+      when: { en: 'June 2026', bn: 'জুন ২০২৬' }, likes: 5,
+      body: { en: 'Checking the inhaler technique first is exactly what my daughter’s doctor did too. Many people never get that check.', bn: 'আমার মেয়ের ডাক্তারও আগে ইনহেলার ব্যবহারের পদ্ধতিই দেখেছেন। অনেকে এই পরীক্ষাটাই কখনো পান না।' } },
+
+    { id: 'k26', reviewId: 'r13', parentId: 'k25', author: { en: 'rajshahi_rina', bn: 'rajshahi_rina' }, identity: 'pseudo',
+      when: { en: 'June 2026', bn: 'জুন ২০২৬' }, likes: 2,
+      body: { en: 'It took two minutes and changed more than the new medicine did.', bn: 'দুই মিনিট লেগেছিল, আর নতুন ওষুধের চেয়েও বেশি বদলে দিয়েছে।' } },
+
+    { id: 'k27', reviewId: 'r13', author: { en: 'shafiq_ctg', bn: 'shafiq_ctg' }, identity: 'pseudo',
+      when: { en: 'July 2026', bn: 'জুলাই ২০২৬' }, likes: 3,
+      link: 'https://example.org/inhaler-technique-guide',
+      body: { en: 'A short guide to inhaler technique with pictures. It helped me explain it to my father.', bn: 'ছবিসহ ইনহেলার ব্যবহারের একটি ছোট নির্দেশিকা। বাবাকে বোঝাতে আমার কাজে লেগেছে।' } },
+
+    { id: 'k28', reviewId: 'r14', author: { en: 'abba_of_two', bn: 'abba_of_two' }, identity: 'pseudo',
+      when: { en: 'April 2026', bn: 'এপ্রিল ২০২৬' }, likes: 2,
+      body: { en: 'We also got two different follow-up times from the chamber and the desk. Asking the doctor to write the date on the prescription fixed it.', bn: 'আমরাও চেম্বার আর ডেস্ক থেকে দুই রকম ফলো-আপের সময় পেয়েছিলাম। ডাক্তারকে প্রেসক্রিপশনে তারিখ লিখে দিতে বলায় সমাধান হয়েছে।' } },
+
+    { id: 'k29', reviewId: 'r14', parentId: 'k28', author: { en: 'Farida Yasmin', bn: 'ফরিদা ইয়াসমিন' }, identity: 'real',
+      when: { en: 'April 2026', bn: 'এপ্রিল ২০২৬' }, likes: 1,
+      body: { en: 'Thank you, I will do that next time.', bn: 'ধন্যবাদ, পরের বার এটাই করব।' } },
+
+    { id: 'k30', reviewId: 'r15', author: { en: 'nadia_k', bn: 'nadia_k' }, identity: 'pseudo',
+      when: { en: 'February 2026', bn: 'ফেব্রুয়ারি ২০২৬' }, likes: 6,
+      body: { en: 'Sorry you went through such a long cough. A breathing test is a reasonable thing to ask for at the first visit.', bn: 'এত লম্বা কাশির কষ্ট পেয়েছেন জেনে খারাপ লাগল। প্রথম ভিজিটেই শ্বাসের পরীক্ষা চাওয়া যুক্তিসঙ্গত।' } },
+
+    { id: 'k31', reviewId: 'r15', author: { en: 'Anonymous', bn: 'নাম প্রকাশ না করে' }, identity: 'anon',
+      when: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, likes: 0,
+      body: { en: 'My aunt had the same thing. Call her on 01XXX-XXXXXX and she will tell you the name of the other doctor.', bn: 'আমার খালারও একই হয়েছিল। ওঁকে 01XXX-XXXXXX নম্বরে ফোন করুন, অন্য ডাক্তারের নাম বলে দেবেন।' } },
+
+    { id: 'k32', reviewId: 'r16', author: { en: 'Dr. Aminul Haque', bn: 'ডা. আমিনুল হক' }, identity: 'real',
+      providerFor: 'd8', when: { en: 'May 2026', bn: 'মে ২০২৬' }, likes: 9,
+      body: { en: 'Thank you for the careful account. The diary does most of the work, as you found. If anyone reading is starting a preventer, please tell the chamber about any dizziness in the first week.', bn: 'যত্ন নিয়ে লেখার জন্য ধন্যবাদ। আপনি যেমন দেখেছেন, ডায়েরিই বেশিরভাগ কাজ করে। যিনি পড়ছেন এবং প্রতিরোধক ওষুধ শুরু করছেন, প্রথম সপ্তাহে মাথা ঘুরলে অনুগ্রহ করে চেম্বারকে জানাবেন।' } },
+
+    { id: 'k33', reviewId: 'r16', author: { en: 'rangpur_mon', bn: 'rangpur_mon' }, identity: 'pseudo',
+      when: { en: 'May 2026', bn: 'মে ২০২৬' }, likes: 4,
+      body: { en: 'My mother’s doctor was the same man, and he asked about meals too. Did he explain what to do if an attack starts at night?', bn: 'আমার মায়ের ডাক্তারও একই মানুষ, উনিও খাবারের কথা জিজ্ঞেস করেছিলেন। রাতে আক্রমণ শুরু হলে কী করতে হবে তা কি বলেছিলেন?' } },
+
+    { id: 'k34', reviewId: 'r16', parentId: 'k33', author: { en: 'Mostafizur Rahman', bn: 'মোস্তাফিজুর রহমান' }, identity: 'real',
+      when: { en: 'May 2026', bn: 'মে ২০২৬' }, likes: 2,
+      body: { en: 'Yes: take the tablet, lie down in a dark room and drink water. He wrote it on the prescription.', bn: 'হ্যাঁ: ট্যাবলেট খাওয়া, অন্ধকার ঘরে শুয়ে থাকা আর পানি পান করা। প্রেসক্রিপশনেই লিখে দিয়েছিলেন।' } },
+
+    { id: 'k35', reviewId: 'r17', author: { en: 'Dr. Aminul Haque', bn: 'ডা. আমিনুল হক' }, identity: 'real',
+      providerFor: 'd8', when: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, likes: 7,
+      body: { en: 'Thank you, and I am sorry the explanation was hard to follow. I will use plain Bangla first and English terms only if asked.', bn: 'ধন্যবাদ, আর ব্যাখ্যা বুঝতে কষ্ট হয়েছে বলে দুঃখিত। এখন থেকে আগে সহজ বাংলায় বলব, ইংরেজি শব্দ শুধু চাইলে।' } },
+
+    { id: 'k36', reviewId: 'r17', parentId: 'k35', author: { en: 'rangpur_mon', bn: 'rangpur_mon' }, identity: 'pseudo',
+      when: { en: 'March 2026', bn: 'মার্চ ২০২৬' }, likes: 3,
+      body: { en: 'Thank you, doctor. The last visit was much easier for her.', bn: 'ধন্যবাদ ডাক্তার। শেষ ভিজিটটা মায়ের জন্য অনেক সহজ ছিল।' } },
+
+    { id: 'k37', reviewId: 'r18', author: { en: 'rangpur_mon', bn: 'rangpur_mon' }, identity: 'pseudo',
+      when: { en: 'August 2026', bn: 'আগস্ট ২০২৬' }, likes: 6,
+      body: { en: 'I am sorry. A phone call should not have to wait ten days. If it happens again, ask to speak to the doctor directly and not the assistant.', bn: 'দুঃখিত। একটা ফোনের জন্য দশ দিন অপেক্ষা করা উচিত নয়। আবার হলে সহকারীর বদলে সরাসরি ডাক্তারের সঙ্গে কথা বলতে চাইবেন।' } },
+
+    { id: 'k38', reviewId: 'r18', author: { en: 'cure_in_days', bn: 'cure_in_days' }, identity: 'pseudo',
+      when: { en: 'August 2026', bn: 'আগস্ট ২০২৬' }, likes: 0, dislikes: 7,
+      dangerous: true,
+      body: { en: 'Never take preventer tablets, they damage the brain. Put clove oil drops in your nose at the first sign instead and stop all medicines.', bn: 'প্রতিরোধক ট্যাবলেট কখনো খাবেন না, এতে মস্তিষ্কের ক্ষতি হয়। প্রথম লক্ষণেই নাকে লবঙ্গ তেলের ফোঁটা দিন আর সব ওষুধ বন্ধ করে দিন।' } },
+
+    { id: 'k39', reviewId: 'r18', parentId: 'k38', author: { en: 'nadia_k', bn: 'nadia_k' }, identity: 'pseudo',
+      when: { en: 'August 2026', bn: 'আগস্ট ২০২৬' }, likes: 5,
+      mentions: ['cure_in_days'],
+      body: { en: '@cure_in_days please do not tell people to stop prescribed medicines.', bn: '@cure_in_days দয়া করে নির্ধারিত ওষুধ বন্ধ করতে বলবেন না।' } },
+
+    { id: 'k40', reviewId: 'r19', author: { en: 'Kamrul Islam', bn: 'কামরুল ইসলাম' }, identity: 'real',
+      when: { en: 'April 2026', bn: 'এপ্রিল ২০২৬' }, likes: 4,
+      body: { en: 'The chart idea is good. My wife asked for the same on the back of my plan.', bn: 'ছকের ধারণাটা ভালো। আমার স্ত্রীও আমার পরিকল্পনার পেছনে একই জিনিস চেয়ে নিয়েছেন।' } },
+
+    { id: 'k41', reviewId: 'r19', parentId: 'k40', author: { en: 'rumana_h', bn: 'rumana_h' }, identity: 'pseudo',
+      when: { en: 'April 2026', bn: 'এপ্রিল ২০২৬' }, likes: 2,
+      body: { en: 'It cost nothing and helped more than any leaflet.', bn: 'কোনো খরচ নেই, অথচ যেকোনো লিফলেটের চেয়ে বেশি কাজে লেগেছে।' } },
+
+    { id: 'k42', reviewId: 'r20', author: { en: 'Anonymous', bn: 'নাম প্রকাশ না করে' }, identity: 'anon',
+      when: { en: 'July 2026', bn: 'জুলাই ২০২৬' }, likes: 1,
+      body: { en: 'Writing the times in large numbers is a small kindness that older patients really need.', bn: 'সময়গুলো বড় সংখ্যায় লিখে দেওয়া ছোট একটা সদয়তা, বয়স্ক রোগীদের সত্যিই দরকার।' } },
+
+    { id: 'k43', reviewId: 'r21', author: { en: 'mirpur_11', bn: 'mirpur_11' }, identity: 'pseudo',
+      when: { en: 'June 2026', bn: 'জুন ২০২৬' }, likes: 6,
+      body: { en: 'Iron and vitamin D were checked for me too after months of tiredness. In my case it was low iron, not the thyroid.', bn: 'মাসের পর মাস ক্লান্তির পর আমারও আয়রন আর ভিটামিন ডি পরীক্ষা হয়েছিল। আমার ক্ষেত্রে থাইরয়েড নয়, আয়রনের ঘাটতি ছিল।' } },
+
+    { id: 'k44', reviewId: 'r21', parentId: 'k43', author: { en: 'Nasima Akter', bn: 'নাসিমা আক্তার' }, identity: 'real',
+      when: { en: 'June 2026', bn: 'জুন ২০২৬' }, likes: 2,
+      body: { en: 'Thank you, I will ask about those tests at my next visit.', bn: 'ধন্যবাদ, পরের ভিজিটে ওই পরীক্ষাগুলোর কথা জিজ্ঞেস করব।' } },
+
+    { id: 'k45', reviewId: 'r22', author: { en: 'ctg_reader', bn: 'ctg_reader' }, identity: 'pseudo',
+      when: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, likes: 4,
+      body: { en: 'The warning-signs card is a good idea. Did she say which hospital to go to at night?', bn: 'বিপদের লক্ষণের কার্ডটা ভালো ধারণা। রাতে কোন হাসপাতালে যেতে হবে তা কি বলেছিলেন?' } },
+
+    { id: 'k46', reviewId: 'r22', parentId: 'k45', author: { en: 'ammu_of_tuli', bn: 'ammu_of_tuli' }, identity: 'pseudo',
+      when: { en: 'September 2026', bn: 'সেপ্টেম্বর ২০২৬' }, likes: 3,
+      body: { en: 'She named the nearest children’s ward and wrote its number on the card.', bn: 'কাছের শিশু ওয়ার্ডের নাম বলেছিলেন এবং কার্ডে ওদের নম্বর লিখে দিয়েছিলেন।' } },
+
+    { id: 'k47', reviewId: 'r23', author: { en: 'abba_of_two', bn: 'abba_of_two' }, identity: 'pseudo',
+      when: { en: 'August 2026', bn: 'আগস্ট ২০২৬' }, likes: 2,
+      body: { en: 'Evening slots are hard everywhere. Calling when the chamber opens for the next day’s morning list worked for us.', bn: 'সন্ধ্যার সিরিয়াল সবখানেই কঠিন। চেম্বার খোলার সময় ফোন করে পরদিন সকালের তালিকায় নাম লেখানো আমাদের কাজে দিয়েছে।' } },
+
+    { id: 'k48', reviewId: 'r24', author: { en: 'rajshahi_rina', bn: 'rajshahi_rina' }, identity: 'pseudo',
+      when: { en: 'May 2026', bn: 'মে ২০২৬' }, likes: 4,
+      body: { en: 'Letting him hold the spacer as a toy first is clever. I will try it with my nephew.', bn: 'আগে খেলনার মতো স্পেসার ধরতে দেওয়ার বুদ্ধিটা চমৎকার। আমার ভাগ্নের সঙ্গে চেষ্টা করব।' } },
+
+    { id: 'k49', reviewId: 'r24', parentId: 'k48', author: { en: 'Shahana Parvin', bn: 'শাহানা পারভীন' }, identity: 'real',
+      when: { en: 'May 2026', bn: 'মে ২০২৬' }, likes: 1,
+      body: { en: 'Please do tell us how it goes.', bn: 'কেমন হলো, জানাবেন কিন্তু।' } }
+  );
+
   /* ---------------------------------------------------------------
    * Evidence items. The public copy is the only thing a reader can
    * reach; the original is private and deleted on schedule.
@@ -1328,6 +2035,20 @@
     { id: 'e7', reviewId: 'r3', group: 'reviewed', state: 'ready', pages: 1,
       label: { en: 'Earlier test results I brought with me', bn: 'সঙ্গে নিয়ে যাওয়া আগের পরীক্ষার ফল' } }
   ];
+
+  evidence.push(
+    { id: 'e8', reviewId: 'r13', group: 'reviewed', state: 'ready', pages: 1,
+      label: { en: 'Spirometry printout, April 2026', bn: 'স্পাইরোমেট্রি প্রিন্টআউট, এপ্রিল ২০২৬' } },
+    { id: 'e9', reviewId: 'r15', group: 'later', state: 'ready', pages: 2,
+      label: { en: 'Spirometry report from the second doctor', bn: 'দ্বিতীয় ডাক্তারের স্পাইরোমেট্রি রিপোর্ট' } },
+    { id: 'e10', reviewId: 'r16', group: 'reviewed', state: 'ready', pages: 1,
+      label: { en: 'Prescription, March 2026', bn: 'প্রেসক্রিপশন, মার্চ ২০২৬' } },
+    { id: 'e11', reviewId: 'r16', group: 'outcome', state: 'failed', pages: 0,
+      label: { en: 'Headache diary, handwritten pages', bn: 'মাথাব্যথার ডায়েরি, হাতে লেখা পাতা' },
+      failReason: { en: 'The photo was too blurred to read, so a public copy could not be made.', bn: 'ছবিটি এতটাই ঝাপসা ছিল যে পড়া যায়নি, তাই প্রকাশ্য কপি তৈরি করা যায়নি।' } },
+    { id: 'e12', reviewId: 'r19', group: 'outcome', state: 'ready', pages: 1,
+      label: { en: 'HbA1c result, June 2026', bn: 'HbA1c ফলাফল, জুন ২০২৬' } }
+  );
 
   /* ---------------------------------------------------------------
    * The signed-in person, for "My contributions".
@@ -1363,6 +2084,30 @@
     ]
   };
 
+  user.bookmarks.push('r11', 'r13', 'r16', 'r19', 'r22', 'r18');
+  user.drafts.push(
+    { id: 'dr3', expiresInDays: 13,
+      doctorId: 'd3', conditionId: 'c4',
+      title: { en: 'Untitled — started 2 September', bn: 'শিরোনামহীন — শুরু ২ সেপ্টেম্বর' },
+      excerpt: { en: 'The patch on my wrist came back after the first course, and I want to describe what we tried…', bn: 'প্রথম কোর্সের পর কব্জির দাগটা ফিরে এসেছে, আর আমরা কী কী চেষ্টা করেছিলাম তা লিখতে চাই…' } },
+    { id: 'dr4', expiresInDays: 27,
+      doctorId: 'd9', conditionId: 'c2',
+      title: { en: 'Untitled — started 20 August', bn: 'শিরোনামহীন — শুরু ২০ আগস্ট' },
+      excerpt: { en: 'My TSH was checked twice and I want to explain what the second visit changed…', bn: 'আমার টিএসএইচ দুবার পরীক্ষা হয়েছে, আর দ্বিতীয় ভিজিটে কী বদলেছে তা বোঝাতে চাই…' } }
+  );
+  user.notifications.push(
+    { id: 'n6', kind: 'discussion', when: { en: '4 weeks ago', bn: '৪ সপ্তাহ আগে' }, unread: true,
+      text: { en: 'nadia_k replied to your comment.', bn: 'nadia_k আপনার মন্তব্যের উত্তর দিয়েছেন।' } },
+    { id: 'n7', kind: 'evidence', when: { en: '5 weeks ago', bn: '৫ সপ্তাহ আগে' }, unread: false,
+      text: { en: 'Your second prescription scan is waiting for you to cover any private details before it can be shown.', bn: 'আপনার দ্বিতীয় প্রেসক্রিপশন স্ক্যান দেখানোর আগে ব্যক্তিগত তথ্য ঢাকার অপেক্ষায় আছে।' } },
+    { id: 'n8', kind: 'moderation', when: { en: '6 weeks ago', bn: '৬ সপ্তাহ আগে' }, unread: false,
+      text: { en: 'A report you sent about a comment was decided. The comment now carries a warning. You are not told who else reported it.', bn: 'আপনার পাঠানো একটি মন্তব্যের রিপোর্টের সিদ্ধান্ত হয়েছে। মন্তব্যটিতে এখন সতর্কতা যুক্ত আছে। আর কে রিপোর্ট করেছেন তা আপনাকে জানানো হয় না।' } },
+    { id: 'n9', kind: 'draft', when: { en: '2 months ago', bn: '২ মাস আগে' }, unread: false,
+      text: { en: 'A draft will be removed in 13 days if you do not finish it.', bn: 'একটি খসড়া শেষ না করলে ১৩ দিনে মুছে যাবে।' } },
+    { id: 'n10', kind: 'security', when: { en: '3 months ago', bn: '৩ মাস আগে' }, unread: false,
+      text: { en: 'Your password was changed. If this was not you, reset it now.', bn: 'আপনার পাসওয়ার্ড বদলানো হয়েছে। এটি আপনি না হলে এখনই রিসেট করুন।' } }
+  );
+
   /* ---------------------------------------------------------------
    * Moderation. Cases carry only what a moderator is cleared to see;
    * reporter identity and original-evidence access are separate,
@@ -1378,7 +2123,7 @@
       retentionDefaultDays: 90,
       retentionMaxDays: 3650
     },
-    auditLog: [ // STORY-NFR-009: append-only moderation audit log (13 seeded events)
+    auditLog: [ // STORY-NFR-009: append-only moderation audit log
       { id: 'a1', case: 'MOD-2041', action: 'warn',     actor: 'moderator:rashid', timeMin: 8,   targetId: 'k3' },
       { id: 'a2', case: 'MOD-2041', action: 'hide',     actor: 'system:auto',    timeMin: 22,  targetId: 'k3' },
       { id: 'a3', case: 'MOD-2041', action: 'record',   actor: 'moderator:rashid',timeMin: 35,  targetId: 'k3' },
@@ -1489,6 +2234,163 @@
       ]
     }
   };
+
+  /* FD-089: additional staff-console records. Reporter identity stays restricted on every case. */
+  moderation.auditLog.push(
+    { id: 'a14', case: 'MOD-2047', action: 'hide',          actor: 'system:auto',       timeMin: 10,   targetId: 'k31' },
+    { id: 'a15', case: 'MOD-2047', action: 'record',        actor: 'moderator:nadia',   timeMin: 18,   targetId: 'k31' },
+    { id: 'a16', case: 'MOD-2045', action: 'warn',          actor: 'moderator:rashid',  timeMin: 15,   targetId: 'k38' },
+    { id: 'a17', case: 'MOD-2045', action: 'note',          actor: 'moderator:rashid',  timeMin: 40,   targetId: 'k38' },
+    { id: 'a18', case: 'MOD-2036', action: 'review',        actor: 'moderator:tabassum', timeMin: 300, targetId: 'r18' },
+    { id: 'a19', case: 'MOD-2036', action: 'note',          actor: 'moderator:tabassum', timeMin: 330, targetId: 'r18' },
+    { id: 'a20', case: 'MOD-2031', action: 'review',        actor: 'moderator:nadia',   timeMin: 600,  targetId: 'd9' },
+    { id: 'a21', case: 'MOD-2031', action: 'note',          actor: 'moderator:nadia',   timeMin: 640,  targetId: 'd9' },
+    { id: 'a22', case: 'MOD-2018', action: 'appeal',        actor: 'author:k27',        timeMin: 950,  targetId: 'k27' },
+    { id: 'a23', case: 'MOD-2018', action: 'freshReview',   actor: 'moderator:rashid',  timeMin: 1200, targetId: 'k27' },
+    { id: 'a24', case: 'MOD-2018', action: 'note',          actor: 'moderator:rashid',  timeMin: 1260, targetId: 'k27' }
+  );
+
+  moderation.notifications.push(
+    { id: 'nA7', kind: 'newReport', when: { en: '2 days ago', bn: '২ দিন আগে' },
+      target: { en: 'MOD-2047', bn: 'MOD-2047' },
+      text: { en: 'New report filed against k31 (private details in a comment).', bn: 'k31 এর বিরুদ্ধে নতুন রিপোর্ট (মন্তব্যে ব্যক্তিগত তথ্য)।' } },
+    { id: 'nA8', kind: 'newReport', when: { en: '3 days ago', bn: '৩ দিন আগে' },
+      target: { en: 'MOD-2045', bn: 'MOD-2045' },
+      text: { en: 'New report filed against k38 (dangerous medical instruction).', bn: 'k38 এর বিরুদ্ধে নতুন রিপোর্ট (বিপজ্জনক চিকিৎসা নির্দেশনা)।' } },
+    { id: 'nA9', kind: 'evidence', when: { en: '4 days ago', bn: '৪ দিন আগে' },
+      target: { en: 'Q-895', bn: 'Q-895' },
+      text: { en: 'A diary scan could not be converted and the author has been asked to upload a clearer photo.', bn: 'একটি ডায়েরির স্ক্যান রূপান্তর করা যায়নি; লেখককে আরও পরিষ্কার ছবি আপলোড করতে বলা হয়েছে।' } },
+    { id: 'nA10', kind: 'claim', when: { en: '5 days ago', bn: '৫ দিন আগে' },
+      target: { en: 'Dr. Tahmina Chowdhury', bn: 'ডা. তাহমিনা চৌধুরী' },
+      text: { en: 'A doctor submitted a claim for this profile.', bn: 'এই প্রোফাইলের জন্য একজন ডাক্তার দাবি জমা দিয়েছেন।' } },
+    { id: 'nA11', kind: 'protectedChange', when: { en: '6 days ago', bn: '৬ দিন আগে' },
+      target: { en: 'Dr. Aminul Haque', bn: 'ডা. আমিনুল হক' },
+      text: { en: 'Community edit to specialty is awaiting approval.', bn: 'বিশেষত্বের সম্প্রদায়-সম্পাদনা অনুমোদনের অপেক্ষায়।' } },
+    { id: 'nA12', kind: 'security', when: { en: '1 week ago', bn: '১ সপ্তাহ আগে' },
+      target: { en: 'moderator:nadia', bn: 'moderator:nadia' },
+      text: { en: 'Sign-in from a new device was confirmed by the account owner. No action needed.', bn: 'নতুন ডিভাইস থেকে সাইন-ইন অ্যাকাউন্টের মালিক নিশ্চিত করেছেন। কোনো পদক্ষেপ লাগবে না।' } }
+  );
+
+  moderation.cases.push(
+    { id: 'MOD-2047', lane: 'critical', ageHours: 2, reports: 1, autoHidden: true, coordinated: false,
+      targetKind: 'comment', targetId: 'k31', reviewId: 'r15',
+      reasons: ['privacy'],
+      summary: { en: 'Comment includes a private phone number that belongs to a third person.', bn: 'মন্তব্যে তৃতীয় এক ব্যক্তির ব্যক্তিগত ফোন নম্বর আছে।' },
+      note: { en: 'Confirmed personal-data leaks are hidden on first credible report. The number is not shown in this console, and the commenter can post again without it.', bn: 'নিশ্চিত ব্যক্তিগত তথ্য ফাঁস প্রথম বিশ্বাসযোগ্য রিপোর্টেই লুকানো হয়। নম্বরটি এই কনসোলে দেখানো হয় না, আর মন্তব্যকারী নম্বর ছাড়া আবার লিখতে পারেন।' } },
+
+    { id: 'MOD-2045', lane: 'critical', ageHours: 5, reports: 3, autoHidden: false, coordinated: false,
+      targetKind: 'comment', targetId: 'k38', reviewId: 'r18',
+      reasons: ['dangerous', 'dangerous', 'spam'],
+      summary: { en: 'Comment tells readers to stop prescribed migraine medicine and use clove-oil nose drops instead.', bn: 'মন্তব্যে পাঠকদের নির্ধারিত মাইগ্রেনের ওষুধ বন্ধ করে নাকে লবঙ্গ তেলের ফোঁটা দিতে বলা হয়েছে।' },
+      note: { en: 'Dangerous instruction. Default policy keeps it visible with a strong warning and priority review. The commenter has posted similar text on other threads.', bn: 'বিপজ্জনক নির্দেশনা। ডিফল্ট নীতিতে এটি কড়া সতর্কতাসহ দৃশ্যমান থাকে ও অগ্রাধিকারে দেখা হয়। মন্তব্যকারী অন্য আলোচনায়ও একই ধরনের লেখা দিয়েছেন।' } },
+
+    { id: 'MOD-2036', lane: 'standard', ageHours: 30, reports: 2, autoHidden: false, coordinated: false,
+      targetKind: 'account', targetId: 'r18', reviewId: 'r18',
+      reasons: ['factual', 'factual'],
+      summary: { en: 'Author describes dizziness after a preventer medicine. Two reports disagree with the experience.', bn: 'লেখক প্রতিরোধক ওষুধের পর মাথা ঘোরার কথা লিখেছেন। দুটি রিপোর্ট অভিজ্ঞতাটির সঙ্গে দ্বিমত।' },
+      note: { en: 'A factual disagreement is not grounds for removal. It stays public while under review. The author names a medicine as their own experience, not as advice to others.', bn: 'বিষয়গত দ্বিমত সরানোর কারণ নয়। পর্যালোচনার সময়ও এটি প্রকাশ্য থাকে। লেখক ওষুধের নাম নিজের অভিজ্ঞতা হিসেবে লিখেছেন, অন্যদের পরামর্শ হিসেবে নয়।' } },
+
+    { id: 'MOD-2031', lane: 'standard', ageHours: 53, reports: 1, autoHidden: false, coordinated: false,
+      targetKind: 'profile', targetId: 'd9',
+      reasons: ['factual'],
+      summary: { en: 'Report says the second chamber listed at Kotbari closed last year.', bn: 'রিপোর্টে বলা হয়েছে কোটবাড়ীর তালিকাভুক্ত দ্বিতীয় চেম্বারটি গত বছর বন্ধ হয়ে গেছে।' },
+      note: { en: 'Profile facts are community submitted. Correcting them is a profile action, not a content action.', bn: 'প্রোফাইলের তথ্য সম্প্রদায়ের জমা দেওয়া। এগুলো সংশোধন প্রোফাইল-সংক্রান্ত পদক্ষেপ, কনটেন্ট-সংক্রান্ত নয়।' } },
+
+    { id: 'MOD-2018', lane: 'appeal', ageHours: 120, reports: 0, autoHidden: false, coordinated: false,
+      targetKind: 'comment', targetId: 'k27', reviewId: 'r13',
+      reasons: [],
+      appealText: { en: 'My comment only linked to a public guide on using an inhaler, with pictures. I did not sell anything and I did not tell anyone to stop a medicine.', bn: 'আমার মন্তব্যে শুধু ইনহেলার ব্যবহারের একটি প্রকাশ্য ছবিসহ নির্দেশিকার লিংক ছিল। আমি কিছু বিক্রি করিনি, কাউকে ওষুধ বন্ধ করতেও বলিনি।' },
+      summary: { en: 'Author appeals the hiding of a comment that contained a link.', bn: 'লেখক লিংকসহ একটি মন্তব্য লুকানোর বিরুদ্ধে আপিল করেছেন।' },
+      note: { en: 'Appeals get a fresh review by someone who did not take the original decision, and a newly written reason. An outside link is shown with a warning and is not removed on that ground alone.', bn: 'আপিল নতুন করে দেখেন এমন কেউ যিনি আগের সিদ্ধান্ত নেননি, এবং নতুন করে কারণ লেখা হয়। বাইরের লিংক সতর্কতাসহ দেখানো হয়, শুধু সেই কারণে সরানো হয় না।' } }
+  );
+
+  moderation.quarantine.push(
+    { id: 'Q-893', file: 'spirometry_apr.pdf', size: '1.2 MB', reviewId: 'r13', stage: 'published',
+      stages: { received: 'ok', validated: 'ok', scanned: 'ok', converted: 'ok', rasterised: 'ok', redacted: 'ok', published: 'ok' },
+      note: { en: 'Metadata stripped, re-encoded, patient name covered and flattened into the page.', bn: 'মেটাডেটা সরানো, পুনরায় এনকোড করা, রোগীর নাম ঢেকে পাতায় স্থায়ী করা হয়েছে।' } },
+    { id: 'Q-894', file: 'rx_march.jpg', size: '2.0 MB', reviewId: 'r16', stage: 'published',
+      stages: { received: 'ok', validated: 'ok', scanned: 'ok', converted: 'ok', rasterised: 'ok', redacted: 'ok', published: 'ok' },
+      note: { en: 'The author covered the phone number and patient name before publishing.', bn: 'প্রকাশের আগে লেখক ফোন নম্বর ও রোগীর নাম ঢেকে দিয়েছেন।' } },
+    { id: 'Q-895', file: 'diary_pages.jpg', size: '5.8 MB', reviewId: 'r16', stage: 'converted', failed: true,
+      stages: { received: 'ok', validated: 'ok', scanned: 'ok', converted: 'fail', rasterised: '-', redacted: '-', published: '-' },
+      note: { en: 'The pages were too blurred to read, so no public copy was made. The author has been asked for a clearer photo.', bn: 'পাতাগুলো এতটাই ঝাপসা যে পড়া যায়নি, তাই প্রকাশ্য কপি তৈরি হয়নি। লেখককে আরও পরিষ্কার ছবি দিতে বলা হয়েছে।' } },
+    { id: 'Q-896', file: 'iron_vitd_report.pdf', size: '1.9 MB', reviewId: 'r21', stage: 'scanned', failClosed: true,
+      stages: { received: 'ok', validated: 'ok', scanned: 'hold', converted: '-', rasterised: '-', redacted: '-', published: '-' },
+      note: { en: 'The malware scan returned an error. The file is held, not published, until the scan completes.', bn: 'ম্যালওয়্যার স্ক্যানে ত্রুটি এসেছে। স্ক্যান শেষ না হওয়া পর্যন্ত ফাইলটি প্রকাশ না করে আটকে রাখা হয়েছে।' } },
+    { id: 'Q-898', file: 'discharge_card.jpg', size: '2.7 MB', reviewId: 'r22', stage: 'redacted', waiting: true,
+      stages: { received: 'ok', validated: 'ok', scanned: 'ok', converted: 'ok', rasterised: 'ok', redacted: 'wait', published: '-' },
+      note: { en: 'The author has been asked to cover a child’s name before this can become public.', bn: 'প্রকাশের আগে একটি শিশুর নাম ঢাকতে লেখককে বলা হয়েছে।' } },
+    { id: 'Q-899', file: 'clinic_report.docm', size: '410 KB', reviewId: 'r14', stage: 'validated', failed: true,
+      stages: { received: 'ok', validated: 'fail', scanned: '-', converted: '-', rasterised: '-', redacted: '-', published: '-' },
+      note: { en: 'Macro-enabled documents are rejected because they can run code. The author has been asked to send a PDF or a photo instead.', bn: 'ম্যাক্রোসহ নথি কোড চালাতে পারে বলে বাতিল করা হয়। লেখককে এর বদলে পিডিএফ বা ছবি পাঠাতে বলা হয়েছে।' } }
+  );
+
+  moderation.providers.pending.push(
+    { id: 'P-144', name: { en: 'Dr. Habibur Rahman', bn: 'ডা. হাবিবুর রহমান' },
+      specialty: { en: 'Orthopaedics', bn: 'অর্থোপেডিকস' }, city: { en: 'Barishal', bn: 'বরিশাল' },
+      bmdc: 'A-50217', submittedBy: 'community', duplicateOf: null,
+      note: { en: 'No duplicate found and nothing abusive in the submission. Qualifications were left blank and will read Not provided.', bn: 'কোনো ডুপ্লিকেট পাওয়া যায়নি এবং জমায় আপত্তিকর কিছু নেই। যোগ্যতা খালি রাখা হয়েছে, তাই “জানানো হয়নি” দেখাবে।' } },
+    { id: 'P-145', name: { en: 'Dr. Tahmina Chowdhury', bn: 'ডা. তাহমিনা চৌধুরী' },
+      specialty: { en: 'Pulmonology', bn: 'পালমোনোলজি' }, city: { en: 'Rajshahi', bn: 'রাজশাহী' },
+      bmdc: 'A-44805', submittedBy: 'community', duplicateOf: 'd7',
+      note: { en: 'The name and BMDC number both match an existing profile. Merge rather than approve.', bn: 'নাম ও বিএমডিসি নম্বর দুটিই বিদ্যমান প্রোফাইলের সঙ্গে মেলে। অনুমোদন না করে মিলিয়ে দিন।' } },
+    { id: 'P-147', name: { en: 'Dr. Moshiur Alam', bn: 'ডা. মশিউর আলম' },
+      specialty: { en: 'Ophthalmology', bn: 'চক্ষুরোগ' }, city: { en: 'Mymensingh', bn: 'ময়মনসিংহ' },
+      bmdc: 'A-57003', submittedBy: 'community', duplicateOf: null,
+      note: { en: 'No duplicate found. The chamber listed is a hospital that is not in the directory yet.', bn: 'কোনো ডুপ্লিকেট পাওয়া যায়নি। তালিকাভুক্ত চেম্বারটি এমন একটি হাসপাতাল যা এখনো ডিরেক্টরিতে নেই।' } },
+    { id: 'P-148', name: { en: 'Dr. Rehana Sharmin', bn: 'ডা. রেহানা শারমিন' },
+      specialty: { en: 'Gynaecology', bn: 'স্ত্রীরোগ' }, city: { en: 'Khulna', bn: 'খুলনা' },
+      bmdc: 'A-46690', submittedBy: 'provider', duplicateOf: null,
+      note: { en: 'Submitted by the doctor herself. No duplicate found and nothing abusive in the submission.', bn: 'ডাক্তার নিজে জমা দিয়েছেন। কোনো ডুপ্লিকেট পাওয়া যায়নি এবং জমায় আপত্তিকর কিছু নেই।' } },
+    { id: 'P-149', name: { en: 'Dr. Golam Mustafa', bn: 'ডা. গোলাম মোস্তাফা' },
+      specialty: { en: 'Endocrinology', bn: 'এন্ডোক্রিনোলজি' }, city: { en: 'Cumilla', bn: 'কুমিল্লা' },
+      bmdc: 'A-39874', submittedBy: 'community', duplicateOf: 'd9',
+      note: { en: 'The spelling differs, but the BMDC number matches an existing profile. Merge rather than approve.', bn: 'বানান আলাদা, কিন্তু বিএমডিসি নম্বর বিদ্যমান প্রোফাইলের সঙ্গে মেলে। অনুমোদন না করে মিলিয়ে দিন।' } },
+    { id: 'P-151', name: { en: 'Dr. Pulak Kumar Sen', bn: 'ডা. পুলক কুমার সেন' },
+      specialty: { en: 'ENT', bn: 'নাক-কান-গলা' }, city: { en: 'Sylhet', bn: 'সিলেট' },
+      bmdc: 'A-41912', submittedBy: 'community', duplicateOf: null,
+      note: { en: 'No duplicate found. Two chambers were submitted, and only the first is shown until the second is confirmed.', bn: 'কোনো ডুপ্লিকেট পাওয়া যায়নি। দুটি চেম্বার জমা হয়েছে; দ্বিতীয়টি নিশ্চিত না হওয়া পর্যন্ত শুধু প্রথমটি দেখানো হবে।' } }
+  );
+
+  moderation.providers.claims.push(
+    { id: 'C-59', doctorId: 'd2', method: { en: 'Matched against the clinic’s published phone number and a call to the front desk', bn: 'ক্লিনিকের প্রকাশিত ফোন নম্বরের সঙ্গে মিলিয়ে ও রিসেপশনে ফোন করে' },
+      note: { en: 'The claimant also asked to reply to experiences. Replies are public and carry a claimed-profile label.', bn: 'দাবিকারী অভিজ্ঞতার উত্তর দিতেও চেয়েছেন। উত্তর প্রকাশ্য এবং দাবিকৃত-প্রোফাইল চিহ্নসহ দেখায়।' } },
+    { id: 'C-60', doctorId: 'd3', method: { en: 'A one-time code sent to the chamber’s listed phone number', bn: 'চেম্বারের তালিকাভুক্ত ফোন নম্বরে পাঠানো একবারের কোড' },
+      note: { en: 'A claimed profile can add chamber hours but cannot hide or edit any patient experience.', bn: 'দাবিকৃত প্রোফাইলে চেম্বারের সময় যোগ করা যায়, কিন্তু রোগীর কোনো অভিজ্ঞতা লুকানো বা সম্পাদনা করা যায় না।' } },
+    { id: 'C-61', doctorId: 'd6', method: { en: 'A signed letter on the chamber’s letterhead', bn: 'চেম্বারের লেটারহেডে সই করা একটি চিঠি' },
+      note: { en: 'The letter matches the listed chamber. Claiming does not check the BMDC number, so the profile keeps showing Registration not verified.', bn: 'চিঠিটি তালিকাভুক্ত চেম্বারের সঙ্গে মেলে। দাবি করা বিএমডিসি নম্বর যাচাই করে না, তাই প্রোফাইলে “রেজিস্ট্রেশন যাচাই করা হয়নি” দেখাতে থাকবে।' } },
+    { id: 'C-62', doctorId: 'd7', method: { en: 'Confirmed by phone through the hospital’s administration office', bn: 'হাসপাতালের প্রশাসন অফিসে ফোন করে নিশ্চিত করা' },
+      note: { en: 'Two chambers are listed for this doctor. The claim covers the profile, not either hospital’s page.', bn: 'এই ডাক্তারের দুটি চেম্বার তালিকাভুক্ত। দাবিটি প্রোফাইলের জন্য, কোনো হাসপাতালের পাতার জন্য নয়।' } },
+    { id: 'C-63', doctorId: 'd9', method: { en: 'A one-time code sent to the chamber phone listed on the profile', bn: 'প্রোফাইলে দেওয়া চেম্বারের ফোনে পাঠানো একবারের কোড' },
+      note: { en: 'The claim was filed on the same day as a report about this profile. The two are handled separately.', bn: 'এই প্রোফাইল নিয়ে রিপোর্টের একই দিনে দাবিটি জমা হয়েছে। দুটি আলাদাভাবে দেখা হচ্ছে।' } }
+  );
+
+  moderation.providers.fieldChanges.push(
+    { id: 'F-79', doctorId: 'd2', field: { en: 'Consultation fee', bn: 'পরামর্শ ফি' },
+      from: { en: '৳1,500', bn: '১,৫০০ টাকা' },
+      to: { en: '৳1,800', bn: '১,৮০০ টাকা' },
+      protected: false },
+    { id: 'F-80', doctorId: 'd3', field: { en: 'Qualifications', bn: 'শিক্ষাগত যোগ্যতা' },
+      from: { en: 'MBBS, DDV', bn: 'এমবিবিএস, ডিডিভি' },
+      to: { en: 'MBBS, DDV, MD (Dermatology)', bn: 'এমবিবিএস, ডিডিভি, এমডি (চর্মরোগ)' },
+      protected: true },
+    { id: 'F-81', doctorId: 'd6', field: { en: 'Chamber hours', bn: 'চেম্বারের সময়' },
+      from: { en: 'Daily, 6–9 pm', bn: 'প্রতিদিন, সন্ধ্যা ৬–৯টা' },
+      to: { en: 'Daily, 6–10 pm', bn: 'প্রতিদিন, সন্ধ্যা ৬–রাত ১০টা' },
+      protected: false },
+    { id: 'F-82', doctorId: 'd5', field: { en: 'Consultation languages', bn: 'পরামর্শের ভাষা' },
+      from: { en: 'Bangla, English', bn: 'বাংলা, ইংরেজি' },
+      to: { en: 'Bangla, English, Hindi', bn: 'বাংলা, ইংরেজি, হিন্দি' },
+      protected: false },
+    { id: 'F-83', doctorId: 'd4', field: { en: 'Name', bn: 'নাম' },
+      from: { en: 'Dr. Mahmudul Hasan', bn: 'ডা. মাহমুদুল হাসান' },
+      to: { en: 'Dr. Md. Mahmudul Hasan', bn: 'ডা. মো. মাহমুদুল হাসান' },
+      protected: true },
+    { id: 'F-84', doctorId: 'd8', field: { en: 'Specialty', bn: 'বিশেষত্ব' },
+      from: { en: 'Neurology', bn: 'নিউরোলজি' },
+      to: { en: 'Neurology and Headache Medicine', bn: 'নিউরোলজি ও মাথাব্যথা চিকিৎসা' },
+      protected: true }
+  );
 
   /* ---------------------------------------------------------------
    * Helpers shared by every concept
