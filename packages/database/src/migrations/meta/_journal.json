@@ -50,6 +50,20 @@
       "when": 1789331720026,
       "tag": "0006_pgboss_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793137277177,
+      "tag": "0007_revoke_worker_auth_users",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793137331033,
+      "tag": "0008_worker_grant_review",
+      "breakpoints": true
     }
   ]
 }

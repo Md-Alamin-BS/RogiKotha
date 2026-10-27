@@ -142,4 +142,69 @@ and `to_email_enc` becomes defence-in-depth rather than a boundary.
 
 ## Hand-off
 
-_(filled by the implementer)_
+Full record, including the grant-by-grant review table, the deletion split and the planned
+changes: [`handoffs/CR-006.md`](../handoffs/CR-006.md).
+
+### What changed
+
+- `packages/database/src/migrations/0007_revoke_worker_auth_users.sql` (FD-041):
+  `REVOKE ALL ON auth_users FROM rk_worker`. The table-level revoke also removes the
+  `SELECT (id, email)` column grant. The planned `0006_` name was taken, so the next free
+  numbers are used (`ISS-238`).
+- `packages/database/src/migrations/0008_worker_grant_review.sql` (FD-050, FD-092):
+  `REVOKE ALL ON reports FROM rk_worker` and `REVOKE INSERT ON review_versions FROM rk_worker`.
+  Its header lists the five grants kept and why.
+- Both were generated with `drizzle-kit generate --custom`, so the journal (`idx 7`, `idx 8`)
+  and the two snapshots were written by the tool; both `when` values are later than 0006's.
+- `0005_grants_part2.sql`: comment lines only. The comments above the `review_versions`,
+  `reports` and `auth_users` grants say which migration and FD entry revoked them; no statement
+  changed.
+- `docs/status/decision-log.md`: FD-092, written before any SQL. It rules on WG2–WG8 (WG6
+  provisionally) and lists the other live grants in §16 as live, not ratified. It leaves R1–R4
+  undecided.
+- `docs/implementation/02-data-model.md` §16: the complete `rk_worker` list, with the real file
+  names (`0001`, `0005`, `0006`, `0007`, `0008`; note 1's `0004_deferred_fks.sql`). Note 3 is
+  unchanged and now true.
+- Tests: 19 probes (P1–P8, P10–P20) in a CR-006 block in `validator-probes.int.test.ts`; P9
+  in `grants.smoke.test.ts`; one rewritten assertion in `constraints.int.test.ts`; one count in
+  `migrations.int.test.ts` (both are owned-path additions, explained in the handoff).
+
+### Grant review summary (FD-050 acceptance rows)
+
+| Grant | Used today | Planned Unit (step) | Split side | Ruling |
+|---|---|---|---|---|
+| `reviews` UPDATE (`state`, `deleted_at`) | none | U39 T-410 steps 3, 7; U29 T-309 step 6(e) | worker `data.delete` | keep |
+| `review_versions` INSERT | none | none (writers are web-tier, T-302 step 5) | — | revoke (0008) |
+| `comments` SELECT, UPDATE | none | T-410 steps 3, 7; T-309 step 6(e); U34 T-405 step 1 | worker `data.delete` | keep |
+| `reports` SELECT (six columns) | none | none (T-403's FD-080 row expects the denial) | — (moderation step is web) | revoke (0008) |
+| `account_profiles` SELECT (five columns) | none | T-410 step 4 (`data.export`) | export | keep, provisional (re-judged in T-410's Functional Design) |
+| `legal_holds` SELECT | none | T-309 step 6; T-410 `data.delete` | worker `data.delete` (read) | keep, SELECT only |
+| `account_preferences` SELECT (extra, Units Generation) | none | T-405 step 5; T-410 step 4 | export, mail | keep |
+
+The planned additions (FD-080 `moderation_cases`, T-403; FD-079/FD-090 persona-link deletion
+function, T-309 and T-410; FD-090 `review_drafts`, T-301 and T-309) are recorded as PA1–PA3 in
+the handoff and §16. No existing grant was revoked because of them.
+
+### Not done and why
+
+Nothing in scope was skipped. Out of scope and recorded: R1–R4 (`ISS-240`, `ISS-241`,
+`ISS-233`, `ISS-234`) need FD entries this Unit has no authority to create. The high-risk
+adversarial tests and the owner's sign-off come after Code Generation.
+
+### Questions for the human
+
+FD-092's rulings were decided on the owner's standing instruction and await confirmation. R1
+(`exact_date_enc`) and R2 (the migrations sequence) are the owner's to decide.
+
+### `pnpm check` output summary
+
+Baseline at `53e3dc3`: `vitest run` 46 files, 216 + 4 expected-fail (220); `pnpm smoke` 9
+files, 15 tests; `pnpm test:int` 9 files, 32 + 4 (36). After: `vitest run` 46 files, 236 + 4
+(240); `pnpm smoke` 9 files, 16 tests; `pnpm test:int` 9 files, 52 + 4 (56). Typecheck 9/9, lint
+0 errors and the 1 existing warning, 781 i18n keys and 37 route rows, both times. Coverage not
+measured yet (T-010).
+
+### Run record
+
+Start `53e3dc3` on `bolt/cr-006-worker-auth-users-grant`. The changes are left uncommitted in
+the working tree for the AI-DLC review and the squash commit.

@@ -253,12 +253,13 @@ describe('database-level constraints and triggers', () => {
       }
     });
 
-    it('is denied on reports.reporter_account_id even though other reports columns are readable', async () => {
+    it('is denied on every reports column, reporter_account_id included', async () => {
       const pool = new Pool({ connectionString: workerUrlForTestDb() });
       try {
         await expect(pool.query('select reporter_account_id from reports')).rejects.toThrow(/permission denied/i);
-        // The column-level allowlist still works for the rest of the row.
-        await expect(pool.query('select id, reason from reports')).resolves.toBeDefined();
+        // FD-092 revoked the column allowlist on reports (0008_worker_grant_review.sql);
+        // the column-allowlist mechanism stays proven on account_profiles (CR-006 P16, P17).
+        await expect(pool.query('select id, reason from reports')).rejects.toThrow(/permission denied/i);
       } finally {
         await pool.end();
       }

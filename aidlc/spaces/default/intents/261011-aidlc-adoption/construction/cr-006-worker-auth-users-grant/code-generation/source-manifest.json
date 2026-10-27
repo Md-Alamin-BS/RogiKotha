@@ -1,0 +1,23 @@
+{
+  "stage": "code-generation",
+  "unit": "cr-006-worker-auth-users-grant",
+  "version": 1,
+  "writes": [
+    { "path": "packages/database/src/migrations/0007_revoke_worker_auth_users.sql" },
+    { "path": "packages/database/src/migrations/0008_worker_grant_review.sql" },
+    { "path": "packages/database/src/migrations/0005_grants_part2.sql" },
+    { "path": "packages/database/src/migrations/meta/_journal.json" },
+    { "path": "packages/database/src/migrations/meta/0007_snapshot.json" },
+    { "path": "packages/database/src/migrations/meta/0008_snapshot.json" },
+    { "path": "packages/database/src/validator-probes.int.test.ts" },
+    { "path": "packages/database/src/grants.smoke.test.ts" },
+    { "path": "packages/database/src/constraints.int.test.ts" },
+    { "path": "packages/database/src/migrations.int.test.ts" },
+    { "path": "docs/status/decision-log.md" },
+    { "path": "docs/implementation/02-data-model.md" },
+    { "path": "docs/implementation/ISSUES.md" },
+    { "path": "docs/implementation/tasks/CR-006-worker-auth-users-grant.md" },
+    { "path": "docs/implementation/handoffs/CR-006.md" },
+    { "path": "packages/database/src/cr-006-adversarial.int.test.ts" }
+  ]
+}

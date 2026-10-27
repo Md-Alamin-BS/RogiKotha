@@ -70,8 +70,9 @@ GRANT SELECT ON reviews TO rk_worker;
 GRANT UPDATE (state, deleted_at) ON reviews TO rk_worker;
 --> statement-breakpoint
 
--- review_versions: insert only (system-actor version rows for worker-driven
--- transitions, e.g. retention expiry).
+-- review_versions: insert only. Revoked by 0008_worker_grant_review.sql
+-- (FD-050, FD-092): no worker job writes a version row; review.correct and
+-- review.redact are the only writers, both in the web tier.
 GRANT INSERT ON review_versions TO rk_worker;
 --> statement-breakpoint
 
@@ -81,16 +82,19 @@ GRANT SELECT, UPDATE ON comments TO rk_worker;
 --> statement-breakpoint
 
 -- reports: select of everything *except* reporter_account_id (hard rule —
--- reporter identity never reaches the worker or any public path).
+-- reporter identity never reaches the worker or any public path). Revoked by
+-- 0008_worker_grant_review.sql (FD-050, FD-092): rk_worker now holds no
+-- privilege on reports.
 GRANT SELECT (id, target_kind, target_id, review_id, reason, created_at) ON reports TO rk_worker;
 --> statement-breakpoint
 
 -- personas / account_profiles / account_preferences / auth_users: narrow
--- reads the notification/mail jobs need (02-data-model.md §16 note 3 — the
--- one, deliberate, documented exception: rk_worker reads only
--- auth_users.id and auth_users.email so mail.send has an address; it has no
--- privilege on any other auth_* table, and the web tier still owns every
--- write to auth_users). `personas` is already granted in 0001_grants_part1.sql.
+-- reads for worker jobs; `personas` is already granted in
+-- 0001_grants_part1.sql. account_profiles and account_preferences are kept by
+-- FD-092. The auth_users grant below is revoked by
+-- 0007_revoke_worker_auth_users.sql (FD-041, ISS-140): rk_worker has no
+-- privilege on auth_users (02-data-model.md §16 note 3), and mail.send reads
+-- recipients from email_deliveries.to_email_enc (FD-071).
 GRANT SELECT (id, username, display_name, locale, status) ON account_profiles TO rk_worker;
 --> statement-breakpoint
 GRANT SELECT ON account_preferences TO rk_worker;

@@ -26,7 +26,7 @@
 - **Learnings**: on (from scope classic)
 - **Summary Confirmation**: off (from scope classic)
 - **Plan Approval**: off (set by you)
-- **Collaborators**: on (set by a command)
+- **Collaborators**: off (set by a command)
 
 ## Workspace State
 - **Project Root**: .
@@ -59,6 +59,9 @@
 - **Unit Ownership**: solo
 
 - **Skeleton Stance**: off
+
+
+
 
 
 
@@ -133,7 +136,7 @@ Per unit: [TBD]
 - **Current Stage**: functional-design
 - **Next Stage**: code-generation
 - **Status**: Running
-- **Last Updated**: 2026-10-27T15:55:33Z
+- **Last Updated**: 2026-10-27T22:21:11Z
 
 - **Construction Autonomy Mode**: autonomous
 

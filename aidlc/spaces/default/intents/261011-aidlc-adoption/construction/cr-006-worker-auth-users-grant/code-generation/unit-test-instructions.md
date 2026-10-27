@@ -14,6 +14,14 @@ pnpm smoke
 
 `code-summary.md` records the exact filtered command used for the three touched test files (`validator-probes.int.test.ts`, `grants.smoke.test.ts`, `constraints.int.test.ts`). Then `pnpm check`.
 
+Unit-scoped command, verified on the Bolt branch before any change (Step 2):
+
+```bash
+pnpm test:int validator-probes grants.smoke constraints
+```
+
+Baseline result: 3 files, 13 passed and 2 expected-fail (15). The filters go straight after the script name. The plan's form with `--` (`pnpm test:int -- validator-probes grants.smoke constraints`) passes the `--` on to Vitest, which then drops the filters and runs all 9 database files, so it is not used. `migrations.int.test.ts` gets one changed count in this Unit (its "every migration applied" length goes from 7 to 9; see `code-summary.md`), so the post-change run adds `migrations` to the filter list.
+
 ## What to cover (spec § 11)
 
 | Probe | Expected | Rules |

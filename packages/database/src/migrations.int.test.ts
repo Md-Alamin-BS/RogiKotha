@@ -129,9 +129,11 @@ describe('migrations apply from an empty database', () => {
     // 2 / task step 2). Not in T-009's owned paths, but this specific count
     // is a direct, expected, mechanical consequence of T-009's own
     // migration (same class of fix as `ISS-085`/`ISS-125`), not a silent
-    // redesign of the test.
+    // redesign of the test. CR-006 adds 0007_revoke_worker_auth_users and
+    // 0008_worker_grant_review (FD-041, FD-092), the same kind of mechanical
+    // consequence (ISS-242).
     const rows = await testDb.execute(sql`select hash from drizzle_migrations order by id`);
-    expect(rows.rows).toHaveLength(7);
+    expect(rows.rows).toHaveLength(9);
   });
 
   it('creates every §1–§5, §9, §11, §15 table', async () => {

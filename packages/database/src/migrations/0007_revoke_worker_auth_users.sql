@@ -1,0 +1,13 @@
+-- FD-041 (ISS-140, CR-006): rk_worker loses every privilege on auth_users.
+-- 0005_grants_part2.sql granted it SELECT (id, email); 02-data-model.md §16
+-- note 3 says the worker has no privilege on auth_users, and mail recipients
+-- reach it only as email_deliveries.to_email_enc (FD-071).
+--
+-- A table-level REVOKE also revokes the column privileges on every column of
+-- the table (PostgreSQL 18, REVOKE), so the (id, email) column grant goes with
+-- it. Revoking a privilege the role does not hold is a no-op, so this applies
+-- cleanly from empty and on a database migrated before it.
+--
+-- Proven as a real rk_worker session by validator-probes.int.test.ts
+-- ("CR-006", probes P1–P8) and grants.smoke.test.ts (P9).
+REVOKE ALL ON auth_users FROM rk_worker;

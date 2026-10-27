@@ -1,0 +1,30 @@
+-- FD-050 review of rk_worker's grants beyond 02-data-model.md §16 (CR-006),
+-- ruled in FD-092. Two grants no job and no planned Unit uses are revoked
+-- here; the other five stay as 0005_grants_part2.sql granted them.
+--
+-- Revoked:
+--   reports, SELECT (id, target_kind, target_id, review_id, reason,
+--     created_at): nothing reads reports as the worker, and T-403 expects the
+--     denial. The table-level REVOKE also removes the six column privileges,
+--     so rk_worker holds nothing on reports, reporter_account_id included.
+--   review_versions, INSERT: the only writers are review.correct and
+--     review.redact, both in the web tier (T-302).
+--
+-- Kept (each needed by a planned worker job, review R-17):
+--   reviews UPDATE (state, deleted_at): review tombstones in data.delete
+--     (T-410) and held deletions when a hold ends (T-309, FD-077, FD-079).
+--   comments SELECT, UPDATE: comment tombstones (T-410, T-309) and the
+--     comment.posted params (T-405).
+--   account_profiles SELECT (id, username, display_name, locale, status):
+--     data.export (T-410); provisional, re-judged in T-410's Functional Design.
+--   legal_holds SELECT only: retention.expire and data.delete must see holds
+--     (T-309, T-410, FD-079).
+--   account_preferences SELECT: the send-time preference check in mail.send
+--     (T-405) and data.export (T-410).
+--
+-- Revoking a privilege the role does not hold is a no-op, so this applies
+-- cleanly from empty and on a database migrated before it. Proven as a real
+-- rk_worker session by validator-probes.int.test.ts ("CR-006", P10–P20).
+REVOKE ALL ON reports FROM rk_worker;
+--> statement-breakpoint
+REVOKE INSERT ON review_versions FROM rk_worker;

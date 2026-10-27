@@ -31,4 +31,14 @@ describe('database package smoke', () => {
       await pool.end();
     }
   });
+
+  // CR-006 probe P9: the FD-041 revoke in 0007_revoke_worker_auth_users.sql.
+  it('rk_worker cannot read an account email from auth_users (FD-041)', async () => {
+    const pool = new Pool({ connectionString: workerUrlForTestDb() });
+    try {
+      await expect(pool.query('select email from auth_users limit 1')).rejects.toThrow(/permission denied/i);
+    } finally {
+      await pool.end();
+    }
+  });
 });
