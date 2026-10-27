@@ -18,6 +18,12 @@ The owner is away (2026-10-27, 8–10 hours). They asked the agent to build the 
 | every high-risk Unit | written sign-off before the milestone gate (team practice step 5) | the Unit's record |
 | each milestone | storyboard walk in `en` and `bn` and the Bengali copy review (FD-042) | `05-demo-storyboard.md` |
 
+## Units done in this run
+
+| Unit | Commit on `main` | Checks | Notes for the owner |
+|---|---|---|---|
+| U7 CR-004 live-region announcements | `bc563f3` | verified with `pnpm infra:up && pnpm check && pnpm smoke` (exit 0); `pnpm check` green on `main` | 4 new Bengali strings await your bilingual review (ISS-228); Q1 = A changes how CR-004's "Bengali" row reads (ISS-229); the running-app screen-reader check of a real locale switch is still to do in Build and Test |
+
 ## Decisions taken on the owner's behalf
 
 | When | Unit / stage | Decision | Options it had | Why |
