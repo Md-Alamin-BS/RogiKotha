@@ -23,3 +23,4 @@ The owner is away (2026-10-27, 8–10 hours). They asked the agent to build the 
 | When | Unit / stage | Decision | Options it had | Why |
 |---|---|---|---|---|
 | 2026-10-27 | Construction order | follow the engine's dependency levels (CR-004 first; evidence and search slightly earlier than the Bolt plan's list) | reorder the graph file in a Units revision | both orders respect every dependency; no extra gate |
+| 2026-10-27 | U7 CR-004, Functional Design Q1 | the language toggle is announced after the switch, in the new language (`Language: English` on `/en`, `ভাষা: বাংলা` on `/bn`) | B: announce at the click, in the old language (likely cut off by the page change) | a screen-reader user actually hears it, in the matching voice; about one hour more |

@@ -1,0 +1,25 @@
+{
+  "stage": "functional-design",
+  "unit": "cr-004-live-region-announcements",
+  "upstream_ids": ["AC12.1.1", "AC12.1.2", "AC12.1.3", "AC12.1.4", "AC12.1.5", "AC12.1.6"],
+  "coverage": [
+    { "id": "AC12.1.1", "status": "N/A", "target": "First-visit language detection, lang=\"bn\" and the visible switch are baseline routing on main (T-005/T-008) and are checked by U20/U42; U7 does not change detection or the switch's visibility" },
+    { "id": "AC12.1.2", "status": "OK", "target": "BR2.5, BR2.4" },
+    { "id": "AC12.1.3", "status": "N/A", "target": "Mixed-language user text and author translations belong to the composer and display Units (U26, U27); U7 handles no user content" },
+    { "id": "AC12.1.4", "status": "OK", "target": "BR4.1" },
+    { "id": "AC12.1.5", "status": "N/A", "target": "The /emergency page content is delivered by U20 (T-207); U7 only localizes that page's view announcement, which is covered by its general view rules" },
+    { "id": "AC12.1.6", "status": "OK", "target": "BR3.3, BR4.2, BR4.3" }
+  ],
+  "reverse": [
+    { "id": "BR1.1", "status": "N/A", "target": "CR-004 acceptance check 'Theme toggle announces' (FR95, NFR6, ISS-122); no US12.1 criterion states toggle announcements" },
+    { "id": "BR1.2", "status": "N/A", "target": "CR-004 acceptance check 'Theme toggle announces': the announced theme equals the written theme" },
+    { "id": "BR1.3", "status": "N/A", "target": "Construction error-handling guardrail: no false announcement on a failed preference write" },
+    { "id": "BR2.1", "status": "N/A", "target": "CR-004 acceptance check 'Language toggle announces' (FR91, FR95); Question 1 option A" },
+    { "id": "BR2.2", "status": "N/A", "target": "CR-004 acceptance checks 'Language toggle announces' and 'Bengali' (FR91, FR95, NFR7)" },
+    { "id": "BR2.3", "status": "N/A", "target": "Technical lifecycle rule for the pending note: no stray language announcement (NFR6)" },
+    { "id": "BR3.1", "status": "N/A", "target": "Ported view announcement kept (01-conventions.md section 8, FR95); CR-004 acceptance check 'No regression'" },
+    { "id": "BR3.2", "status": "N/A", "target": "FD-042 localization of the view announcement (NFR7)" },
+    { "id": "BR4.4", "status": "N/A", "target": "CR-004 acceptance check 'Motion toggle untouched'" },
+    { "id": "BR4.5", "status": "N/A", "target": "FD-042 process rule: Bengali copy review with ISS-050 and closure of ISS-122" }
+  ]
+}
