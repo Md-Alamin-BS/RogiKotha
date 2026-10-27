@@ -15,11 +15,11 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id, publicId } from './_common.js';
-import { artifactKindEnum, custodyEventEnum, evidenceFailReasonEnum, evidenceGroupEnum, evidenceStateEnum } from './enums.js';
-import { legalHolds } from './retention.js';
-import { reviews } from './review.js';
+import { accountProfiles } from './account';
+import { createdAt, id, publicId } from './_common';
+import { artifactKindEnum, custodyEventEnum, evidenceFailReasonEnum, evidenceGroupEnum, evidenceStateEnum } from './enums';
+import { legalHolds } from './retention';
+import { reviews } from './review';
 
 /**
  * `bytea` — duplicated from `review.ts` (see that file's comment); `_common.ts`

@@ -3,7 +3,7 @@
 // because every command uses it. This repository serves the console's
 // audit timelines (`moderation.case`'s "last 10", T-404; `/admin/config`
 // history, T-408).
-import { NotImplemented } from './not-implemented.js';
+import { NotImplemented } from './not-implemented';
 
 export class PgAuditRepository {
   listByStream(stream: string, limit: number): Promise<unknown> {

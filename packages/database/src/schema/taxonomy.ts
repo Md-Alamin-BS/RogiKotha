@@ -2,9 +2,9 @@
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { boolean, pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id, publicId, wherePresent } from './_common.js';
-import { provenanceEnum, publicationStateEnum, termKindEnum } from './enums.js';
+import { accountProfiles } from './account';
+import { createdAt, id, publicId, wherePresent } from './_common';
+import { provenanceEnum, publicationStateEnum, termKindEnum } from './enums';
 
 export const taxonomyTerms = pgTable(
   'taxonomy_terms',

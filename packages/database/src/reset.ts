@@ -1,13 +1,13 @@
 // `pnpm db:reset` — drops and recreates the `public` schema, re-creates the
 // extensions the schema depends on, then migrates from empty. Local/test
 // use only; refuses to run when `APP_MODE=production`.
-import './env.js';
+import './env';
 
 import { fileURLToPath } from 'node:url';
 
 import { Pool } from 'pg';
 
-import { runMigrate } from './migrate.js';
+import { runMigrate } from './migrate';
 
 export async function runReset(url: string): Promise<void> {
   if (process.env.APP_MODE === 'production') {

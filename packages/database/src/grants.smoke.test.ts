@@ -16,8 +16,8 @@
 import { Pool } from 'pg';
 import { describe, expect, it } from 'vitest';
 
-import { evidenceItems, reviewTags } from './index.js';
-import { workerUrlForTestDb } from './test-setup.js';
+import { evidenceItems, reviewTags } from './index';
+import { workerUrlForTestDb } from './test-setup';
 
 describe('database package smoke', () => {
   it('loads the full schema surface and rk_worker is denied by default (FD-037)', async () => {

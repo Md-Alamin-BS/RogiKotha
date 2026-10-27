@@ -12,14 +12,14 @@
 
 ## Steps (test-after, per the Testing Contract)
 
-- [ ] **Step 1** — Baseline on the Bolt branch: run `pnpm infra:up && pnpm check && pnpm smoke` and `pnpm test:int`; record every count (typecheck packages, test totals, i18n keys, route rows). Count the `.js`-suffixed relative specifiers under `packages/database/src` and the total relative-specifier count (the task file expected 124 and 124; record the real numbers).
-- [ ] **Step 2** — Reproduce: add the throwaway `apps/web/src/app/[locale]/dbprobe/page.tsx` (imports `doctors` from `@rogikotha/database`; ordinary folder name, not `_dbprobe`), run `pnpm --filter @rogikotha/web build`, keep the `Module not found` output.
-- [ ] **Step 3** — Implement: strip the `.js` suffix from every relative specifier under `packages/database/src`, including `./*.js`, `../*.js` and directory-index forms (`./search/index.js` → `./search`), changing nothing else on any line.
-- [ ] **Step 4** — Implement: add `'@rogikotha/database'` to `transpilePackages` in `apps/web/next.config.ts`; nothing else in that file.
-- [ ] **Step 5** — Verify after implementation: the probe build compiles; mutation test: put one `.js` back on one export line in `packages/database/src/index.ts`, confirm the build fails with `Module not found`, restore it, confirm it compiles again. Record both outputs.
-- [ ] **Step 6** — Remove the probe page. Run `pnpm check`, `pnpm smoke`, `pnpm test:int`, `pnpm --filter @rogikotha/worker typecheck`: all green with counts identical to Step 1. Grep: 0 suffixed relative specifiers left, total unchanged. Diff check: every changed line in `packages/database/` is an `import` or `export … from` line.
-- [ ] **Step 7** — Records: close `ISS-183` in `docs/implementation/ISSUES.md` as fixed in CR-009 (how); add the `CR-009` row to `docs/implementation/06-change-requests.md`; fill the task file's Hand-off and write `docs/implementation/handoffs/CR-009.md`.
-- [ ] **Step 8** — Step 5 files: `code-summary.md`, `traceability.json`, `source-manifest.json`.
+- [x] **Step 1** — Baseline on the Bolt branch: run `pnpm infra:up && pnpm check && pnpm smoke` and `pnpm test:int`; record every count (typecheck packages, test totals, i18n keys, route rows). Count the `.js`-suffixed relative specifiers under `packages/database/src` and the total relative-specifier count (the task file expected 124 and 124; record the real numbers).
+- [x] **Step 2** — Reproduce: add the throwaway `apps/web/src/app/[locale]/dbprobe/page.tsx` (imports `doctors` from `@rogikotha/database`; ordinary folder name, not `_dbprobe`), run `pnpm --filter @rogikotha/web build`, keep the `Module not found` output.
+- [x] **Step 3** — Implement: strip the `.js` suffix from every relative specifier under `packages/database/src`, including `./*.js`, `../*.js` and directory-index forms (`./search/index.js` → `./search`), changing nothing else on any line.
+- [x] **Step 4** — Implement: add `'@rogikotha/database'` to `transpilePackages` in `apps/web/next.config.ts`; nothing else in that file.
+- [x] **Step 5** — Verify after implementation: the probe build compiles; mutation test: put one `.js` back on one export line in `packages/database/src/index.ts`, confirm the build fails with `Module not found`, restore it, confirm it compiles again. Record both outputs.
+- [x] **Step 6** — Remove the probe page. Run `pnpm check`, `pnpm smoke`, `pnpm test:int`, `pnpm --filter @rogikotha/worker typecheck`: all green with counts identical to Step 1. Grep: 0 suffixed relative specifiers left, total unchanged. Diff check: every changed line in `packages/database/` is an `import` or `export … from` line.
+- [x] **Step 7** — Records: close `ISS-183` in `docs/implementation/ISSUES.md` as fixed in CR-009 (how); add the `CR-009` row to `docs/implementation/06-change-requests.md`; fill the task file's Hand-off and write `docs/implementation/handoffs/CR-009.md`.
+- [x] **Step 8** — Step 5 files: `code-summary.md`, `traceability.json`, `source-manifest.json`.
 
 ## Files touched
 

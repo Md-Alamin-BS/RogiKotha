@@ -6,8 +6,8 @@
 // the repositories in `repositories/*.ts`.
 import type { TargetKind } from '@rogikotha/contracts';
 
-import type { Tx } from './client.js';
-import { auditEvents } from './schema/index.js';
+import type { Tx } from './client';
+import { auditEvents } from './schema/index';
 
 const DISALLOWED_KEYS = new Set(['email', 'body', 'text', 'filename', 'password', 'token']);
 const MAX_STRING_LENGTH = 200;

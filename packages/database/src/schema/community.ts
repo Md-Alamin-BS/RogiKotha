@@ -3,11 +3,11 @@ import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { boolean, check, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id, publicId } from './_common.js';
-import { publicationStateEnum, reactionValueEnum } from './enums.js';
-import { personas } from './identity.js';
-import { reviews } from './review.js';
+import { accountProfiles } from './account';
+import { createdAt, id, publicId } from './_common';
+import { publicationStateEnum, reactionValueEnum } from './enums';
+import { personas } from './identity';
+import { reviews } from './review';
 
 export const comments = pgTable('comments', {
   id: id(),

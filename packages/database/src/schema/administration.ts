@@ -2,8 +2,8 @@
 import type { ConfigValues } from '@rogikotha/contracts';
 import { integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id } from './_common.js';
+import { accountProfiles } from './account';
+import { createdAt, id } from './_common';
 
 export const configVersions = pgTable('config_versions', {
   id: id(),

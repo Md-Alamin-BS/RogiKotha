@@ -5,7 +5,7 @@
 import { sql } from 'drizzle-orm';
 import { bigint, check, pgTable, smallint, text, timestamp } from 'drizzle-orm/pg-core';
 
-import { createdAt } from './_common.js';
+import { createdAt } from './_common';
 
 export const demoClock = pgTable(
   'demo_clock',

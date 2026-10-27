@@ -13,7 +13,7 @@ import { sql } from 'drizzle-orm';
 import { Pool } from 'pg';
 import { describe, expect, it } from 'vitest';
 
-import { testDb, workerUrlForTestDb } from './test-setup.js';
+import { testDb, workerUrlForTestDb } from './test-setup';
 
 describe('T-005 validator probes', () => {
   // ISS-139. `02-data-model.md` §16 lists `evidence_items.original_filename_enc`

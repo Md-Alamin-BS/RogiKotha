@@ -5,8 +5,8 @@
 // owned paths.
 import { index, jsonb, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 
-import { createdAt, id } from './_common.js';
-import { targetKindEnum } from './enums.js';
+import { createdAt, id } from './_common';
+import { targetKindEnum } from './enums';
 
 export const auditEvents = pgTable(
   'audit_events',

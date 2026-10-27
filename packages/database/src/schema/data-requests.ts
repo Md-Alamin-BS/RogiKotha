@@ -2,9 +2,9 @@
 import type { DeletionAction } from '@rogikotha/contracts';
 import { jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id } from './_common.js';
-import { dataRequestKindEnum, dataRequestStatusEnum } from './enums.js';
+import { accountProfiles } from './account';
+import { createdAt, id } from './_common';
+import { dataRequestKindEnum, dataRequestStatusEnum } from './enums';
 
 export interface DataRequestPlanStep {
   module: string;

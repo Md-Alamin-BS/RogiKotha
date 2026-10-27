@@ -19,8 +19,8 @@ import {
   reports,
   reviews,
   reviewTags,
-} from './schema/index.js';
-import { testDb, workerUrlForTestDb } from './test-setup.js';
+} from './schema/index';
+import { testDb, workerUrlForTestDb } from './test-setup';
 
 /**
  * drizzle-orm 0.45 wraps the driver error: `error.message` is a generic

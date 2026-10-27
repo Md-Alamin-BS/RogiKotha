@@ -40,9 +40,9 @@ import { sql } from 'drizzle-orm';
 import { Pool } from 'pg';
 import { describe, expect, it } from 'vitest';
 
-import { assertAllowlisted, PgAuditWriter } from './audit-writer.js';
-import { auditEvents } from './schema/index.js';
-import { testDb, workerUrlForTestDb } from './test-setup.js';
+import { assertAllowlisted, PgAuditWriter } from './audit-writer';
+import { auditEvents } from './schema/index';
+import { testDb, workerUrlForTestDb } from './test-setup';
 
 // Mirrors `schema/enums.ts`'s pg enum name -> contracts array. Kept
 // independent of that file's own list so a typo in one does not hide a

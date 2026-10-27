@@ -2,9 +2,9 @@
 import { sql } from 'drizzle-orm';
 import { check, customType, index, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id } from './_common.js';
-import { localeEnum, notificationKindEnum, staffNotificationKindEnum } from './enums.js';
+import { accountProfiles } from './account';
+import { createdAt, id } from './_common';
+import { localeEnum, notificationKindEnum, staffNotificationKindEnum } from './enums';
 
 /**
  * `bytea` — duplicated from `review.ts` (see that file's comment); `_common.ts`

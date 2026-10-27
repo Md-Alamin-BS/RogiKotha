@@ -4,9 +4,9 @@
 import { sql } from 'drizzle-orm';
 import { customType, index, integer, pgTable, text, timestamp, uniqueIndex, uuid, boolean } from 'drizzle-orm/pg-core';
 
-import { createdAt, id } from './_common.js';
-import { provenanceEnum, searchKindEnum } from './enums.js';
-import { taxonomyTerms } from './taxonomy.js';
+import { createdAt, id } from './_common';
+import { provenanceEnum, searchKindEnum } from './enums';
+import { taxonomyTerms } from './taxonomy';
 
 /** Drizzle has no built-in `tsvector` mapping. */
 const tsvector = customType<{ data: string }>({

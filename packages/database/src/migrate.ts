@@ -1,15 +1,15 @@
 // `pnpm db:migrate` — applies every migration in `src/migrations` to
 // `DATABASE_URL` (the `rk_app`-owned database; T-002 makes `rk_app` the
 // database owner, so this connection has DDL rights).
-import './env.js';
+import './env';
 
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
-import { closeDb, createDb } from './client.js';
-import { installPgBoss } from './queue/pg-boss-queue.js';
+import { closeDb, createDb } from './client';
+import { installPgBoss } from './queue/pg-boss-queue';
 
 const migrationsFolder = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'migrations');
 

@@ -1,9 +1,9 @@
 // Accounts and staff (02-data-model.md §2).
 import { boolean, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-import { authUsers } from './auth.js';
-import { citext, createdAt, id, timestamps } from './_common.js';
-import { accountStatusEnum, enforcementKindEnum, localeEnum, staffRoleEnum } from './enums.js';
+import { authUsers } from './auth';
+import { citext, createdAt, id, timestamps } from './_common';
+import { accountStatusEnum, enforcementKindEnum, localeEnum, staffRoleEnum } from './enums';
 
 export const accountProfiles = pgTable('account_profiles', {
   id: id(),

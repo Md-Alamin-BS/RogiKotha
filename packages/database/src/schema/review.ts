@@ -15,9 +15,9 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id, publicId, timestamps } from './_common.js';
-import { doctors, facilityBranches, profileSubmissions } from './directory.js';
+import { accountProfiles } from './account';
+import { createdAt, id, publicId, timestamps } from './_common';
+import { doctors, facilityBranches, profileSubmissions } from './directory';
 import {
   followUpKindEnum,
   identityModeEnum,
@@ -27,9 +27,9 @@ import {
   reviewKindEnum,
   sentimentEnum,
   tagGroupEnum,
-} from './enums.js';
-import { personas } from './identity.js';
-import { taxonomyTerms } from './taxonomy.js';
+} from './enums';
+import { personas } from './identity';
+import { taxonomyTerms } from './taxonomy';
 
 /**
  * `bytea` (encrypted column ciphertext). Drizzle has no built-in mapping;

@@ -5,9 +5,9 @@
 // int test files never reset the same database concurrently.
 import { afterAll, beforeAll } from 'vitest';
 
-import './env.js';
-import { createDb } from './client.js';
-import { runReset } from './reset.js';
+import './env';
+import { createDb } from './client';
+import { runReset } from './reset';
 
 const url = process.env.DATABASE_URL_TEST!;
 

@@ -3,7 +3,7 @@
 // `application`'s port interfaces do not exist until T-101 wires this class
 // in. Method names come from the account/staff command catalogue
 // (03-routes-and-contracts.md §4).
-import { NotImplemented } from './not-implemented.js';
+import { NotImplemented } from './not-implemented';
 
 export class PgAccountRepository {
   findByAuthUserId(authUserId: string): Promise<unknown> {

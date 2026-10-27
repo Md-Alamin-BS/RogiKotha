@@ -1,6 +1,6 @@
 // Stubs only (task step 15). Method names from the directory command
 // catalogue (03-routes-and-contracts.md §4, module `directory`, T-201/T-204).
-import { NotImplemented } from './not-implemented.js';
+import { NotImplemented } from './not-implemented';
 
 export class PgDirectoryRepository {
   getDoctor(publicId: string): Promise<unknown> {

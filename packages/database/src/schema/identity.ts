@@ -6,9 +6,9 @@
 // `ISS-085`).
 import { boolean, pgTable, smallint, text, uuid } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id } from './_common.js';
-import { identityModeEnum, staffRoleEnum, targetKindEnum } from './enums.js';
+import { accountProfiles } from './account';
+import { createdAt, id } from './_common';
+import { identityModeEnum, staffRoleEnum, targetKindEnum } from './enums';
 
 export const personas = pgTable('personas', {
   id: id(),

@@ -1,0 +1,8 @@
+{
+  "stage": "code-generation",
+  "unit": "cr-009-database-extensionless-imports",
+  "upstream_ids": ["NFR11"],
+  "coverage": [
+    { "id": "NFR11", "status": "OK", "target": "packages/database/src/index.ts" }
+  ]
+}

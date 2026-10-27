@@ -3,10 +3,10 @@ import type { Provenance } from '@rogikotha/contracts';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { boolean, integer, jsonb, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id, publicId, timestamps, wherePresent } from './_common.js';
-import { facilityTypeEnum, provenanceEnum, publicationStateEnum } from './enums.js';
-import { taxonomyTerms } from './taxonomy.js';
+import { accountProfiles } from './account';
+import { createdAt, id, publicId, timestamps, wherePresent } from './_common';
+import { facilityTypeEnum, provenanceEnum, publicationStateEnum } from './enums';
+import { taxonomyTerms } from './taxonomy';
 
 type FieldProvenance = Record<string, { source: Provenance; updatedAt: string }>;
 

@@ -1,9 +1,9 @@
 import { sql } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
-import { withTx } from './client.js';
-import { auditEvents } from './schema/index.js';
-import { testDb } from './test-setup.js';
+import { withTx } from './client';
+import { auditEvents } from './schema/index';
+import { testDb } from './test-setup';
 
 describe('withTx', () => {
   it('rolls back when the callback throws', async () => {

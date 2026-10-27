@@ -1,1 +1,1 @@
-export * from './pg-boss-queue.js';
+export * from './pg-boss-queue';

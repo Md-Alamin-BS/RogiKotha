@@ -12,8 +12,8 @@ import {
   evidenceItems,
   personas,
   reviews,
-} from './schema/index.js';
-import { testDb } from './test-setup.js';
+} from './schema/index';
+import { testDb } from './test-setup';
 
 /**
  * drizzle-orm 0.45 wraps the driver error: `error.message` is a generic

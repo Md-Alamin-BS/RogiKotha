@@ -5,8 +5,8 @@
 // repository in this package.
 import { eq, inArray, sql } from 'drizzle-orm';
 
-import type { Db, Tx } from '../client.js';
-import { outboxEvents } from '../schema/index.js';
+import type { Db, Tx } from '../client';
+import { outboxEvents } from '../schema/index';
 
 export interface OutboxRow {
   id: string;

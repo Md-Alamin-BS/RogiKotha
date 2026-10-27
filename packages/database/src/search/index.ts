@@ -1,7 +1,7 @@
 // Stub adapter file only (task step 13) — the search SQL itself (FTS +
 // trigram ranking, publication filter, Bangla/Banglish alias resolution) is
 // T-205's task, not this one ("Not in scope" — task file).
-import { NotImplemented } from '../repositories/not-implemented.js';
+import { NotImplemented } from '../repositories/not-implemented';
 
 export class PgSearchIndex {
   upsert(doc: Record<string, unknown>): Promise<unknown> {

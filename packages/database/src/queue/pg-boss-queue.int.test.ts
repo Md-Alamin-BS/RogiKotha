@@ -9,9 +9,9 @@ import { randomUUID } from 'node:crypto';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { PgBossQueue } from './pg-boss-queue.js';
-import type { QueueLogger } from './pg-boss-queue.js';
-import { workerUrlForTestDb } from '../test-setup.js';
+import { PgBossQueue } from './pg-boss-queue';
+import type { QueueLogger } from './pg-boss-queue';
+import { workerUrlForTestDb } from '../test-setup';
 
 class CollectingLogger implements QueueLogger {
   readonly entries: { level: string; event: string; fields: Record<string, unknown> }[] = [];

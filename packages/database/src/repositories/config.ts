@@ -1,6 +1,6 @@
 // Stubs only (task step 15). Method names given explicitly by the task file
 // (module `administration`, T-105/T-408).
-import { NotImplemented } from './not-implemented.js';
+import { NotImplemented } from './not-implemented';
 
 export class PgConfigRepository {
   currentVersion(): Promise<unknown> {

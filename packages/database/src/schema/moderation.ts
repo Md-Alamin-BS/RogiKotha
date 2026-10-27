@@ -3,10 +3,10 @@
 import { sql } from 'drizzle-orm';
 import { boolean, integer, jsonb, pgSequence, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id } from './_common.js';
-import { appealStatusEnum, caseStatusEnum, moderationActionEnum, moderationLaneEnum, reportReasonEnum, targetKindEnum } from './enums.js';
-import { reviews } from './review.js';
+import { accountProfiles } from './account';
+import { createdAt, id } from './_common';
+import { appealStatusEnum, caseStatusEnum, moderationActionEnum, moderationLaneEnum, reportReasonEnum, targetKindEnum } from './enums';
+import { reviews } from './review';
 
 // Backs `moderation_cases.code`'s `'MOD-' || nextval(...)` default (task
 // step 5). The seed uses fixed codes `MOD-2011`..`MOD-2041`; new cases start

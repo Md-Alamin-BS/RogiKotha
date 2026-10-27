@@ -1,9 +1,9 @@
 // Evidence retention, holds, custody (02-data-model.md §7 second half).
 import { jsonb, pgTable, text, timestamp, uuid, integer, boolean } from 'drizzle-orm/pg-core';
 
-import { accountProfiles } from './account.js';
-import { createdAt, id } from './_common.js';
-import { targetKindEnum } from './enums.js';
+import { accountProfiles } from './account';
+import { createdAt, id } from './_common';
+import { targetKindEnum } from './enums';
 
 export const legalHolds = pgTable('legal_holds', {
   id: id(),

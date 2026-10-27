@@ -3,8 +3,8 @@
 import { Pool } from 'pg';
 import { describe, expect, it } from 'vitest';
 
-import { PgOutbox } from './repositories/outbox.js';
-import { testDb, workerUrlForTestDb } from './test-setup.js';
+import { PgOutbox } from './repositories/outbox';
+import { testDb, workerUrlForTestDb } from './test-setup';
 
 describe('PgOutbox', () => {
   it('claimBatch returns unprocessed rows once and marks them', async () => {

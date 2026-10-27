@@ -4,7 +4,7 @@
 // literal task text (same precedent as `ISS-091`). `block.set`/`unset` are
 // already stubbed on `PgAccountRepository` (T-004) since `blocks` lives in
 // `schema/account.ts`.
-import { NotImplemented } from './not-implemented.js';
+import { NotImplemented } from './not-implemented';
 
 export class PgCommunityRepository {
   postComment(input: Record<string, unknown>): Promise<unknown> {

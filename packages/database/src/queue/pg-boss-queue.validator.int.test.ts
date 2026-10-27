@@ -16,9 +16,9 @@ import { sql } from 'drizzle-orm';
 import { Pool } from 'pg';
 import { describe, expect, it } from 'vitest';
 
-import { runReset } from '../reset.js';
-import { testDb, workerUrlForTestDb } from '../test-setup.js';
-import { PgBossQueue, installPgBoss } from './pg-boss-queue.js';
+import { runReset } from '../reset';
+import { testDb, workerUrlForTestDb } from '../test-setup';
+import { PgBossQueue, installPgBoss } from './pg-boss-queue';
 
 const silentLogger = { info() {}, warn() {}, error() {} };
 

@@ -2,7 +2,7 @@
 // the task that fills it in. Method names are this implementer's reading of
 // the `moderation` command catalogue (03-routes-and-contracts.md §4), not
 // literal task text (same precedent as `ISS-091`).
-import { NotImplemented } from './not-implemented.js';
+import { NotImplemented } from './not-implemented';
 
 export class PgModerationRepository {
   fileReport(input: Record<string, unknown>): Promise<unknown> {

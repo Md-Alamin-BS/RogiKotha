@@ -107,3 +107,92 @@ config line.
 - [ ] No agent/tool attribution in any file or commit.
 
 ## Hand-off (implementer fills in)
+
+### What changed
+
+Stripped the `.js` suffix from every relative import and export specifier in
+`packages/database/src`: **136 specifiers across 47 files** (`import`, `import type`,
+side-effect `import './env'` and `export *` alike). The package had grown since this file
+counted 124. Only the suffix was removed; directory imports keep `/index`
+(`./schema/index`, `./search/index`, `./queue/index`), as CR-005 kept `./index` in
+`packages/contracts` (`ISS-230`). No logic, type, export, schema or migration change. The
+files are `index.ts` (20 `export *` lines), `client.ts`, `audit-writer.ts`, `migrate.ts`,
+`reset.ts`, `test-setup.ts`, `search/index.ts`, `queue/index.ts`, the 14
+`repositories/*.ts` files that import a sibling, the 16 `schema/*.ts` files that import a
+sibling, and the 9 test files inside `src/**` (6 `*.int.test.ts` files and `grants.smoke.test.ts` at
+the top level, plus `queue/pg-boss-queue.int.test.ts` and
+`queue/pg-boss-queue.validator.int.test.ts`).
+
+Added `'@rogikotha/database'` to `transpilePackages` in `apps/web/next.config.ts`. Nothing
+else in that file changed (`typedRoutes`, `agentRules` and the rest stay as they were).
+
+The throwaway `apps/web/src/app/[locale]/dbprobe/page.tsx` was added for the proof and then
+removed. No tracked file refers to it.
+
+### Not done and why
+
+Nothing in scope was skipped. Not touched: `ISS-193` (the worker's `dist/main.js` cannot run
+under plain `node`). That row names CR-009 as one possible owner, but extensionless
+specifiers do not make TypeScript source loadable by plain `node` either. It stays open and
+needs compiled package output or a bundler.
+
+### Questions for the human
+
+None that block. `ISS-230` records one reading the owner may want to confirm: the code plan's
+Step 3 example shows `./search/index.js` → `./search`, while this file and the build brief ask
+for the suffix only. The narrower form (`./search/index`) was taken. Changing it later means
+editing 4 lines.
+
+### Follow-ups
+
+- `ISS-230` (S4): directory imports keep `/index`; the owner can confirm this or ask for the
+  bare folder form.
+- `ISS-231` (S4): after a page is deleted locally, `apps/web`'s `tsc --noEmit` reads a stale
+  generated `.next/types/validator.ts` until the next `next build`.
+- `ISS-232` (S4): the advisory AI-DLC `traceability` sensor fails on this Unit's
+  `traceability.json` because a story-less Unit has an empty upstream ID set.
+- `ISS-193` (S4): still open, see above.
+
+### `pnpm check` output summary
+
+**Baseline** (branch `bolt/cr-009-database-extensionless-imports` at `fee7293`, compose
+PostgreSQL up): typecheck 9/9 packages green; `eslint .` 0 errors and 1 warning that was
+already there (`packages/i18n/src/routing.ts:17`, unrelated); `vitest run` **46 files, 216
+passed + 4 expected-fail (220)**; `pnpm i18n:check` 781 keys, both locales; `pnpm -r build`
+green, `next build` **37 route rows** + `ƒ Proxy (Middleware)`. `pnpm smoke` **9 files, 15
+tests**. `pnpm test:int` **9 files, 32 passed + 4 expected-fail (36)**.
+`pnpm --filter @rogikotha/worker typecheck` green.
+
+**After this fix** (probe removed): the same counts everywhere. Typecheck 9/9; lint 0 errors /
+the same 1 warning; `vitest run` 46 files, 216 + 4 (220); 781 keys; `next build` 37 route
+rows + `ƒ Proxy (Middleware)`; `pnpm smoke` 9 files, 15 tests; `pnpm test:int` 9 files, 32 + 4
+(36); worker typecheck green. The database package's own smoke test
+(`pnpm --filter @rogikotha/database exec vitest run src/grants.smoke.test.ts`) passes 1/1. No
+test was added, removed, retargeted or skipped. Coverage not measured yet (T-010).
+
+### Build proof and mutation test
+
+- Probe build before the fix: `Error: Turbopack build failed with 21 errors`, 20 of them
+  `Module not found: Can't resolve './<file>.js'` (starting with `./search/index.js` at
+  `packages/database/src/index.ts:21`), plus `Export doctors doesn't exist in target module` /
+  "The module has no exports at all". The import trace names `packages/database/src/index.ts` →
+  `apps/web/src/app/[locale]/dbprobe/page.tsx`.
+- Probe build after the fix: `✓ Compiled successfully`, with route `ƒ /[locale]/dbprobe` listed.
+- Mutation: `index.ts:21` set back to `'./search/index.js'` gives
+  `Error: Turbopack build failed with 1 error: ./packages/database/src/index.ts:21:1 Module not found: Can't resolve './search/index.js'`.
+  After the line was restored, the build printed `✓ Compiled successfully` again.
+
+### Hard-rule evidence
+
+- No behaviour change: the counts above are identical before and after.
+  `git diff --stat packages/database` shows "47 files changed, 136 insertions(+), 136
+  deletions(-)". Filtering the diff for changed lines that are not `import … from './…'`,
+  `export * from './…'`, `} from './…'` or `import './…'` finds nothing.
+- Grep after the fix: 0 relative specifiers ending `.js` under `packages/database/src`; the
+  relative-specifier total is still 136.
+- No agent or tool attribution in any changed file.
+
+### Run record
+
+Start `fee7293` on `bolt/cr-009-database-extensionless-imports`. The changes are left
+uncommitted in the working tree for the AI-DLC review and the squash commit.

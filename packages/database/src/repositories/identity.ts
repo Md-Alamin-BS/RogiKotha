@@ -1,6 +1,6 @@
 // Stubs only (task step 15). Method names from the identity command
 // catalogue (03-routes-and-contracts.md §4, module `identity`, T-104).
-import { NotImplemented } from './not-implemented.js';
+import { NotImplemented } from './not-implemented';
 
 export class PgIdentityRepository {
   createPersona(input: Record<string, unknown>): Promise<unknown> {
