@@ -1,5 +1,5 @@
 // Task step 9 (three tests). Runs against the compose PostgreSQL
-// (`DATABASE_URL_TEST`, reset/migrated by `test-setup.ts`'s `beforeAll` —
+// (`DATABASE_URL_TEST`, reset/migrated once per run by `global-setup.ts` —
 // which now also installs the `pgboss` schema as `rk_app`, via
 // `migrate.ts`'s new `installPgBoss` step). Connects as `rk_worker`
 // (`workerUrlForTestDb()`) with `migrate: false` — the same restricted-role

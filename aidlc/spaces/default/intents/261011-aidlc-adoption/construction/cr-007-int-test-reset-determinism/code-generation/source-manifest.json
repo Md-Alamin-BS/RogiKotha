@@ -1,0 +1,17 @@
+{
+  "stage": "code-generation",
+  "unit": "cr-007-int-test-reset-determinism",
+  "version": 1,
+  "writes": [
+    { "path": "packages/database/src/global-setup.ts" },
+    { "path": "packages/database/src/reset.ts" },
+    { "path": "packages/database/src/test-setup.ts" },
+    { "path": "packages/database/vitest.config.ts" },
+    { "path": "packages/database/src/reset-guard.int.test.ts" },
+    { "path": "packages/database/src/reset-guard.smoke.test.ts" },
+    { "path": "packages/database/src/queue/pg-boss-queue.int.test.ts" },
+    { "path": "docs/implementation/ISSUES.md" },
+    { "path": "docs/implementation/tasks/CR-007-int-test-reset-determinism.md" },
+    { "path": "docs/implementation/handoffs/CR-007.md" }
+  ]
+}

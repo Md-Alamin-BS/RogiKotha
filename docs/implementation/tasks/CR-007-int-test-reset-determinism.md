@@ -110,4 +110,43 @@ survivable for the rest of the build.
 
 ## Hand-off
 
-_(filled by the implementer)_
+Done for Code Generation (AI-DLC Unit U2); the AI-DLC review and Build and Test still run.
+Full record: `docs/implementation/handoffs/CR-007.md` and
+`aidlc/spaces/default/intents/261011-aidlc-adoption/construction/cr-007-int-test-reset-determinism/code-generation/code-summary.md`.
+
+**What changed.** The suggested fix was built, with two narrowings.
+- `packages/database/src/global-setup.ts` (new) resets `DATABASE_URL_TEST` once per Vitest run,
+  before any file starts, and refuses a database whose name does not end in `_test`/`_test_b`.
+  `vitest.config.ts` wires it as `globalSetup`. `test-setup.ts` now only opens the per-file pool.
+- `reset.ts`: every session opened from the reset URL gets `lock_timeout = 10s` (through the
+  connection string's `options`, so migrate and the pg-boss install get it too); the drop runs
+  in a transaction with `statement_timeout = 60s`. A blocked drop rolls back and throws
+  `db:reset could not lock schema public within lock_timeout 10s; blocked by backend pid N
+  (role R, application "A", state S)`. The drop is `DROP SCHEMA IF EXISTS` (`ISS-244`).
+- `terminateStaleTestBackends(url)` returns `{ ok: false, reason }` without connecting unless
+  the name ends in `_test`/`_test_b`, and repeats that check in its SQL. It ends only backends
+  of roles the connecting role may signal. `runReset` calls it only when asked
+  (`{ terminateStaleBackends: true }`), which only the global setup does (`ISS-245`).
+  `db:reset`/`demo:reset` never sweep; `APP_MODE=production` is still refused.
+- `fileParallelism: false` is kept: files share one database, and the ISS-202 probe and the new
+  contention test reset or lock it mid-run.
+
+**Acceptance.**
+
+| Check | Expected | Observed |
+|---|---|---|
+| `pnpm test:int` 10× | 10/10 exit 0, none over ~2× median | 10/10 exit 0; 28.25–30.28 s, median 30.05 s |
+| Held `idle in transaction` blocker | fails ≲ 15 s naming the blocker | before: hung until the 120 s cut-off; after: exit 1 in 13 s, `blocked by backend pid 22001 (role postgres, application "cr007-blocker", …)`. An `rk_app` blocker is swept instead and the run is green |
+| `DROP SCHEMA` cycles per run | 1 | 1 in the global setup (was 10, one per collected file, plus the ISS-202 probe's own reset, which stays); proven by `reset-guard.int.test.ts` |
+| Run from a manual `DROP SCHEMA public CASCADE` | green | run 6 of 10, green |
+| Sweep pointed at `rogikotha` | refuses | refuses without connecting (int and smoke tests) |
+| `pnpm check`, `pnpm smoke` | exit 0, no assertion removed | exit 0; check 49 files, 249 passed + 4 expected-fail; smoke 10 files / 17 |
+
+**`beforeAll` timeout.** It fires (the first file's tests were reported skipped after 60 s)
+but it cannot cancel the pg query: that file's `DROP` was still queued in PostgreSQL at +90 s,
+next to the following file's. The driver-level `lock_timeout` is the real safeguard; the
+test-level timeout only moves Vitest on.
+
+**Not done / follow-ups.** `06-change-requests.md` still shows CR-007 as queued (not in this
+Unit's plan). `pnpm test:int` takes ~30 s instead of ~22 s because the contention test waits
+out the 10 s lock timeout on purpose. Questions for the owner: `ISS-245` and `ISS-247`.

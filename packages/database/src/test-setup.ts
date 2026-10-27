@@ -1,26 +1,18 @@
-// Integration-test bootstrap (task step 16). Runs once per test file's
-// setup: resets `DATABASE_URL_TEST` to an empty, freshly migrated schema,
-// then exposes `testDb`/`testPool` for the test files to query against.
-// `vitest.config.ts` sets `fileParallelism: false` for this project so two
-// int test files never reset the same database concurrently.
-import { afterAll, beforeAll } from 'vitest';
+// Integration-test bootstrap, run in every test file: exposes
+// `testDb`/`testPool` on `DATABASE_URL_TEST` for the test files to query
+// against. The reset to an empty, freshly migrated schema runs once per
+// Vitest run in `global-setup.ts` (CR-007), not here: a per-file reset
+// repeated the whole drop-and-migrate cycle for every file (ISS-143).
+import { afterAll } from 'vitest';
 
 import './env';
 import { createDb } from './client';
-import { runReset } from './reset';
 
 const url = process.env.DATABASE_URL_TEST!;
 
 const { db, pool } = createDb(url);
 export const testDb = db;
 export const testPool = pool;
-
-let reset: Promise<void> | null = null;
-
-beforeAll(async () => {
-  reset ??= runReset(url);
-  await reset;
-}, 60_000);
 
 afterAll(async () => {
   await pool.end();
