@@ -16,6 +16,14 @@ These decisions are binding and override the text below where they differ; the s
 
 - **FD-067** — Directory and Taxonomy do not read Review's data directly, because Review already depends on them. The doctor and facility profile figures (account lists, distributions, condition counts, document counts) reach Directory through its `ProviderExperience` port, and the condition page figures reach Taxonomy through its `ConditionStats` port; Directory and Taxonomy declare the ports and Review implements them. Contract Design pins the port signatures and their file paths. Changes Owned paths, Step 2, Step 5 and Acceptance checks.
 
+## Amendments — Contract Design and Delivery Planning (FD-076..FD-090)
+
+These decisions are binding and override the text below where they differ.
+
+- **FD-067 / C6 / C7 — Review stub before T-301** — T-201 builds the implementations of `ConditionStats` and `ProviderExperience` inside `modules/review`, before T-301 exists, as a ports-only Review module stub. The stub holds only these two implementations and the read methods behind them; it adds no command and no query of T-301. The Review module folder therefore starts here, and T-301 adds its siblings without rewriting these files. Changes: Owned paths and a new acceptance row.
+- **C6 `ConditionStats`** — `forCondition(termId): Promise<{sentiment, outcome, mentioned: [{kind, termId, count}], doctors: [{doctorId, count}], facilities: [{branchId, count}], districts: [{districtKey, count}], total, limitedData}>`, where `Distribution = {counts: {positive, mixed, negative} | {helped, none, worse, uncertain}, total, limitedData}`: exact counts with the denominator, no score.
+- **C7 `ProviderExperience`** — `forDoctor({doctorId, condition?, outcome?, relationship?, docs?}): Promise<{cards: ExperienceCardVM[], sentiment, outcome, documentCount, total}>` and `forBranch({branchId}): Promise<{cards: ExperienceCardVM[], criteria: CriteriaDistribution, total}>`. Facility feedback never enters a doctor's figures (FR26). T-204 later adds `ProfileMergeParticipant` to the same folder.
+
 FD-061 (protected fields) and FD-064, FD-065, FD-066, FD-068 and FD-069 do not change this task: it has no commands, no protected-field list, no retention, audit-ownership, metrics or deletion text.
 
 ## Goal
@@ -48,7 +56,7 @@ Create/modify only:
 - `packages/application/src/ports/repositories/{directory.ts,taxonomy.ts}` and the read methods of `review.ts` listed in Steps 3
 - `packages/contracts/src/view-models/{doctor.ts,facility.ts,condition.ts,experience-card.ts}` (fill the `TODO(T-201)` markers T-003 left)
 - `packages/database/src/repositories/{directory.ts,taxonomy.ts}` and the read methods of `review.ts`
-- The `ProviderExperience` (Directory) and `ConditionStats` (Taxonomy) port declarations and their Review implementations, at the paths named in Contract Design (FD-067)
+- The `ProviderExperience` (Directory) and `ConditionStats` (Taxonomy) port declarations (in `modules/directory/ports.ts` and `modules/taxonomy/ports.ts`) and their Review implementations (FD-067), which T-201 builds ahead of T-301 as a ports-only Review module stub: `packages/application/src/modules/review/provider-experience.ts`, `packages/application/src/modules/review/condition-stats.ts` and `packages/application/src/modules/review/index.ts` (exports these two only)
 - Tests under the same packages (`*.test.ts`, `*.int.test.ts`)
 
 ## Not in scope
@@ -90,6 +98,7 @@ Create/modify only:
 | Locale mapping | `pnpm vitest run -t "locale"` | `getDoctor` in `bn` returns Bengali names and no `_en` keys anywhere in the VM (deep assertion) |
 | No private data in VMs | `pnpm vitest run -t "projection"` | JSON of every VM contains no `accountId`, `email`, `reporter`, `originalFilename` keys |
 | FD-067: review figures only through ports | `pnpm lint` + `pnpm vitest run packages/application -t "doctor profile"` | no file under `modules/directory` or `modules/taxonomy` imports `modules/review` or `ReviewRepository`; with a fake `ProviderExperience` returning sentiment `{positive: 2, mixed: 1, negative: 1}` (total 4), `getDoctor` shows exactly those counts and total; with a fake `ConditionStats`, `getCondition` shows the fake's counts |
+| FD-067/C6/C7: Review stub is ports-only | list the files T-201 adds under `modules/review` and run the two implementations against the seed | only `provider-experience.ts`, `condition-stats.ts`, `index.ts`, the read queries listed above and tests exist; no `review.publish`, `review.saveDraft` or other T-301 command is present; `forCondition` and `forDoctor` return exact counts with a total for the seed |
 | Full check | `pnpm check` | green |
 
 ## Tests to write

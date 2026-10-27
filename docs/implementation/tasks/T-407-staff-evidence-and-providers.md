@@ -10,9 +10,15 @@
 | Depends on | T-406 (shell, `PermissionCallout`, `Sheet`, stepUp sheet), T-309 (`retention.*`, `hold.*`, `evidence.readOriginal`, custody events), T-204 (`directory.decideSubmission/decideClaim/decideFieldChange`), T-305 (`evidence.remove`) |
 | Parallel-safe with | T-408, T-409, T-410, T-502 |
 
+## Amendments — Contract Design and Delivery Planning (FD-076..FD-090)
+
+These decisions are binding and override the text below where they differ.
+
+- **FD-088 — retention bulk controls deferred** — **Not in scope (FD-088):** the bulk retention change in the staff console: `BulkRetentionSheet`, the `previewBulkRetention` and `executeBulkRetention` actions, the "Bulk change existing" control in `RetentionPanel` (step 3) and the matching hard-rule and acceptance rows. They become follow-up tasks after release 1, together with T-309's `retention.previewBulk` and `retention.executeBulk`. `RetentionPanel` keeps the policy summary line and the `setRetentionPolicy` control for Super Admin. Holds, the custody log, quarantine, original access and the whole providers view stay. Changes: Goal, Owned paths, step 3 and the acceptance and checklist rows.
+
 ## Goal
 
-Port the console's evidence view (quarantine panels with the seven-stage pipeline, fail-closed and text-stays notes, gated original access) and add the real custody, retention and legal-hold controls the prototype only described; port the providers view (pending profiles with duplicate hints and approve/reject/merge, claims, protected field changes) wired to the directory decision commands.
+Port the console's evidence view (quarantine panels with the seven-stage pipeline, fail-closed and text-stays notes, gated original access) and add the real custody, retention-policy and legal-hold controls the prototype only described (bulk retention change deferred, FD-088); port the providers view (pending profiles with duplicate hints and approve/reject/merge, claims, protected field changes) wired to the directory decision commands.
 
 ## Read first
 
@@ -26,8 +32,8 @@ Port the console's evidence view (quarantine panels with the seven-stage pipelin
 ## Owned paths
 
 - `apps/web/src/app/[locale]/admin/evidence/page.tsx`, `admin/providers/page.tsx` (replace T-406 stubs)
-- `apps/web/src/components/admin/EvidenceQuarantine.tsx`, `QuarantineItem.tsx`, `PipelineSteps.tsx`, `CustodyLog.tsx`, `HoldSheet.tsx`, `RetentionPanel.tsx`, `BulkRetentionSheet.tsx`, `Providers.tsx`, `PendingProfile.tsx`, `ClaimRow.tsx`, `FieldChangeRow.tsx`, `DecisionNote.tsx`
-- `apps/web/src/server/actions/evidence-admin.ts` (`placeHold`, `releaseHold`, `setRetentionPolicy`, `previewBulkRetention`, `executeBulkRetention`, `readOriginal` (returns a one-time signed URL to the route handler), `removeFile`), `apps/web/src/server/actions/directory-admin.ts` (`decideSubmission`, `decideClaim`, `decideFieldChange`)
+- `apps/web/src/components/admin/EvidenceQuarantine.tsx`, `QuarantineItem.tsx`, `PipelineSteps.tsx`, `CustodyLog.tsx`, `HoldSheet.tsx`, `RetentionPanel.tsx`, (`BulkRetentionSheet.tsx` is not built, FD-088), `Providers.tsx`, `PendingProfile.tsx`, `ClaimRow.tsx`, `FieldChangeRow.tsx`, `DecisionNote.tsx`
+- `apps/web/src/server/actions/evidence-admin.ts` (`placeHold`, `releaseHold`, `setRetentionPolicy`, (`previewBulkRetention` and `executeBulkRetention` deferred, FD-088), `readOriginal` (returns a one-time signed URL to the route handler), `removeFile`), `apps/web/src/server/actions/directory-admin.ts` (`decideSubmission`, `decideClaim`, `decideFieldChange`)
 - `apps/web/src/components/admin/*.test.tsx` for the above
 - `apps/web/src/styles/admin.css` — additions only, `/* added: T-407 */` (a hold badge tier may be needed; reuse `warn`)
 - `packages/i18n/messages/{en,bn}.json` — new `admin.hold.*`, `admin.retention.*`, `admin.custody.*` keys (list them in hand-off)
@@ -42,7 +48,7 @@ The pipeline itself (T-304/T-305), retention/hold commands (T-309), the director
 
 1. **Page**: `a-head` H1 `admin.tab.evidence`, `PermissionCallout`, policy panel (`admin.pipeline` sub-head; note composed of `admin.failClosedNote`, `admin.retention` with the live default days as `{days}` param, `admin.legalHoldNote`), then `RetentionPanel`, then one `QuarantineItem` per evidence item not in `published`-and-expired state, newest first (query `evidence.listForStaff {state?, page}` — add this read-only query to T-309's module if absent; note it as a follow-up if you must add it yourself, owned path `packages/application/src/modules/evidence/queries/list-for-staff.ts`).
 2. **`QuarantineItem`**: `.q-head` with the **public id** (never the original filename — the prototype showed `IMG_2291.heic`; the product shows `item.publicId` and the detected type + size), badges: `ev.state.failed` (danger) when `failed`, `admin.failClosed` (warn) when the latest custody event is `scan_unavailable`, `ev.state.redact` (warn) when `preview_ready` without `privacy_confirmed`, `admin.pl.published` (good) when `published`, hold badge `admin.hold.active` (warn) when `hold_id`; `PipelineSteps` mapping custody events → the seven prototype steps: `received`→`received`, `validated`→`validated`/`validation_failed`(fail), `scanned`→`scan_clean`/`scan_detected`(fail)/`scan_unavailable`(hold), `converted`+`rasterised`→`sanitised` (both `ok` when present; `-` otherwise), `redacted`→`redaction_applied` or `privacy_confirmed` (`ok`), `wait` when `preview_ready` only, `published`→`published`; note line from the fail reason (`ev.fail.<reason>` keys — add) or the state; `admin.textStays` when failed/held; **retention row**: `admin.retention.expires {date}` from `retention_expires_at` (formatted in locale; the demo clock makes it move) or `admin.retention.held` when a hold is active; **actions** (`.mine-actions`): **Place hold** / **Release hold** (`holds.manage`) → `HoldSheet` (reason required, optional expiry) → action; **Remove file** (`content.act`, `removeFile`) with reason; **Custody log** toggle → `CustodyLog` (`<details>`; rows: relTime, event, actor opaque, allowlisted details); `.restricted` original gate: `admin.evidenceGated` + note; capability holders (`evidence.original`) get **Reveal (audited)** → stepUp → `readOriginal` action → opens the signed URL in a new tab (the route handler writes `original_accessed`); others see the box without a button.
-3. **`RetentionPanel`** (Super Admin only; others see the summary line): current policy version, `originalDays`/`auditDays`, effective from; `admin.retention.prospectiveNote` ("Changing the default affects future records only."); **Bulk change existing** → `BulkRetentionSheet`: from/to days inputs → `previewBulkRetention` → shows `{count}` affected and sample public ids → reason → stepUp → `executeBulkRetention` → result or `retention.preview_drift` message with a re-preview button.
+3. **`RetentionPanel`** (Super Admin only; others see the summary line): current policy version, `originalDays`/`auditDays`, effective from; `admin.retention.prospectiveNote` ("Changing the default affects future records only."). **Deferred, not built in release 1 (FD-088):** the **Bulk change existing** control and `BulkRetentionSheet` (from/to days inputs → `previewBulkRetention` → `{count}` affected and sample public ids → reason → stepUp → `executeBulkRetention` → result or `retention.preview_drift` message with a re-preview button).
 
 ### Providers view
 
@@ -61,7 +67,8 @@ The pipeline itself (T-304/T-305), retention/hold commands (T-309), the director
 | Fixture parity | component test with the four seeded items | Q-882 all ok + published badge; Q-884 validated=fail + failed badge + text-stays; Q-887 scanned=hold + fail-closed badge; Q-891 redacted=wait + waiting badge |
 | Filename privacy | test | original filename string never in the DOM; public id shown |
 | Hold | manual storyboard 22 | hold placed → badge + custody `hold_placed`; retention job skips it; release → `hold_released` |
-| Bulk retention | manual as `sa_founder` | preview count → execute → custody rows; drift path shows re-preview |
+| Bulk retention | deferred, FD-088 | not run in release 1 (bulk retention change is a follow-up task) |
+| FD-088: bulk controls not built | render `RetentionPanel` as `sa_founder` and list the files this task adds | the panel shows the policy summary and the policy-change control only; no `BulkRetentionSheet`, `previewBulkRetention` or `executeBulkRetention` exists |
 | Original access | manual | moderator: no button; super_admin: stepUp → new tab serves bytes → custody `original_accessed` + audit |
 | Providers | manual storyboard 23 | approve P-143, merge P-140 → old URL redirects, claim C-58 approved, F-77 decided |
 | Read-only moderator | component test | no action buttons rendered |
@@ -69,7 +76,7 @@ The pipeline itself (T-304/T-305), retention/hold commands (T-309), the director
 
 ## Tests to write
 
-Component tests listed in step 9; action tests for error mapping (`hold.active`, `retention.preview_drift`, `forbidden`, `auth.step_up_required`).
+Component tests listed in step 9; action tests for error mapping (`hold.active`, `forbidden`, `auth.step_up_required`; `retention.preview_drift` deferred, FD-088).
 
 ## Hard-rule checklist
 
@@ -77,7 +84,7 @@ Component tests listed in step 9; action tests for error mapping (`hold.active`,
 - [ ] Scanner unavailable renders as held/fail-closed, never as "probably fine".
 - [ ] "Registration not verified" on every pending/approved profile.
 - [ ] Claims never grant control over accounts (copy present).
-- [ ] Retention default changes are prospective; existing records only via previewed bulk action with reason.
+- [ ] Retention default changes are prospective; changing existing records by a previewed bulk action is deferred after release 1 (FD-088), so the console offers no way to change them.
 - [ ] Both locales; no attribution.
 
 ## Hand-off (implementer fills in)

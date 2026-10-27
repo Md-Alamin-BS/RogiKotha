@@ -5,6 +5,7 @@
     "US2.1",
     "US2.2",
     "US2.3",
+    "US2.4",
     "US3.1",
     "US3.2",
     "US3.3",
@@ -56,6 +57,11 @@
       "id": "US2.3",
       "status": "OK",
       "target": "Account, Search, Directory, Review, Evidence"
+    },
+    {
+      "id": "US2.4",
+      "status": "N/A",
+      "target": "The FD-091 design and motion system lives in apps/web styles and components (plain CSS, FD-032); no domain component"
     },
     {
       "id": "US3.1",

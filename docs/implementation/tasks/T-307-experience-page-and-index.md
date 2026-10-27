@@ -7,8 +7,14 @@
 | Class → model | M2 → Claude Sonnet 5 (alt. GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | `high` |
 | Estimate | 5–6 h agent; validation 1.5 h |
-| Depends on | T-302 (projection with follow-ups, later care, edited, tombstone), T-202 (doctor link component), T-203 (condition link), T-102 (gated controls) |
+| Depends on | T-302 (projection with follow-ups, later care, edited, tombstone), T-202 (doctor link component), T-203 (condition link), T-102 (gated controls), T-011 (design and motion system, FD-091) |
 | Parallel-safe with | T-306 (shares only `ExperienceBody` — T-307 owns it; T-306 imports it), T-304, T-305, T-309 |
+
+## Amendments — patient redesign and motion (FD-091)
+
+This decision is binding and overrides the text below where they differ.
+
+- **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-307 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, the motion step and the acceptance checks.
 
 ## Goal
 
@@ -52,6 +58,7 @@ Comments/reactions/bookmark behaviour (T-402 fills `DiscussionSlot` and wires `A
 8. **Announce** page title on navigation via the layout's `LiveRegion` (already global).
 9. Tests in both locales: sections present/absent per VM shape; anonymous byline has no link and no name; spine first item current; tombstone renders no title/author; detailed review renders four chapters and omits empty ones; index empty state; `not_found` → 404.
 10. `npx impeccable detect apps/web/src/components/patient/experience --no-advisory`; `pnpm check`; hand-off.
+11. **Motion (FD-091).** Wrap the pages in `RouteTransition`. The experiences index and the related cards use `Reveal` (stagger capped at 6 items). The follow-up spine, later-care callout and the experience body are never animated in, so the LCP element is not delayed (AC2.4.6). The advice warning, the tombstone notice and the demo marker are never animated (AC2.4.4). The editorial reading layout follows `design-direction-research.md` §4 through T-011 classes.
 
 ## Acceptance checks
 
@@ -68,6 +75,9 @@ Comments/reactions/bookmark behaviour (T-402 fills `DiscussionSlot` and wires `A
 | Numerals | bn test | comment count and page counts render Bengali digits |
 | Detector | `npx impeccable detect …` | 0 findings |
 | Tree | `pnpm check` | green |
+| FD-091: motion check | `pnpm check:motion` | passes; this Unit's styles animate only `transform` and `opacity` with T-011 duration and easing tokens |
+| FD-091: reduced-motion journey (AC2.4.3) | walk this Unit's pages with the OS reduced-motion setting, then with `data-motion="reduced"` | no slide, scale, stagger, route movement or scroll reveal; every step still completes; the disclaimer, emergency guidance and demo marker are never animated (AC2.4.4) |
+| FD-091: detector and contrast on the new styles | `npx impeccable detect apps/web/src --no-advisory`; `pnpm contrast` | zero findings |
 
 ## Tests to write
 

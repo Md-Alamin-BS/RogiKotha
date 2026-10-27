@@ -115,7 +115,8 @@
     "NFR9",
     "NFR10",
     "NFR11",
-    "NFR12"
+    "NFR12",
+    "NFR13"
   ],
   "coverage": [
     {
@@ -535,8 +536,8 @@
     },
     {
       "id": "FR84",
-      "status": "OK",
-      "target": "US9.3"
+      "status": "Deferred",
+      "target": "US9.3 (AC9.3.1, AC9.3.2 deferred until after release 1, FD-088)"
     },
     {
       "id": "FR85",
@@ -692,6 +693,11 @@
       "id": "NFR12",
       "status": "OK",
       "target": "US12.3"
+    },
+    {
+      "id": "NFR13",
+      "status": "OK",
+      "target": "US2.4"
     }
   ]
 }

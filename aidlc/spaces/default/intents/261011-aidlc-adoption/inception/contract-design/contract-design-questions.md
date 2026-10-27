@@ -166,7 +166,7 @@ A. Only as a row in Administration's own audit stream; there is no outbox event 
 B. Keep it as an outbox event, through a port Notification implements
 X. Other (please specify)
 
-[Answer]:
+[Answer]: B
 
 ## Question 14
 
@@ -176,7 +176,7 @@ A. `search.refresh` writes an evidence-presence column into `search_documents` w
 B. Search reads evidence presence from Evidence at query time, through a query (the Domain Design default)
 X. Other (please specify)
 
-[Answer]:
+[Answer]: A
 
 ## Question 15
 
@@ -186,4 +186,83 @@ A. Open and closed cases, plus the total number of report rows as a separate fig
 B. Report rows only
 X. Other (please specify)
 
-[Answer]:
+[Answer]: A
+
+## Follow-up questions
+
+The ambiguity check of answers 1–15 against the data model, the worker grants (`0005_grants_part2.sql`) and the Units review (`review-04.md`) left six points that no earlier decision settles.
+
+## Question 16
+
+Account deletion (Question 6, FD-069): the worker has no privilege on `persona_links`, `profile_submissions`/claims/field changes, `reports.reporter_account_id`, `appeals`, `review_drafts`, `facility_reviews` or `reactions`. Where do the deletion steps that touch them run?
+
+A. In the web process, inside `dataRequest.delete`, in one transaction with the account step: account, identity, directory, moderation, review drafts, facility reviews and reactions. The worker's `data.delete` job then runs only the steps its grants already cover: evidence files, notifications, search, and the review and comment tombstones. If a web step fails, the whole request rolls back and nothing is deleted; worker steps are retried by the job. No new worker grants; CR-006's FD-050 review judges the worker's grants against this split (recommended: keeps least privilege, and the slow file and index work stays asynchronous)
+B. Grant the worker the privileges those steps need and run every step except the account step in `data.delete`
+C. Run the whole deletion in the web process, with no `data.delete` job
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 17
+
+A legal hold on one review or comment (not on the account) keeps that record when its author deletes the account. The identity step deletes the author's persona links. Is the held record's persona link kept?
+
+A. Yes: the persona link of a held review or comment is kept until the hold ends, and then deleted by the normal schedule. Everything else is de-identified as usual (recommended: a legal matter about a post usually needs to know who wrote it, and a hold exists to preserve that)
+B. No: the link is deleted with the others; the held record is kept but de-identified
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 18
+
+FR87 lists "reports" among in-app events. Does the person who filed a report get a notice about it (received, decided)?
+
+A. No reporter notices in the demo: only the affected author gets "Content reported" and the decision notice (FR80). A reporter's account id then never appears in any outbox payload (recommended: the reporter column stays restricted end to end)
+B. Yes, an in-app notice to the reporter, written by the web tier directly (not through the outbox), so the id never enters a payload the worker reads
+C. Yes, through the outbox like every other notice (the reporter's id is then in a payload the worker reads)
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 19
+
+Question 10 has the worker open a case for a review that repeats the same episode (AC6.1.4). What does the moderator see about the earlier review?
+
+A. Only the flag: "Possible repetition of an earlier account by the same author", with no link to the earlier review. The event carries a flag, not the earlier review's id (recommended: two reviews by one author, one of them anonymous, are never linked, FD-015)
+B. The earlier review's public id, so the moderator can compare the two
+C. The earlier review as "restricted", revealed only through `identity.reveal` with step-up, logged
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 20
+
+One email per moderation outcome (`review-04.md` R-21): today `review.setState` queues the hide and restore email, so comment and facility-review outcomes get none, a removal gets none, and an appeal that restores a review gets two. Who queues the moderation email?
+
+A. The moderation command that decides the outcome: `report.file` (auto-hide), `moderation.decide`, `moderation.restore` and `appeal.decide` each queue exactly one email to the affected author, for every target kind; `setState` never queues email. An author's own delete or restore sends none. T-302 then queues no email, and its FD-075 row moves to T-403 and T-404 (recommended: one place per outcome, nothing double-counts)
+B. `setState` keeps queueing for reviews, and the moderation commands queue only for outcomes `setState` did not email
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 21
+
+FD-069 removes the account link from the submissions, claims and field changes of a deleted account. A doctor or facility that account claimed also carries `claimed_by_account_id`. What happens to it?
+
+A. Cleared: the claim ends, the profile shows as unclaimed, and the claim row stays de-identified as history (recommended: no one holds field-edit rights for a deleted account)
+B. Kept until staff decide what to do with the profile
+X. Other (please specify)
+
+[Answer]: A
+
+## Revision 2026-10-27
+
+## Question 22
+
+How does the contract summary carry the 2026-10-27 revisions (FD-088 staff narrowing, FD-090 grants, FD-091 redesign with the new U45)?
+
+A. Add a revision section: mark the deferred appeal, bulk and triage operations and events as "not built in release 1, kept specified for later"; mark the two open questions as settled by FD-090; note that U45 has no runtime contract and C14 is unchanged (recommended)
+B. Remove the deferred operations from the contracts
+X. Other (please specify)
+
+[Answer]: A

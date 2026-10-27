@@ -7,8 +7,14 @@
 | Class → model | M2 → Claude Sonnet 5 (alternate GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | `high` |
 | Estimate | 2–3 h agent; validation 0.5–1 h |
-| Depends on | T-008 (shell), **T-202** (shared `EmergencyPanel`, `AccountRow`, `Avatar`, `MiniList`), T-203 (`BrowseCard`), T-206 (`SearchBox`), T-201 (`taxonomy.listConditions`, `directory.listFacilities`, `review.listExperienceCards`) |
+| Depends on | T-008 (shell), **T-202** (shared `EmergencyPanel`, `AccountRow`, `Avatar`, `MiniList`), T-203 (`BrowseCard`), T-206 (`SearchBox`), T-201 (`taxonomy.listConditions`, `directory.listFacilities`, `review.listExperienceCards`), T-011 (design and motion system, FD-091) |
 | Parallel-safe with | T-204, T-205 (lane A); T-206 if `SearchBox` is committed first |
+
+## Amendments — patient redesign and motion (FD-091)
+
+This decision is binding and overrides the text below where they differ.
+
+- **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-207 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Read first, step 4.5, the motion step and the acceptance checks.
 
 > Scheduling note: the master plan lists T-207 with only T-008 as a dependency and runs it early
 > (step 4). Because Discover reuses the shared primitives, run it **after T-202/T-203/T-206**, or run
@@ -28,7 +34,7 @@ form's links) built from the About copy plus the single FD-022 lawful-access sen
 3. `docs/status/decision-log.md` FD-008 and FD-022 (lawful-access disclosure only in Terms/Privacy)
 4. Prototype `app.js`: `renderDiscover` 375–478 (all blocks), `emergencyPanel` 338–350, `accountRow` 527, `renderEmergency` 1889–1934 (port the BMDC comment), `renderAbout` 1935–1965, `titleForView` cases `discover`, `emergency`, `about`
 5. `rogikotha-data.js` keys: `hero.*`, `how.*`, `search.banglish`, `discover.*`, `facility.separation`, `facility.type.*`, `disclaimer.short`, `emergency.*`, `emergview.*` (incl. the unused `emergview.poison` — do **not** add a poison card; the prototype defines the key but renders no card), `aboutview.*`, `a11y.call`, and `RK.config.emergency`
-6. `styles.css`: `.opener`, `.opener-grid`, `.margin-note`, `.chips`, `.chip`, `.browse-grid`, `.browse-card`, `.how-list`, `.reveal`, `.fig`, `.emerg-head`, `.emerg-grid`, `.emerg-card`, `.bmdc`, `.about-head`, `.about-sections`, `.about-section`, `.about-foot`, `.mini-list`
+6. `styles.css` (FD-091: only to see which class names T-011 kept; do not copy its rules): `.opener`, `.opener-grid`, `.margin-note`, `.chips`, `.chip`, `.browse-grid`, `.browse-card`, `.how-list`, `.reveal`, `.fig`, `.emerg-head`, `.emerg-grid`, `.emerg-card`, `.bmdc`, `.about-head`, `.about-sections`, `.about-section`, `.about-foot`, `.mini-list`
 7. `docs/implementation/tasks/T-202-doctor-index-and-profile.md` step 2 (keys `discover.kicker`, `discover.editorialNote`, `discover.latest`, `emergency.ambulanceLabel`, `emergency.healthLineLabel` — created there; if T-202 has not merged, create them here with identical values and note it)
 
 ## Owned paths
@@ -64,11 +70,12 @@ form's links) built from the About copy plus the single FD-022 lawful-access sen
    2. `EmergencyPanel` (T-202).
    3. `<h2 class="section-head">discover.browse` + `.note discover.browseNote` + `.browse-grid` of `BrowseCard` (`href=/topics/{publicId}`, `<b>name`, `<span>{n} sentiment.accounts`) for conditions with accounts.
    4. `.panel` facilities teaser: `<h2>discover.facilities`, `.note facility.separation`, `MiniList` of 3 branches (`a.mini-row` → `/facilities/{publicId}`; `.mini-av` Avatar 38; `<b>{name}{ — branchName}</b>`; sub `facility.type.{type} · {area}, {city} · {accountsTotal} sentiment.accounts`).
-   5. `<h2 class="section-head">how.title` + `ol.how-list` of three `li.reveal` (`.fig 01/02/03` — digits through the formatter, keep the leading zero, `<h3>how.{i}.t`, `<p>how.{i}.b`).
+   5. `<h2 class="section-head">how.title` + `ol.how-list` of three `li` (FD-091: the scroll reveal comes from T-011; keep the `.reveal` class only if T-011 kept it) (`.fig 01/02/03` — digits through the formatter, keep the leading zero, `<h3>how.{i}.t`, `<p>how.{i}.b`).
    6. `<h2 class="section-head">discover.latest` + four `AccountRow`.
    Drop: `state.query` prefill (`'diabetes'` in the prototype) — the hero box starts empty. Metadata title: the brand only (`titleForView('discover')` returns `''`, so the layout's default `brand.name — brand.tagline` applies).
 5. New keys (both locales): `emergency.lastVerifiedLine`, `aboutview.contactBodyProduct`, all `policy.*` above. If T-202 has not yet merged, also `discover.kicker`, `discover.editorialNote`, `discover.latest`, `emergency.ambulanceLabel`, `emergency.healthLineLabel` (identical values to T-202's list; the later merge de-duplicates).
 6. `npx impeccable detect apps/web/src --no-advisory`, `pnpm contrast`, `pnpm check`.
+7. **Motion (FD-091).** Wrap all five pages in `RouteTransition`. On the Discover home, the browse grid, facilities teaser, how-it-works list and latest list get the T-011 scroll reveals inside `@supports` (stagger capped at 6 items). The hero, its search box and the first screen are never animated in, so the LCP element is not delayed (AC2.4.6). The emergency panel, the `/emergency` page cards, the disclaimer and the demo marker are never animated (AC2.4.4).
 
 ## Acceptance checks
 
@@ -82,8 +89,12 @@ form's links) built from the About copy plus the single FD-022 lawful-access sen
 | Terms/Privacy reachable from register | manual after T-102 | links resolve in both locales |
 | Locales | `pnpm vitest run apps/web -t "bn"` | all five pages render `bn` with no English fallback |
 | Impeccable + contrast | `npx impeccable detect apps/web/src --no-advisory && pnpm contrast` | zero findings |
-| Visual | `/en` and `/bn` vs prototype `#discover`, 1280/390 px | faithful (hero box empty instead of prefilled) |
+| Visual (FD-091) | `/en` and `/bn` vs prototype `#discover`, 1280/390 px | same content, order and states (hero box empty instead of prefilled); the look follows T-011 |
 | Full check | `pnpm check` | green |
+| FD-091: motion check | `pnpm check:motion` | passes; this Unit's styles animate only `transform` and `opacity` with T-011 duration and easing tokens |
+| FD-091: reduced-motion journey (AC2.4.3) | walk this Unit's pages with the OS reduced-motion setting, then with `data-motion="reduced"` | no slide, scale, stagger, route movement or scroll reveal; every step still completes; the disclaimer, emergency guidance and demo marker are never animated (AC2.4.4) |
+| FD-091: detector and contrast on the new styles | `npx impeccable detect apps/web/src --no-advisory`; `pnpm contrast` | zero findings |
+| FD-091: early performance check (NFR13, AC2.4.6) | Lighthouse on a throttled mid-range Android profile (slow 4G, 4x CPU) for `/en` and `/bn` home | LCP <= 2.5 s and CLS <= 0.1 recorded in the hand-off; any miss becomes an ISSUES.md row before the next UI Unit starts |
 
 ## Tests to write
 

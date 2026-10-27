@@ -73,3 +73,17 @@ B. Fixed values in code, same numbers
 X. Other (please specify)
 
 [Answer]: A
+
+## Revision 2026-10-27
+
+Requirements Analysis was revised on 2026-10-27 (NFR13 and FD-091 redesign; FD-088 staff-side narrowing; FD-089 demo data). Story keys are frozen, so nothing is renumbered.
+
+## Question 7
+
+How do the stories carry the revision?
+
+A. Add a new story US2.4 "Rich, motion-led patient experience" (NFR13, with six testable criteria and the look judged by the owner at each milestone walk); retire AC2.2.1 (the 04b-only guard); mark the appeals, bulk and triage criteria "deferred, FD-088" in US7.3, US9.2, US9.3, US10.1 and US11.2 without deleting them (recommended)
+B. Fold the motion criteria into the existing UI stories instead of a new story
+X. Other (please specify)
+
+[Answer]: A

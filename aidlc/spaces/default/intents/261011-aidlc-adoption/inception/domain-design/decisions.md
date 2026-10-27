@@ -147,3 +147,11 @@ Sources: `requirements.md` (Requirements Analysis), `stories.md` (User Stories),
 ## Not a component: the demo clock
 
 `demo_clock` (`02-data-model.md` §15) is demo-only migration support behind the `Clock` port, refused when `APP_MODE=production` (AD-14). It is a dependency of Retention's and Moderation's time-based rules in the demo, not a component of its own.
+
+## Revision 2026-10-27
+
+The Requirements and User Stories revisions (FD-088, FD-089, FD-091) leave the thirteen components, their entities and their dependency graph unchanged:
+
+- **FD-091 and US2.4 (patient redesign with motion):** a presentation concern of `apps/web` (styles, layout components, route transitions). It maps to no domain component, like the concept CSS before it.
+- **FD-088 (staff side narrowed):** Moderation keeps `Appeal` as an entity, but its commands wait until after release 1. Moderation bulk actions and Retention's `RetentionBulkAction` behaviour wait too. Notification's staff-notification triage view is a UI deferral; `StaffNotification` stays. No ownership changes.
+- **FD-089 (demo data):** seed data only, no model change.

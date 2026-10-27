@@ -10,6 +10,7 @@ Every story in `stories.md` assigned to the Unit(s) that implement it. Built fro
 | US2.1 | U43 | t-504-demo-composition | — |
 | US2.2 | U42 | t-503-parity-accessibility-e2e | — |
 | US2.3 | U42, U44 | t-503-parity-accessibility-e2e, t-505-final-validation-and-docs | yes |
+| US2.4 | U45, U42 | t-011-patient-design-and-motion-system, t-503-parity-accessibility-e2e | yes |
 | US3.1 | U8, U9, U13, U41 | t-101-better-auth-adapter, t-102-patient-auth-screens, t-106-auth-identity-validation, t-502-security-hardening | yes |
 | US3.2 | U8, U9, U10, U13 | t-101-better-auth-adapter, t-102-patient-auth-screens, t-103-staff-access-and-devices, t-106-auth-identity-validation | yes |
 | US3.3 | U11, U13, U21, U26, U27 | t-104-identity-module, t-106-auth-identity-validation, t-301-review-module-core, t-306-composer-wizard, t-307-experience-page-and-index | yes |

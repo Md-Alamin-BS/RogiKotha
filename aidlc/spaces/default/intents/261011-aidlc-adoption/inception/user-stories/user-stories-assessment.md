@@ -23,3 +23,7 @@ Execute.
 - Evidence intake, privacy preview and the processed viewer (FD-023, FD-036).
 - Reporting thresholds and bounded moderation actions (FD-017, FR-MOD-003).
 - Retention, legal holds, export and deletion (FD-004, FD-020, FD-021, FD-035).
+
+## Revision 2026-10-27
+
+Re-run after the Requirements Analysis revision. One new story, US2.4 (NFR13, FD-091), brings the set to 35 stories. AC2.2.1 is retired. The FD-088 deferrals are marked on AC7.3.3, AC7.3.4, AC9.3.1, AC9.3.2, AC11.2.3 and AC11.2.4, and noted on AC9.2.1, AC9.3.3, AC10.1.1 and AC11.2.1. No key was renumbered.

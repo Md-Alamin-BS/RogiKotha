@@ -1,6 +1,6 @@
 # Units of work — RogiKotha demo build
 
-44 Units, one per remaining task or change request (owner, Q1); the storyboard and seed correction is CR-012 (FD-074). Merged work is the baseline every Unit builds on, not a Unit (Q2): T-001..T-009, T-207 Half A, D-001 and CR-002/003/005/008/010 on `main`. T-106, T-503 and T-505 are validation Units of kind `spec` (Q3). Each Unit keeps its task file in `docs/implementation/tasks/` as its specification: owned paths, acceptance table and estimate. Components and architecture decisions are in `domain-design/components.md` and `decisions.md`; the order of work is Delivery Planning's decision, not this document's.
+45 Units, one per remaining task or change request (owner, Q1), including U45 T-011 added on 2026-10-27 for the FD-091 redesign; the storyboard and seed correction is CR-012 (FD-074). Merged work is the baseline every Unit builds on, not a Unit (Q2): T-001..T-009, T-207 Half A, D-001 and CR-002/003/005/008/010 on `main`. T-106, T-503 and T-505 are validation Units of kind `spec` (Q3). Each Unit keeps its task file in `docs/implementation/tasks/` as its specification: owned paths, acceptance table and estimate. Components and architecture decisions are in `domain-design/components.md` and `decisions.md`; the order of work is Delivery Planning's decision, not this document's.
 
 Built from `components.md` and `decisions.md` (Domain Design), `requirements.md` and `stories.md`, and the master plan (`docs/implementation/00-master-plan.md` §5).
 
@@ -56,6 +56,7 @@ All Units deploy into the existing two runtimes of the modular monolith: the Nex
 | U42 | t-503-parity-accessibility-e2e | u42-t-503-parity-accessibility-e2e | T-503 | Bilingual parity, accessibility and viewport E2E | spec | XL | — | US2.3, US12.1, US2.2 |
 | U43 | t-504-demo-composition | u43-t-504-demo-composition | T-504 | Demo composition: one-command up, reset, demo clock, storyboard walk-through | packaging | M | — | US2.1, US1.1 |
 | U44 | t-505-final-validation-and-docs | u44-t-505-final-validation-and-docs | T-505 | Final validation matrix and documentation close-out | spec | M | — | US2.3, US1.1 |
+| U45 | t-011-patient-design-and-motion-system | u45-t-011-patient-design-and-motion-system | T-011 | Patient design and motion system (FD-091): tokens, restyled shell, CSS-first motion, reduced motion, CSS motion check | ui | XL | — | US2.4, US2.3 |
 
 Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task file's estimate. High risk (auth, identity, evidence, moderation, retention, deletion) runs with collaborators on, 3–5 adversarial tests and the owner's written sign-off (team practices).
 
@@ -135,7 +136,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file. Gated on the D-001 auth-screen review (FD-053). FD-057: session list and sign out everywhere only.
 - **Decision changes:** FD-053, FD-057, written into the task file's amendments section with `FD-0nn:` acceptance rows (FD-074)
 - **Stories:** US3.1, US3.2
-- **Depends on:** U8 (T-101), U3 (T-010)
+- **Depends on:** U8 (T-101), U3 (T-010), U45 (T-011)
 
 ### U10 — Staff access: roles, capabilities, console guard, staff sign-in, device approval, step-up
 
@@ -186,7 +187,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Kind:** ui · **Size:** L (4–5 h agent; validation 1–1.5 h) · **Deployment:** embedded in the shared web/worker deployment
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file.
 - **Stories:** US4.1, US6.4, US4.2
-- **Depends on:** U14 (T-201), U3 (T-010)
+- **Depends on:** U14 (T-201), U3 (T-010), U45 (T-011)
 
 ### U16 — Facility index/profile and condition index/page (port)
 
@@ -194,7 +195,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Kind:** ui · **Size:** L (4–5 h agent; validation 1–1.5 h) · **Deployment:** embedded in the shared web/worker deployment
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file. Facility feedback never enters doctor aggregates (hard rule).
 - **Stories:** US4.3, US5.3, US6.4
-- **Depends on:** U14 (T-201), U15 (T-202), U3 (T-010)
+- **Depends on:** U14 (T-201), U15 (T-202), U3 (T-010), U45 (T-011)
 
 ### U17 — Provider submission, claim, field change, merge (commands + patient entry points)
 
@@ -219,7 +220,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Kind:** ui · **Size:** L (4–6 h agent; validation 1–1.5 h) · **Deployment:** embedded in the shared web/worker deployment
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file.
 - **Stories:** US5.1, US5.2
-- **Depends on:** U18 (T-205), U15 (T-202), U16 (T-203), U3 (T-010)
+- **Depends on:** U18 (T-205), U15 (T-202), U16 (T-203), U3 (T-010), U45 (T-011)
 
 ### U20 — Discover (home), Emergency, About, Terms and Privacy pages (port)
 
@@ -227,7 +228,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Kind:** ui · **Size:** M (2–3 h agent; validation 0.5–1 h) · **Deployment:** embedded in the shared web/worker deployment
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file. Half B only (Discover home); Half A is merged. Carries ISS-151, ISS-152, ISS-120.
 - **Stories:** US12.1, US5.1, US4.3
-- **Depends on:** U15 (T-202), U16 (T-203), U19 (T-206), U14 (T-201), U3 (T-010)
+- **Depends on:** U15 (T-202), U16 (T-203), U19 (T-206), U14 (T-201), U3 (T-010), U45 (T-011)
 
 ### U21 — Review module core: drafts, publish, projection, aggregates
 
@@ -277,7 +278,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Kind:** ui · **Size:** XL (6–8 h agent; validation 2 h) · **Deployment:** embedded in the shared web/worker deployment
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file.
 - **Stories:** US6.1, US6.2, US7.1, US3.3, US5.3
-- **Depends on:** U21 (T-301), U23 (T-303), U9 (T-102), U17 (T-204), U14 (T-201), U3 (T-010)
+- **Depends on:** U21 (T-301), U23 (T-303), U9 (T-102), U17 (T-204), U14 (T-201), U3 (T-010), U45 (T-011)
 
 ### U27 — Experience page and experiences index port (`/experiences`, `/experiences/{publicId}`)
 
@@ -285,7 +286,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Kind:** ui · **Size:** L (5–6 h agent; validation 1.5 h) · **Deployment:** embedded in the shared web/worker deployment
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file.
 - **Stories:** US6.2, US6.3, US6.4, US3.3, US10.2
-- **Depends on:** U22 (T-302), U15 (T-202), U16 (T-203), U9 (T-102), U3 (T-010)
+- **Depends on:** U22 (T-302), U15 (T-202), U16 (T-203), U9 (T-102), U3 (T-010), U45 (T-011)
 
 ### U28 — Processed-document viewer and evidence sections port
 
@@ -293,7 +294,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Kind:** ui · **Size:** M (3–4 h agent; validation 1.5 h) · **Deployment:** embedded in the shared web/worker deployment
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file.
 - **Stories:** US7.2, US7.1
-- **Depends on:** U25 (T-305), U27 (T-307), U3 (T-010)
+- **Depends on:** U25 (T-305), U27 (T-307), U3 (T-010), U45 (T-011)
 
 ### U29 — Retention policy, expiry job, legal holds, previewed bulk action, custody log, demo clock
 
@@ -319,7 +320,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Kind:** ui · **Size:** M (3–4 h agent; validation 1 h) · **Deployment:** embedded in the shared web/worker deployment
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file.
 - **Stories:** US8.1, US8.2
-- **Depends on:** U30 (T-401), U27 (T-307), U9 (T-102), U3 (T-010)
+- **Depends on:** U30 (T-401), U27 (T-307), U9 (T-102), U3 (T-010), U45 (T-011)
 
 ### U32 — Reports, thresholds and the temporary hide
 
@@ -379,7 +380,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Kind:** ui · **Size:** L (4–6 h agent; validation 1.5 h) · **Deployment:** embedded in the shared web/worker deployment
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file.
 - **Stories:** US10.2, US10.3, US6.3, US9.3
-- **Depends on:** U22 (T-302), U30 (T-401), U11 (T-104), U9 (T-102), U33 (T-404), U3 (T-010), U6 (CR-012)
+- **Depends on:** U22 (T-302), U30 (T-401), U11 (T-104), U9 (T-102), U33 (T-404), U3 (T-010), U6 (CR-012), U45 (T-011)
 
 ### U39 — Account data export and orchestrated deletion
 
@@ -396,7 +397,7 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Kind:** ui · **Size:** M (2–3 h agent; validation 1 h) · **Deployment:** embedded in the shared web/worker deployment
 - **Responsibilities:** the scope, owned paths and acceptance table of its source file.
 - **Stories:** US12.2, US12.1
-- **Depends on:** U9 (T-102), U20 (T-207), U3 (T-010)
+- **Depends on:** U9 (T-102), U20 (T-207), U3 (T-010), U45 (T-011)
 
 ### U41 — Security hardening: CSP, origin checks, rate limiting, upload limits, cookies, log scrubbing
 
@@ -431,6 +432,15 @@ Size: S ≤ 2 h, M ≤ 4 h, L ≤ 6 h, XL > 6 h of agent time, from the task fil
 - **Stories:** US2.3, US1.1
 - **Depends on:** U42 (T-503), U43 (T-504), U41 (T-502)
 
+### U45 — Patient design and motion system (FD-091)
+
+- **Source:** T-011 (`docs/implementation/tasks/T-011-patient-design-and-motion-system.md`), new on 2026-10-27
+- **Kind:** ui · **Size:** XL (5–7 h agent; validation 1.5 h) · **Deployment:** embedded in the shared web/worker deployment
+- **Responsibilities:** the scope, owned paths and acceptance table of its source file. Replaces the 04b look of the patient side with the FD-091 "Warm Paper, Soft Depth" tokens and a CSS-first motion system (React 19 `<ViewTransition>`, `@starting-style`, scroll reveals inside `@supports`, reduced-motion overrides including `::view-transition-*`), with no animation library (FD-032), and adds the `check:motion` CSS check to `pnpm check`. The staff console keeps Chart Tray.
+- **Decision changes:** FD-091 (written into its task file from the start)
+- **Stories:** US2.4, US2.3
+- **Depends on:** U3 (T-010)
+
 ## Task headers to correct
 
 Requirements Analysis found task headers that cite old matrix meanings (T-302, T-303, T-304, T-305, T-308, T-309, T-404, T-406). Each of those Units corrects its own header as part of its Code Generation; the meanings are in `requirements.md`.
@@ -459,6 +469,8 @@ The owner decisions FD-039 and FD-045..FD-075 that change a Unit's scope are wri
 | U37 (T-408) | FD-066 | — |
 | U39 (T-410) | FD-041, FD-052, FD-069, FD-070 | step 2 gave the worker DELETE on auth_users (against FD-041); removed, and how the auth user is removed is an open point for Contract Design |
 | U41 (T-502) | FD-072 | it held the FD-058 delay checks; T-101 builds them and T-502 tests them (FD-072) |
+| U42 (T-503) | FD-091 | its "no gate" for Lighthouse is overridden for the `/en` and `/bn` home, search and experience pages: NFR13 gates LCP ≤ 2.5 s, INP ≤ 200 ms (measured with a Lighthouse timespan or a Playwright interaction trace) and CLS ≤ 0.1 on a throttled mid-range Android profile, and it runs `check:motion` |
+| U45 (T-011) | FD-091 | new Unit; written with the decision |
 
 ## Deletion and export participants (ADR-006)
 

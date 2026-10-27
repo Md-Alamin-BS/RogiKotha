@@ -7,8 +7,14 @@
 | Class → model | M1 → Claude Sonnet 5 (alt GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | `high` |
 | Estimate | 2–3 h agent; validation 1 h |
-| Depends on | T-008 (shell), T-102 (sign-out action exists), T-207 (emergency/about pages exist) |
+| Depends on | T-008 (shell), T-102 (sign-out action exists), T-207 (emergency/about pages exist), T-011 (design and motion system, FD-091) |
 | Parallel-safe with | T-410, T-502 (T-502 must merge after this task so its CSP covers `sw.js`), T-406–T-409 |
+
+## Amendments — patient redesign and motion (FD-091)
+
+This decision is binding and overrides the text below where they differ.
+
+- **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-501 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Read first, step 1, the motion step and the acceptance checks.
 
 ## Goal
 
@@ -25,7 +31,7 @@ that is tested, not assumed. Sign-out purges every cache.
 4. `docs/planning/08-product-backlog.md` — STORY-PLAT-002 acceptance ("only allowlisted public shell assets are available and private/dashboard/review-draft/evidence responses are absent from all caches")
 5. `docs/planning/01-requirement-baseline.md` — search for "PWA" (no sensitive offline caching)
 6. `apps/web/src/app/[locale]/layout.tsx` and `apps/web/src/server/actions/account.ts` (sign-out action) as they exist after T-102
-7. `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/index.html` lines 20–45 (brand mark markup — the icon source)
+7. `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/index.html` lines 20–45 (brand mark markup — the icon shape; FD-091: its colours follow the T-011 palette)
 
 ## Owned paths
 
@@ -55,7 +61,7 @@ installable — its layout must **not** render the manifest link or the registra
 
 ## Steps
 
-1. **Manifest.** `/manifest.webmanifest` returns the EN manifest (`name: "RogiKotha"`, `short_name: "RogiKotha"`, `lang: "en"`, `start_url: "/en"`, `scope: "/"`, `display: "standalone"`, `background_color` = `--bg` light value from `tokens.css`, `theme_color` = same, icons array with `purpose: "any"` and `"maskable"`). `/bn/manifest.webmanifest` returns the same with `name: "রোগীকথা"`, `short_name: "রোগীকথা"`, `lang: "bn"`, `start_url: "/bn"`. The patient layout links the manifest of the **current** locale, so an install from a Bengali session gets a Bengali name and starts in Bengali — this is why there are two manifests rather than one with a locale query string (browsers ignore query strings for manifest identity and would dedupe). Both routes set `Content-Type: application/manifest+json` and `Cache-Control: public, max-age=3600`.
+1. **Manifest.** `/manifest.webmanifest` returns the EN manifest (`name: "RogiKotha"`, `short_name: "RogiKotha"`, `lang: "en"`, `start_url: "/en"`, `scope: "/"`, `display: "standalone"`, `background_color` = `--bg` light value from `tokens.css`, `theme_color` = same (FD-091: both are the T-011 palette values; the icons are redrawn in the T-011 palette, same brand mark shape), icons array with `purpose: "any"` and `"maskable"`). `/bn/manifest.webmanifest` returns the same with `name: "রোগীকথা"`, `short_name: "রোগীকথা"`, `lang: "bn"`, `start_url: "/bn"`. The patient layout links the manifest of the **current** locale, so an install from a Bengali session gets a Bengali name and starts in Bengali — this is why there are two manifests rather than one with a locale query string (browsers ignore query strings for manifest identity and would dedupe). Both routes set `Content-Type: application/manifest+json` and `Cache-Control: public, max-age=3600`.
 2. **Icons.** Draw `brand-mark.svg` from the `.brand-mark` CSS in `patient.css` (it is a CSS shape; reproduce it as SVG paths, no text, no gradient). `build-icons.mjs` renders 192/512 with 10 % padding on `--bg`, and a maskable 512 with 20 % safe-zone padding. Commit the PNGs (< 60 KB total).
 3. **Cache policy as data.** In `cache-policy.ts`:
    ```ts
@@ -72,6 +78,7 @@ installable — its layout must **not** render the manifest link or the registra
 8. **Head tags.** Manifest link (locale-specific), `theme-color` meta ×2 with `media="(prefers-color-scheme: …)"`, `apple-touch-icon`. Staff layout gets none of these.
 9. **Strings.** Add to both dictionaries: `pwa.offline.kicker` ("Offline" / "অফলাইন"), `pwa.offline.title` ("You're offline" / "আপনি অফলাইনে আছেন"), `pwa.offline.body` ("This page needs a connection. Public reading, your workspace and documents are not stored on this device." / "এই পাতাটির জন্য সংযোগ দরকার। প্রকাশ্য পড়া, আপনার ওয়ার্কস্পেস ও নথি এই ডিভাইসে সংরক্ষিত থাকে না।"), `pwa.offline.emergency` ("Emergency numbers are still available." / "জরুরি নম্বরগুলো এখনো পাওয়া যাবে।"), `pwa.name` ("RogiKotha" / "রোগীকথা"), `pwa.description` ("Patient accounts of doctors and facilities in Bangladesh, in Bengali and English." / "বাংলাদেশের ডাক্তার ও স্বাস্থ্যকেন্দ্র নিয়ে রোগীদের অভিজ্ঞতা, বাংলা ও ইংরেজিতে।").
 10. Run `pnpm check`, the e2e spec below, and `npx impeccable detect apps/web/src --no-advisory`.
+11. **Motion (FD-091).** The offline page uses `RouteTransition` like the other patient pages. The service worker must not break view transitions or the `data-motion` setting: `motion.css` and the font files are plain static assets under `/_next/static/*` or `/fonts/*` and follow the same cache rules. The offline page has no animated retry or progress indicator that runs for more than 5 seconds (AC2.4.4).
 
 ## Acceptance checks
 
@@ -87,6 +94,10 @@ installable — its layout must **not** render the manifest link or the registra
 | Staff console excluded | load `/en/admin/sign-in` | no manifest link, no SW registration call (assert via `navigator.serviceWorker.getRegistrations()` scope) |
 | Both locales | `/en/offline`, `/bn/offline` | strings present; numerals unaffected (none) |
 | Quality gates | `pnpm check`; `npx impeccable detect apps/web/src --no-advisory` | green; zero findings |
+| FD-091: motion check | `pnpm check:motion` | passes; this Unit's styles animate only `transform` and `opacity` with T-011 duration and easing tokens |
+| FD-091: reduced-motion journey (AC2.4.3) | walk this Unit's pages with the OS reduced-motion setting, then with `data-motion="reduced"` | no slide, scale, stagger, route movement or scroll reveal; every step still completes; the disclaimer, emergency guidance and demo marker are never animated (AC2.4.4) |
+| FD-091: detector and contrast on the new styles | `npx impeccable detect apps/web/src --no-advisory`; `pnpm contrast` | zero findings |
+| FD-091: PWA colours and icons follow T-011 | open the manifest, the `theme-color` metas and the icon files | `theme_color`, `background_color` and the icons use the T-011 palette values (light and dark), not the 04b colours |
 
 ## Tests to write
 

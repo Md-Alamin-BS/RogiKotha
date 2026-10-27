@@ -19,6 +19,13 @@ These decisions are binding and override the text below where they differ; the s
 - **FD-071** — This supersedes the note that `mail.send` belongs to T-405: T-101 builds the worker's `mail.send` handler, reading the recipient from `email_deliveries.to_email_enc`, never from `auth_users`, and T-405 extends it with preference checks, the `suppressed` status and the per-key params allowlist. The web tier fills `to_email_enc` when it queues the email. T-101 depends on this unit. Changes option (a)'s text and the acceptance checks.
 - **FD-050** — `rk_worker`'s grants beyond `02-data-model.md` §16 in `0005_grants_part2.sql` (reviews `UPDATE(state, deleted_at)`, `review_versions` INSERT, comments SELECT/UPDATE, column SELECT on `reports` and `account_profiles`, `legal_holds` SELECT) are a known deviation and are reviewed in this unit together with FD-041. Adds step 7, an owned-path note and acceptance checks. The review is judged against the jobs planned in the later Units' task files, not only against the code on `main` (review R-17): a grant that a planned Unit needs is kept until that Unit lands, and only a grant no planned Unit needs is offered for revocation.
 
+## Amendments — Contract Design and Delivery Planning (FD-076..FD-090)
+
+These decisions are binding and override the text below where they differ.
+
+- **FD-077** (C13, C15) — Step 7 also judges the worker's existing grants against C13's deletion split and C15's job list. The web transaction in `dataRequest.delete` runs the account, identity, directory, moderation, draft, facility-review and reaction steps. The worker's `data.delete` runs only evidence files, notifications and `email_deliveries`, search documents, and review and comment tombstones. Each grant's record names which side of the split uses it. Changes: step 7 and a new acceptance row. No new worker grant comes from FD-077.
+- **FD-079 and FD-080 and FD-090** (C3, C11) — Step 7 reads three planned worker additions as known, not as findings: `SELECT, INSERT, UPDATE` on `moderation_cases` and `USAGE` on `moderation_case_seq` (FD-080, T-403), the `EXECUTE` grant on the narrow persona-link deletion function (FD-079, T-410 and T-309), and the narrow `review_drafts` grant, `SELECT (id, account_id, expires_at)` and `DELETE` (FD-090, T-301 and T-309). This unit does not add them; it records them so the review does not offer a grant for revocation that a planned Unit will replace. Changes: step 7 and a new acceptance row.
+
 ## Why this exists
 
 `ISS-140` (S2, found by T-005's validator). Three documents and the database disagree about whether
@@ -129,6 +136,8 @@ and `to_email_enc` becomes defence-in-depth rather than a boundary.
 | FD-071: the recipient path T-101's `mail.send` handler uses | a real `rk_worker` session runs `select id, to_email_enc from email_deliveries limit 1` | succeeds (no `auth_users` access needed to send mail) |
 | FD-050: every listed grant reviewed | read the decision log and this unit's hand-off | one owner ruling (keep or revoke, with reason) for each of the six grants FD-050 lists, recorded as an `FD-` entry; each grant's record names the worker job that uses it today and the planned Unit (with task-file step) that needs it, or says no planned Unit does; no grant is offered for revocation while a planned Unit needs it (R-17) |
 | FD-050: live database matches the rulings | a real `rk_worker` session probes each of the six grants | each revoked grant → permission denied; each kept grant → succeeds, and `02-data-model.md` §16 names it with its reason |
+| FD-077: grants judged against the deletion split | read this unit's hand-off | each of the six grants states whether the web transaction (`dataRequest.delete`) or the worker (`data.delete`, C13/C15) uses it; the record shows the worker's deletion steps (evidence files, notifications, `email_deliveries`, search, review and comment tombstones) are covered by the grants kept, and no web-side step relies on a worker grant |
+| FD-079/FD-080/FD-090: planned additions recorded | read this unit's hand-off | the `moderation_cases` grant (T-403), the persona-link deletion function grant (T-410, T-309) and the `review_drafts` grant (T-301, T-309) are listed as planned additions with their Units; no existing grant is offered for revocation because of them |
 | `pnpm check`, `pnpm test:int` | exit 0 |
 
 ## Hand-off

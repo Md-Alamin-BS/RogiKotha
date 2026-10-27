@@ -7,14 +7,20 @@
 | Class → model | M2 → Claude Sonnet 5 (alternate GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | `high` |
 | Estimate | 4–6 h agent; validation 1–1.5 h |
-| Depends on | T-205 (`search.query`, `search.suggest`, `SearchResultsVM` — may start against the fake index once the contracts file is committed), T-202 (`DoctorEntry`, `SentimentBlock`, `OutcomeBlock`, `NotVerified`, `Sheet`), T-203 (`FacilityEntry`, `BrowseCard`) |
+| Depends on | T-205 (`search.query`, `search.suggest`, `SearchResultsVM` — may start against the fake index once the contracts file is committed), T-202 (`DoctorEntry`, `SentimentBlock`, `OutcomeBlock`, `NotVerified`, `Sheet`), T-203 (`FacilityEntry`, `BrowseCard`), T-011 (design and motion system, FD-091) |
 | Parallel-safe with | T-204, T-207 (T-207 owns the hero search form on Discover; both use `SearchBox` from this task — commit `SearchBox` first and tell T-207's lane) |
+
+## Amendments — patient redesign and motion (FD-091)
+
+This decision is binding and overrides the text below where they differ.
+
+- **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-206 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Goal, Read first, the motion step and the acceptance checks.
 
 ## Goal
 
 Port `renderResults`, `filterFields`, `renderTray`, `openCompare` and the search input behaviour into
 `/{locale}/search`, server-rendered from `search.query`, with the compare tray as client state mirrored
-in the URL, both locales, faithful to 04b.
+in the URL, both locales, faithful to the prototype's content, structure and behaviour on the T-011 look (FD-091).
 
 ## Read first
 
@@ -22,7 +28,7 @@ in the URL, both locales, faithful to 04b.
 2. `docs/implementation/03-routes-and-contracts.md` §1 (`/search` row and its query params), §4 "search"
 3. `docs/implementation/tasks/T-205-search-module.md` step 1 (the VM you render) and step 5 (the three note shapes)
 4. Prototype `app.js`: `filterFields` 351–374, `renderResults` 554–614, `doctorEntry` 615 (pin button), `facilityEntry` 636, `renderTray` 653–667, `openCompare` 2442–2467, handlers 2517–2540 (`data-q`, `data-tab`, `data-pin` with the max-3 sheet, `data-unpin`, `#open-compare`, `#clear-compare`), 2733–2734 (`#clear-filters`, `#keep-exact`), the `change` listener 2760–2768 (`#sort`, `[data-filter]`), the search form in `renderDiscover` 390–399 (`.search`, `.search-shell`, `.search-icon`, `#q`, note `search.banglish`), `titleForView` case `results`
-5. `index.html` lines 108–118 (`#tray` markup) and `styles.css`: `.results-head`, `.query-line`, `.resolved`, `.seg`, `.meta-row`, `.sort`, `.why`, `.results-body`, `.filters`, `.fset`, `.entry-list`, `.empty-state`, `.tray*`, `.compare-grid`, `.compare-col`, `.search*`
+5. `index.html` lines 108–118 (`#tray` markup) and `styles.css` (FD-091: only to see which class names T-011 kept; do not copy its rules): `.results-head`, `.query-line`, `.resolved`, `.seg`, `.meta-row`, `.sort`, `.why`, `.results-body`, `.filters`, `.fset`, `.entry-list`, `.empty-state`, `.tray*`, `.compare-grid`, `.compare-col`, `.search*`
 
 ## Owned paths
 
@@ -50,6 +56,7 @@ in the URL, both locales, faithful to 04b.
 6. **Compare** — `CompareProvider` reads `?compare=a,b,c` (public ids, max 3, unknown ids dropped) and exposes `pinned`, `toggle(id)`, `clear()`; `toggle` beyond 3 opens a `Sheet` titled `compare.title` with `compare.max` (exactly the prototype). URL updates with `router.replace` (no history spam). `DoctorEntry` pin button text `compare.add|remove`. `CompareTray` (`#tray` markup: `.tray > .tray-inner > .tray-label compare.title + .tray-items (.tray-chip name + ✕ button aria-label compare.remove) + .tray-actions (.btn.small #open-compare compare.open, .btn.small.ghost #clear-compare compare.clear)`) rendered only on `/search` and only when pinned ≥ 1; announce `compare.pinned`-style changes via `useAnnounce` (the prototype announces nothing here; keep silent unless T-503 asks). `CompareSheet`: `Sheet` titled `compare.title`; body = `.callout.warn <b>compare.notRanking</b>` + `.compare-grid` of `.compare-col` per pinned doctor (`<h3>name`, `.doc-sub specialty · city`, `NotVerified`, `SentimentBlock`, `OutcomeBlock`, `.breakdown` table of conditions with counts, `.btn.small.ghost.block` link `nav.viewDoctor`), or `compare.empty` when none. The sheet needs doctor data for pinned ids: fetch via a server action `getCompareCards(publicIds)` (owned here, calls `directory.getDoctor` per id — ≤ 3 calls) when the sheet opens.
 7. **Metadata/robots**: indexable when `q` is empty (a "browse" page); `noindex` when `q` is present (search result pages are not for crawlers).
 8. `npx impeccable detect apps/web/src --no-advisory`, `pnpm contrast`, `pnpm check`.
+9. **Motion (FD-091).** Wrap the page in `RouteTransition`. Result lists use `Reveal` (stagger capped at 6 items) and re-run it only on a new query, not on each pin. The compare tray and `CompareSheet` use the T-011 sheet entry. Suggestions open without movement. Pinning a result gives a press state only. The LCP element is never animated in (AC2.4.6).
 
 ## Acceptance checks
 
@@ -64,8 +71,11 @@ in the URL, both locales, faithful to 04b.
 | Empty state | `pnpm vitest run apps/web -t "empty"` | `results.none` + `results.noneBody` |
 | Locales | `pnpm vitest run apps/web -t "bn"` | Bengali counts in tabs and meta row |
 | Impeccable + contrast | `npx impeccable detect apps/web/src --no-advisory && pnpm contrast` | zero findings (the historical `.search-shell` dark-glow warning is already ignored in `.impeccable/config.json`; do not add ignores) |
-| Visual | `/en/search?q=diabetes` vs prototype `#search` with query `diabetes`, 1280/390 px; tray visible with two pins | faithful |
+| Visual (FD-091) | `/en/search?q=diabetes` vs prototype `#search` with query `diabetes`, 1280/390 px; tray visible with two pins | same content, order and states; the look follows T-011 |
 | Full check | `pnpm check` | green |
+| FD-091: motion check | `pnpm check:motion` | passes; this Unit's styles animate only `transform` and `opacity` with T-011 duration and easing tokens |
+| FD-091: reduced-motion journey (AC2.4.3) | walk this Unit's pages with the OS reduced-motion setting, then with `data-motion="reduced"` | no slide, scale, stagger, route movement or scroll reveal; every step still completes; the disclaimer, emergency guidance and demo marker are never animated (AC2.4.4) |
+| FD-091: detector and contrast on the new styles | `npx impeccable detect apps/web/src --no-advisory`; `pnpm contrast` | zero findings |
 
 ## Tests to write
 

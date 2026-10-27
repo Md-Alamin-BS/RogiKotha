@@ -68,3 +68,37 @@ B. Build it: add an audited Admin recovery action and the recovery contacts to T
 X. Other (please specify)
 
 [Answer]: A
+
+## Revision 2026-10-27
+
+The owner asked (2026-10-27) for a fast first release centred on the patient side: login and sharing first, a rich and modern UI with motion, a redesign if needed, the staff side only as release needs, and about 10 fictional records per module. The owner delegated these questions: "do things as you recommended, don't ask unless it is an important business change". Each answer below is the recommended option, recorded under that delegation.
+
+## Question 7
+
+The owner wants the patient side to feel rich and modern, with motion. How is that written into the requirements?
+
+A. A new owner requirement, NFR13 (visual and motion quality), with measurable checks: reduced-motion respected, only `transform` and `opacity` animated, and LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 on a throttled mid-range Android profile; the design direction is FD-091 (recommended: testable, and traced to its origin)
+B. No new requirement; leave the look to the UI Units
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 8
+
+The staff side ships only what release needs (FD-088). How do the requirements show it?
+
+A. FR84 (appeals) becomes Deferred; FR80, FR87 and FR103 become "In, narrowed" naming what waits; FR67's bulk action is noted as deferred (recommended)
+B. Leave the statuses and handle it in the delivery plan only
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 9
+
+About 10 fictional records per module (FD-089). Where is it recorded?
+
+A. As a data constraint beside "synthetic corpus only", with the rule that existing records and storyboard references stay unchanged (recommended)
+B. Only in the CR-012 task file
+X. Other (please specify)
+
+[Answer]: A

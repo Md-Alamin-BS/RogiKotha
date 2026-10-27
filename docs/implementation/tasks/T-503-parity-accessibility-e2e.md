@@ -7,8 +7,20 @@
 | Class → model | M2 → Claude Sonnet 5 (alt GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | `high` |
 | Estimate | 6–8 h agent; validation 2 h |
-| Depends on | CR-004 (the live-region announcements `live-region.spec.ts` asserts), every UI task (T-102, T-202, T-203, T-206, T-207, T-306, T-307, T-308, T-402, T-406, T-407, T-408, T-409), T-501, T-502 (rerun after it merges), T-007 (seed) |
+| Depends on | CR-004 (the live-region announcements `live-region.spec.ts` asserts), T-011 (design and motion system, FD-091), every UI task (T-102, T-202, T-203, T-206, T-207, T-306, T-307, T-308, T-402, T-406, T-407, T-408, T-409), T-501, T-502 (rerun after it merges), T-007 (seed) |
 | Parallel-safe with | T-502 (rerun the suite after T-502 merges), T-504 (T-504 consumes this suite's green run) |
+
+## Amendments — patient redesign and motion (FD-091, NFR13, US2.4)
+
+- **FD-091** — The patient pages now use the T-011 design and motion system, not the 04b styles. Journeys check the redesigned pages. Changes: Depends on (T-011), Not in scope, step 9 and new acceptance rows.
+- **NFR13 gate (overrides "no gate" for three page groups)** — For the `/en` and `/bn` home, search and experience pages, Lighthouse runs on a throttled mid-range Android profile (slow 4G, 4× CPU slowdown) and gates LCP ≤ 2.5 s and CLS ≤ 0.1. INP ≤ 200 ms is measured with a Lighthouse timespan run or a Playwright interaction trace, because a navigation run reports TBT, not INP. Other pages keep the old "record once, no gate" rule (AC2.3.6). This task also runs `pnpm check:motion` (built in T-011) and the reduced-motion journeys, with the OS setting and with the app's own switch.
+
+| Check | Command | Expected |
+|---|---|---|
+| FD-091: NFR13 performance gate (AC2.4.6) | Lighthouse (throttled mid-range Android) on `/en`, `/bn`, `/en/search?q=…`, `/bn/experiences/<id>`; timespan or Playwright trace for INP | LCP ≤ 2.5 s, CLS ≤ 0.1, INP ≤ 200 ms on each; the LCP element is never animated in |
+| FD-091: reduced motion (AC2.4.3) | journeys with `prefers-reduced-motion: reduce`, then with `data-motion="reduced"` | no slide, scale, stagger, route movement or scroll reveal; every step completes |
+| FD-091: animated properties (AC2.4.2) | `pnpm check:motion` | passes |
+| FD-091: never-animated elements (AC2.4.4) | journey asserts on the disclaimer, emergency guidance and demo marker | no animation or transition on them; visible at once |
 
 ## Scope change 2026-09-12 — images only (CR-001 / FD-036)
 

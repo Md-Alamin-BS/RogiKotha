@@ -1,0 +1,1 @@
+pnpm infra:up && pnpm check && pnpm smoke

@@ -37,6 +37,8 @@
 
 <!-- Project-specific specialisation. -->
 
+- The patient side's styles follow the FD-091 redesign (new design and motion tokens, plain CSS, no animation library); the verbatim port of the prototype's CSS now applies only to the staff console, and the prototype stays the source of truth for content, data and behaviour. (learned 2026-10-27) <!-- cid:261011-aidlc-adoption:requirements-analysis:553c248e68ef458ab10e39c7556a426fea6b6faa27aa8f9ddd43238f60ea707a -->
+
 ## Tech Stack
 
 <!-- Technology choices locked for this project. -->

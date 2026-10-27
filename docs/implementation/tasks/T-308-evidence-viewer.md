@@ -7,8 +7,14 @@
 | Class → model | M2 → Claude Sonnet 5 (alt. GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | `high` |
 | Estimate | 3–4 h agent; validation 1.5 h |
-| Depends on | T-305 (`evidence.getPublic`, artifact routes), T-307 (`EvidenceSlot`, `Sheet` usage) |
+| Depends on | T-305 (`evidence.getPublic`, artifact routes), T-307 (`EvidenceSlot`, `Sheet` usage), T-011 (design and motion system, FD-091) |
 | Parallel-safe with | T-309, T-302, T-401 |
+
+## Amendments — patient redesign and motion (FD-091)
+
+This decision is binding and overrides the text below where they differ.
+
+- **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-308 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Read first, step 8, the motion step and the acceptance checks.
 
 ## Scope change 2026-09-12 — images only (CR-001 / FD-036)
 
@@ -33,7 +39,7 @@ the three groups, the "Documents attached — not medically validated" callout a
 1. `docs/implementation/01-conventions.md` §6, §7, §8 (Sheet, `useAnnounce`), §14
 2. `docs/implementation/03-routes-and-contracts.md` §1 (`/api/evidence/artifacts/{artifactId}`), §4 "evidence" `getPublic` → VM shape, §6 `EvidenceGroupVM`, `ViewerDocVM`
 3. `docs/scope-of-work.md` §5 "Public viewer supports zoom, pan, fullscreen, page navigation, rotation, and processed-PDF download."
-4. Prototype, read fully: `app.js` 949–980 (`evidenceSection`), 1965–2034 (`VIEWER_STRINGS`, `VT`, `viewer` state — only the first 16 keys `title … rotateLabel` are product strings; `docHeadA … notePlan` were synthetic page copy and are **not** ported), 2035–2151 (`buildViewerPages`, `viewerPageHtml` — **not ported**; replaced by `<img>` pages), 2152–2183 (`openEvidenceViewer`, `closeEvidenceViewer`), 2184–2216 (`renderViewerBody` — port the chrome exactly), 2217–2272 (`applyViewerTransform`, `viewerZoom`, `viewerFit`, `viewerRotate`, `viewerPage`), 2273–2339 (`bindViewer`, pan handlers, `viewerWheel`), 2340–2397 (`viewerDownload` — replaced by a link), 2412–2432 (`trapFocus`), click handler 2661 (`data-view-evidence`); `styles.css` blocks `.viewer-shell`, `.viewer-meta`, `.viewer-stage`, `.viewer-stage.dragging`, `.viewer-pages`, `.viewer-page-wrap`, `.viewer-page`, `.viewer-controls`, `.vctrl`, `.vsep`, `.vpager`, `.vdownload`, `.spacer`, `.ev-group`, `.ev-item`, `.ev-item.failed`, `.doc-icon`, `.ev-groups`, and every `html[data-lang="bn"] .viewer-*` rule
+4. Prototype, read fully: `app.js` 949–980 (`evidenceSection`), 1965–2034 (`VIEWER_STRINGS`, `VT`, `viewer` state — only the first 16 keys `title … rotateLabel` are product strings; `docHeadA … notePlan` were synthetic page copy and are **not** ported), 2035–2151 (`buildViewerPages`, `viewerPageHtml` — **not ported**; replaced by `<img>` pages), 2152–2183 (`openEvidenceViewer`, `closeEvidenceViewer`), 2184–2216 (`renderViewerBody` — port the chrome exactly), 2217–2272 (`applyViewerTransform`, `viewerZoom`, `viewerFit`, `viewerRotate`, `viewerPage`), 2273–2339 (`bindViewer`, pan handlers, `viewerWheel`), 2340–2397 (`viewerDownload` — replaced by a link), 2412–2432 (`trapFocus`), click handler 2661 (`data-view-evidence`); `styles.css` (FD-091: only to see which class names T-011 kept; do not copy its rules) blocks `.viewer-shell`, `.viewer-meta`, `.viewer-stage`, `.viewer-stage.dragging`, `.viewer-pages`, `.viewer-page-wrap`, `.viewer-page`, `.viewer-controls`, `.vctrl`, `.vsep`, `.vpager`, `.vdownload`, `.spacer`, `.ev-group`, `.ev-item`, `.ev-item.failed`, `.doc-icon`, `.ev-groups`, and every `html[data-lang="bn"] .viewer-*` rule
 5. `docs/planning/09-coverage-matrix.md` row STORY-EVID-002 (what was proven: zoom 100 %/Fit, pan, page prev/next, rotate, download, page-of-N)
 6. Keyboard shortcuts implied by the `title` attributes: `−`/`+` zoom, `R` rotate, `←`/`→` page; add `Esc` close, `F` fullscreen (document in the toolbar titles the same way)
 
@@ -56,9 +62,10 @@ Author-side preview/redaction canvas (T-306), the artifact route handlers (T-305
 5. **Fullscreen**: `stageRef.current.closest('.viewer-shell').requestFullscreen()` when supported; toggle label `viewer.exitFullscreen`; hidden when unsupported (iOS Safari) — the page still works.
 6. **Focus trap**: port `trapFocus` into `useFocusTrap(containerRef, active)`; initial focus on `#viewer-zoom-out`; announce `viewer.pageLabel` on page change and zoom % on zoom via `useAnnounce`.
 7. **Download**: plain anchor to `derivativePdfUrl` (T-305 route sends `Content-Disposition: attachment`); no canvas rendering; no `data:` URLs.
-8. **Reduced motion**: no transitions are added; the transform applies instantly (the prototype had none either); nothing to gate.
+8. **Reduced motion** (FD-091): the viewer's own transform applies instantly, as in the prototype. The sheet entry and the `Reveal` on the evidence groups follow T-011 and are off under reduced motion.
 9. Tests (jsdom; mock `requestFullscreen`; images via `Object.defineProperty(HTMLImageElement.prototype, 'naturalWidth')`): open/close + focus restore; zoom clamps; fit math; rotate cycles; page nav clamps and toggles `hidden`; keys; wheel without ctrl does nothing; pan updates transform; download href equals VM url; group order; empty state; both locales.
 10. `npx impeccable detect apps/web/src/components/patient/evidence --no-advisory`; `pnpm check`; hand-off.
+11. **Motion (FD-091).** The viewer opens in the `Sheet` overlay with the T-011 sheet entry (fade and short rise). Pan, zoom, rotate and page changes follow the pointer or key and stay instant: no easing on `transform` for them. `EvidenceSection` groups use `Reveal` (stagger capped at 6 items). The "not medically validated" callout is never animated (AC2.4.4).
 
 ## Acceptance checks
 
@@ -76,6 +83,9 @@ Author-side preview/redaction canvas (T-306), the artifact route handlers (T-305
 | i18n | `pnpm i18n:check` | all `viewer.*` keys in both files |
 | Detector | `npx impeccable detect …` | 0 findings |
 | Tree | `pnpm check` | green |
+| FD-091: motion check | `pnpm check:motion` | passes; this Unit's styles animate only `transform` and `opacity` with T-011 duration and easing tokens |
+| FD-091: reduced-motion journey (AC2.4.3) | walk this Unit's pages with the OS reduced-motion setting, then with `data-motion="reduced"` | no slide, scale, stagger, route movement or scroll reveal; every step still completes; the disclaimer, emergency guidance and demo marker are never animated (AC2.4.4) |
+| FD-091: detector and contrast on the new styles | `npx impeccable detect apps/web/src --no-advisory`; `pnpm contrast` | zero findings |
 
 ## Tests to write
 

@@ -94,3 +94,15 @@ C. T-405 comes after the publishers and adds the call sites in their commands
 X. Other (please specify)
 
 [Answer]: A (FD-075)
+
+## Revision 2026-10-27 (after the Requirements, Stories and Domain revisions)
+
+## Question 9
+
+How does the FD-091 patient redesign (US2.4) enter the Units?
+
+A. A new Unit U45 (T-011, kind `ui`): the design and motion system, built right after T-010 and before every patient UI Unit, which all depend on it. T-503 gains the NFR13 performance gate and the reduced-motion and motion checks. The Unit list is also reordered into the patient-journey build order; the dependencies are otherwise unchanged (recommended: one place owns the look, so no page ports the old 04b styles first)
+B. No new Unit; each UI Unit restyles its own pages
+X. Other (please specify)
+
+[Answer]: A

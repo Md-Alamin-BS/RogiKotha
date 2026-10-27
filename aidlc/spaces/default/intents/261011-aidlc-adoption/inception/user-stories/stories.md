@@ -15,7 +15,8 @@ Transcribed from the approved backlog (`docs/planning/08-product-backlog.md`, 34
 | US1.1 | STORY-FOUND-001 | Architecture-enforced application foundation | Staff | Must Have | In demo (local composition; the GlitchTip errors and disk-capacity alerts of NFR10 are production-only and not built; storage is the filesystem adapter, not Garage) | NFR9, NFR10, NFR11 |
 | US2.1 | STORY-PROT-001 | Deterministic synthetic demo services | Staff | Must Have | Partial: the synthetic corpus and reset are built; the read-only public composition is deferred (ADR-0010, FD-031) | — |
 | US2.2 | STORY-PROT-002 | Three genuinely different design concepts | Staff | Won't Have (this time) | Superseded: FD-025, FD-027 and FD-029 settled the concept comparison; concept 04b (Quiet Clinic, minimal pass) is the chosen direction | — |
-| US2.3 | STORY-PROT-003 | Responsive and accessible comparison evidence | Public user | Must Have | Partial: accessibility and viewport evidence on concept 04b only | FR95, NFR1, NFR4, NFR5, NFR6, NFR7 |
+| US2.3 | STORY-PROT-003 | Responsive and accessible comparison evidence | Public user | Must Have | Partial: accessibility and viewport evidence on the patient design of FD-091 (and the Chart Tray staff console) only | FR95, NFR1, NFR4, NFR5, NFR6, NFR7 |
+| US2.4 | — (owner, 2026-10-27) | Rich, motion-led patient experience | Public user | Must Have | In demo (FD-091, new) | NFR13, FR95, NFR1 |
 | US3.1 | STORY-AUTH-001 | Adult account registration and confirmation | Public user | Must Have | Partial: registration, Argon2id passwords, 24-hour confirmation with rate-limited resend, contribution gating, progressive sign-in delay and severe-activity notice are in the demo; the optional Super Admin account-cleanup policy (FD-056) and the suspicious-activity CAPTCHA (FD-058) are deferred | FR1, FR2, FR3, FR4, FR5, FR8 |
 | US3.2 | STORY-AUTH-002 | Recovery, sessions and administrative device approval | Public user | Must Have | Partial: self-service email reset with audit (FD-059), 30-day sessions, the session list and Sign out everywhere (FD-057) and staff new-device approval with password recheck are in the demo; recent successful logins, failed-login alerts, manual Admin recovery and recovery phone/secondary email are deferred | FR6, FR7, FR9 |
 | US3.3 | STORY-IDENT-001 | Per-review named, pseudonymous and anonymous identity | Public user | Must Have | In demo | FR10, FR78 |
@@ -31,17 +32,17 @@ Transcribed from the approved backlog (`docs/planning/08-product-backlog.md`, 34
 | US6.4 | STORY-REV-004 | Narrative sentiment and outcome summaries | Public user | Must Have | In demo | FR48, FR49, FR50, FR51, FR52 |
 | US7.1 | STORY-EVID-001 | Quarantine-first upload and processing | Public user | Must Have | In demo (narrowed by FD-036: JPEG and PNG only; PDF, WebP, HEIC, Office, TXT and RTF intake is Phase 2) | FR60, FR61, FR62, FR66, FR68, NFR2 |
 | US7.2 | STORY-EVID-002 | Privacy preview and public processed viewer | Public user | Must Have | In demo (narrowed by FD-036: images only; document page previews, multi-page comparison and PDF download are Phase 2) | FR53, FR54, FR56, FR57, FR59, FR63, FR64, FR65 |
-| US7.3 | STORY-EVID-003 | Custody, retention, holds and removal | Staff | Must Have | In demo | FR67, FR86, FR83, FR65 |
+| US7.3 | STORY-EVID-003 | Custody, retention, holds and removal | Staff | Must Have | In demo, narrowed: the retention bulk action waits until after release 1 (FD-088) | FR67, FR86, FR83, FR65 |
 | US8.1 | STORY-COM-001 | Comments, flat replies, mentions and advice warning | Public user | Must Have | In demo | FR22, FR72, FR73, FR74, FR75 |
 | US8.2 | STORY-COM-002 | Like/dislike engagement | Public user | Must Have | In demo | FR77, FR78 |
 | US9.1 | STORY-MOD-001 | Report intake and five-account temporary hide | Public user | Must Have | In demo | FR75, FR79, FR80, FR81 |
-| US9.2 | STORY-MOD-002 | Moderation queue and bounded actions | Staff | Must Have | In demo | FR82, FR83, FR73 |
-| US9.3 | STORY-MOD-003 | Appeals, blocking and enforcement lifecycle | Staff | Must Have | In demo | FR12, FR84, FR85 |
-| US10.1 | STORY-NOTIF-001 | In-app and essential email notifications | Public user | Must Have | In demo | FR87, FR88 |
+| US9.2 | STORY-MOD-002 | Moderation queue and bounded actions | Staff | Must Have | In demo, narrowed: no appeals lane and no bulk actions until after release 1 (FD-088) | FR82, FR83, FR73 |
+| US9.3 | STORY-MOD-003 | Appeals, blocking and enforcement lifecycle | Staff | Must Have | Partial: blocking and enforcement are in the demo; appeals wait until after release 1, and enforcement notices name no appeal route until then (FD-088) | FR12, FR84, FR85 |
+| US10.1 | STORY-NOTIF-001 | In-app and essential email notifications | Public user | Must Have | In demo, narrowed: no appeal notices until appeals exist (FD-088) | FR87, FR88 |
 | US10.2 | STORY-USER-001 | Public profile and activity privacy | Public user | Must Have | In demo | FR10, FR11 |
 | US10.3 | STORY-USER-002 | Dashboard, preferences, feedback and data requests | Public user | Must Have | In demo | FR13, FR14, FR89, FR90 |
 | US11.1 | STORY-ADMIN-001 | Versioned runtime configuration and capabilities | Staff | Must Have | In demo | FR38, FR100, FR101, FR102, FR45, FR47, FR75 |
-| US11.2 | STORY-ADMIN-002 | Operational dashboards and logged bulk actions | Staff | Must Have | In demo | FR103 |
+| US11.2 | STORY-ADMIN-002 | Operational dashboards and logged bulk actions | Staff | Must Have | Partial: the dashboards are in the demo except the staff-notification triage view; previewed bulk actions wait until after release 1 (FD-088) | FR103 |
 | US12.1 | STORY-PLAT-001 | Equal-language onboarding and accessible policy boundaries | Public user | Must Have | In demo (FR76 is retired by FD-046: the static /emergency page replaces the comment banner; FR-ONB-001 in the backlog block is deferred by FD-048 and not covered) | FR76, FR91, FR92, FR95, NFR6, NFR7 |
 | US12.2 | STORY-PLAT-002 | Safe progressive web app | Public user | Must Have | In demo | FR93, FR94 |
 | US12.3 | STORY-OPS-001 | Deployment, observability, backup and recovery | Staff | Should Have | Local subset: health probes and scrubbed logs; production deployment, backups and restore drills are out of scope (master plan §9) | NFR1, NFR3, NFR10, NFR12 |
@@ -101,7 +102,7 @@ As a super admin choosing the production visual system, I want the design-concep
 
 **Acceptance criteria**
 
-- **AC2.2.1** (happy; FD-027, Constraints (FD-032)) — **Given** the demo web app, **when** any public or user page renders, **then** it uses the concept 04b styles, ported as plain CSS with the prototype's class names, and no other concept's route system exists in the app.
+- **AC2.2.1** (retired, FD-091) — superseded on 2026-10-27: the patient side now follows the FD-091 redesign (US2.4), and the staff console keeps Chart Tray. Kept as a key only; its successor is AC2.4.1.
 - **AC2.2.2** (happy; FD-029) — **Given** the live prototype gallery, **when** it is opened, **then** it shows only concept 04b and the staff console.
 - **AC2.2.3** (edge; FD-029) — **Given** an earlier concept (01, 02, 03, 04, 04c, 04d or 05), **when** it is looked for, **then** it is missing from the live gallery but can still be opened from `ui-design-prototype/.archive/`.
 
@@ -111,10 +112,10 @@ As a visitor or patient using a phone or assistive technology, in Bengali or Eng
 
 - **Persona:** Public user
 - **Priority:** Must Have
-- **Demo status:** Partial: accessibility and viewport evidence on concept 04b only
+- **Demo status:** Partial: accessibility and viewport evidence on the patient design of FD-091 (and the Chart Tray staff console) only
 - **Requirements:** FR95, NFR1, NFR4, NFR5, NFR6, NFR7
 - **Depends on:** US1.1, US2.1, US3.1, US5.1, US6.1, US7.2
-- **INVEST:** Depends on the 04b UI, not on the superseded A/B/C concepts of US2.2. Testable through the T-503 Playwright/axe matrix. Large (L); it splits by viewport set and by assistive-technology checks. Formal WCAG certification is out of scope. It verifies the critical journeys, so it runs after the stories that build them.
+- **INVEST:** Depends on the shipped UI (the FD-091 patient design), not on the superseded A/B/C concepts of US2.2. Where AC2.3.1 says "concept 04b", read the shipped patient design (FD-091). Testable through the T-503 Playwright/axe matrix. Large (L); it splits by viewport set and by assistive-technology checks. Formal WCAG certification is out of scope. It verifies the critical journeys, so it runs after the stories that build them.
 
 **Acceptance criteria**
 
@@ -123,7 +124,27 @@ As a visitor or patient using a phone or assistive technology, in Bengali or Eng
 - **AC2.3.3** (happy; FR95, NFR6) — **Given** each critical journey, **when** it runs keyboard-only and under axe, **then** every control can be reached and used with visible focus, headings, landmarks and labels are present, and axe reports no serious or critical violations.
 - **AC2.3.4** (error; FR95, NFR6, NFR7) — **Given** a form in a critical journey, **when** it is submitted with an invalid or missing field, **then** a meaningful error in the active language is programmatically linked to the field and announced to screen readers.
 - **AC2.3.5** (happy; NFR5) — **Given** the Playwright Chromium, Firefox and WebKit projects, **when** the journeys run, **then** they pass on all three, and a manual smoke on real Safari/iOS is recorded.
-- **AC2.3.6** (edge; NFR1) — **Given** the important public pages, **when** Build and Test runs, **then** their Lighthouse figures are recorded once against the ~3 s reference with no pass/fail gate, and every known issue becomes an `ISS-` row.
+- **AC2.3.6** (edge; NFR1) — **Given** the important public pages, **when** Build and Test runs, **then** their Lighthouse figures are recorded once against the ~3 s reference with no pass/fail gate, and every known issue becomes an `ISS-` row. (The gated figures for the home, search and experience pages belong to AC2.4.6, NFR13.)
+
+### US2.4 — Rich, motion-led patient experience (new, owner 2026-10-27)
+
+As a patient or visitor, in Bengali or English, on an ordinary phone, I want the app to look warm, modern and alive, with motion that shows me where I am and what just happened, so that sharing and reading experiences feels easy and trustworthy rather than like filling in a form.
+
+- **Persona:** Public user
+- **Priority:** Must Have
+- **Demo status:** In demo (FD-091, new)
+- **Requirements:** NFR13, FR95, NFR1
+- **Depends on:** US1.1, US2.1
+- **INVEST:** New story; origin: the owner's request of 2026-10-27 (FD-091). Independent of any one feature: it defines the design and motion system every patient page uses, so it is built before the patient UI and verified on each page that ships. Patient side means every page under `apps/web/src/app/[locale]/(patient)/` plus the auth screens; the staff console is out of this story (Chart Tray, FD-030). The look itself ("rich", "modern") is judged by the owner at each milestone walk, not by a metric; everything else below is testable.
+
+**Acceptance criteria**
+
+- **AC2.4.1** (happy; NFR13, FD-091) — **Given** any patient page, **when** it renders in `en` or `bn`, **then** it uses the FD-091 design tokens (warm paper base, card surfaces with soft elevation, one primary and a decoration-only accent, `:lang(bn)` type sizes and line-heights, 44 px touch targets), all as plain CSS with no Tailwind, CSS-in-JS or animation library (FD-032).
+- **AC2.4.2** (happy; NFR13) — **Given** a person moving between patient pages, opening a list, stepping through the composer or publishing an experience, **when** the change happens, **then** a short motion shows it (route transition, staggered card reveal capped at 6 items, step slide, a single publish tick with a plain text confirmation), using only the shared duration and easing tokens (100–360 ms) and animating only `transform` and `opacity`.
+- **AC2.4.3** (edge; NFR13, NFR6, FR95) — **Given** the operating system's reduced-motion setting or the app's own reduce-motion switch, **when** any patient page or flow runs, **then** slides, scaling, staggers, route movement and scroll reveals are off, only short fades of 100 ms or less and focus and press states remain, and every step can still be completed.
+- **AC2.4.4** (error; NFR13, project.md Mandated (disclaimer and emergency guidance)) — **Given** the medical-advice disclaimer and the emergency guidance, **when** any motion runs, **then** they are never animated in or out, never covered by a moving element, and stay readable at once; nothing loops or auto-plays for more than 5 seconds, and there is no parallax, zoom sweep or flashing.
+- **AC2.4.5** (edge; NFR13, project.md Forbidden (no score)) — **Given** a person publishing or reacting, **when** the confirmation shows, **then** there is no confetti, streak, badge, points or countdown, and no motion nudges anyone toward sharing.
+- **AC2.4.6** (edge; NFR13, NFR1) — **Given** the `/en` and `/bn` home, search and experience pages on a throttled mid-range Android profile (slow 4G, 4× CPU slowdown), **when** Build and Test runs Lighthouse, **then** LCP is 2.5 s or less, INP 200 ms or less and CLS 0.1 or less, the LCP element is never animated in, and a CSS check confirms that animated properties are only `transform` and `opacity`.
 
 ## Epic 3 — Access and identity (EPIC-AUTH-001)
 
@@ -442,8 +463,8 @@ As a super admin or authorized staff member responsible for evidence custody, I 
 
 - **AC7.3.1** (happy; FR67, FD-004) — **Given** an original upload with the default 90-day retention and no legal hold, **when** its retention deadline passes and the retention job runs, **then** the encrypted original is permanently deleted, the deletion is logged, and the public processed copy stays under review retention.
 - **AC7.3.2** (edge; FR67, FD-005, FD-020) — **Given** a super admin who changes the original-retention default, **when** the change is saved, **then** the old value, new value, actor and result are logged, the new default applies only to records created afterwards, and existing records keep their deadlines.
-- **AC7.3.3** (happy; FR67, FD-020, FD-051) — **Given** existing records whose retention should change, **when** a super admin runs the bulk retention action, **then** they first see a preview of the exact affected records, the change applies only after confirmation, and it is logged as a separate bulk action.
-- **AC7.3.4** (error; FR67, FD-051, Constraints (server-side authorization)) — **Given** an admin or moderator who is not super admin, **when** they attempt a bulk retention action, **then** the server refuses it and no deadline changes.
+- **AC7.3.3** (deferred, FD-088; happy; FR67, FD-020, FD-051) — **Given** existing records whose retention should change, **when** a super admin runs the bulk retention action, **then** they first see a preview of the exact affected records, the change applies only after confirmation, and it is logged as a separate bulk action.
+- **AC7.3.4** (deferred, FD-088; error; FR67, FD-051, Constraints (server-side authorization)) — **Given** an admin or moderator who is not super admin, **when** they attempt a bulk retention action, **then** the server refuses it and no deadline changes.
 - **AC7.3.5** (edge; FR86, FD-021) — **Given** a record placed under an individual legal hold, **when** its scheduled deletion date passes, **then** the content is hidden publicly, its encrypted data, evidence and audit records are kept, deletion is paused for that record only, and actor, reason, creation time and expiry are logged.
 - **AC7.3.6** (edge; FR86, FR67, FD-021) — **Given** a record whose legal hold is released or has expired, **when** the retention job next runs, **then** the release is logged and the ordinary deletion schedule applies again to that record, while other records are unaffected.
 - **AC7.3.7** (happy; project.md Mandated (original evidence is a separate, audited permission), Constraints (PRD §9.2)) — **Given** a staff member who holds the original-evidence permission, **when** they open an original upload and state a purpose, **then** the original is shown only to them, and a custody event recording actor, time, item and purpose is written.
@@ -527,7 +548,7 @@ As a moderator or Admin working the moderation queue, I want a prioritized queue
 
 **Acceptance criteria**
 
-- **AC9.2.1** (happy; FR82) — **Given** open critical and standard reports and pending appeals in the queue, **when** a moderator opens the queue, **then** critical items show a 24-hour review target, standard items three business days and appeals seven business days, ordered by priority, with priority and status conveyed by text and not by color alone.
+- **AC9.2.1** (happy; FR82) — **Given** open critical and standard reports and pending appeals in the queue, **when** a moderator opens the queue, **then** critical items show a 24-hour review target, standard items three business days and appeals seven business days, ordered by priority, with priority and status conveyed by text and not by color alone. (FD-088: in release 1 there is no appeals lane, so only the critical and standard targets are checked; the appeals part waits until after release 1.)
 - **AC9.2.2** (happy; FR83) — **Given** a reported review containing a private identifier, **when** an Admin redacts the identifier with a reason, **then** only the identifier is replaced in the public view, the action, reason and public effect are recorded in the audit log, and the rest of the narrative is unchanged.
 - **AC9.2.3** (happy; FR83) — **Given** a reported item, **when** an Admin removes an unsafe file, adds a warning, hides it or restores it, **then** each action requires a reason, is recorded with actor, reason and public effect, and the public projection reflects it.
 - **AC9.2.4** (error; FR83) — **Given** an Admin who wants to change the substantive medical story of a review, **when** they look for or attempt an edit of the narrative through moderation, **then** no moderation command changes the narrative text; the only option is to ask the author to revise, and the attempt leaves the narrative unchanged.
@@ -547,9 +568,9 @@ As a founder (Super Admin) deciding appeals and applying enforcement, serving us
 
 **Acceptance criteria**
 
-- **AC9.3.1** (happy; FR84) — **Given** an affected user with an eligible appeal containing appeal text and new evidence, **when** the founder reconsiders it, **then** a fresh checklist is completed, a new written reason is recorded, the resulting visibility or enforcement transition is applied and logged, and the appellant is told the outcome.
-- **AC9.3.2** (error; FR84, FR80) — **Given** an appellant viewing their appeal and its outcome, **when** any appeal screen or notice is shown, **then** the reporter's identity is never shown.
-- **AC9.3.3** (happy; FR85) — **Given** Super Admin has configured the available enforcement actions and durations, **when** staff apply a content warning, temporary restriction, feature restriction, temporary suspension or permanent ban, **then** only configured actions and durations are offered, the action takes effect, and an audit record with actor and reason is written.
+- **AC9.3.1** (deferred, FD-088; happy; FR84) — **Given** an affected user with an eligible appeal containing appeal text and new evidence, **when** the founder reconsiders it, **then** a fresh checklist is completed, a new written reason is recorded, the resulting visibility or enforcement transition is applied and logged, and the appellant is told the outcome.
+- **AC9.3.2** (deferred, FD-088; error; FR84, FR80) — **Given** an appellant viewing their appeal and its outcome, **when** any appeal screen or notice is shown, **then** the reporter's identity is never shown.
+- **AC9.3.3** (happy; FR85) — **Given** Super Admin has configured the available enforcement actions and durations, **when** staff apply a content warning, temporary restriction, feature restriction, temporary suspension or permanent ban, **then** only configured actions and durations are offered, the action takes effect, and an audit record with actor and reason is written. (FD-088: until appeals exist, the affected user's notice names the action and policy reason but no appeal route.)
 - **AC9.3.4** (error; FR85) — **Given** an enforcement action not enabled in configuration, or a duration outside the configured set, **when** staff try to apply it, **then** the server refuses it and no state changes.
 - **AC9.3.5** (edge; FR12) — **Given** user A blocks user B, **when** B tries to reply to, mention or view A's nonessential activity, and others view the shared discussion, **then** B's direct interaction and mention are refused, A's nonessential activity is hidden from B (and B's from A), and public content in the discussion stays available to everyone else.
 
@@ -568,7 +589,7 @@ As a signed-in user who has written reviews, comments or reports, I want to rece
 
 **Acceptance criteria**
 
-- **AC10.1.1** (happy; FR87 (FR-NOT-001)) — **Given** a signed-in user, **when** one of their review publications or failures, evidence processing steps, comments, replies, mentions, reactions, report decisions or appeals, provider profile approvals or claims, account security events or deletion notices occurs, **then** an item for it appears in their in-app notification centre and can be marked read.
+- **AC10.1.1** (happy; FR87 (FR-NOT-001)) — **Given** a signed-in user, **when** one of their review publications or failures, evidence processing steps, comments, replies, mentions, reactions, report decisions or appeals, provider profile approvals or claims, account security events or deletion notices occurs, **then** an item for it appears in their in-app notification centre and can be marked read. (FD-088: appeal notices wait until appeals exist; FD-086: a reporter gets no notices about their report.)
 - **AC10.1.2** (error; FR87 (FR-NOT-001)) — **Given** a notification job that is delivered more than once after a retry, **when** the user opens the notification centre, **then** exactly one item for that event is shown.
 - **AC10.1.3** (edge; FR87 (FR-NOT-001)) — **Given** notification items older than 90 days, **when** the user opens the notification centre, **then** those items are no longer kept or shown, and items 90 days old or newer still are.
 - **AC10.1.4** (happy; FR88 (FR-NOT-002), FD-047) — **Given** an essential event (verification, security, recovery, legal or policy, scheduled deletion), **when** its email is sent, **then** the email and its job payload carry identifiers and minimal copy only, with no review narrative, medical content or document data.
@@ -648,10 +669,10 @@ As an admin or moderator with the matching capability (super admin for retention
 
 **Acceptance criteria**
 
-- **AC11.2.1** (happy; FR103) — **Given** an authorized staff member, **when** they open the admin dashboard, **then** they can reach moderation queues, evidence failures, provider profiles, taxonomy, users, claims, permissions, notifications, content eligibility, audit/content history, retention and health checks permitted to their role.
+- **AC11.2.1** (happy; FR103) — **Given** an authorized staff member, **when** they open the admin dashboard, **then** they can reach moderation queues, evidence failures, provider profiles, taxonomy, users, claims, permissions, notifications, content eligibility, audit/content history, retention and health checks permitted to their role. (FD-088: in release 1 the notifications entry, the staff-notification triage view, is not built.)
 - **AC11.2.2** (error; FR103, Constraints (server-side authorization), project.md Forbidden (reporter identity)) — **Given** a staff member whose role lacks a capability, **when** they open or request that dashboard section or field, **then** the server refuses it and the unauthorized fields never render; reporter identity reads "restricted", never blank.
-- **AC11.2.3** (happy; FR103, backlog In scope (previewed bulk commands), FD-020) — **Given** an authorized bulk action, **when** the staff member reviews the preview and confirms, **then** the action runs on the previewed set, or shows an explicit drift warning if the set changed, and records each item's result.
-- **AC11.2.4** (edge; FR103, backlog In scope (idempotent bulk commands)) — **Given** a bulk action that partly failed, **when** it is retried, **then** items already done are not applied twice and only the remaining items are processed and logged.
+- **AC11.2.3** (deferred, FD-088; happy; FR103, backlog In scope (previewed bulk commands), FD-020) — **Given** an authorized bulk action, **when** the staff member reviews the preview and confirms, **then** the action runs on the previewed set, or shows an explicit drift warning if the set changed, and records each item's result.
+- **AC11.2.4** (deferred, FD-088; edge; FR103, backlog In scope (idempotent bulk commands)) — **Given** a bulk action that partly failed, **when** it is retried, **then** items already done are not applied twice and only the remaining items are processed and logged.
 - **AC11.2.5** (edge; FR103, NFR3, project.md hard rules (missing value never 0)) — **Given** the dashboard's health view, **when** a database, queue, mail or scanner probe fails, **then** the failing probe is shown as unhealthy rather than hidden or shown as zero.
 
 ## Epic 12 — Recoverable public service (EPIC-OPS-001)

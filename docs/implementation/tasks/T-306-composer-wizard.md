@@ -7,8 +7,14 @@
 | Class → model | M2 → Claude Sonnet 5 (alt. GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | `high` |
 | Estimate | 6–8 h agent; validation 2 h |
-| Depends on | T-301 (drafts, publish, preview), T-303 (upload route, `getForAuthor`, `remove`), T-102 (gates), T-204 (AddDoctorPanel + `directory.submitProfile`), T-201 (doctor list, taxonomy resolve) |
+| Depends on | T-301 (drafts, publish, preview), T-303 (upload route, `getForAuthor`, `remove`), T-102 (gates), T-204 (AddDoctorPanel + `directory.submitProfile`), T-201 (doctor list, taxonomy resolve), T-011 (design and motion system, FD-091) |
 | Parallel-safe with | T-302, T-304, T-305 (use fakes/`TODO` for `applyRedaction`/`confirmPrivacy` until merged; the canvas posts to the server action names fixed in `03` §4), T-307 |
+
+## Amendments — patient redesign and motion (FD-091)
+
+This decision is binding and overrides the text below where they differ.
+
+- **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `PublishTick`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-306 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Goal, the motion step and the acceptance checks.
 
 ## Scope change 2026-09-12 — images only (CR-001 / FD-036)
 
@@ -23,8 +29,8 @@ Port `renderCompose` + `renderPreview` + `buildRedactDoc` + `safetyChecks` + `ev
 `Composer` client component tree at `/{locale}/write`, wired to real commands: server-side encrypted
 drafts with debounced autosave, real uploads with live pipeline states by polling, a redaction canvas
 that draws on the real preview PNG, per-item privacy confirmation, preview that is the exact public
-projection, and publish. The visual result must match the prototype pixel-for-pixel in both locales
-and themes.
+projection, and publish. (FD-091) The content, fields, steps, states and hard-rule wording must match the prototype in both locales
+and themes; the look follows T-011, not the 04b styles.
 
 ## Read first
 
@@ -60,12 +66,13 @@ The public experience page (T-307), the viewer (T-308), provider submission comm
 10. **Announcements**: mode change, tag add/remove, file state changes (`ev.state.*`), draft saved, published — through `useAnnounce`.
 11. **Tests** (Testing Library, both locales): mode switch changes fields; tags incl. free text → provisional chip; safety checks appear/ignore; upload flow with mocked fetch → chips progress through states via mocked `getForAuthor` responses; redaction rectangle → `applyRedaction` called with pixel coords; publish disabled until confirmations; publish error focuses field; signed-out renders gate only; unverified disables publish.
 12. `npx impeccable detect apps/web/src/components/patient/composer --no-advisory` clean; `pnpm check`; hand-off.
+13. **Motion (FD-091).** The wizard steps slide in the reading direction with the T-011 step motion. Focus moves to the new step heading after each change. On a successful publish, `PublishTick` draws one tick next to the plain text `compose.publishedNote`; no confetti, streak, badge, points or countdown, and nothing nudges toward sharing (AC2.4.5). Autosave status changes without movement. The safety and emergency checks, the disclaimer and the demo marker are never animated (AC2.4.4). With reduced motion the steps swap with a fade of 100 ms or less and the tick shows as a static mark.
 
 ## Acceptance checks
 
 | Check | Command | Expected |
 |---|---|---|
-| Visual parity | manual: `/en/write` and `/bn/write` vs prototype `#write`, light + dark, 360 px + 1280 px | same blocks in the same order; no new colours/fonts |
+| Visual parity (FD-091) | manual: `/en/write` and `/bn/write` vs prototype `#write`, light + dark, 360 px + 1280 px | same blocks in the same order with the same copy and states; colours and fonts come only from T-011 tokens |
 | Gate | component test | signed-out → only the callout with two buttons; no form controls |
 | Autosave | component test with fake timers | edit → after 1.5 s `saveDraft` called once; `#saved-flag` gets `.on` |
 | Upload + polling | component test | after upload, `getForAuthor` polled every 2 s until terminal; chip text follows `ev.state.*`; failed chip shows `ev.fail.encrypted` + `ev.failNote` |
@@ -76,6 +83,10 @@ The public experience page (T-307), the viewer (T-308), provider submission comm
 | i18n | `pnpm i18n:check` | zero missing keys in either locale; `errors.review.periodInvalid` added in both |
 | Detector | `npx impeccable detect …` | 0 findings |
 | Tree | `pnpm check` | green |
+| FD-091: motion check | `pnpm check:motion` | passes; this Unit's styles animate only `transform` and `opacity` with T-011 duration and easing tokens |
+| FD-091: reduced-motion journey (AC2.4.3) | walk this Unit's pages with the OS reduced-motion setting, then with `data-motion="reduced"` | no slide, scale, stagger, route movement or scroll reveal; every step still completes; the disclaimer, emergency guidance and demo marker are never animated (AC2.4.4) |
+| FD-091: detector and contrast on the new styles | `npx impeccable detect apps/web/src --no-advisory`; `pnpm contrast` | zero findings |
+| FD-091: step motion and publish tick | component test and the reduced-motion journey | a step change runs the T-011 slide; publish shows one `PublishTick` and plain confirmation text; no gamification (`rg -i "confetti\|streak\|badge-earn\|points" apps/web/src` has no match) |
 
 ## Tests to write
 

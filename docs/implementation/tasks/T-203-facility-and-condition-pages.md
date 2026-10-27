@@ -7,8 +7,14 @@
 | Class → model | M2 → Claude Sonnet 5 (alternate GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | `high` |
 | Estimate | 4–5 h agent; validation 1–1.5 h |
-| Depends on | T-201, T-008, **T-202** (shared primitives `Byline`, `DistBlock`, `OutcomeBlock`, `AccountRow`, `Avatar`, `MiniList`, `IndexHead`, `Badge`) |
+| Depends on | T-201, T-008, **T-202** (shared primitives `Byline`, `DistBlock`, `OutcomeBlock`, `AccountRow`, `Avatar`, `MiniList`, `IndexHead`, `Badge`), T-011 (design and motion system, FD-091) |
 | Parallel-safe with | T-204, T-205, T-207 (T-207 must not touch `components/patient/shared`) |
+
+## Amendments — patient redesign and motion (FD-091)
+
+This decision is binding and overrides the text below where they differ.
+
+- **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-203 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Read first, the motion step and the acceptance checks.
 
 ## Goal
 
@@ -23,7 +29,7 @@ reading `FacilityCardVM`, `FacilityProfileVM`, `TopicIndexVM`, `ConditionPageVM`
 3. `docs/implementation/tasks/T-202-doctor-index-and-profile.md` step 1 (the primitives you import — do not re-implement)
 4. Prototype `app.js`: `facilityEntry` 636–652, `renderFacility` 1227–1330, `renderCondition` 1076–1226 (including the two comments about places and specialties — port them), `renderFacilityIndex` 1765, `renderTopicIndex` 1779–1797 (port its comment), `titleForView` cases `facilities`, `facility`, `topics`, `condition`
 5. `rogikotha-data.js`: `criteriaDist` 1573 (comment: "no path from this function to a doctor's summaries"), `branchesOf` 1595, `tagFrequency` 1647 (comment), `CRITERIA`, `CRIT_VALUES`
-6. `styles.css`: `.crit-grid`, `.crit`, `.places-panel`, `.places`, `.pl-*`, `.specs-tag`, `.spec-pill`, `.freq-list`, `.index-grid`, `.browse-card`
+6. `styles.css` (FD-091: only to see which class names T-011 kept; do not copy its rules): `.crit-grid`, `.crit`, `.places-panel`, `.places`, `.pl-*`, `.specs-tag`, `.spec-pill`, `.freq-list`, `.index-grid`, `.browse-card`
 
 ## Owned paths
 
@@ -58,6 +64,7 @@ reading `FacilityCardVM`, `FacilityProfileVM`, `TopicIndexVM`, `ConditionPageVM`
    4. `aside.p-side`: doctors panel (`condition.doctors`, MiniList rows with `{name}`, sub `{specialty} · {count} sentiment.accounts`, `.mini-loc` `(primaryChamber · )area · city`, note `sort.whyBody`); facilities panel (`condition.facilities`) when non-empty; the small emergency panel (`.panel` with danger border, `<h2>emergency.title`, `.note emergency.body`) — reuse `EmergencyPanel` with a `compact` prop added in `components/patient/shared/EmergencyPanel.tsx` (`/* added: T-203 */` if a class is needed).
 7. Metadata titles: facility name / condition name / `nav.facilities` / `nav.condition`; all indexable.
 8. `npx impeccable detect apps/web/src --no-advisory`, `pnpm contrast`, `pnpm check`.
+9. **Motion (FD-091).** Wrap the four pages in `RouteTransition`. `FacilityEntry` lists, `BrowseCard` grids and the frequency panels use `Reveal` (stagger capped at 6 items). The `--w` bars show final values at once. The small emergency panel and the facility-separation callout are never animated (AC2.4.4).
 
 ## Acceptance checks
 
@@ -71,8 +78,11 @@ reading `FacilityCardVM`, `FacilityProfileVM`, `TopicIndexVM`, `ConditionPageVM`
 | Freq bars relative to max | `pnpm vitest run apps/web -t "FreqList"` | first row `--w:1`; panel absent when list empty |
 | Locales | `pnpm vitest run apps/web -t "bn"` | all four pages render in `bn` with Bengali digits and no English fallback text |
 | Impeccable + contrast | `npx impeccable detect apps/web/src --no-advisory && pnpm contrast` | zero findings |
-| Visual | compare `/en/facilities/{f1}`, `/en/topics/{c1}` with prototype `#facilities/f1`, `#topics/c1` at 1280/390 px | faithful |
+| Visual (FD-091) | compare `/en/facilities/{f1}`, `/en/topics/{c1}` with prototype `#facilities/f1`, `#topics/c1` at 1280/390 px | same content, order and states; the look follows T-011 |
 | Full check | `pnpm check` | green |
+| FD-091: motion check | `pnpm check:motion` | passes; this Unit's styles animate only `transform` and `opacity` with T-011 duration and easing tokens |
+| FD-091: reduced-motion journey (AC2.4.3) | walk this Unit's pages with the OS reduced-motion setting, then with `data-motion="reduced"` | no slide, scale, stagger, route movement or scroll reveal; every step still completes; the disclaimer, emergency guidance and demo marker are never animated (AC2.4.4) |
+| FD-091: detector and contrast on the new styles | `npx impeccable detect apps/web/src --no-advisory`; `pnpm contrast` | zero findings |
 
 ## Tests to write
 

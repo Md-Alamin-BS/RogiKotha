@@ -7,13 +7,19 @@
 | Class → model | M2 → Claude Sonnet 5 (alternate GPT-5.6 Terra); validator: GPT-5.6 Terra |
 | Effort setting | `high` |
 | Estimate | 4–5 h agent; validation 1–1.5 h |
-| Depends on | T-201 (VMs + queries), T-008 (shell, ported CSS, `useAnnounce`, `Sheet`) |
+| Depends on | T-201 (VMs + queries), T-008 (shell, `useAnnounce`, `Sheet`), T-011 (tokens, classes, motion; FD-091), T-011 (design and motion system, FD-091) |
 | Parallel-safe with | T-203 after this task's shared components land (T-203 imports them) — sequence T-202 first; T-204, T-205 (lane A) |
+
+## Amendments — patient redesign and motion (FD-091)
+
+This decision is binding and overrides the text below where they differ.
+
+- **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-202 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Goal, Read first, Not in scope, the motion step and the acceptance checks.
 
 ## Goal
 
 Port `renderDoctorIndex` and `renderProfile` (and the helpers they use) into React pages under
-`/{locale}/doctors` and `/{locale}/doctors/{publicId}`, pixel-faithful to 04b, in both locales, reading
+`/{locale}/doctors` and `/{locale}/doctors/{publicId}`, faithful to the prototype's content, data, structure and behaviour, on the T-011 look (FD-091), in both locales, reading
 `DoctorCardVM` / `DoctorProfileVM` from T-201. This task also creates the **shared patient
 primitives** every later patient page reuses (`Byline`, `AccountRow`, `DistBlock`, `SentimentBlock`,
 `OutcomeBlock`, `Badge`, `NotVerified`, `EmergencyPanel`, `Avatar`, `MiniList`, `IndexHead`).
@@ -25,7 +31,7 @@ primitives** every later patient page reuses (`Byline`, `AccountRow`, `DistBlock
 3. `docs/implementation/02-data-model.md` §17 (publication states → 404)
 4. Prototype `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/app.js`, read **fully**: `badge` 271, `notVerified` 273, `docCount` 277, `distBlock` 286–316, `sentimentBlock` 317, `outcomeBlock` 321–337, `emergencyPanel` 338–350, `initials` 479, `byline` 485–515 (and the two comment blocks above it — port the comments), `doctorLink` 516, `facilityLink` 521, `accountRow` 527–553, `doctorEntry` 615–635, `profileAccounts` 669–678, `renderProfile` 679–803, `indexHead` 1745, `renderDoctorIndex` 1754–1763; handlers at 2519 (`data-doctor`), 2542–2553 (`data-pcond`, `data-pfilter`, `#claim`); `titleForView` 226 (`profile`, `doctors` cases)
 5. `ui-design-prototype/shared/rogikotha-data.js` `avatar` 1451–1477 (port the SVG generation exactly)
-6. `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/styles.css` — search for `.p-hero`, `.p-grid`, `.p-side`, `.facts`, `.prov`, `.pillrow`, `.breakdown`, `.doc-entry`, `.dist`, `.capsules`, `.cap`, `.outcome-row`, `.acct`, `.byline`, `.index-head`, `.index-list`, `.count-line` to confirm the class names you must keep
+6. `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/styles.css` — search for `.p-hero`, `.p-grid`, `.p-side`, `.facts`, `.prov`, `.pillrow`, `.breakdown`, `.doc-entry`, `.dist`, `.capsules`, `.cap`, `.outcome-row`, `.acct`, `.byline`, `.index-head`, `.index-list`, `.count-line` (FD-091) only to see which class names T-011 kept; do not copy its rules, and use the T-011 class names where they differ
 
 ## Owned paths
 
@@ -42,7 +48,7 @@ primitives** every later patient page reuses (`Byline`, `AccountRow`, `DistBlock
 - Facility, condition, topic pages → T-203. Search results and compare → T-206. Discover → T-207.
 - The claim **command** and its server action → T-204. This task ships `ClaimSheet` with the copy and form fields and calls `claimProfileAction` if it exists; if T-204 has not merged, render the sheet with `// TODO(T-204)` and a disabled submit.
 - The "Write about this doctor" button targets `/write?doctor={publicId}`; the composer is T-306.
-- Any change to the ported CSS beyond `/* added: T-202 … */` lines.
+- (FD-091) Any change to `tokens.css`, `motion.css` or the T-011 shell styles; this Unit adds only `/* added: T-202 reason */` rules in its own section of `patient.css`.
 
 ## Steps
 
@@ -71,6 +77,7 @@ primitives** every later patient page reuses (`Byline`, `AccountRow`, `DistBlock
 6. **Metadata & a11y**: `generateMetadata` title = doctor name (both locales); `robots: index` (the prototype's `setNoindex(true)` on the profile is a prototype-era guard — public doctor profiles **are** indexable; note this in hand-off). `useAnnounce` "View: profile" equivalent on navigation is handled by the layout; nothing extra here.
 7. **`ClaimSheet`** — `Sheet` titled `profile.claimThis`, body `profile.claimNote`, then (signed-in only) a form: method (`text`), evidence note (`textarea`, private) → `claimProfileAction` (T-204). Signed-out: the auth gate copy `auth.gate.title/body` with the two buttons (T-102 owns the gate component `AuthGate`; import it if present, else inline the two links with `// TODO(T-102)`).
 8. Run `npx impeccable detect apps/web/src --no-advisory`, `pnpm contrast`, `pnpm check`.
+9. **Motion (FD-091).** Wrap both pages in `RouteTransition`. The doctor index list and the profile's account list use `Reveal` (stagger capped at 6 items). The distribution bars and capsules show their final values at once: no count-up and no animated width. Filter pills change the pressed state with a press fade only. The emergency panel and the not-verified wording are never animated (AC2.4.4).
 
 ## Acceptance checks
 
@@ -83,8 +90,12 @@ primitives** every later patient page reuses (`Byline`, `AccountRow`, `DistBlock
 | Redirect | manual: visit an old public id after a T-204 merge (or a seeded redirect) | 301 to the new URL |
 | Anonymous byline | `pnpm vitest run apps/web -t "anonymous byline"` | no `<a>` inside `.byline` for an anonymous card; text = `byline.anonSentence` |
 | Impeccable + contrast | `npx impeccable detect apps/web/src --no-advisory && pnpm contrast` | zero findings |
-| Visual | open `/en/doctors/{d1}` and `/bn/doctors/{d1}` beside the prototype `#doctors/d1` at 1280 and 390 px | no layout difference a reviewer can point to |
+| Visual (FD-091) | open `/en/doctors/{d1}` and `/bn/doctors/{d1}` beside the prototype `#doctors/d1` at 1280 and 390 px | same content, fields, order and states as the prototype; the look follows T-011 |
 | Full check | `pnpm check` | green |
+| FD-091: motion check | `pnpm check:motion` | passes; this Unit's styles animate only `transform` and `opacity` with T-011 duration and easing tokens |
+| FD-091: reduced-motion journey (AC2.4.3) | walk this Unit's pages with the OS reduced-motion setting, then with `data-motion="reduced"` | no slide, scale, stagger, route movement or scroll reveal; every step still completes; the disclaimer, emergency guidance and demo marker are never animated (AC2.4.4) |
+| FD-091: detector and contrast on the new styles | `npx impeccable detect apps/web/src --no-advisory`; `pnpm contrast` | zero findings |
+| FD-091: early performance check (NFR13, AC2.4.6) | Lighthouse on a throttled mid-range Android profile (slow 4G, 4x CPU) for the doctor profile page | LCP <= 2.5 s and CLS <= 0.1 recorded in the hand-off; any miss becomes an ISSUES.md row before the next UI Unit starts |
 
 ## Tests to write
 

@@ -91,3 +91,17 @@ C. Give the worker a narrow read grant (conflicts with FD-041)
 X. Other (please specify)
 
 [Answer]: B
+
+## Revision 2026-10-27
+
+The Requirements and User Stories revisions add US2.4 (the FD-091 patient redesign with motion), narrow the staff side (FD-088) and expand the demo data (FD-089).
+
+## Question R1
+
+Do the components change?
+
+A. No. The thirteen components, entities and dependencies stay as approved. US2.4 maps to no component (apps/web presentation); FD-088 defers behaviour inside Moderation, Retention and Notification without moving any ownership. A revision note records this in `decisions.md`, and `traceability.json` gains US2.4 as N/A (recommended)
+B. Add a presentation or design-system component to the catalogue
+X. Other (please specify)
+
+[Answer]: A
