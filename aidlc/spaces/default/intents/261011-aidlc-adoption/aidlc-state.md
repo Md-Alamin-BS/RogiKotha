@@ -25,7 +25,7 @@
 - **Sensors**: on (from scope classic)
 - **Learnings**: on (from scope classic)
 - **Summary Confirmation**: off (from scope classic)
-- **Plan Approval**: on (from scope classic)
+- **Plan Approval**: off (set by you)
 - **Collaborators**: off (from scope classic)
 
 ## Workspace State
@@ -57,6 +57,8 @@
 - **Construction Verification Command**: pnpm infra:up && pnpm check && pnpm smoke
 
 - **Unit Ownership**: solo
+
+- **Skeleton Stance**: off
 
 ## Phase Progress
 <!-- Status values: Pending, Active, Verified, Skipped -->
@@ -119,7 +121,9 @@ Per unit: [TBD]
 - **Current Stage**: functional-design
 - **Next Stage**: code-generation
 - **Status**: Running
-- **Last Updated**: 2026-10-27T13:50:25Z
+- **Last Updated**: 2026-10-27T13:57:45Z
+
+- **Construction Autonomy Mode**: autonomous
 
 ## Session Resume Point
 - **Last Completed Stage**: delivery-planning
