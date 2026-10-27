@@ -1,0 +1,16 @@
+{
+  "stage": "code-generation",
+  "unit": "cr-004-live-region-announcements",
+  "version": 1,
+  "writes": [
+    { "path": "apps/web/src/components/shared/ThemeControls.tsx" },
+    { "path": "apps/web/src/components/shared/ThemeControls.test.tsx" },
+    { "path": "apps/web/src/components/shared/live-region-announcements.smoke.test.tsx" },
+    { "path": "apps/web/src/components/patient/ViewShell.tsx" },
+    { "path": "apps/web/src/components/patient/ViewShell.test.tsx" },
+    { "path": "packages/i18n/messages/en.json" },
+    { "path": "packages/i18n/messages/bn.json" },
+    { "path": "packages/i18n/src/keys.ts" },
+    { "path": "docs/implementation/ISSUES.md" }
+  ]
+}

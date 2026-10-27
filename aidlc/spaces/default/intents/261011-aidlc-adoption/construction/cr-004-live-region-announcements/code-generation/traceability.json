@@ -1,0 +1,35 @@
+{
+  "stage": "code-generation",
+  "unit": "cr-004-live-region-announcements",
+  "upstream_ids": [
+    "AC12.1.1", "AC12.1.2", "AC12.1.3", "AC12.1.4", "AC12.1.5", "AC12.1.6",
+    "BR1.1", "BR1.2", "BR1.3",
+    "BR2.1", "BR2.2", "BR2.3", "BR2.4", "BR2.5",
+    "BR3.1", "BR3.2", "BR3.3",
+    "BR4.1", "BR4.2", "BR4.3", "BR4.4", "BR4.5"
+  ],
+  "coverage": [
+    { "id": "AC12.1.1", "status": "N/A", "target": "First-visit language detection, lang=\"bn\" and the visible switch are baseline routing on main (T-005/T-008), checked by U20/U42; U7 does not change detection or the switch's visibility" },
+    { "id": "AC12.1.2", "status": "OK", "target": "apps/web/src/components/shared/ThemeControls.tsx" },
+    { "id": "AC12.1.3", "status": "N/A", "target": "Mixed-language user text and author translations belong to the composer and display Units (U26, U27); U7 handles no user content" },
+    { "id": "AC12.1.4", "status": "OK", "target": "packages/i18n/messages/bn.json" },
+    { "id": "AC12.1.5", "status": "N/A", "target": "The /emergency page content is delivered by U20 (T-207); U7 only localizes that page's view announcement through the general view rules" },
+    { "id": "AC12.1.6", "status": "Deferred", "target": "Partly covered here: the live-region parts (BR4.2, BR4.3) in apps/web/src/components/patient/ViewShell.tsx keep announcements in the page's language without adding landmarks or headings; correct lang, landmarks, headings, focus and an axe-clean run stay with U42" },
+    { "id": "BR1.1", "status": "OK", "target": "apps/web/src/components/shared/ThemeControls.tsx" },
+    { "id": "BR1.2", "status": "OK", "target": "apps/web/src/components/shared/ThemeControls.test.tsx" },
+    { "id": "BR1.3", "status": "OK", "target": "apps/web/src/components/shared/ThemeControls.test.tsx" },
+    { "id": "BR2.1", "status": "OK", "target": "apps/web/src/components/shared/ThemeControls.tsx" },
+    { "id": "BR2.2", "status": "OK", "target": "apps/web/src/components/patient/ViewShell.tsx" },
+    { "id": "BR2.3", "status": "OK", "target": "apps/web/src/components/patient/ViewShell.test.tsx" },
+    { "id": "BR2.4", "status": "OK", "target": "apps/web/src/components/shared/ThemeControls.tsx" },
+    { "id": "BR2.5", "status": "OK", "target": "apps/web/src/components/shared/ThemeControls.test.tsx" },
+    { "id": "BR3.1", "status": "OK", "target": "apps/web/src/components/patient/ViewShell.tsx" },
+    { "id": "BR3.2", "status": "OK", "target": "apps/web/src/components/patient/ViewShell.test.tsx" },
+    { "id": "BR3.3", "status": "OK", "target": "apps/web/src/components/shared/live-region-announcements.smoke.test.tsx" },
+    { "id": "BR4.1", "status": "OK", "target": "packages/i18n/messages/en.json" },
+    { "id": "BR4.2", "status": "OK", "target": "apps/web/src/components/shared/live-region-announcements.smoke.test.tsx" },
+    { "id": "BR4.3", "status": "OK", "target": "apps/web/src/components/patient/ViewShell.test.tsx" },
+    { "id": "BR4.4", "status": "OK", "target": "apps/web/src/components/shared/ThemeControls.test.tsx" },
+    { "id": "BR4.5", "status": "OK", "target": "docs/implementation/ISSUES.md" }
+  ]
+}

@@ -2,6 +2,10 @@
 // Run `pnpm --filter @rogikotha/i18n keys` to regenerate.
 
 export type MessageKey =
+  | 'a11y.announce.language'
+  | 'a11y.announce.themeDark'
+  | 'a11y.announce.themeLight'
+  | 'a11y.announce.view'
   | 'a11y.call'
   | 'a11y.close'
   | 'a11y.lang'
@@ -781,6 +785,10 @@ export type MessageKey =
   | 'viewer.zoomOut';
 
 export const MESSAGE_KEYS: readonly MessageKey[] = [
+  'a11y.announce.language',
+  'a11y.announce.themeDark',
+  'a11y.announce.themeLight',
+  'a11y.announce.view',
   'a11y.call',
   'a11y.close',
   'a11y.lang',

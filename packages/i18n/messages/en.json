@@ -1,5 +1,11 @@
 {
   "a11y": {
+    "announce": {
+      "language": "Language: English",
+      "themeDark": "Theme: dark",
+      "themeLight": "Theme: light",
+      "view": "View: {view}"
+    },
     "call": "Tap to call",
     "close": "Close",
     "lang": "Switch interface language",

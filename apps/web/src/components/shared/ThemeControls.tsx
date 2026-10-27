@@ -6,6 +6,63 @@ import type { Locale } from '@rogikotha/i18n';
 import { Link, usePathname } from '@/i18n/routing';
 import { setLang, setTheme, setMotion } from '@/server/actions/preferences';
 import type { Theme, Motion } from '@/lib/cookies';
+import { useAnnounce } from '@/lib/announce';
+
+// The language toggle navigates to a page in the other locale, so it cannot
+// speak the change itself: it leaves this per-tab note and the arriving
+// page's ViewShell announces it in the new language (FD-042, BR2.1-BR2.3).
+const LANGUAGE_NOTE_KEY = 'rk.langNote';
+const LANGUAGE_NOTE_LIFETIME_MS = 30_000;
+
+type LanguageNote = { targetLocale: string; path: string; at: number };
+
+export function writeNote(targetLocale: Locale, path: string): void {
+  const note: LanguageNote = { targetLocale, path, at: Date.now() };
+  try {
+    window.sessionStorage.setItem(LANGUAGE_NOTE_KEY, JSON.stringify(note));
+  } catch {
+    // Storage blocked or full: the switch still works, only its announcement is lost (BR2.4).
+  }
+}
+
+function readNote(): LanguageNote | null {
+  const raw = window.sessionStorage.getItem(LANGUAGE_NOTE_KEY);
+  if (raw === null) return null;
+  const parsed: unknown = JSON.parse(raw);
+  if (
+    typeof parsed === 'object' &&
+    parsed !== null &&
+    'targetLocale' in parsed &&
+    'path' in parsed &&
+    'at' in parsed &&
+    typeof parsed.targetLocale === 'string' &&
+    typeof parsed.path === 'string' &&
+    typeof parsed.at === 'number'
+  ) {
+    return { targetLocale: parsed.targetLocale, path: parsed.path, at: parsed.at };
+  }
+  return null;
+}
+
+export function decideArrival(activeLocale: string, path: string): 'language' | 'view' {
+  try {
+    const note = readNote();
+    if (note === null) return 'view';
+    if (Date.now() - note.at > LANGUAGE_NOTE_LIFETIME_MS) {
+      window.sessionStorage.removeItem(LANGUAGE_NOTE_KEY);
+      return 'view';
+    }
+    // A fresh note for the other locale belongs to a switch still in flight.
+    if (note.targetLocale !== activeLocale) return 'view';
+    // Used up here: the matching page speaks it once, so Back then Forward
+    // does not repeat it (BR2.2); any other path discards it (BR2.3).
+    window.sessionStorage.removeItem(LANGUAGE_NOTE_KEY);
+    return note.path === path ? 'language' : 'view';
+  } catch {
+    // Unreadable or blocked storage falls back to the view announcement (BR2.4).
+    return 'view';
+  }
+}
 
 // Port of app.js's #lang/#theme/#motion controls (index.html) and their
 // handlers (setLang/setTheme/setMotion, app.js lines ~144-190). Shared by
@@ -24,6 +81,7 @@ export function ThemeControls({
 }) {
   const t = useTranslations();
   const pathname = usePathname();
+  const announce = useAnnounce();
   const [, startTransition] = useTransition();
   const otherLocale: Locale = locale === 'bn' ? 'en' : 'bn';
 
@@ -31,8 +89,14 @@ export function ThemeControls({
     const isDark =
       theme === 'dark' ||
       (theme === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const next = isDark ? 'light' : 'dark';
+    const message = t(next === 'dark' ? 'a11y.announce.themeDark' : 'a11y.announce.themeLight');
     startTransition(() => {
-      void setTheme(isDark ? 'light' : 'dark');
+      // Chained, not awaited: a failed write announces nothing and its
+      // rejection surfaces exactly as before (BR1.3).
+      void setTheme(next).then(() => {
+        announce(message);
+      });
     });
   }
 
@@ -62,6 +126,7 @@ export function ThemeControls({
         title={t('a11y.lang')}
         aria-pressed={locale === 'bn'}
         onClick={() => {
+          writeNote(otherLocale, pathname);
           startTransition(() => {
             void setLang(otherLocale);
           });
