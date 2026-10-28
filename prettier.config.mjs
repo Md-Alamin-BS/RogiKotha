@@ -4,4 +4,7 @@ export default {
   semi: true,
   printWidth: 100,
   trailingComma: 'all',
+  // Git owns line endings (`.gitattributes` keeps the repository LF); a CRLF checkout under
+  // `core.autocrlf=true` is judged on content only (BR7.3).
+  endOfLine: 'auto',
 };
