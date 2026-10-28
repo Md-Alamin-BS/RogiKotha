@@ -78,21 +78,31 @@ async function resolveNotificationFields(
       // "Your HbA1c result finished processing…" -> e2, r1's HbA1c-result
       // evidence item (corpus label "HbA1c result, May 2026").
       const evidenceItemPublicId = ctx.evidenceItemPublicIdBySeedRef.get('e2');
-      return { params: { reviewPublicId, evidenceItemPublicId }, route: `/experiences/${reviewPublicId}` };
+      return {
+        params: { reviewPublicId, evidenceItemPublicId },
+        route: `/experiences/${reviewPublicId}`,
+      };
     }
     case 'n2': {
       // "Dr. Farhana Rahman commented on your experience…" -> k2, her
       // comment on r1 (comment author "Dr. Farhana Rahman", identity `real`).
       const commentId = ctx.commentIdBySeedRef.get('k2');
-      const [comment] = commentId ? await db.select().from(comments).where(eq(comments.id, commentId)).limit(1) : [];
-      return { params: { reviewPublicId, commentPublicId: comment?.publicId }, route: `/experiences/${reviewPublicId}` };
+      const [comment] = commentId
+        ? await db.select().from(comments).where(eq(comments.id, commentId)).limit(1)
+        : [];
+      return {
+        params: { reviewPublicId, commentPublicId: comment?.publicId },
+        route: `/experiences/${reviewPublicId}`,
+      };
     }
     case 'n3': {
       // "A comment on your experience was hidden for giving dangerous
       // medical instructions…" -> k3, MOD-2041's target (dangerous + spam,
       // auto-hidden).
       const commentId = ctx.commentIdBySeedRef.get('k3');
-      const [comment] = commentId ? await db.select().from(comments).where(eq(comments.id, commentId)).limit(1) : [];
+      const [comment] = commentId
+        ? await db.select().from(comments).where(eq(comments.id, commentId)).limit(1)
+        : [];
       return {
         params: { reviewPublicId, commentPublicId: comment?.publicId, caseCode: 'MOD-2041' },
         route: `/experiences/${reviewPublicId}`,
@@ -106,8 +116,13 @@ async function resolveNotificationFields(
       // "nadia_k replied to your comment." -> k9, nadia_k's reply to
       // shirin_88's k8 on r1.
       const commentId = ctx.commentIdBySeedRef.get('k9');
-      const [comment] = commentId ? await db.select().from(comments).where(eq(comments.id, commentId)).limit(1) : [];
-      return { params: { reviewPublicId, commentPublicId: comment?.publicId }, route: `/experiences/${reviewPublicId}` };
+      const [comment] = commentId
+        ? await db.select().from(comments).where(eq(comments.id, commentId)).limit(1)
+        : [];
+      return {
+        params: { reviewPublicId, commentPublicId: comment?.publicId },
+        route: `/experiences/${reviewPublicId}`,
+      };
     }
     case 'n7':
       // "Your second prescription scan is waiting for you to cover any
@@ -126,7 +141,11 @@ async function resolveNotificationFields(
 export async function seedUserNotifications(db: Db, ctx: SeedContext): Promise<number> {
   let inserted = 0;
 
-  const [policy] = await db.select().from(retentionPolicies).where(eq(retentionPolicies.version, 1)).limit(1);
+  const [policy] = await db
+    .select()
+    .from(retentionPolicies)
+    .where(eq(retentionPolicies.version, 1))
+    .limit(1);
   const notificationDays = policy?.notificationDays ?? 90;
   // Captured once so every "already read" row in this run shares one
   // `read_at`, rather than drifting a few milliseconds apart.
@@ -134,7 +153,11 @@ export async function seedUserNotifications(db: Db, ctx: SeedContext): Promise<n
 
   for (const n of USER_NOTIFICATIONS) {
     if (Object.hasOwn(WITHHELD_NOTIFICATIONS, n.seedRef)) continue;
-    const [existing] = await db.select().from(notifications).where(eq(notifications.dedupeKey, n.seedRef)).limit(1);
+    const [existing] = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.dedupeKey, n.seedRef))
+      .limit(1);
     if (existing) continue;
 
     const accountId = ctx.accountIdByUsername.get(n.accountUsername);

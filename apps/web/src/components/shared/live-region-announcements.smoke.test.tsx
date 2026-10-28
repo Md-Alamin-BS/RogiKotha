@@ -13,7 +13,15 @@ import { ThemeControls } from './ThemeControls';
 // keeps the theme toggle and the view announcement speaking, in both
 // locales, from the real dictionaries.
 vi.mock('@/i18n/routing', () => ({
-  Link: ({ href, children, ...rest }: { href: string; children?: ReactNode; [key: string]: unknown }) => (
+  Link: ({
+    href,
+    children,
+    ...rest
+  }: {
+    href: string;
+    children?: ReactNode;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...rest}>
       {children}
     </a>

@@ -45,7 +45,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): WorkerEnv {
   }
   const result = EnvSchema.safeParse(source);
   if (!result.success) {
-    const messages = result.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
+    const messages = result.error.issues
+      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+      .join('; ');
     console.error(`worker environment invalid: ${messages}`);
     return process.exit(1);
   }

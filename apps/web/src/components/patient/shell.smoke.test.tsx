@@ -39,7 +39,12 @@ const messages = {
     mine: 'My writing',
     compose: 'Share your experience',
   },
-  a11y: { screens: 'Screens', lang: 'Switch interface language', theme: 'Switch light or dark mode', motion: 'Reduce animation' },
+  a11y: {
+    screens: 'Screens',
+    lang: 'Switch interface language',
+    theme: 'Switch light or dark mode',
+    motion: 'Reduce animation',
+  },
   auth: { signIn: { title: 'Sign in' } },
 } as unknown as AbstractIntlMessages;
 

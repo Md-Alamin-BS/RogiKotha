@@ -4,7 +4,13 @@
 // `identityMode`, `attestation` — `toPublishReviewInput()` below extracts
 // exactly that subset so builders.test.ts can validate it against the real
 // contracts schema without inventing one.
-import type { IdentityMode, Outcome, PublishReviewInput, Relationship, Sentiment } from '@rogikotha/contracts';
+import type {
+  IdentityMode,
+  Outcome,
+  PublishReviewInput,
+  Relationship,
+  Sentiment,
+} from '@rogikotha/contracts';
 import type { z } from 'zod';
 
 import type { CorpusReview } from '../corpus/types.js';
@@ -40,7 +46,10 @@ export function aReview(overrides: Partial<ReviewBuild> = {}): ReviewBuild {
     commentsCount: 0,
     claims: [],
     title: { en: `Builder review ${n}`, bn: `বিল্ডার অভিজ্ঞতা ${n}` },
-    body: { en: 'A short synthetic experience for tests.', bn: 'পরীক্ষার জন্য একটি সংক্ষিপ্ত কাল্পনিক অভিজ্ঞতা।' },
+    body: {
+      en: 'A short synthetic experience for tests.',
+      bn: 'পরীক্ষার জন্য একটি সংক্ষিপ্ত কাল্পনিক অভিজ্ঞতা।',
+    },
     tags: [],
     ...overrides,
   };

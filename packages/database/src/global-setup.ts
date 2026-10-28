@@ -30,7 +30,9 @@ async function readPublicSchemaOid(url: string): Promise<number> {
 export default async function setup(project: TestProject): Promise<void> {
   const url = process.env.DATABASE_URL_TEST;
   if (url === undefined || url === '') {
-    throw new Error('DATABASE_URL_TEST is not set; the database project needs its own test database');
+    throw new Error(
+      'DATABASE_URL_TEST is not set; the database project needs its own test database',
+    );
   }
   const database = decodeURIComponent(new URL(url).pathname.replace(/^\//, ''));
   if (!isTestDatabaseName(database)) {

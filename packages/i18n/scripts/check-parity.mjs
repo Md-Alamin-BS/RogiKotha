@@ -121,11 +121,7 @@ function main() {
     const bnValue = bnFlat.get(key);
     if (enValue.trim() === '') problems.push(`empty en value: ${key}`);
     if (bnValue.trim() === '') problems.push(`empty bn value: ${key}`);
-    if (
-      enValue === bnValue &&
-      enValue.trim() !== '' &&
-      !IDENTICAL_VALUE_ALLOWLIST.includes(key)
-    ) {
+    if (enValue === bnValue && enValue.trim() !== '' && !IDENTICAL_VALUE_ALLOWLIST.includes(key)) {
       problems.push(`identical en/bn value (not allowlisted): ${key} = "${enValue}"`);
     }
     const enPlaceholders = extractPlaceholders(enValue);

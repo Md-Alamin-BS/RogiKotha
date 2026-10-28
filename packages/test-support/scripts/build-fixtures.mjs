@@ -51,7 +51,9 @@ function prescriptionSvg(label) {
 }
 
 async function writePrescriptionJpg(filename, label) {
-  await sharp(prescriptionSvg(label)).jpeg({ quality: 90 }).toFile(path.join(fixturesDir, filename));
+  await sharp(prescriptionSvg(label))
+    .jpeg({ quality: 90 })
+    .toFile(path.join(fixturesDir, filename));
 }
 
 /**
@@ -68,8 +70,10 @@ function exifHasGpsInfoTag(exif) {
   const byteOrder = exif.toString('ascii', tiffStart, tiffStart + 2);
   if (byteOrder !== 'II' && byteOrder !== 'MM') return false;
   const littleEndian = byteOrder === 'II';
-  const readU16 = (offset) => (littleEndian ? exif.readUInt16LE(offset) : exif.readUInt16BE(offset));
-  const readU32 = (offset) => (littleEndian ? exif.readUInt32LE(offset) : exif.readUInt32BE(offset));
+  const readU16 = (offset) =>
+    littleEndian ? exif.readUInt16LE(offset) : exif.readUInt16BE(offset);
+  const readU32 = (offset) =>
+    littleEndian ? exif.readUInt32LE(offset) : exif.readUInt32BE(offset);
   const ifd0Offset = tiffStart + readU32(tiffStart + 4);
   const numEntries = readU16(ifd0Offset);
   for (let i = 0; i < numEntries; i += 1) {
@@ -128,7 +132,10 @@ async function writeNotAPng() {
 async function writeBrokenJpg() {
   // A truncated JPEG: valid header, cut off mid-stream -> `malformed`.
   const bytes = await sharp(prescriptionSvg('Truncated fixture')).jpeg().toBuffer();
-  fs.writeFileSync(path.join(fixturesDir, 'broken.jpg'), bytes.subarray(0, Math.floor(bytes.length / 3)));
+  fs.writeFileSync(
+    path.join(fixturesDir, 'broken.jpg'),
+    bytes.subarray(0, Math.floor(bytes.length / 3)),
+  );
 }
 
 async function writeFlaggedJpg() {
@@ -139,7 +146,11 @@ async function writeFlaggedJpg() {
   const base = await sharp(prescriptionSvg('Flagged fixture')).jpeg().toBuffer();
   const comment = Buffer.from(MALWARE_MARKER, 'ascii');
   const segmentLen = comment.length + 2; // length field includes itself, excludes the 0xFFFE marker
-  const comSegment = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from([(segmentLen >> 8) & 0xff, segmentLen & 0xff]), comment]);
+  const comSegment = Buffer.concat([
+    Buffer.from([0xff, 0xfe]),
+    Buffer.from([(segmentLen >> 8) & 0xff, segmentLen & 0xff]),
+    comment,
+  ]);
   // Insert the COM segment right after the JPEG SOI marker (0xFFD8, first 2 bytes).
   const withComment = Buffer.concat([base.subarray(0, 2), comSegment, base.subarray(2)]);
   fs.writeFileSync(path.join(fixturesDir, 'flagged.jpg'), withComment);
@@ -157,7 +168,8 @@ async function writeOversizePng() {
   const png = await sharp(raw, { raw: { width: side, height: side, channels: 3 } })
     .png({ compressionLevel: 0 })
     .toBuffer();
-  const final = png.length >= targetBytes ? png : Buffer.concat([png, Buffer.alloc(targetBytes - png.length)]);
+  const final =
+    png.length >= targetBytes ? png : Buffer.concat([png, Buffer.alloc(targetBytes - png.length)]);
   fs.writeFileSync(path.join(fixturesDir, 'oversize.png'), final);
 }
 

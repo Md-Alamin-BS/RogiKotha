@@ -56,7 +56,14 @@ function renderMasthead(locale: 'en' | 'bn') {
 describe('Masthead', () => {
   it('renders the six tabs and the write CTA in English', () => {
     renderMasthead('en');
-    const tabLabels = ['Discover', 'Doctors', 'Hospitals & clinics', 'Health topics', 'Experiences', 'My writing'];
+    const tabLabels = [
+      'Discover',
+      'Doctors',
+      'Hospitals & clinics',
+      'Health topics',
+      'Experiences',
+      'My writing',
+    ];
     for (const label of tabLabels) {
       expect(screen.getByRole('link', { name: label })).toBeInTheDocument();
     }
@@ -65,7 +72,14 @@ describe('Masthead', () => {
 
   it('renders the six tabs and the write CTA in Bengali', () => {
     renderMasthead('bn');
-    const tabLabels = ['খুঁজুন', 'ডাক্তারেরা', 'হাসপাতাল ও ক্লিনিক', 'রোগ ও স্বাস্থ্য', 'অভিজ্ঞতা', 'আমার লেখা'];
+    const tabLabels = [
+      'খুঁজুন',
+      'ডাক্তারেরা',
+      'হাসপাতাল ও ক্লিনিক',
+      'রোগ ও স্বাস্থ্য',
+      'অভিজ্ঞতা',
+      'আমার লেখা',
+    ];
     for (const label of tabLabels) {
       expect(screen.getByRole('link', { name: label })).toBeInTheDocument();
     }

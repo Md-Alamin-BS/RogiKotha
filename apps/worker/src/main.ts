@@ -18,7 +18,12 @@ interface Poller {
 /** Runs `def.handler` on a fixed interval, guarded against overlap — if a
  * tick is still running when the next one is due, that tick is skipped
  * rather than run concurrently (task step 7). */
-function startPoller(name: JobName, def: JobDefinition, intervalMs: number, ctx: WorkerContainer): Poller {
+function startPoller(
+  name: JobName,
+  def: JobDefinition,
+  intervalMs: number,
+  ctx: WorkerContainer,
+): Poller {
   let running = false;
   let stopped = false;
 

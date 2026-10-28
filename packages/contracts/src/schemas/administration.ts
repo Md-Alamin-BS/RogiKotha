@@ -6,7 +6,9 @@ import { ConfigValuesSchema } from '../config-values';
 
 export const GetCurrentConfigInput = z.object({}).strict();
 
-export const GetConfigHistoryInput = z.object({ page: z.number().int().min(1).optional() }).strict();
+export const GetConfigHistoryInput = z
+  .object({ page: z.number().int().min(1).optional() })
+  .strict();
 
 // TODO(T-408): whether a shallow or deep partial best fits the config
 // editor's diff preview is owned by that task; shallow partial for now.

@@ -33,7 +33,16 @@ import {
 } from '@rogikotha/database';
 import { eq } from 'drizzle-orm';
 
-import { ALIASES, BRANCHES, CONDITIONS, DOCTORS, FACILITY_ORGS, PROVIDER_CLAIMS, PROVIDER_FIELD_CHANGES, PROVIDER_SUBMISSIONS } from '../corpus/index.js';
+import {
+  ALIASES,
+  BRANCHES,
+  CONDITIONS,
+  DOCTORS,
+  FACILITY_ORGS,
+  PROVIDER_CLAIMS,
+  PROVIDER_FIELD_CHANGES,
+  PROVIDER_SUBMISSIONS,
+} from '../corpus/index.js';
 import type { SeedContext } from './seed.js';
 
 const GENERIC_SUBMITTER_USERNAME = 'shirin_88';
@@ -48,9 +57,13 @@ function keyify(s: string): string {
  * in that order so every pre-FD-089 link resolves as before (CR-012, BR3.2).
  */
 function chamberBranch(chamberName: string): (typeof BRANCHES)[number] | undefined {
-  const byName = BRANCHES.find((b) => b.name.en === chamberName || (b.branchLabel?.en as string | undefined) === chamberName);
+  const byName = BRANCHES.find(
+    (b) => b.name.en === chamberName || (b.branchLabel?.en as string | undefined) === chamberName,
+  );
   if (byName) return byName;
-  return BRANCHES.find((b) => b.branchLabel !== null && `${b.name.en} — ${b.branchLabel.en}` === chamberName);
+  return BRANCHES.find(
+    (b) => b.branchLabel !== null && `${b.name.en} — ${b.branchLabel.en}` === chamberName,
+  );
 }
 
 function nowProvenance(source: Provenance): { source: Provenance; updatedAt: string } {
@@ -62,7 +75,11 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
 
   // --- taxonomy: conditions -------------------------------------------------
   for (const c of CONDITIONS) {
-    const [existing] = await db.select().from(taxonomyTerms).where(eq(taxonomyTerms.seedRef, c.seedRef)).limit(1);
+    const [existing] = await db
+      .select()
+      .from(taxonomyTerms)
+      .where(eq(taxonomyTerms.seedRef, c.seedRef))
+      .limit(1);
     if (existing) {
       ctx.taxonomyTermIdBySeedRef.set(c.seedRef, existing.id);
       continue;
@@ -104,7 +121,11 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
     const name = d.specialty.en;
     if (specialtyIdByName.has(name)) continue;
     const seedRef = `specialty-${keyify(name)}`;
-    const [existing] = await db.select().from(taxonomyTerms).where(eq(taxonomyTerms.seedRef, seedRef)).limit(1);
+    const [existing] = await db
+      .select()
+      .from(taxonomyTerms)
+      .where(eq(taxonomyTerms.seedRef, seedRef))
+      .limit(1);
     if (existing) {
       specialtyIdByName.set(name, existing.id);
       continue;
@@ -130,7 +151,11 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
 
   // --- organisations + branches ---------------------------------------------
   for (const org of FACILITY_ORGS) {
-    const [existing] = await db.select().from(facilities).where(eq(facilities.seedRef, org.seedRef)).limit(1);
+    const [existing] = await db
+      .select()
+      .from(facilities)
+      .where(eq(facilities.seedRef, org.seedRef))
+      .limit(1);
     if (existing) {
       ctx.orgIdBySeedRef.set(org.seedRef, existing.id);
       continue;
@@ -156,15 +181,23 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
   }
 
   for (const branch of BRANCHES) {
-    const [existing] = await db.select().from(facilityBranches).where(eq(facilityBranches.seedRef, branch.seedRef)).limit(1);
+    const [existing] = await db
+      .select()
+      .from(facilityBranches)
+      .where(eq(facilityBranches.seedRef, branch.seedRef))
+      .limit(1);
     if (existing) {
       ctx.branchIdBySeedRef.set(branch.seedRef, existing.id);
       continue;
     }
     const facilityId = ctx.orgIdBySeedRef.get(branch.orgSeedRef);
-    if (!facilityId) throw new Error(`seed-directory: org ${branch.orgSeedRef} not seeded before branch ${branch.seedRef}`);
+    if (!facilityId)
+      throw new Error(
+        `seed-directory: org ${branch.orgSeedRef} not seeded before branch ${branch.seedRef}`,
+      );
     const fieldProvenance: Record<string, { source: Provenance; updatedAt: string }> = {};
-    for (const [field, source] of Object.entries(branch.fieldProvenance)) fieldProvenance[field] = nowProvenance(source);
+    for (const [field, source] of Object.entries(branch.fieldProvenance))
+      fieldProvenance[field] = nowProvenance(source);
     const [row] = await db
       .insert(facilityBranches)
       .values({
@@ -189,13 +222,18 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
 
   // --- doctors + chambers -----------------------------------------------------
   for (const d of DOCTORS) {
-    const [existing] = await db.select().from(doctors).where(eq(doctors.seedRef, d.seedRef)).limit(1);
+    const [existing] = await db
+      .select()
+      .from(doctors)
+      .where(eq(doctors.seedRef, d.seedRef))
+      .limit(1);
     if (existing) {
       ctx.doctorIdBySeedRef.set(d.seedRef, existing.id);
       continue;
     }
     const fieldProvenance: Record<string, { source: Provenance; updatedAt: string }> = {};
-    for (const [field, source] of Object.entries(d.fieldProvenance)) fieldProvenance[field] = nowProvenance(source);
+    for (const [field, source] of Object.entries(d.fieldProvenance))
+      fieldProvenance[field] = nowProvenance(source);
     const [row] = await db
       .insert(doctors)
       .values({
@@ -253,7 +291,8 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
 
   // --- pending submissions / claim / field changes ---------------------------
   const submitterAccountId = ctx.accountIdByUsername.get(GENERIC_SUBMITTER_USERNAME);
-  if (!submitterAccountId) throw new Error(`seed-directory: ${GENERIC_SUBMITTER_USERNAME} account must be seeded first`);
+  if (!submitterAccountId)
+    throw new Error(`seed-directory: ${GENERIC_SUBMITTER_USERNAME} account must be seeded first`);
 
   // These three tables have no `seed_ref` column (their prototype ids —
   // `P-140`, `C-58`, `F-77` — exist only in the corpus, not the schema), so
@@ -261,7 +300,9 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
   // pending row already existing means this seed already ran.
   const existingSubmissions = await db.select().from(profileSubmissions);
   for (const s of PROVIDER_SUBMISSIONS) {
-    const alreadyRow = existingSubmissions.find((row) => (row.payload as { bmdc?: string } | null)?.bmdc === s.bmdc);
+    const alreadyRow = existingSubmissions.find(
+      (row) => (row.payload as { bmdc?: string } | null)?.bmdc === s.bmdc,
+    );
     if (alreadyRow) {
       ctx.submissionIdBySeedRef.set(s.seedRef, alreadyRow.id);
       continue;
@@ -274,7 +315,9 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
         payload: { name: s.name, specialty: s.specialty, city: s.city, bmdc: s.bmdc },
         submittedByAccountId: submitterAccountId,
         status: 'pending',
-        duplicateOfId: s.duplicateOfDoctorSeedRef ? (ctx.doctorIdBySeedRef.get(s.duplicateOfDoctorSeedRef) ?? null) : null,
+        duplicateOfId: s.duplicateOfDoctorSeedRef
+          ? (ctx.doctorIdBySeedRef.get(s.duplicateOfDoctorSeedRef) ?? null)
+          : null,
         reviewerNote: s.note.en,
       })
       .returning();
@@ -286,7 +329,9 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
   for (const c of PROVIDER_CLAIMS) {
     const doctorId = ctx.doctorIdBySeedRef.get(c.doctorSeedRef);
     if (!doctorId) continue;
-    const already = existingClaims.some((row) => row.targetId === doctorId && row.claimantAccountId === submitterAccountId);
+    const already = existingClaims.some(
+      (row) => row.targetId === doctorId && row.claimantAccountId === submitterAccountId,
+    );
     if (already) continue;
     await db.insert(profileClaims).values({
       id: newId(),
@@ -304,7 +349,9 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
   for (const f of PROVIDER_FIELD_CHANGES) {
     const doctorId = ctx.doctorIdBySeedRef.get(f.doctorSeedRef);
     if (!doctorId) continue;
-    const already = existingFieldChanges.some((row) => row.targetId === doctorId && row.field === f.field.en);
+    const already = existingFieldChanges.some(
+      (row) => row.targetId === doctorId && row.field === f.field.en,
+    );
     if (already) continue;
     await db.insert(profileFieldChanges).values({
       id: newId(),

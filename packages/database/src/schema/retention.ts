@@ -42,7 +42,9 @@ export const retentionBulkActions = pgTable('retention_bulk_actions', {
   id: id(),
   policyVersion: integer('policy_version').notNull(),
   // `{count, sample_ids, from_days, to_days}` (02-data-model.md §7).
-  preview: jsonb('preview').$type<{ count: number; sampleIds: string[]; fromDays: number; toDays: number }>().notNull(),
+  preview: jsonb('preview')
+    .$type<{ count: number; sampleIds: string[]; fromDays: number; toDays: number }>()
+    .notNull(),
   previewedAt: timestamp('previewed_at', { withTimezone: true }).notNull().defaultNow(),
   executedAt: timestamp('executed_at', { withTimezone: true }),
   actorAccountId: uuid('actor_account_id')

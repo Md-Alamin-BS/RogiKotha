@@ -2,7 +2,17 @@
 // search SQL itself (T-205) — only the table, generated `tsvector` column
 // and indexes.
 import { sql } from 'drizzle-orm';
-import { customType, index, integer, pgTable, text, timestamp, uniqueIndex, uuid, boolean } from 'drizzle-orm/pg-core';
+import {
+  customType,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  boolean,
+} from 'drizzle-orm/pg-core';
 
 import { createdAt, id } from './_common';
 import { provenanceEnum, searchKindEnum } from './enums';

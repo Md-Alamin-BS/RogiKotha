@@ -102,7 +102,9 @@ export class FakeAccountRepository {
   }
 
   savePreferences(accountId: string, input: Row): Promise<Row> {
-    return Promise.resolve(this.profiles.update(accountId, { preferences: input }) ?? { accountId, preferences: input });
+    return Promise.resolve(
+      this.profiles.update(accountId, { preferences: input }) ?? { accountId, preferences: input },
+    );
   }
 
   insertFeedback(accountId: string, body: string): Promise<Row> {
@@ -110,7 +112,9 @@ export class FakeAccountRepository {
   }
 
   addBookmark(accountId: string, reviewId: string): Promise<Row> {
-    return Promise.resolve(this.bookmarks.insert({ id: `${accountId}:${reviewId}`, accountId, reviewId }));
+    return Promise.resolve(
+      this.bookmarks.insert({ id: `${accountId}:${reviewId}`, accountId, reviewId }),
+    );
   }
 
   removeBookmark(accountId: string, reviewId: string): Promise<boolean> {
@@ -123,7 +127,11 @@ export class FakeAccountRepository {
 
   setBlock(blockerAccountId: string, blockedAccountId: string): Promise<Row> {
     return Promise.resolve(
-      this.blocks.insert({ id: `${blockerAccountId}:${blockedAccountId}`, blockerAccountId, blockedAccountId }),
+      this.blocks.insert({
+        id: `${blockerAccountId}:${blockedAccountId}`,
+        blockerAccountId,
+        blockedAccountId,
+      }),
     );
   }
 
@@ -132,7 +140,9 @@ export class FakeAccountRepository {
   }
 
   isBlocked(blockerAccountId: string, blockedAccountId: string): Promise<boolean> {
-    return Promise.resolve(this.blocks.get(`${blockerAccountId}:${blockedAccountId}`) !== undefined);
+    return Promise.resolve(
+      this.blocks.get(`${blockerAccountId}:${blockedAccountId}`) !== undefined,
+    );
   }
 }
 
@@ -150,9 +160,15 @@ export class FakeIdentityRepository {
     return Promise.resolve(this.links.insert({ id: personaId, personaId, accountId, reviewId }));
   }
 
-  findPersonaFor(accountId: string, reviewId: string | undefined, mode: string): Promise<Row | undefined> {
+  findPersonaFor(
+    accountId: string,
+    reviewId: string | undefined,
+    mode: string,
+  ): Promise<Row | undefined> {
     return Promise.resolve(
-      this.links.findOne((l) => l.accountId === accountId && l.reviewId === reviewId && l.mode === mode),
+      this.links.findOne(
+        (l) => l.accountId === accountId && l.reviewId === reviewId && l.mode === mode,
+      ),
     );
   }
 
@@ -196,7 +212,11 @@ export class FakeDirectoryRepository {
   }
 
   facilitiesForDoctor(doctorId: string): Promise<Row[]> {
-    return Promise.resolve(this.facilities.find((f) => (f.doctorIds as string[] | undefined)?.includes(doctorId) ?? false));
+    return Promise.resolve(
+      this.facilities.find(
+        (f) => (f.doctorIds as string[] | undefined)?.includes(doctorId) ?? false,
+      ),
+    );
   }
 
   submitProfile(input: Row): Promise<Row> {
@@ -204,7 +224,9 @@ export class FakeDirectoryRepository {
   }
 
   listSubmissions(query: Row): Promise<Row[]> {
-    return Promise.resolve(this.submissions.find((s) => !query.status || s.status === query.status));
+    return Promise.resolve(
+      this.submissions.find((s) => !query.status || s.status === query.status),
+    );
   }
 
   listClaims(query: Row): Promise<Row[]> {
@@ -212,11 +234,15 @@ export class FakeDirectoryRepository {
   }
 
   listFieldChanges(query: Row): Promise<Row[]> {
-    return Promise.resolve(this.fieldChanges.find((c) => !query.status || c.status === query.status));
+    return Promise.resolve(
+      this.fieldChanges.find((c) => !query.status || c.status === query.status),
+    );
   }
 
   decideSubmission(input: Row): Promise<Row | undefined> {
-    return Promise.resolve(this.submissions.update(input.submissionId as string, { status: input.decision }));
+    return Promise.resolve(
+      this.submissions.update(input.submissionId as string, { status: input.decision }),
+    );
   }
 
   claimProfile(input: Row): Promise<Row> {
@@ -232,7 +258,9 @@ export class FakeDirectoryRepository {
   }
 
   decideFieldChange(input: Row): Promise<Row | undefined> {
-    return Promise.resolve(this.fieldChanges.update(input.changeId as string, { status: input.decision }));
+    return Promise.resolve(
+      this.fieldChanges.update(input.changeId as string, { status: input.decision }),
+    );
   }
 }
 
@@ -251,7 +279,9 @@ export class FakeTaxonomyRepository {
 
   resolve(text: string): Promise<Row | undefined> {
     const key = text.trim().toLowerCase();
-    return Promise.resolve(this.terms.findOne((t) => (t.aliasKeys as string[] | undefined)?.includes(key) ?? false));
+    return Promise.resolve(
+      this.terms.findOne((t) => (t.aliasKeys as string[] | undefined)?.includes(key) ?? false),
+    );
   }
 
   listSuggested(group: string): Promise<Row[]> {
@@ -406,7 +436,9 @@ export class FakeEvidenceRepository {
   }
 
   updateState(itemId: string, state: string, failReason?: string): Promise<Row | undefined> {
-    return Promise.resolve(this.items.update(itemId, { state, ...(failReason ? { failReason } : {}) }));
+    return Promise.resolve(
+      this.items.update(itemId, { state, ...(failReason ? { failReason } : {}) }),
+    );
   }
 
   insertArtifact(input: Row): Promise<Row> {
@@ -444,7 +476,9 @@ export class FakeEvidenceRepository {
   }
 
   getPublic(reviewId: string): Promise<Row[]> {
-    return Promise.resolve(this.items.find((i) => i.reviewId === reviewId && i.state === 'published'));
+    return Promise.resolve(
+      this.items.find((i) => i.reviewId === reviewId && i.state === 'published'),
+    );
   }
 
   readOriginal(itemId: string, reason: string): Promise<Row | undefined> {
@@ -469,7 +503,10 @@ export class FakeCommunityRepository {
   deleteComment(commentId: string): Promise<Row | undefined> {
     const hasReplies = this.comments.find((c) => c.parentId === commentId).length > 0;
     return Promise.resolve(
-      this.comments.update(commentId, hasReplies ? { tombstone: true, deletedAt: new Date() } : { deletedAt: new Date() }),
+      this.comments.update(
+        commentId,
+        hasReplies ? { tombstone: true, deletedAt: new Date() } : { deletedAt: new Date() },
+      ),
     );
   }
 
@@ -487,7 +524,9 @@ export class FakeCommunityRepository {
   }
 
   reactionsOf(targetKind: string, targetId: string): Promise<Row[]> {
-    return Promise.resolve(this.reactions.find((r) => r.targetKind === targetKind && r.targetId === targetId));
+    return Promise.resolve(
+      this.reactions.find((r) => r.targetKind === targetKind && r.targetId === targetId),
+    );
   }
 }
 
@@ -503,7 +542,10 @@ export class FakeModerationRepository {
 
   queue(input: Row): Promise<Row[]> {
     return Promise.resolve(
-      this.cases.find((c) => (!input.lane || c.lane === input.lane) && (!input.status || c.status === input.status)),
+      this.cases.find(
+        (c) =>
+          (!input.lane || c.lane === input.lane) && (!input.status || c.status === input.status),
+      ),
     );
   }
 
@@ -512,11 +554,15 @@ export class FakeModerationRepository {
   }
 
   decide(input: Row): Promise<Row | undefined> {
-    return Promise.resolve(this.cases.update(input.caseCode as string, { lastDecision: input, status: 'decided' }));
+    return Promise.resolve(
+      this.cases.update(input.caseCode as string, { lastDecision: input, status: 'decided' }),
+    );
   }
 
   restore(caseCode: string, reasonCode: string): Promise<Row | undefined> {
-    return Promise.resolve(this.cases.update(caseCode, { status: 'open', restoreReason: reasonCode }));
+    return Promise.resolve(
+      this.cases.update(caseCode, { status: 'open', restoreReason: reasonCode }),
+    );
   }
 
   fileAppeal(input: Row): Promise<Row> {
@@ -553,13 +599,17 @@ export class FakeNotificationRepository {
 
   markRead(accountId: string, ids: string[] | 'all'): Promise<number> {
     const targets =
-      ids === 'all' ? this.notifications.find((n) => n.accountId === accountId) : ids.map((id) => this.notifications.get(id)).filter(Boolean) as Row[];
+      ids === 'all'
+        ? this.notifications.find((n) => n.accountId === accountId)
+        : (ids.map((id) => this.notifications.get(id)).filter(Boolean) as Row[]);
     for (const n of targets) this.notifications.update(n.id as string, { readAt: new Date() });
     return Promise.resolve(targets.length);
   }
 
   unreadCount(accountId: string): Promise<number> {
-    return Promise.resolve(this.notifications.find((n) => n.accountId === accountId && !n.readAt).length);
+    return Promise.resolve(
+      this.notifications.find((n) => n.accountId === accountId && !n.readAt).length,
+    );
   }
 
   insert(input: Row): Promise<Row> {
@@ -578,8 +628,14 @@ export class FakeNotificationRepository {
     return Promise.resolve(this.emailDeliveries.insert(input));
   }
 
-  updateEmailDeliveryStatus(id: string, status: string, lastErrorCode?: string): Promise<Row | undefined> {
-    return Promise.resolve(this.emailDeliveries.update(id, { status, ...(lastErrorCode ? { lastErrorCode } : {}) }));
+  updateEmailDeliveryStatus(
+    id: string,
+    status: string,
+    lastErrorCode?: string,
+  ): Promise<Row | undefined> {
+    return Promise.resolve(
+      this.emailDeliveries.update(id, { status, ...(lastErrorCode ? { lastErrorCode } : {}) }),
+    );
   }
 }
 
@@ -593,7 +649,9 @@ export class FakeConfigRepository {
   }
 
   history(): Promise<Row[]> {
-    return Promise.resolve(this.versions.all().sort((a, b) => (a.version as number) - (b.version as number)));
+    return Promise.resolve(
+      this.versions.all().sort((a, b) => (a.version as number) - (b.version as number)),
+    );
   }
 
   insertVersion(input: Row): Promise<Row> {
@@ -617,11 +675,19 @@ export class FakeRetentionRepository {
   }
 
   previewBulk(fromDays: number, toDays: number): Promise<Row> {
-    return Promise.resolve({ fromDays, toDays, count: 0, sampleIds: [], previewToken: seqId('bulk-preview') });
+    return Promise.resolve({
+      fromDays,
+      toDays,
+      count: 0,
+      sampleIds: [],
+      previewToken: seqId('bulk-preview'),
+    });
   }
 
   executeBulk(previewToken: string, reason: string): Promise<Row> {
-    return Promise.resolve(this.bulkActions.insert({ previewToken, reason, executedAt: new Date() }));
+    return Promise.resolve(
+      this.bulkActions.insert({ previewToken, reason, executedAt: new Date() }),
+    );
   }
 
   placeHold(input: Row): Promise<Row> {
@@ -629,11 +695,19 @@ export class FakeRetentionRepository {
   }
 
   releaseHold(holdId: string, reason: string): Promise<Row | undefined> {
-    return Promise.resolve(this.holds.update(holdId, { releasedAt: new Date(), releaseReason: reason }));
+    return Promise.resolve(
+      this.holds.update(holdId, { releasedAt: new Date(), releaseReason: reason }),
+    );
   }
 
   expireOriginals(before: Date): Promise<Row[]> {
-    return Promise.resolve(this.holds.find((h) => (h.retentionExpiresAt as Date | undefined) !== undefined && (h.retentionExpiresAt as Date) < before));
+    return Promise.resolve(
+      this.holds.find(
+        (h) =>
+          (h.retentionExpiresAt as Date | undefined) !== undefined &&
+          (h.retentionExpiresAt as Date) < before,
+      ),
+    );
   }
 }
 
@@ -642,18 +716,33 @@ export class FakeDataRequestRepository {
   readonly requests = new MapStore<Row>();
 
   createExportRequest(accountId: string, idempotencyKey: string): Promise<Row> {
-    return Promise.resolve(this.requests.insert({ accountId, idempotencyKey, kind: 'export', status: 'requested' }));
+    return Promise.resolve(
+      this.requests.insert({ accountId, idempotencyKey, kind: 'export', status: 'requested' }),
+    );
   }
 
   createDeletionRequest(accountId: string, idempotencyKey: string, plan: unknown): Promise<Row> {
-    return Promise.resolve(this.requests.insert({ accountId, idempotencyKey, kind: 'delete', status: 'requested', plan }));
+    return Promise.resolve(
+      this.requests.insert({
+        accountId,
+        idempotencyKey,
+        kind: 'delete',
+        status: 'requested',
+        plan,
+      }),
+    );
   }
 
   getStatus(requestId: string): Promise<Row | undefined> {
     return Promise.resolve(this.requests.get(requestId));
   }
 
-  updatePlanStep(requestId: string, moduleName: string, status: string, errorCode?: string): Promise<Row | undefined> {
+  updatePlanStep(
+    requestId: string,
+    moduleName: string,
+    status: string,
+    errorCode?: string,
+  ): Promise<Row | undefined> {
     const req = this.requests.get(requestId);
     if (!req) return Promise.resolve(undefined);
     const plan = (req.plan as Row[] | undefined) ?? [];

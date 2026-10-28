@@ -10,7 +10,7 @@ services:
     # auto-start) already owns 5432 on developer machines that have one installed, so the
     # container's own default port was silently unreachable from the host. The container's
     # internal port stays 5432 (nothing inside the compose network needs to change).
-    ports: ["5433:5432"]
+    ports: ['5433:5432']
     volumes:
       # ASSUMPTION(T-002): task file's inline snippet said `pgdata:/var/lib/postgresql/data`.
       # The current `postgres:18` image (PG_VERSION 18.6-1.pgdg13+2) changed its default PGDATA
@@ -23,7 +23,7 @@ services:
       - pgdata:/var/lib/postgresql
       - ./postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d rogikotha"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d rogikotha']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -32,7 +32,7 @@ services:
     # overridden to the pinned tag per the dependency check dated 2026-09-13
     # (docs/status/dependency-check-log.md) — see ISS-039.
     image: axllent/mailpit:v1.31.1
-    ports: ["1025:1025", "8025:8025"]
+    ports: ['1025:1025', '8025:8025']
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
@@ -40,9 +40,9 @@ services:
       - mailpit:/data
   clamav:
     image: clamav/clamav:1.5.4
-    ports: ["3310:3310"]
+    ports: ['3310:3310']
     environment:
-      CLAMAV_NO_FRESHCLAMD: "false"
+      CLAMAV_NO_FRESHCLAMD: 'false'
     volumes:
       - clamdb:/var/lib/clamav
       # Custom test signature (Scope change 2026-09-12 / CR-001 / FD-036): bind-mounted
@@ -56,7 +56,7 @@ services:
       # copy the developer can edit, and nothing in the app writes to it. See ISS-041.
       - ./clamav/rogikotha-test.ndb:/var/lib/clamav/rogikotha-test.ndb
     healthcheck:
-      test: ["CMD", "clamdcheck.sh"]
+      test: ['CMD', 'clamdcheck.sh']
       interval: 30s
       timeout: 10s
       start_period: 600s

@@ -189,7 +189,13 @@ export type AppealStatus = (typeof APPEAL_STATUSES)[number];
 export const ENFORCEMENT_KINDS = ['warn', 'restrict', 'suspend', 'ban'] as const;
 export type EnforcementKind = (typeof ENFORCEMENT_KINDS)[number];
 
-export const NOTIFICATION_KINDS = ['evidence', 'discussion', 'moderation', 'security', 'draft'] as const;
+export const NOTIFICATION_KINDS = [
+  'evidence',
+  'discussion',
+  'moderation',
+  'security',
+  'draft',
+] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 export const STAFF_NOTIFICATION_KINDS = [
@@ -209,7 +215,13 @@ export type SubmissionStatus = (typeof SUBMISSION_STATUSES)[number];
 export const DATA_REQUEST_KINDS = ['export', 'delete'] as const;
 export type DataRequestKind = (typeof DATA_REQUEST_KINDS)[number];
 
-export const DATA_REQUEST_STATUSES = ['requested', 'running', 'ready', 'completed', 'failed'] as const;
+export const DATA_REQUEST_STATUSES = [
+  'requested',
+  'running',
+  'ready',
+  'completed',
+  'failed',
+] as const;
 export type DataRequestStatus = (typeof DATA_REQUEST_STATUSES)[number];
 
 export const DELETION_ACTIONS = [
@@ -225,5 +237,11 @@ export type DeletionAction = (typeof DELETION_ACTIONS)[number];
 export const SEARCH_KINDS = ['doctor', 'facility', 'condition', 'review'] as const;
 export type SearchKind = (typeof SEARCH_KINDS)[number];
 
-export const TARGET_KINDS = ['review', 'facility_review', 'comment', 'evidence', 'profile'] as const;
+export const TARGET_KINDS = [
+  'review',
+  'facility_review',
+  'comment',
+  'evidence',
+  'profile',
+] as const;
 export type TargetKind = (typeof TARGET_KINDS)[number];

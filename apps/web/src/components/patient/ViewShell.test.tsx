@@ -15,7 +15,9 @@ const routing = vi.hoisted(() => ({ pathname: '/' }));
 // See components/patient/Masthead.test.tsx for why this mocks the app's own
 // `@/i18n/routing` re-export rather than `next/navigation` directly.
 vi.mock('@/i18n/routing', () => ({
-  Link: ({ href, children }: { href: string; children?: ReactNode }) => <a href={href}>{children}</a>,
+  Link: ({ href, children }: { href: string; children?: ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
   usePathname: () => routing.pathname,
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
 }));
@@ -89,7 +91,9 @@ describe('ViewShell', () => {
 
   it('renders the heading when title is non-empty', () => {
     renderShell({ view: 'about', title: 'About & methodology', path: '/about' });
-    expect(screen.getByRole('heading', { level: 1, name: 'About & methodology' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'About & methodology' }),
+    ).toBeInTheDocument();
   });
 
   it.each([

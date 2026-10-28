@@ -90,7 +90,7 @@ describe('titleForView', () => {
     expect(titleForView('queue', t)).toBe('রিপোর্ট সারি');
   });
 
-  it('falls back to the detail view\'s index title (no separate detail key exists yet)', () => {
+  it("falls back to the detail view's index title (no separate detail key exists yet)", () => {
     const t = translatorFor('en');
     expect(titleForView('facility', t)).toBe(titleForView('facilities', t));
     expect(titleForView('condition', t)).toBe(titleForView('topics', t));

@@ -13,7 +13,13 @@
 // `@rogikotha/database` (`PgOutboxRelayStore`); this module decides the
 // routes, keys, job data and the retry-or-dead rule, and logs the outcomes
 // once the batch committed.
-import type { EventOutcome, EventPlan, OutboxEventRow, PlannedJob, RelayStore } from '@rogikotha/database';
+import type {
+  EventOutcome,
+  EventPlan,
+  OutboxEventRow,
+  PlannedJob,
+  RelayStore,
+} from '@rogikotha/database';
 
 import type { Logger } from '../logger.js';
 import type { WorkerContainer } from '../container.js';
@@ -88,7 +94,10 @@ export function relayQueueNames(routes: Record<string, JobName[]> = RELAY): JobN
 }
 
 /** Ensures every routed queue; already-ensured queues cost nothing. */
-export async function ensureRelayQueues(queue: RelayQueue, routes: Record<string, JobName[]> = RELAY): Promise<void> {
+export async function ensureRelayQueues(
+  queue: RelayQueue,
+  routes: Record<string, JobName[]> = RELAY,
+): Promise<void> {
   for (const name of relayQueueNames(routes)) {
     await queue.ensureQueue(name);
   }
@@ -101,7 +110,10 @@ export function jobKey(job: JobName, eventId: string): string {
 }
 
 /** What the relay does with one claimed event (BR2.1–BR2.3): the C15 envelope, payload unchanged. */
-export function planEvent(event: OutboxEventRow, routes: Record<string, JobName[]> = RELAY): EventPlan {
+export function planEvent(
+  event: OutboxEventRow,
+  routes: Record<string, JobName[]> = RELAY,
+): EventPlan {
   const jobs = routes[event.name];
   if (jobs === undefined) {
     return { kind: 'unmapped' };
@@ -113,7 +125,10 @@ export function planEvent(event: OutboxEventRow, routes: Record<string, JobName[
   };
 }
 
-export function decideFailure(attempts: number, maxAttempts: number = DEFAULT_MAX_ATTEMPTS): 'retry' | 'dead' {
+export function decideFailure(
+  attempts: number,
+  maxAttempts: number = DEFAULT_MAX_ATTEMPTS,
+): 'retry' | 'dead' {
   return attempts >= maxAttempts ? 'dead' : 'retry';
 }
 

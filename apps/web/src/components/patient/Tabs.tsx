@@ -2,7 +2,11 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import type { PatientTab } from '@/lib/cookies';
 
-const TAB_ITEMS: { id: PatientTab; href: '/' | '/doctors' | '/facilities' | '/topics' | '/experiences' | '/me'; key: string }[] = [
+const TAB_ITEMS: {
+  id: PatientTab;
+  href: '/' | '/doctors' | '/facilities' | '/topics' | '/experiences' | '/me';
+  key: string;
+}[] = [
   { id: 'discover', href: '/', key: 'nav.discover' },
   { id: 'doctors', href: '/doctors', key: 'nav.profile' },
   { id: 'facilities', href: '/facilities', key: 'nav.facilities' },

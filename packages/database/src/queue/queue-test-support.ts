@@ -29,9 +29,10 @@ export async function jobsIn(queue: string): Promise<JobRow[]> {
 }
 
 export async function storedPolicy(queue: string): Promise<string | null> {
-  const { rows } = await testPool.query<{ policy: string }>('select policy from pgboss.queue where name = $1', [
-    queue,
-  ]);
+  const { rows } = await testPool.query<{ policy: string }>(
+    'select policy from pgboss.queue where name = $1',
+    [queue],
+  );
   return rows[0]?.policy ?? null;
 }
 

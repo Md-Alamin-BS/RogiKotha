@@ -44,12 +44,16 @@ describe('PgOutbox', () => {
 
       // While the first transaction holds them, a second claim skips them.
       await other.query('BEGIN');
-      expect(named(await outbox.claimUnprocessed(clientExecutor(other), CLAIM_ALL), name)).toHaveLength(0);
+      expect(
+        named(await outbox.claimUnprocessed(clientExecutor(other), CLAIM_ALL), name),
+      ).toHaveLength(0);
       await other.query('ROLLBACK');
 
       await holder.query('ROLLBACK');
       await other.query('BEGIN');
-      expect(named(await outbox.claimUnprocessed(clientExecutor(other), CLAIM_ALL), name)).toHaveLength(2);
+      expect(
+        named(await outbox.claimUnprocessed(clientExecutor(other), CLAIM_ALL), name),
+      ).toHaveLength(2);
       await other.query('ROLLBACK');
     } finally {
       holder.release();
@@ -115,7 +119,9 @@ describe('PgOutbox', () => {
         await expect(
           pool.query("insert into outbox_events (name, payload) values ('worker.probe', '{}')"),
         ).resolves.toBeDefined();
-        await expect(pool.query('select reporter_account_id from reports')).rejects.toThrow(/permission denied/i);
+        await expect(pool.query('select reporter_account_id from reports')).rejects.toThrow(
+          /permission denied/i,
+        );
       } finally {
         await pool.end();
       }

@@ -7,7 +7,12 @@
 //
 // CR-011 (BR6.4): the relay transaction moved to `@rogikotha/database`, so
 // the in-memory double is now a `RelayStore`; the assertion is unchanged.
-import type { EventOutcome, OutboxEventRow, RelayBatchOptions, RelayStore } from '@rogikotha/database';
+import type {
+  EventOutcome,
+  OutboxEventRow,
+  RelayBatchOptions,
+  RelayStore,
+} from '@rogikotha/database';
 import { describe, expect, it } from 'vitest';
 
 import { relayOnce } from './handlers/outbox-relay.js';
@@ -47,7 +52,10 @@ describe('worker smoke', () => {
 
     await relayOnce({ store, queue: noopQueue, logger: noopLogger });
 
-    expect(store.enqueued.map((j) => j.name).sort()).toEqual(['notification.deliver', 'search.refresh']);
+    expect(store.enqueued.map((j) => j.name).sort()).toEqual([
+      'notification.deliver',
+      'search.refresh',
+    ]);
     expect(store.processed).toEqual(['evt-smoke-1']);
   });
 });

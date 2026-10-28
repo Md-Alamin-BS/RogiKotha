@@ -40,7 +40,11 @@ function utf8Encode(str: string): number[] {
     } else if (codePoint < 0x800) {
       bytes.push(0xc0 | (codePoint >> 6), 0x80 | (codePoint & 0x3f));
     } else if (codePoint < 0x10000) {
-      bytes.push(0xe0 | (codePoint >> 12), 0x80 | ((codePoint >> 6) & 0x3f), 0x80 | (codePoint & 0x3f));
+      bytes.push(
+        0xe0 | (codePoint >> 12),
+        0x80 | ((codePoint >> 6) & 0x3f),
+        0x80 | (codePoint & 0x3f),
+      );
     } else {
       bytes.push(
         0xf0 | (codePoint >> 18),
@@ -74,7 +78,8 @@ function utf8Decode(bytes: number[]): string {
       const b1 = bytes[i + 1] ?? 0;
       const b2 = bytes[i + 2] ?? 0;
       const b3 = bytes[i + 3] ?? 0;
-      const codePoint = ((b0 & 0x07) << 18) | ((b1 & 0x3f) << 12) | ((b2 & 0x3f) << 6) | (b3 & 0x3f);
+      const codePoint =
+        ((b0 & 0x07) << 18) | ((b1 & 0x3f) << 12) | ((b2 & 0x3f) << 6) | (b3 & 0x3f);
       result += String.fromCodePoint(codePoint);
       i += 4;
     }
@@ -99,7 +104,10 @@ function bytesToBase64Url(bytes: number[]): string {
     result += alphabetChar((n >> 18) & 0x3f) + alphabetChar((n >> 12) & 0x3f);
   } else if (remaining === 2) {
     const n = ((bytes[i] ?? 0) << 16) | ((bytes[i + 1] ?? 0) << 8);
-    result += alphabetChar((n >> 18) & 0x3f) + alphabetChar((n >> 12) & 0x3f) + alphabetChar((n >> 6) & 0x3f);
+    result +=
+      alphabetChar((n >> 18) & 0x3f) +
+      alphabetChar((n >> 12) & 0x3f) +
+      alphabetChar((n >> 6) & 0x3f);
   }
   return result;
 }

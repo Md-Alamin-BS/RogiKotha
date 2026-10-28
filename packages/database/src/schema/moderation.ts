@@ -1,11 +1,29 @@
 // Moderation (02-data-model.md §9, AD-12). `audit_events` already exists
 // from T-004 (`schema/audit.ts`) — not re-declared here.
 import { sql } from 'drizzle-orm';
-import { boolean, integer, jsonb, pgSequence, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  integer,
+  jsonb,
+  pgSequence,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 import { accountProfiles } from './account';
 import { createdAt, id } from './_common';
-import { appealStatusEnum, caseStatusEnum, moderationActionEnum, moderationLaneEnum, reportReasonEnum, targetKindEnum } from './enums';
+import {
+  appealStatusEnum,
+  caseStatusEnum,
+  moderationActionEnum,
+  moderationLaneEnum,
+  reportReasonEnum,
+  targetKindEnum,
+} from './enums';
 import { reviews } from './review';
 
 // Backs `moderation_cases.code`'s `'MOD-' || nextval(...)` default (task
@@ -31,7 +49,9 @@ export const reports = pgTable(
     evidenceNote: text('evidence_note'),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex('reports_target_reporter_unique').on(t.targetKind, t.targetId, t.reporterAccountId)],
+  (t) => [
+    uniqueIndex('reports_target_reporter_unique').on(t.targetKind, t.targetId, t.reporterAccountId),
+  ],
 );
 
 export const moderationCases = pgTable('moderation_cases', {
@@ -85,7 +105,9 @@ export const moderationDecisions = pgTable('moderation_decisions', {
     .references(() => accountProfiles.id),
   // `{state_before, state_after}` — append-only, never edits narrative
   // (02-data-model.md §9).
-  publicEffect: jsonb('public_effect').$type<{ stateBefore: string; stateAfter: string }>().notNull(),
+  publicEffect: jsonb('public_effect')
+    .$type<{ stateBefore: string; stateAfter: string }>()
+    .notNull(),
   createdAt: createdAt(),
 });
 

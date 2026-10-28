@@ -1,7 +1,17 @@
 // Directory (02-data-model.md §4).
 import type { Provenance } from '@rogikotha/contracts';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import { boolean, integer, jsonb, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  integer,
+  jsonb,
+  pgTable,
+  smallint,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 import { accountProfiles } from './account';
 import { createdAt, id, publicId, timestamps, wherePresent } from './_common';
@@ -101,7 +111,9 @@ export const facilityBranches = pgTable(
     isPrimary: boolean('is_primary').notNull().default(false),
     ...timestamps(),
   },
-  (t) => [uniqueIndex('facility_branches_seed_ref_unique').on(t.seedRef).where(wherePresent(t.seedRef))],
+  (t) => [
+    uniqueIndex('facility_branches_seed_ref_unique').on(t.seedRef).where(wherePresent(t.seedRef)),
+  ],
 );
 
 export const profileSubmissions = pgTable('profile_submissions', {
@@ -111,7 +123,9 @@ export const profileSubmissions = pgTable('profile_submissions', {
   submittedByAccountId: uuid('submitted_by_account_id')
     .notNull()
     .references(() => accountProfiles.id),
-  status: text('status', { enum: ['pending', 'approved', 'rejected', 'merged'] as const }).notNull(),
+  status: text('status', {
+    enum: ['pending', 'approved', 'rejected', 'merged'] as const,
+  }).notNull(),
   duplicateOfId: uuid('duplicate_of_id'),
   reviewerNote: text('reviewer_note'),
   decidedBy: uuid('decided_by').references(() => accountProfiles.id),
@@ -131,7 +145,9 @@ export const profileClaims = pgTable('profile_claims', {
   method: text('method').notNull(),
   // Private — never projected publicly (02-data-model.md §4).
   evidenceNote: text('evidence_note'),
-  status: text('status', { enum: ['pending', 'approved', 'rejected', 'merged'] as const }).notNull(),
+  status: text('status', {
+    enum: ['pending', 'approved', 'rejected', 'merged'] as const,
+  }).notNull(),
   decidedBy: uuid('decided_by').references(() => accountProfiles.id),
   decidedAt: timestamp('decided_at', { withTimezone: true }),
   createdAt: createdAt(),
@@ -150,7 +166,9 @@ export const profileFieldChanges = pgTable('profile_field_changes', {
   provenance: provenanceEnum('provenance').notNull(),
   // Protected fields (name, bmdc_number) always pend, whoever proposes them.
   protected: boolean('protected').notNull().default(false),
-  status: text('status', { enum: ['pending', 'approved', 'rejected', 'merged'] as const }).notNull(),
+  status: text('status', {
+    enum: ['pending', 'approved', 'rejected', 'merged'] as const,
+  }).notNull(),
   decidedBy: uuid('decided_by').references(() => accountProfiles.id),
   decidedAt: timestamp('decided_at', { withTimezone: true }),
   reason: text('reason'),

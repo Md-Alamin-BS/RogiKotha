@@ -39,9 +39,9 @@ export function Sheet({
       if (e.key !== 'Tab') return;
       const container = sheetRef.current;
       if (!container) return;
-      const focusables = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-        (el) => el.offsetWidth > 0 || el.offsetHeight > 0,
-      );
+      const focusables = Array.from(
+        container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((el) => el.offsetWidth > 0 || el.offsetHeight > 0);
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
       if (!first || !last) return;
@@ -67,7 +67,13 @@ export function Sheet({
 
   return (
     <div className="overlay" hidden={!open}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-labelledby={titleId} ref={sheetRef}>
+      <div
+        className="sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        ref={sheetRef}
+      >
         <header className="sheet-head">
           <h2 id={titleId}>{title}</h2>
           <button

@@ -14,7 +14,15 @@
 // (see that file's `ensureAnonymousPersona`).
 import { hash } from '@node-rs/argon2';
 import { newId } from '@rogikotha/contracts';
-import { accountPreferences, accountProfiles, authAccounts, authUsers, personaLinks, personas, type Db } from '@rogikotha/database';
+import {
+  accountPreferences,
+  accountProfiles,
+  authAccounts,
+  authUsers,
+  personaLinks,
+  personas,
+  type Db,
+} from '@rogikotha/database';
 import { eq } from 'drizzle-orm';
 
 import { ACCOUNTS, PERSONAS } from '../corpus/index.js';
@@ -40,7 +48,11 @@ export async function seedAccounts(db: Db, ctx: SeedContext): Promise<number> {
 
   for (const account of ACCOUNTS) {
     const existing = await findOne(
-      db.select().from(accountProfiles).where(eq(accountProfiles.username, account.username)).limit(1),
+      db
+        .select()
+        .from(accountProfiles)
+        .where(eq(accountProfiles.username, account.username))
+        .limit(1),
     );
     if (existing) {
       ctx.accountIdByUsername.set(account.username, existing.id);
@@ -112,10 +124,18 @@ export async function seedAccounts(db: Db, ctx: SeedContext): Promise<number> {
       continue;
     }
 
-    const accountId = p.accountUsername ? ctx.accountIdByUsername.get(p.accountUsername) : undefined;
+    const accountId = p.accountUsername
+      ? ctx.accountIdByUsername.get(p.accountUsername)
+      : undefined;
     const [persona] = await db
       .insert(personas)
-      .values({ id: newId(), kind: p.kind, displayName: p.displayName.en, username: p.username, avatarHue: p.avatarHue })
+      .values({
+        id: newId(),
+        kind: p.kind,
+        displayName: p.displayName.en,
+        username: p.username,
+        avatarHue: p.avatarHue,
+      })
       .returning();
     if (accountId) {
       await db.insert(personaLinks).values({ personaId: persona!.id, accountId, reviewId: null });

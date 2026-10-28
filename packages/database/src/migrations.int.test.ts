@@ -205,7 +205,9 @@ describe('worker role grants', () => {
   it('rk_worker cannot select from persona_links', async () => {
     const pool = new Pool({ connectionString: workerUrlForTestDb() });
     try {
-      await expect(pool.query('select * from persona_links limit 1')).rejects.toThrow(/permission denied/i);
+      await expect(pool.query('select * from persona_links limit 1')).rejects.toThrow(
+        /permission denied/i,
+      );
     } finally {
       await pool.end();
     }

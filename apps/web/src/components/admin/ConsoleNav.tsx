@@ -27,7 +27,12 @@ interface NavItem {
   id: AdminTab;
   icon: IconName;
   key: string;
-  href: '/admin/queue' | '/admin/evidence' | '/admin/providers' | '/admin/notifications' | '/admin/config';
+  href:
+    | '/admin/queue'
+    | '/admin/evidence'
+    | '/admin/providers'
+    | '/admin/notifications'
+    | '/admin/config';
 }
 
 interface NavGroup {
@@ -50,7 +55,12 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     labelKey: 'admin.nav.oversight',
     items: [
-      { id: 'notifications', icon: 'bell', key: 'admin.tab.notifications', href: '/admin/notifications' },
+      {
+        id: 'notifications',
+        icon: 'bell',
+        key: 'admin.tab.notifications',
+        href: '/admin/notifications',
+      },
       { id: 'config', icon: 'sliders', key: 'admin.tab.config', href: '/admin/config' },
     ],
   },
@@ -81,7 +91,13 @@ function flatEntries(): NavEntry[] {
   ]);
 }
 
-export function ConsoleNav({ active, counts }: { active?: AdminTab | undefined; counts: NavCounts }) {
+export function ConsoleNav({
+  active,
+  counts,
+}: {
+  active?: AdminTab | undefined;
+  counts: NavCounts;
+}) {
   const t = useTranslations();
   return (
     <nav className="bar-nav" aria-label={t('a11y.screens')}>

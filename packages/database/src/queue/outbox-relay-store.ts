@@ -71,8 +71,7 @@ const RELAY_IDLE_IN_TRANSACTION_TIMEOUT = '10s';
 const EVENT_SAVEPOINT = 'relay_event';
 
 type JobsOutcome =
-  | { ok: true; jobs: RelayedJob[] }
-  | { ok: false; errorCode: RelayErrorCode; failedJob: string };
+  { ok: true; jobs: RelayedJob[] } | { ok: false; errorCode: RelayErrorCode; failedJob: string };
 
 export class PgOutboxRelayStore implements RelayStore {
   private readonly pool: Pool;
@@ -98,7 +97,8 @@ export class PgOutboxRelayStore implements RelayStore {
         await client.query('ROLLBACK');
       } catch (rollbackError) {
         // The connection is unusable; it must not go back to the pool.
-        releaseError = rollbackError instanceof Error ? rollbackError : new Error(String(rollbackError));
+        releaseError =
+          rollbackError instanceof Error ? rollbackError : new Error(String(rollbackError));
       }
       throw error;
     } finally {
@@ -111,11 +111,18 @@ export class PgOutboxRelayStore implements RelayStore {
     const sql = clientExecutor(client);
     await client.query('BEGIN');
     await client.query(`SET LOCAL statement_timeout = '${RELAY_STATEMENT_TIMEOUT}'`);
-    await client.query(`SET LOCAL idle_in_transaction_session_timeout = '${RELAY_IDLE_IN_TRANSACTION_TIMEOUT}'`);
+    await client.query(
+      `SET LOCAL idle_in_transaction_session_timeout = '${RELAY_IDLE_IN_TRANSACTION_TIMEOUT}'`,
+    );
     const events = await this.outbox.claimUnprocessed(sql, opts.limit);
     const outcomes: EventOutcome[] = [];
     for (const row of events) {
-      const event: OutboxEventRow = { id: row.id, name: row.name, payload: row.payload, attempts: row.attempts };
+      const event: OutboxEventRow = {
+        id: row.id,
+        name: row.name,
+        payload: row.payload,
+        attempts: row.attempts,
+      };
       outcomes.push(await this.relayEvent(client, sql, event, opts));
     }
     await client.query('COMMIT');

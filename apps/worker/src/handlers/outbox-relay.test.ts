@@ -5,7 +5,12 @@
 // outcomes after "commit". Their assertions are kept; the key assertion now
 // expects C15's `<job>:<eventId>` form (Question 4) instead of
 // `<eventId>:<job>`.
-import type { EventOutcome, OutboxEventRow, RelayBatchOptions, RelayStore } from '@rogikotha/database';
+import type {
+  EventOutcome,
+  OutboxEventRow,
+  RelayBatchOptions,
+  RelayStore,
+} from '@rogikotha/database';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -74,7 +79,13 @@ class FakeRelayStore implements RelayStore {
       } else {
         this.failedIds.push(event.id);
       }
-      return { ...base, attempts: event.attempts, result: decision, errorCode: 'enqueue_error', failedJob: failed.name };
+      return {
+        ...base,
+        attempts: event.attempts,
+        result: decision,
+        errorCode: 'enqueue_error',
+        failedJob: failed.name,
+      };
     }
     const jobs = plan.jobs.map((job) => {
       if (this.deduplicate.delete(job.name)) {
@@ -115,11 +126,24 @@ class CollectingLogger {
 }
 
 function anEvent(overrides: Partial<OutboxEventRow> = {}): OutboxEventRow {
-  return { id: 'evt-1', name: 'review.published', payload: { reviewId: 'r1' }, attempts: 0, ...overrides };
+  return {
+    id: 'evt-1',
+    name: 'review.published',
+    payload: { reviewId: 'r1' },
+    attempts: 0,
+    ...overrides,
+  };
 }
 
 function anOutcome(overrides: Partial<EventOutcome> = {}): EventOutcome {
-  return { eventId: 'evt-1', eventName: 'doctor.changed', result: 'relayed', attempts: 0, jobs: [], ...overrides };
+  return {
+    eventId: 'evt-1',
+    eventName: 'doctor.changed',
+    result: 'relayed',
+    attempts: 0,
+    jobs: [],
+    ...overrides,
+  };
 }
 
 describe('RELAY / OUTBOX_EVENTS (ISS-145)', () => {
@@ -149,7 +173,10 @@ describe('relayOnce', () => {
 
     await relayOnce({ store, queue, logger });
 
-    expect(store.sent.map((j) => j.name).sort()).toEqual(['notification.deliver', 'search.refresh']);
+    expect(store.sent.map((j) => j.name).sort()).toEqual([
+      'notification.deliver',
+      'search.refresh',
+    ]);
     expect(store.processedIds).toEqual(['evt-1']);
   });
 
@@ -188,7 +215,9 @@ describe('relayOnce', () => {
   });
 
   it('gives up after maxAttempts and logs outbox.dead instead of retrying forever', async () => {
-    const store = new FakeRelayStore([anEvent({ id: 'evt-4', name: 'doctor.changed', attempts: 4 })]);
+    const store = new FakeRelayStore([
+      anEvent({ id: 'evt-4', name: 'doctor.changed', attempts: 4 }),
+    ]);
     store.failNextEnqueue('search.refresh');
     const queue = new FakeRelayQueue();
     const logger = new CollectingLogger();
@@ -197,7 +226,9 @@ describe('relayOnce', () => {
 
     expect(store.failedIds).toEqual([]);
     expect(store.processedIds).toEqual(['evt-4']);
-    expect(logger.entries).toContainEqual(expect.objectContaining({ level: 'error', event: 'outbox.dead' }));
+    expect(logger.entries).toContainEqual(
+      expect.objectContaining({ level: 'error', event: 'outbox.dead' }),
+    );
   });
 
   // Rewritten (BR6.4): T-009 expected `evt-5:search.refresh`; C15 fixes `<job>:<eventId>`.
@@ -262,7 +293,9 @@ describe('CR-011 relay planning and logging', () => {
       relayBatch: (opts) => {
         opts.plan(anEvent({ id: 'evt-w3', name: 'nonsense.event' }));
         linesAtCommit = logger.entries.length;
-        return Promise.resolve([anOutcome({ eventId: 'evt-w3', eventName: 'nonsense.event', result: 'unmapped' })]);
+        return Promise.resolve([
+          anOutcome({ eventId: 'evt-w3', eventName: 'nonsense.event', result: 'unmapped' }),
+        ]);
       },
     };
 
@@ -273,15 +306,29 @@ describe('CR-011 relay planning and logging', () => {
     const rolledBackLogger = new CollectingLogger();
     const rollingBack = new FakeRelayStore([anEvent({ id: 'evt-w3b', name: 'nonsense.event' })]);
     rollingBack.failBatch = true;
-    await expect(relayOnce({ store: rollingBack, queue, logger: rolledBackLogger })).rejects.toThrow('connection lost');
+    await expect(
+      relayOnce({ store: rollingBack, queue, logger: rolledBackLogger }),
+    ).rejects.toThrow('connection lost');
     expect(rolledBackLogger.entries).toEqual([]);
   });
 
   it('W4: relay lines carry only the event name, event id, job, attempts and error code', () => {
     const logger = new CollectingLogger();
     logOutcomes(logger, [
-      anOutcome({ eventId: 'e-dead', result: 'dead', attempts: 5, errorCode: 'job_not_enqueued', failedJob: 'search.refresh' }),
-      anOutcome({ eventId: 'e-retry', result: 'retry', attempts: 2, errorCode: 'enqueue_error', failedJob: 'search.refresh' }),
+      anOutcome({
+        eventId: 'e-dead',
+        result: 'dead',
+        attempts: 5,
+        errorCode: 'job_not_enqueued',
+        failedJob: 'search.refresh',
+      }),
+      anOutcome({
+        eventId: 'e-retry',
+        result: 'retry',
+        attempts: 2,
+        errorCode: 'enqueue_error',
+        failedJob: 'search.refresh',
+      }),
       anOutcome({ eventId: 'e-unmapped', eventName: 'nonsense.event', result: 'unmapped' }),
       anOutcome({ eventId: 'e-dedup', jobs: [{ name: 'search.refresh', status: 'deduplicated' }] }),
       anOutcome({ eventId: 'e-audit', eventName: 'config.applied', result: 'audit_only' }),
@@ -295,7 +342,10 @@ describe('CR-011 relay planning and logging', () => {
     ]);
     const allowed = new Set(['eventName', 'eventId', 'job', 'attempts', 'errorCode']);
     for (const entry of logger.entries) {
-      expect(Object.keys(entry.fields).filter((key) => !allowed.has(key)), entry.event).toEqual([]);
+      expect(
+        Object.keys(entry.fields).filter((key) => !allowed.has(key)),
+        entry.event,
+      ).toEqual([]);
     }
     expect(logger.entries[0]?.fields).toEqual({
       eventName: 'doctor.changed',

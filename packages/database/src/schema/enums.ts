@@ -70,7 +70,10 @@ export const moderationActionEnum = pgEnum('moderation_action', MODERATION_ACTIO
 export const appealStatusEnum = pgEnum('appeal_status', APPEAL_STATUSES);
 export const enforcementKindEnum = pgEnum('enforcement_kind', ENFORCEMENT_KINDS);
 export const notificationKindEnum = pgEnum('notification_kind', NOTIFICATION_KINDS);
-export const staffNotificationKindEnum = pgEnum('staff_notification_kind', STAFF_NOTIFICATION_KINDS);
+export const staffNotificationKindEnum = pgEnum(
+  'staff_notification_kind',
+  STAFF_NOTIFICATION_KINDS,
+);
 export const submissionStatusEnum = pgEnum('submission_status', SUBMISSION_STATUSES);
 export const dataRequestKindEnum = pgEnum('data_request_kind', DATA_REQUEST_KINDS);
 export const dataRequestStatusEnum = pgEnum('data_request_status', DATA_REQUEST_STATUSES);
