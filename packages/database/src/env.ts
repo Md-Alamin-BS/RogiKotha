@@ -9,4 +9,5 @@ import { config } from 'dotenv';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..', '..', '..');
 
-config({ path: path.resolve(repoRoot, '.env') });
+// quiet: dotenv 17 otherwise prints a banner to stdout (ISS-203).
+config({ path: path.resolve(repoRoot, '.env'), quiet: true });

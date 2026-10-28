@@ -14,7 +14,8 @@ import { z } from 'zod';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..', '..', '..');
 
-config({ path: path.resolve(repoRoot, '.env') });
+// quiet: dotenv 17 otherwise prints a banner as the first stdout line, ahead of the JSON log (ISS-203).
+config({ path: path.resolve(repoRoot, '.env'), quiet: true });
 
 const EnvSchema = z.object({
   DATABASE_URL_WORKER: z.string().min(1),

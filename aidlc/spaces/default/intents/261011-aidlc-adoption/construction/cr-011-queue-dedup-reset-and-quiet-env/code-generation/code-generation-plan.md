@@ -21,19 +21,19 @@
 
 ## Steps (test-after, per the Testing Contract)
 
-- [ ] **Step 1** — Baseline on the Bolt branch: `pnpm infra:up`, then `pnpm check`, `pnpm smoke`, `timeout 300 pnpm test:int`; record the counts. Read open `ISSUES.md` rows in `database/queue`, `database/outbox`, `database/reset`, `worker/*`.
-- [ ] **Step 2** — Dependency check (BR7.2): verify pg-boss and dotenv's current stable releases and known issues for `send({ db })`, the `exclusive` policy and `quiet`; append a dated entry to `docs/status/dependency-check-log.md`. The pin stays 12.31.0.
-- [ ] **Step 3** — Verify the runner and record the unit-scoped commands in `unit-test-instructions.md`.
-- [ ] **Step 4** — Data access, queue module (BR3.1–BR3.9, BR6.6): the job declaration (policy `exclusive`, FD-076 retries), `ensureQueue` with the fail-closed policy check, `enqueue` with declaration defaults, an optional executor, the `null` confirmation, and the review's missing-queue handling; correct the `EnqueueOptions.key` comment.
-- [ ] **Step 5** — Data access, outbox repository (BR1.2, BR7.1): transaction-scoped claim without marking, mark processed, record a failed attempt, mark dead; remove the at-most-once `claimBatch`.
-- [ ] **Step 6** — Data access, relay store in `packages/database/src/queue/` (spec § 10): one transaction per call, bounded, a savepoint per event, outcomes returned after commit, a missing-queue error rolls back the batch.
-- [ ] **Step 7** — Business logic, worker (BR1.11, BR1.12, BR2.1–BR2.5): routes unchanged; plan function (key, envelope), retry-or-dead decision, outcome logging after commit; startup ensures every routed queue; correct the comment at `outbox-relay.ts:115-116`.
-- [ ] **Step 8** — Database behaviour, reset (BR4.1–BR4.5): drop `pgboss` and `public` in one transaction; widen the blocker lookup to both schemas; keep CR-007's once-per-run reset, lock timeouts, guarded sweep and production refusal.
-- [ ] **Step 9** — Environment (BR5.1–BR5.3): `quiet: true` in both loaders.
-- [ ] **Step 10** — Tests after implementation (spec § 11): T1–T16, T17 (the review's missing-queue case), W1–W6, the two probes flipped from `it.fails` to `it` with bodies unchanged and the header comment updated, the new smoke assertion `queue/pg-boss-queue.smoke.test.ts`; the T-009 tests that encode the old claim or key are rewritten with the reason recorded (BR6.4). Run the unit-scoped commands, then `timeout 300 pnpm test:int`.
-- [ ] **Step 11** — Checks: `pnpm check`, `pnpm smoke`, `timeout 300 pnpm test:int` exit 0; no assertion removed or skipped. Manual check: `timeout 30 pnpm --filter @rogikotha/worker exec tsx src/main.ts`, where the first stdout line parses as JSON. Time a 50-event batch against the 5 s statement timeout and record it.
-- [ ] **Step 12** — Records: close ISS-144, ISS-185, ISS-201, ISS-202, ISS-203 as fixed in CR-011; add the rows of spec § 17 plus the review's two rows (cross-Unit queue requirements; dead-event replay); every row `Found in U4 CR-011`. Fill the task file's Hand-off and write `docs/implementation/handoffs/CR-011.md`.
-- [ ] **Step 13** — Step 5 files: `code-summary.md`, `traceability.json`, `source-manifest.json` (literal paths only).
+- [x] **Step 1** — Baseline on the Bolt branch: `pnpm infra:up`, then `pnpm check`, `pnpm smoke`, `timeout 300 pnpm test:int`; record the counts. Read open `ISSUES.md` rows in `database/queue`, `database/outbox`, `database/reset`, `worker/*`.
+- [x] **Step 2** — Dependency check (BR7.2): verify pg-boss and dotenv's current stable releases and known issues for `send({ db })`, the `exclusive` policy and `quiet`; append a dated entry to `docs/status/dependency-check-log.md`. The pin stays 12.31.0.
+- [x] **Step 3** — Verify the runner and record the unit-scoped commands in `unit-test-instructions.md`.
+- [x] **Step 4** — Data access, queue module (BR3.1–BR3.9, BR6.6): the job declaration (policy `exclusive`, FD-076 retries), `ensureQueue` with the fail-closed policy check, `enqueue` with declaration defaults, an optional executor, the `null` confirmation, and the review's missing-queue handling; correct the `EnqueueOptions.key` comment.
+- [x] **Step 5** — Data access, outbox repository (BR1.2, BR7.1): transaction-scoped claim without marking, mark processed, record a failed attempt, mark dead; remove the at-most-once `claimBatch`.
+- [x] **Step 6** — Data access, relay store in `packages/database/src/queue/` (spec § 10): one transaction per call, bounded, a savepoint per event, outcomes returned after commit, a missing-queue error rolls back the batch.
+- [x] **Step 7** — Business logic, worker (BR1.11, BR1.12, BR2.1–BR2.5): routes unchanged; plan function (key, envelope), retry-or-dead decision, outcome logging after commit; startup ensures every routed queue; correct the comment at `outbox-relay.ts:115-116`.
+- [x] **Step 8** — Database behaviour, reset (BR4.1–BR4.5): drop `pgboss` and `public` in one transaction; widen the blocker lookup to both schemas; keep CR-007's once-per-run reset, lock timeouts, guarded sweep and production refusal.
+- [x] **Step 9** — Environment (BR5.1–BR5.3): `quiet: true` in both loaders.
+- [x] **Step 10** — Tests after implementation (spec § 11): T1–T16, T17 (the review's missing-queue case), W1–W6, the two probes flipped from `it.fails` to `it` with bodies unchanged and the header comment updated, the new smoke assertion `queue/pg-boss-queue.smoke.test.ts`; the T-009 tests that encode the old claim or key are rewritten with the reason recorded (BR6.4). Run the unit-scoped commands, then `timeout 300 pnpm test:int`.
+- [x] **Step 11** — Checks: `pnpm check`, `pnpm smoke`, `timeout 300 pnpm test:int` exit 0; no assertion removed or skipped. Manual check: `timeout 30 pnpm --filter @rogikotha/worker exec tsx src/main.ts`, where the first stdout line parses as JSON. Time a 50-event batch against the 5 s statement timeout and record it.
+- [x] **Step 12** — Records: close ISS-144, ISS-185, ISS-201, ISS-202, ISS-203 as fixed in CR-011; add the rows of spec § 17 plus the review's two rows (cross-Unit queue requirements; dead-event replay); every row `Found in U4 CR-011`. Fill the task file's Hand-off and write `docs/implementation/handoffs/CR-011.md`.
+- [x] **Step 13** — Step 5 files: `code-summary.md`, `traceability.json`, `source-manifest.json` (literal paths only).
 
 ## Files touched
 

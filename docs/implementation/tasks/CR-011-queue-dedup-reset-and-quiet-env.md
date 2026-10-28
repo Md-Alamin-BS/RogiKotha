@@ -94,3 +94,51 @@ idempotent (cheap insurance, already the convention for `search.refresh`).
 - [ ] No tool or model identity in code, comments, commits
 
 ## Hand-off (implementer fills in)
+
+Done for Code Generation (AI-DLC Unit U4); the AI-DLC review and Build and Test still run.
+Full record: `docs/implementation/handoffs/CR-011.md` and
+`aidlc/spaces/default/intents/261011-aidlc-adoption/construction/cr-011-queue-dedup-reset-and-quiet-env/code-generation/code-summary.md`.
+
+**Design choice for `ISS-201`.** Option 3 (transactional relay, FD-038) with option 1 on top:
+pg-boss 12.31.0's `send(..., { db })` is confirmed, and every queue is created `exclusive` from
+one declaration (`queue/queue-declaration.ts`), so the key de-duplicates for every producer and
+the ISS-201 probe passes unchanged. Key-less sends collapse to one in flight under `exclusive`;
+no relayed job is key-less (acceptance check 4), and `mail.send` must pass a key (`ISS-253`).
+
+**What changed.**
+- `packages/database/src/queue/outbox-relay-store.ts` (new): one transaction per tick, claim
+  without marking, `send(..., { db })` on the same connection, a savepoint per event, mark
+  processed or record the attempt (dead at 5), outcomes returned after `COMMIT`. A missing
+  queue rolls back the whole batch (design review R-01).
+- `queue/pg-boss-queue.ts`: `ensureQueue` creates from the declaration and fails closed on a
+  stored policy mismatch; `enqueue` takes an optional `executor`, uses the declaration's retry
+  defaults (5, `evidence.process` 3) and confirms every `null` before reporting `deduplicated`.
+- `repositories/outbox.ts`: `claimUnprocessed`, `markProcessed`, `recordFailedAttempt`,
+  `markDead` on the caller's connection; the at-most-once `claimBatch` and `markFailed` are gone
+  (`ISS-248` for the owned-path extension).
+- `apps/worker/src/`: `planEvent` (key `<job>:<eventId>`, envelope `{eventId, name, payload}`),
+  `decideFailure`, `logOutcomes`; `relayOnce` ensures the routed queues and logs after commit;
+  `main.ts` ensures every routed queue at start and exits 1 on failure. The comment that said
+  "never a duplicate job" is replaced by the mechanism (FD-038, `exclusive`).
+- `reset.ts`: drops `pgboss` and `public` in one transaction under CR-007's limits; the blocker
+  lookup covers both schemas.
+- Both `env.ts` files: `quiet: true`.
+- The two validator probes are plain `it` tests with their bodies unchanged; new smoke
+  assertion `queue/pg-boss-queue.smoke.test.ts`.
+
+**Acceptance.**
+
+| # | Check | Expected | Observed |
+|---|---|---|---|
+| 1 | Probe "ISS-201: …" as a normal `it` | 1 job per `singleton_key` after a re-relay | green; T7 re-relays an event whose job is still queued and keeps 1 job |
+| 2 | Probe "ISS-202: …" as a normal `it` | 0 `pgboss.job` rows after `runReset` + migrate | green; T15: `rk_worker` can create a queue and send after a reset, cannot create a table |
+| 3 | Worker's first stdout line | a JSON object, no dotenv banner | `timeout 30 pnpm --filter @rogikotha/worker exec tsx src/main.ts`: first line `{"mode":"development",…,"event":"worker.started"}`, parses as JSON |
+| 4 | Relay of a key-less job kind | not collapsed | no relayed job is key-less (W2); distinct keys give distinct jobs (T3, T6) |
+| 5 | `pnpm check`, `pnpm smoke`, `pnpm test:int` | green; no assertion removed | exit 0: check 53 files, 277 passed + 2 expected-fail; smoke 11 files / 18; test:int 15 files, 85 passed + 2 expected-fail |
+
+**Hard-rule checklist.** `rk_worker` gains no privilege (no migration or grant changed; T15 and
+the probe still deny `CREATE` in `pgboss`). Relay and start-up log lines carry ids, names,
+counts and codes only (W4). No tool or model identity anywhere.
+
+**Not done / follow-ups.** `06-change-requests.md` still shows CR-011 as queued (not in this
+Unit's plan). Open rows: `ISS-249`–`ISS-257`.

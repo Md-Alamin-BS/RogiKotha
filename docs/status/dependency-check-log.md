@@ -27,6 +27,33 @@ Rules:
 
 ## Entries
 
+### 2026-10-28 (U4 CR-011 — transactional outbox relay, queue policy, quiet dotenv)
+
+- Scope: CR-011 relies on three behaviours of the pinned libraries: pg-boss `send(..., { db })` on
+  the relay's own transaction, the `exclusive` queue policy, and dotenv's `quiet` option. The last
+  entries for pg-boss (2026-09-14) and dotenv (2026-09-13, under T-004) are older than 3 days.
+- Checked: pg-boss installed 12.31.0 (`pnpm ls`; `package.json` `^12.31.0`, lockfile 12.31.0)
+  against npm `latest` 12.38.0 (2026-10-13) and the GitHub release notes 12.31.1 to 12.38.0.
+  dotenv installed 17.4.2 against npm `latest` 18.0.9 (2026-10-22) and the dotenv `CHANGELOG.md`
+  for 18.0.0 to 18.0.9. Source read in `node_modules`: pg-boss `dist/manager.js` (`createJob`,
+  `getQueueCache`, `createQueue`, `getQueue`) and `dist/plans.js` (`insertJobs`, `job_i6`); dotenv
+  `lib/main.js` (`quiet`, `DOTENV_CONFIG_QUIET`).
+- Findings: pg-boss 12.31.0 runs a send's insert on `options.db` when one is given; the queue
+  lookup before it (`getQueueCache`) uses pg-boss's own pool and throws `Queue <name> does not
+  exist` once the queue is missing from its 60 s cache. The `exclusive` index is unique on
+  `(name, COALESCE(singleton_key, ''))` for states up to `active`. Known issue on the pinned
+  version, confirmed by the 12.37.0 notes: a send to a queue whose row is gone while it is still
+  cached resolves `null`, the same answer as a de-duplication. 12.37.0 changes that to a rejection
+  (inside a `db` transaction, a `23503` at `COMMIT`); a later pin upgrade must keep the relay's
+  batch rollback for that case. No release from 12.31.1 to 12.38.0 changes `send`, `createQueue`
+  or the `exclusive` policy in a way this Unit depends on; 12.37.1 fixes fetching from
+  `singleton`/`stately` queues only. dotenv 17.4.2 honours `quiet: true` and re-reads
+  `DOTENV_CONFIG_QUIET` after loading the file; 18.0.0 is a new major (a CLI, an opt-in fast
+  parser) with nine patches in five weeks, two of them about how `quiet` is read.
+- Decision: keep pg-boss 12.31.0 and dotenv 17.4.2 (CR-011 changes no version). The relay confirms
+  every `null` (BR3.6) and treats a thrown missing-queue error as a batch fault, which covers both
+  the pinned and the 12.37+ behaviour. Revisit dotenv 18 once its patch rate settles.
+
 ### 2026-10-11 (AWS AI-DLC 2.11.0 — process tooling upgrade)
 
 - Scope: upgrade AI-DLC from 2.10.0 to 2.11.0 for both harnesses (Claude Code, Codex CLI) before

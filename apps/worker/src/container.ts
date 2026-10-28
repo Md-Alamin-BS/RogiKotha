@@ -6,12 +6,11 @@
 // database credentials"). `container.test.ts` greps this package's source
 // for the auth library and the two forbidden commands to keep it that way
 // until T-010 turns this into a lint rule.
-import { PgOutbox, PgBossQueue, createDb, closeDb } from '@rogikotha/database';
-import type { Db } from '@rogikotha/database';
+import { PgOutbox, PgOutboxRelayStore, PgBossQueue, createDb, closeDb } from '@rogikotha/database';
+import type { Db, RelayStore } from '@rogikotha/database';
 
 import type { WorkerEnv } from './env.js';
 import { JsonLogger, type Logger } from './logger.js';
-import type { OutboxSource } from './handlers/outbox-relay.js';
 
 /** No demo-clock adapter exists yet (`packages/adapters/src/clock/` is a
  * future task — see 00-master-plan.md §4's layout). `now()` is the only
@@ -32,7 +31,7 @@ class SystemClock implements Clock {
 export interface WorkerContainer {
   db: Db;
   outbox: PgOutbox;
-  outboxSource: OutboxSource;
+  relayStore: RelayStore;
   queue: PgBossQueue;
   logger: Logger;
   clock: Clock;
@@ -43,21 +42,17 @@ export function buildContainer(env: WorkerEnv): WorkerContainer {
   const logger = new JsonLogger();
   const { db, pool } = createDb(env.DATABASE_URL_WORKER);
   const outbox = new PgOutbox();
-  const outboxSource: OutboxSource = {
-    claimBatch: (limit) => outbox.claimBatch(db, limit),
-    markProcessed: (ids) => outbox.markProcessed(db, ids),
-    markFailed: (id) => outbox.markFailed(db, id),
-  };
   // `migrate`/`createSchema`/`reindex` all default to `false` — `rk_worker`
   // owns no DDL rights on the `pgboss` schema; `packages/database/src/migrate.ts`
   // installs and migrates it as `rk_app` before the worker ever starts.
   const queue = new PgBossQueue(env.DATABASE_URL_WORKER, logger);
+  const relayStore = new PgOutboxRelayStore(pool, queue, outbox);
   const clock = new SystemClock();
 
   return {
     db,
     outbox,
-    outboxSource,
+    relayStore,
     queue,
     logger,
     clock,

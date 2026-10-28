@@ -15,6 +15,8 @@ pnpm smoke
 
 Filters go straight after the script name. Every database run gets an outer `timeout`. `code-summary.md` records the exact commands used. Then `pnpm check` and the full `timeout 300 pnpm test:int`.
 
+Verified at Code Generation step 3 (2026-10-28): `pnpm --filter @rogikotha/worker exec vitest run` collects the worker project's 4 files (14 tests on the baseline), and `timeout 300 pnpm test:int reset-guard` runs only the matching database files (2 files, 8 tests), with the global-setup reset once. The filter `queue` collects every file under `src/queue/`, including the ISS-201 and ISS-202 probes in `queue/pg-boss-queue.validator.int.test.ts`; `validator-probes` collects the T-005 and CR-006 probes, which this Unit does not change.
+
 ## What to cover (spec § 11 plus the design review)
 
 | Group | Tests | Rules |

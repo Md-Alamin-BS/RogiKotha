@@ -1,9 +1,12 @@
 // Worker entry point (task steps 6, 8, 10). Starts pg-boss, registers job
 // handlers from `registry.ts`, and shuts down cleanly on SIGINT/SIGTERM
 // (plus SIGBREAK and a `shutdown` IPC message for `tsx watch` on Windows).
+import { QueuePolicyMismatchError } from '@rogikotha/database';
+
 import { loadEnv } from './env.js';
 import { buildContainer } from './container.js';
 import type { WorkerContainer } from './container.js';
+import { relayQueueNames } from './handlers/outbox-relay.js';
 import { JOBS } from './registry.js';
 import type { JobDefinition, JobName } from './registry.js';
 import { startHeartbeat } from './health.js';
@@ -53,11 +56,47 @@ function startPoller(name: JobName, def: JobDefinition, intervalMs: number, ctx:
   };
 }
 
+/** BR1.12: every queue a relay route names exists with its declared policy
+ * before the first tick, so the relay never creates a queue inside its
+ * transaction. Returns false after logging which queue failed. */
+async function ensureRelayQueuesAtStart(ctx: WorkerContainer): Promise<boolean> {
+  for (const queue of relayQueueNames()) {
+    try {
+      await ctx.queue.ensureQueue(queue);
+    } catch (err) {
+      if (err instanceof QueuePolicyMismatchError) {
+        ctx.logger.error('worker.start_failed', {
+          code: 'queue_policy_mismatch',
+          queue: err.queue,
+          expectedPolicy: err.expectedPolicy,
+          actualPolicy: err.actualPolicy,
+          fix: 'pnpm db:reset',
+        });
+      } else {
+        const sqlState = (err as { code?: unknown } | null)?.code;
+        ctx.logger.error('worker.start_failed', {
+          code: 'queue_ensure_failed',
+          queue,
+          errorName: err instanceof Error ? err.name : typeof err,
+          ...(typeof sqlState === 'string' ? { sqlState } : {}),
+        });
+      }
+      return false;
+    }
+  }
+  return true;
+}
+
 async function main(): Promise<void> {
   const env = loadEnv();
   const ctx = buildContainer(env);
 
   await ctx.queue.start();
+
+  if (!(await ensureRelayQueuesAtStart(ctx))) {
+    await ctx.close();
+    process.exit(1);
+  }
 
   const pollers: Poller[] = [];
   let queueCount = 0;

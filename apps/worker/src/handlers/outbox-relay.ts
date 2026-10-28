@@ -5,36 +5,27 @@
 // queue vs. a plain JS timer); read together with `registry.ts`'s comment,
 // this implementation takes the narrower, more testable option — a plain
 // `setInterval` driven directly by `main.ts` (see `intervalMs` on its
-// registry entry), not a pg-boss job. `relayOnce` below is the pure,
+// registry entry), not a pg-boss job. `relayOnce` below is the
 // dependency-injected core so it can be unit-tested without pg-boss or a
 // database (ASSUMPTION(T-009), logged as an `ISS-` row — see hand-off).
+//
+// CR-011 (FD-038): the relay transaction itself lives in
+// `@rogikotha/database` (`PgOutboxRelayStore`); this module decides the
+// routes, keys, job data and the retry-or-dead rule, and logs the outcomes
+// once the batch committed.
+import type { EventOutcome, EventPlan, OutboxEventRow, PlannedJob, RelayStore } from '@rogikotha/database';
+
 import type { Logger } from '../logger.js';
 import type { WorkerContainer } from '../container.js';
 import type { JobName } from '../registry.js';
 
-export interface OutboxEventRow {
-  id: string;
-  name: string;
-  payload: unknown;
-  attempts: number;
-}
-
-/** The slice of `PgOutbox` (packages/database/src/repositories/outbox.ts)
- * the relay needs, with `db` already closed over by whoever builds this
- * (see `container.ts`) — kept as a narrow interface so tests can supply an
- * in-memory double instead of a real `Db`. */
-export interface OutboxSource {
-  claimBatch(limit: number): Promise<OutboxEventRow[]>;
-  markProcessed(ids: string[]): Promise<void>;
-  markFailed(id: string): Promise<void>;
-}
-
+/** The slice of `PgBossQueue` the relay needs before each batch. */
 export interface RelayQueue {
-  enqueue(name: JobName, payload: unknown, opts?: { key?: string }): Promise<unknown>;
+  ensureQueue(name: string): Promise<void>;
 }
 
 export interface RelayDeps {
-  outbox: OutboxSource;
+  store: RelayStore;
   queue: RelayQueue;
   logger: Logger;
   batchSize?: number;
@@ -48,7 +39,7 @@ export interface RelayDeps {
  * The event → jobs map, copied from 03-routes-and-contracts.md §5. An event
  * name present here with an empty array (`config.applied`, `hold.changed`,
  * `retention.policyChanged`) is "audit only" per §5 — expected, not
- * unmapped. A name that is not a key at all is unmapped (see `relayOnce`).
+ * unmapped. A name that is not a key at all is unmapped (see `planEvent`).
  *
  * ASSUMPTION(T-009): `dataRequest.created` fans out to both `data.export`
  * and `data.delete` — §5 lists them as alternatives ("data.export /
@@ -87,67 +78,100 @@ export const RELAY: Record<string, JobName[]> = {
  * catalogue, so a typo silently never fired a job). */
 export const OUTBOX_EVENTS = Object.keys(RELAY) as readonly string[];
 
-/** One relay tick: claim a batch, enqueue the mapped jobs for each event,
- * mark the batch processed. Never throws — a per-event enqueue failure is
- * recorded on that event only, so one bad event never blocks the rest of
- * the batch or the next tick. */
-export async function relayOnce(deps: RelayDeps): Promise<void> {
-  const { outbox, queue, logger } = deps;
-  const batchSize = deps.batchSize ?? 50;
-  const maxAttempts = deps.maxAttempts ?? 5;
+// ASSUMPTION(CR-011): batch size 50 and 5 relay attempts stay as T-009 set them.
+const DEFAULT_BATCH_SIZE = 50;
+const DEFAULT_MAX_ATTEMPTS = 5;
 
-  const events = await outbox.claimBatch(batchSize);
-  if (events.length === 0) {
-    return;
+/** Every distinct job name a route names: the queues ensured at start and before each batch (BR1.12). */
+export function relayQueueNames(routes: Record<string, JobName[]> = RELAY): JobName[] {
+  return [...new Set(Object.values(routes).flat())];
+}
+
+/** Ensures every routed queue; already-ensured queues cost nothing. */
+export async function ensureRelayQueues(queue: RelayQueue, routes: Record<string, JobName[]> = RELAY): Promise<void> {
+  for (const name of relayQueueNames(routes)) {
+    await queue.ensureQueue(name);
   }
+}
 
-  const processedIds: string[] = [];
+/** C15 key (BR2.1). The exclusive queue policy refuses a second in-flight job
+ * with it, and the relay transaction (FD-038) never re-sends a committed job. */
+export function jobKey(job: JobName, eventId: string): string {
+  return `${job}:${eventId}`;
+}
 
-  for (const event of events) {
-    const jobs = RELAY[event.name];
-    if (jobs === undefined) {
-      logger.warn('outbox.unmapped', { eventName: event.name, eventId: event.id });
-      processedIds.push(event.id);
-      continue;
-    }
-    try {
-      for (const job of jobs) {
-        // Deterministic per (event, job) pair, so a retry after `markFailed`
-        // enqueues under the same `singletonKey` — never a duplicate job.
-        await queue.enqueue(job, event.payload, { key: `${event.id}:${job}` });
-      }
-      processedIds.push(event.id);
-    } catch (err) {
-      const attempts = event.attempts + 1;
-      if (attempts >= maxAttempts) {
-        logger.error('outbox.dead', {
-          eventName: event.name,
-          eventId: event.id,
-          attempts,
-          message: err instanceof Error ? err.message : String(err),
-        });
-        // Give up rather than retry forever — never blocks the queue.
-        processedIds.push(event.id);
-      } else {
+/** What the relay does with one claimed event (BR2.1–BR2.3): the C15 envelope, payload unchanged. */
+export function planEvent(event: OutboxEventRow, routes: Record<string, JobName[]> = RELAY): EventPlan {
+  const jobs = routes[event.name];
+  if (jobs === undefined) {
+    return { kind: 'unmapped' };
+  }
+  const data = { eventId: event.id, name: event.name, payload: event.payload };
+  return {
+    kind: 'jobs',
+    jobs: jobs.map((job): PlannedJob => ({ name: job, key: jobKey(job, event.id), data })),
+  };
+}
+
+export function decideFailure(attempts: number, maxAttempts: number = DEFAULT_MAX_ATTEMPTS): 'retry' | 'dead' {
+  return attempts >= maxAttempts ? 'dead' : 'retry';
+}
+
+/** One line per outcome that needs one; ids, names, counts and codes only (BR2.4). */
+export function logOutcomes(logger: Logger, outcomes: EventOutcome[]): void {
+  for (const outcome of outcomes) {
+    const ids = { eventName: outcome.eventName, eventId: outcome.eventId };
+    switch (outcome.result) {
+      case 'unmapped':
+        logger.warn('outbox.unmapped', ids);
+        break;
+      case 'retry':
         logger.warn('outbox.relay_failed', {
-          eventName: event.name,
-          eventId: event.id,
-          attempts,
-          message: err instanceof Error ? err.message : String(err),
+          ...ids,
+          job: outcome.failedJob,
+          attempts: outcome.attempts,
+          errorCode: outcome.errorCode,
         });
-        await outbox.markFailed(event.id);
-      }
+        break;
+      case 'dead':
+        logger.error('outbox.dead', {
+          ...ids,
+          job: outcome.failedJob,
+          attempts: outcome.attempts,
+          errorCode: outcome.errorCode,
+        });
+        break;
+      case 'relayed':
+        for (const job of outcome.jobs) {
+          if (job.status === 'deduplicated') {
+            logger.info('outbox.job_deduplicated', { ...ids, job: job.name });
+          }
+        }
+        break;
+      case 'audit_only':
+        break;
     }
   }
+}
 
-  if (processedIds.length > 0) {
-    await outbox.markProcessed(processedIds);
-  }
+/** One relay tick: ensure the routed queues, relay one batch in one
+ * transaction, then log its outcomes. A per-event enqueue failure is recorded
+ * on that event only; a batch failure (connection, timeout, a missing queue)
+ * rejects with nothing changed and nothing logged here, for the poller to report. */
+export async function relayOnce(deps: RelayDeps): Promise<void> {
+  const maxAttempts = deps.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
+  await ensureRelayQueues(deps.queue);
+  const outcomes = await deps.store.relayBatch({
+    limit: deps.batchSize ?? DEFAULT_BATCH_SIZE,
+    plan: (event) => planEvent(event),
+    onFailure: (attempts) => decideFailure(attempts, maxAttempts),
+  });
+  logOutcomes(deps.logger, outcomes);
 }
 
 /** Registry-shaped wrapper (`registry.ts`'s `JobDefinition.handler`) — the
  * payload argument is unused, the whole point of this handler is the tick
  * itself, not one job's data. */
 export async function outboxRelayHandler(_payload: unknown, ctx: WorkerContainer): Promise<void> {
-  await relayOnce({ outbox: ctx.outboxSource, queue: ctx.queue, logger: ctx.logger });
+  await relayOnce({ store: ctx.relayStore, queue: ctx.queue, logger: ctx.logger });
 }

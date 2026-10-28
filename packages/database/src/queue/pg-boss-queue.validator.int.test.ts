@@ -3,13 +3,12 @@
 // add test files under the task's test paths and must say so."). See
 // `docs/validation/T-009.md`.
 //
-// The two `it` cases guard the `rk_worker` privilege boundary this task
-// introduced on the `pgboss` schema. The two `it.fails` probes assert
-// behaviour the task requires but that does not hold today. They stay green
-// while the defect is open and turn **red** the moment it is fixed, which is
-// the signal to delete the `.fails` marker and keep the plain assertion.
-// Do not "fix" a red result here by weakening the assertion: a red result
-// means the ISS row named in the test can be closed.
+// The first two cases guard the `rk_worker` privilege boundary this task
+// introduced on the `pgboss` schema. The ISS-201 and ISS-202 probes were
+// `it.fails` tripwires until CR-011 fixed both defects (`exclusive` queues,
+// and a reset that drops `pgboss` with `public`); they are now plain tests
+// with their bodies unchanged. Do not weaken an assertion here: a red result
+// means the defect named in the test is back.
 import { randomUUID } from 'node:crypto';
 
 import { sql } from 'drizzle-orm';
@@ -45,10 +44,11 @@ describe('T-009 validator probes', () => {
   // enqueue twice". pg-boss 12 only enforces `singleton_key` uniqueness under
   // the `short`/`singleton`/`stately`/`exclusive`/`key_strict_fifo` queue
   // policies or with `singletonSeconds` (pg-boss `dist/plans.js` job_i1..i8).
-  // `PgBossQueue.ensureQueue` creates every queue with the default
+  // `PgBossQueue.ensureQueue` created every queue with the default
   // `standard` policy, so a second send with the same key while the first job
-  // is still queued creates a second job.
-  it.fails(
+  // was still queued created a second job. Fixed in CR-011: queues are created
+  // `exclusive` from the queue declaration.
+  it(
     'ISS-201: a second enqueue with the same key while the first job is still queued creates no second job',
     async () => {
       const queue = new PgBossQueue(workerUrlForTestDb(), silentLogger);
@@ -66,10 +66,11 @@ describe('T-009 validator probes', () => {
     30_000,
   );
 
-  // ISS-202. `reset.ts` drops and recreates `public` only; the `pgboss`
-  // schema T-009 introduced survives `db:reset` / `demo:reset`, so queued
-  // jobs from before a reset run against the freshly seeded database.
-  it.fails(
+  // ISS-202. `reset.ts` dropped and recreated `public` only; the `pgboss`
+  // schema T-009 introduced survived `db:reset` / `demo:reset`, so queued
+  // jobs from before a reset ran against the freshly seeded database. Fixed in
+  // CR-011: the reset drops `pgboss` and `public` in one transaction.
+  it(
     'ISS-202: db:reset leaves no pg-boss job behind',
     async () => {
       const queue = new PgBossQueue(workerUrlForTestDb(), silentLogger);
