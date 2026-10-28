@@ -1,0 +1,40 @@
+{
+  "stage": "functional-design",
+  "unit": "cr-012-storyboard-seed-correction",
+  "upstream_ids": ["U6"],
+  "coverage": [
+    { "id": "U6", "status": "OK", "target": "BR1.1, BR1.5, BR4.1, BR4.4, BR5.1, BR5.2, BR5.4" }
+  ],
+  "reverse": [
+    { "id": "BR1.2", "status": "N/A", "target": "CR-012 hard-rule checklist and acceptance row 'FD-089: synthetic and flagged'; project.md Forbidden (synthetic data). U6 has no story, so no acceptance criterion of its own" },
+    { "id": "BR1.3", "status": "N/A", "target": "FD-089 (existing records, ids and storyboard references unchanged); CR-012 acceptance row 'FD-089: storyboard unchanged'" },
+    { "id": "BR1.4", "status": "N/A", "target": "Question 3 answer A; FD-089; project.md Mandated (counts from rows)" },
+    { "id": "BR1.6", "status": "N/A", "target": "CR-012 acceptance row 'FD-089: new records are complete, some gaps remain'; Question 11 answer A" },
+    { "id": "BR1.7", "status": "N/A", "target": "FD-086 (no reporter notices); Question 6 answer A" },
+    { "id": "BR2.1", "status": "N/A", "target": "Generated-corpus contract (port-corpus.mjs header, T-007 step 2); Question 4 answer A" },
+    { "id": "BR2.2", "status": "N/A", "target": "Technical port rule: the prototype's followUpsFor reading, needed for CR-012 acceptance row 'FD-089: counts per module'" },
+    { "id": "BR2.3", "status": "N/A", "target": "Technical port rule: T-401 step 4 thread alias; keeps the corpus invariant 'one persona per anonymous thread'" },
+    { "id": "BR2.4", "status": "N/A", "target": "Technical port rule protecting FD-089's 'existing records unchanged' (persona hues)" },
+    { "id": "BR2.5", "status": "N/A", "target": "Technical port rule: 02-data-model.md section 4 hard-coded Banglish list" },
+    { "id": "BR2.6", "status": "N/A", "target": "Question 5 answer A (bookmarks follow the prototype)" },
+    { "id": "BR2.7", "status": "N/A", "target": "Technical validation rule: deterministic port (T-007 acceptance, ISS-178)" },
+    { "id": "BR3.1", "status": "N/A", "target": "CR-012 step 4a and acceptance row 'Seed idempotent'" },
+    { "id": "BR3.2", "status": "N/A", "target": "CR-012 step 4a ('real foreign keys') and acceptance row 'FD-089: referential integrity'" },
+    { "id": "BR3.3", "status": "N/A", "target": "Technical seed rule for the FD-089 notifications; Question 7 answer A" },
+    { "id": "BR3.4", "status": "N/A", "target": "Technical seed rule for the FD-089 appeal case MOD-2018; FD-088 keeps appeal data" },
+    { "id": "BR3.5", "status": "N/A", "target": "project.md Mandated (counts from rows); CR-012 hard-rule checklist" },
+    { "id": "BR3.6", "status": "N/A", "target": "Question 5 answer A" },
+    { "id": "BR3.7", "status": "N/A", "target": "ISS-252; Question 12 answer A" },
+    { "id": "BR4.2", "status": "N/A", "target": "CR-012 step 4 ('make the padding rule explicit for this case only')" },
+    { "id": "BR4.3", "status": "N/A", "target": "CR-012 acceptance row 'Other cases unchanged' and step 4a" },
+    { "id": "BR5.3", "status": "N/A", "target": "CR-012 acceptance row 'No stale names'" },
+    { "id": "BR6.1", "status": "N/A", "target": "CR-012 step 5 and its acceptance rows; team.md Testing Posture" },
+    { "id": "BR6.2", "status": "N/A", "target": "Technical validation rule keeping corpus-to-prototype drift visible in the default test sweep" },
+    { "id": "BR6.3", "status": "N/A", "target": "team.md Testing Posture (existing suites stay green; changed assertions carry a recorded reason)" },
+    { "id": "BR6.4", "status": "N/A", "target": "team.md Testing Posture (cumulative smoke suite)" },
+    { "id": "BR6.5", "status": "N/A", "target": "CR-012 acceptance row 'Nothing else moved'; team.md Way of Working" },
+    { "id": "BR7.1", "status": "N/A", "target": "CR-012 step 6; project.md Mandated (ISS rows)" },
+    { "id": "BR7.2", "status": "N/A", "target": "FD-089 and FD-042 (bilingual review of new Bengali copy)" },
+    { "id": "BR7.3", "status": "N/A", "target": "Questions 2 and 4 answer A; team.md Way of Working step 4 (files outside owned paths); ISS-248 precedent" }
+  ]
+}
