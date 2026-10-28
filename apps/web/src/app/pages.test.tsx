@@ -2,7 +2,7 @@ import type { ReactElement, ReactNode } from 'react';
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { NextIntlClientProvider, createTranslator, type AbstractIntlMessages } from 'next-intl';
 import type { Metadata } from 'next';
@@ -43,9 +43,15 @@ const require = createRequire(import.meta.url);
 const i18nPackageRoot = path.resolve(path.dirname(require.resolve('@rogikotha/i18n')), '..');
 const LOCALES = ['en', 'bn'] as const;
 
+const messagesByLocale = new Map<string, AbstractIntlMessages>();
+
 function loadMessages(locale: (typeof LOCALES)[number]): AbstractIntlMessages {
+  const cached = messagesByLocale.get(locale);
+  if (cached !== undefined) return cached;
   const file = path.join(i18nPackageRoot, 'messages', `${locale}.json`);
-  return JSON.parse(fs.readFileSync(file, 'utf8')) as AbstractIntlMessages;
+  const messages = JSON.parse(fs.readFileSync(file, 'utf8')) as AbstractIntlMessages;
+  messagesByLocale.set(locale, messages);
+  return messages;
 }
 
 type PageModule = {
@@ -231,6 +237,12 @@ async function renderRoute(routeCase: RouteCase, locale: (typeof LOCALES)[number
   );
   return { page, translate: createTranslator({ locale, messages }) };
 }
+
+// Under load the first import of a route (`/emergency` pulls in the whole contracts barrel) passed
+// 5 s inside its test (ISS-273); every route module is transformed once here instead.
+beforeAll(async () => {
+  await Promise.all(ROUTES.map((routeCase) => routeCase.load()));
+}, 120_000);
 
 describe.each(LOCALES)('route pages in %s', (locale) => {
   beforeEach(() => {

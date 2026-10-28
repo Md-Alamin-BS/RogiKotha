@@ -2,7 +2,7 @@
 // job registry, imports a fresh copy of the module and drives it through the process hooks it
 // registers. No database, queue or signal is real.
 import type * as Database from '@rogikotha/database';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { WorkerContainer } from './container.js';
 import { relayQueueNames } from './handlers/outbox-relay.js';
@@ -151,6 +151,13 @@ describe('worker entry point', () => {
     await import('./main.js');
     await vi.advanceTimersByTimeAsync(0);
   }
+
+  // Under load the first transform of `@rogikotha/database` passed 5 s, and a timed-out test's
+  // import later picked up the next test's fakes (ISS-272); transform it once, outside the tests.
+  beforeAll(async () => {
+    await import('@rogikotha/database');
+    await import('./health.js');
+  }, 120_000);
 
   beforeEach(() => {
     vi.useFakeTimers();

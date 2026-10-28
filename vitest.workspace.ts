@@ -69,7 +69,12 @@ export default defineConfig({
       provider: 'v8',
       reportsDirectory: 'coverage',
       reporter: ['text-summary', 'json-summary', 'json'],
+      // A run with a failing test still prints and writes its figures.
+      reportOnFailure: true,
       include: COVERAGE_ROOTS.map((root) => `${root}/**/*.{ts,tsx}`),
+      // 80% of lines per package, never lowered (D10, BR6.1, BR6.5). A package with no executable
+      // line passes, because Vitest reports 0 of 0 as 100% (BR6.3).
+      thresholds: Object.fromEntries(COVERAGE_ROOTS.map((root) => [`${root}/**`, { lines: 80 }])),
       exclude: [
         // Tests, including `*.smoke.test.*` and `*.int.test.ts`: the code under test is measured.
         '**/*.test.ts',
