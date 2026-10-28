@@ -19,7 +19,6 @@
     "@rogikotha/contracts": "workspace:*",
     "@rogikotha/database": "workspace:*",
     "dotenv": "^17.4.2",
-    "drizzle-orm": "0.45.2",
     "zod": "^4.6.2"
   },
   "devDependencies": {

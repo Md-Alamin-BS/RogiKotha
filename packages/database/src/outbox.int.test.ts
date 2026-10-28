@@ -8,6 +8,7 @@
 import { Pool } from 'pg';
 import { describe, expect, it } from 'vitest';
 
+import { createDb } from './client';
 import { clientExecutor } from './queue/sql-executor';
 import { PgOutbox } from './repositories/outbox';
 import type { OutboxRow } from './repositories/outbox';
@@ -74,6 +75,36 @@ describe('PgOutbox', () => {
       expect(named(await outbox.claimUnprocessed(executor, CLAIM_ALL), name)).toHaveLength(0);
     } finally {
       client.release();
+    }
+  });
+
+  it('ISS-205: counts unprocessed rows, and a row marked processed or dead stops counting', async () => {
+    const outbox = new PgOutbox();
+    const name = `probe.${crypto.randomUUID()}`;
+    const before = await outbox.countPending(testDb);
+    await appendTwo(outbox, name);
+    expect(await outbox.countPending(testDb)).toBe(before + 2);
+
+    const client = await testPool.connect();
+    const executor = clientExecutor(client);
+    try {
+      const [first, second] = named(await outbox.claimUnprocessed(executor, CLAIM_ALL), name);
+      await outbox.markProcessed(executor, first!.id);
+      expect(await outbox.countPending(testDb)).toBe(before + 1);
+      await outbox.markDead(executor, second!.id);
+      expect(await outbox.countPending(testDb)).toBe(before);
+    } finally {
+      client.release();
+    }
+  });
+
+  it('ISS-205: counts pending rows as the worker role, which the heartbeat runs as', async () => {
+    const outbox = new PgOutbox();
+    const { db, pool } = createDb(workerUrlForTestDb());
+    try {
+      expect(await outbox.countPending(db)).toBe(await outbox.countPending(testDb));
+    } finally {
+      await pool.end();
     }
   });
 

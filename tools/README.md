@@ -70,6 +70,13 @@ dividers and hover cues, not the sole means of identifying a control, so WCAG
 1.4.11 does not apply. This tool caught `--ink-faint` shipping at 4.05:1 while
 the docs claimed AA.
 
+`--tokens <path>` reads another stylesheet with the same blocks, for example the
+app's ported tokens (`node tools/contrast.mjs --tokens apps/web/src/styles/tokens.css`).
+In that mode the run fails closed: an unreadable file, a missing light or dark
+block, or any pair skipped because a token is missing exits non-zero and names
+the missing tokens, so a wrong path cannot pass. Without the flag the tool reads
+the prototype stylesheet and behaves as before (T-010).
+
 ## Running everything
 
 ```

@@ -1,0 +1,105 @@
+{
+  "description": "Expected ESLint report for the boundary fixture (functional-spec.md § 6). Every violation is reported exactly once with its rule; a control reports nothing; no other problem may appear.",
+  "cases": [
+    {
+      "id": "FX1",
+      "kind": "violation",
+      "file": "packages/domain/src/domain-bad.ts",
+      "rule": "boundaries/dependencies",
+      "proves": "BR2.1, BR1.3"
+    },
+    {
+      "id": "FX2",
+      "kind": "violation",
+      "file": "apps/web/src/components/ComponentBad.tsx",
+      "rule": "@typescript-eslint/no-restricted-imports",
+      "proves": "BR3.3"
+    },
+    {
+      "id": "FX3",
+      "kind": "violation",
+      "file": "apps/web/src/components/ComponentDb.tsx",
+      "rule": "boundaries/dependencies",
+      "proves": "BR2.4"
+    },
+    {
+      "id": "FX4",
+      "kind": "violation",
+      "file": "apps/web/src/components/ComponentAuth.tsx",
+      "rule": "boundaries/dependencies",
+      "proves": "BR2.4"
+    },
+    {
+      "id": "FX5",
+      "kind": "violation",
+      "file": "apps/web/src/app/page-bad.tsx",
+      "rule": "boundaries/dependencies",
+      "proves": "BR2.3"
+    },
+    {
+      "id": "FX6",
+      "kind": "violation",
+      "file": "packages/test-support/src/fakes/fake-bad.ts",
+      "rule": "boundaries/dependencies",
+      "proves": "BR2.2"
+    },
+    {
+      "id": "FX7",
+      "kind": "violation",
+      "file": "apps/web/src/lib/web-bad.test.ts",
+      "rule": "boundaries/dependencies",
+      "proves": "BR2.6"
+    },
+    {
+      "id": "FX8",
+      "kind": "violation",
+      "file": "apps/worker/src/worker-bad.ts",
+      "rule": "@typescript-eslint/no-restricted-imports",
+      "proves": "BR3.4"
+    },
+    {
+      "id": "FX9",
+      "kind": "violation",
+      "file": "apps/worker/src/worker-app.ts",
+      "rule": "@typescript-eslint/no-restricted-imports",
+      "proves": "BR3.5"
+    },
+    {
+      "id": "FX10",
+      "kind": "violation",
+      "file": "apps/worker/src/worker-sql.ts",
+      "rule": "@typescript-eslint/no-restricted-imports",
+      "proves": "BR3.6"
+    },
+    {
+      "id": "FX11",
+      "kind": "control",
+      "file": "apps/worker/src/worker-types.ts",
+      "proves": "BR3.5"
+    },
+    {
+      "id": "FX12",
+      "kind": "control",
+      "file": "packages/test-support/src/seed/seed-ok.ts",
+      "proves": "BR2.2"
+    },
+    {
+      "id": "FX13",
+      "kind": "control",
+      "file": "apps/web/src/server/container.ts",
+      "proves": "BR2.3"
+    },
+    {
+      "id": "FX14",
+      "kind": "control",
+      "file": "apps/web/src/components/Component.test.tsx",
+      "proves": "BR2.5"
+    },
+    {
+      "id": "FX15",
+      "kind": "control",
+      "file": "apps/web/src/components/ComponentForm.tsx",
+      "proves": "BR2.4"
+    }
+  ]
+}

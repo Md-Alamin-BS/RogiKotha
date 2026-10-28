@@ -6,20 +6,22 @@ Vitest 4 through `vitest.workspace.ts`, plus a new `tooling` project (`scripts/v
 
 ## Run this Unit's tests
 
-Every long command carries an outer `timeout` (ISS-143):
+Every long command carries an outer `timeout` (ISS-143). Verified on `bolt/t-010-boundary-lint-and-ci` on 2026-10-28 (plan Step 2; the tooling, fixture and coverage commands from Steps 7–10):
 
 ```bash
 pnpm infra:up
 timeout 300 pnpm lint
-timeout 300 pnpm lint:boundaries
-timeout 120 pnpm exec vitest run --config vitest.workspace.ts --project tooling
+timeout 300 pnpm lint:boundaries                      # prints "10 expected violations found"
+timeout 120 pnpm check:identity
+timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project tooling
 timeout 300 pnpm --filter @rogikotha/database exec vitest run src/outbox.int.test.ts
-timeout 900 pnpm test:coverage
+timeout 120 node tools/contrast.mjs --tokens apps/web/src/styles/tokens.css
+timeout 900 pnpm test:coverage                         # every project, database included
 timeout 600 pnpm smoke
 timeout 900 pnpm check
 ```
 
-Step 2 replaces this block with the exact commands verified on the Bolt branch. In Phase B each developer runs only its own package's coverage, for example `timeout 300 pnpm --filter @rogikotha/contracts exec vitest run --coverage`, and never the `database` project unless it owns `packages/database`.
+Only one database-touching run at a time: `pnpm test:coverage`, `pnpm test`, `pnpm check`, `pnpm smoke` and the `database` int test all reset or use `rogikotha_test`. The tooling project needs no database. In Phase B each developer runs only its own package's tests with coverage, for example `timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project contracts --coverage` (the coverage block lives in `vitest.workspace.ts`, so the project is selected there, not with `--filter`), and never the `database` project unless it owns `packages/database`.
 
 ## What to cover (design § 11)
 

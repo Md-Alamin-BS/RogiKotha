@@ -1,0 +1,19 @@
+{
+  "//": "Only for the boundary lint's import resolver: the fixture sits outside the workspace packages, so it reaches them through these paths. No typecheck reads this file.",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "noEmit": true,
+    "paths": {
+      "@rogikotha/adapters": ["../packages/adapters/src/index.ts"],
+      "@rogikotha/application": ["../packages/application/src/index.ts"],
+      "@rogikotha/contracts": ["../packages/contracts/src/index.ts"],
+      "@rogikotha/database": ["../packages/database/src/index.ts"],
+      "@rogikotha/domain": ["../packages/domain/src/index.ts"],
+      "@rogikotha/i18n": ["../packages/i18n/src/index.ts"],
+      "@rogikotha/test-support": ["../packages/test-support/src/index.ts"]
+    }
+  },
+  "include": ["boundary-violation/**/*"]
+}

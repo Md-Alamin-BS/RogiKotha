@@ -7,7 +7,9 @@
 // CR-011 (FD-038, ISS-144, ISS-185): the relay's operations run on the relay
 // transaction's own connection (`SqlExecutor`), so claiming, enqueuing and
 // marking commit or roll back together.
-import type { Tx } from '../client';
+import { count, isNull } from 'drizzle-orm';
+
+import type { Db, Tx } from '../client';
 import { outboxEvents } from '../schema/index';
 import type { SqlExecutor } from '../queue/sql-executor';
 
@@ -84,5 +86,14 @@ export class PgOutbox {
   /** Ends retrying: processed with no job, told apart by its attempts and the `outbox.dead` log (BR1.6). */
   async markDead(sql: SqlExecutor, id: string): Promise<void> {
     await sql.executeSql('update outbox_events set processed_at = now() where id = $1', [id]);
+  }
+
+  /** Rows not yet relayed; dead events count as processed, because `markDead` sets `processed_at`. */
+  async countPending(db: Db): Promise<number> {
+    const [row] = await db
+      .select({ pending: count() })
+      .from(outboxEvents)
+      .where(isNull(outboxEvents.processedAt));
+    return row?.pending ?? 0;
   }
 }
