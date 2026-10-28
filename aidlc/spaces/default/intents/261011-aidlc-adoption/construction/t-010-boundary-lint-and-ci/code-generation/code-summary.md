@@ -1,9 +1,11 @@
 # Code summary — U3 `t-010-boundary-lint-and-ci` (T-010)
 
 Built from the approved plan (`code-generation-plan.md`) on branch
-`bolt/t-010-boundary-lint-and-ci`, start `f91c9de`. Phase A (plan Steps 1–10) is done; this file is
-completed after Phases B and C. Changes are uncommitted. Methodology test-after, per the Testing
-Contract.
+`bolt/t-010-boundary-lint-and-ci`, start `f91c9de`. All three phases are done (plan Steps 1–18).
+Methodology test-after, per the Testing Contract. Commits: `0871b13` (Phase A, Steps 1–10),
+`17a347f` (Phase B, Step 11), `651603d` (Step 12, thresholds on), `abc63cd` (Step 13, Prettier
+scope), `4be7878` (Step 13, formatting only), and the Steps 14–18 commit "T-010: gate, CI workflow,
+records". Nothing is pushed; the coordinator pushes and watches the CI run (BR10.4).
 
 ## Coverage before the raise
 
@@ -79,3 +81,125 @@ the package is 189 / 382 (49.5%); even at 100% outside `seed/` it would be 382 /
 `test-support` cannot reach 80% with unit-test files alone: it needs the seed code to run inside
 the coverage run, which is a configuration change outside "test files only" (BR6.5: stop and ask
 the owner).
+
+## Phase B — the raise (Step 11)
+
+Test files only, one developer per package, plus the configuration the note above asked for
+(owner queue, 2026-10-28): `packages/test-support/src/seed/seed.int.test.ts` runs in its own inline
+Vitest project `test-support-seed` with `sequence.groupOrder: 2` (the `database` project has
+group 1), so the seed code is measured in the same run without two resets of `rogikotha_test` at
+once (BR6.2, BR6.5; the floor was not lowered). The seed test now resets with the database
+package's `runReset` (`ISS-288`; `ISS-289` for its relative import). Findings in the
+`test-support` fakes: `ISS-290` to `ISS-293`; the `not-implemented.test.ts` note is `ISS-294`.
+
+## Phase C (Steps 12–18)
+
+- **Step 12.** Three `timeout 900 pnpm test:coverage` runs green (92 files, 998 passed, 2 expected
+  fail, 83–92 s each). Under 8 concurrent `vitest run --project worker --project web` runs (3
+  rounds, 24 runs) `apps/worker/src/main.test.ts` failed in all 24 and
+  `apps/web/src/app/pages.test.tsx` in 22: a first test paid a cold transform past the 5 s
+  timeout, and in the worker a leaked `main.ts` import then used the next test's fakes
+  (`world.worked` had 3 entries). Fixed in the test files only, with a `beforeAll` that transforms
+  the heavy modules once (hook timeout 120 s) and, in `pages.test.tsx`, message files parsed once
+  per locale; no assertion, skip or per-test timeout changed. Re-run under the same load: 0 of 24
+  failures in both files; 3 runs had one first-test timeout in another component file (`ISS-295`,
+  `ISS-296`, residual `ISS-297`). Thresholds switched on: `'<root>/**': { lines: 80 }` for all
+  nine roots, plus `reportOnFailure: true`. Zero-line roots pass (0 of 0 reports 100%). Negative
+  proof: a scratch untested file in `packages/i18n/src` made the run exit 1 with `ERROR: Coverage
+  for lines (56.25%) does not meet "packages/i18n/src/**" threshold (80%)`; deleted, never
+  committed.
+- **Step 13.** `endOfLine: 'auto'`; `.prettierignore` with a reason per entry (engine and record
+  trees, docs, tools, prototype, ported styles, migrations, Markdown, generated files, build and
+  coverage output, lockfile; `lint-fixtures/**` stays in scope because the manifest matches file
+  and rule, not line). `prettier --write .` changed 94 files; two seed files needed a second pass
+  (Prettier's member-chain layout), folded into the same commit. Token check: a TypeScript
+  syntax-tree comparison of every file against the parent commit (node kinds, identifiers,
+  literal values; layout, quotes, trailing commas and parentheses ignored) found 0 differences in
+  94 files; `infra/compose/docker-compose.yml` parses to the same value. `git diff
+  --ignore-all-space --ignore-blank-lines --stat` still lists 94 files, because wrapping moves
+  tokens between lines. `pnpm typecheck` and `pnpm lint` green on the formatted tree.
+- **Step 14.** `format:check` = `prettier --check .`; `contrast` = `node tools/contrast.mjs --tokens
+  apps/web/src/styles/tokens.css` (same result as `pnpm tools:contrast`; only the echoed command
+  differs); `check` = the nine steps of BR8.1. First run: exit 0 in 304 s (`ISS-298`).
+- **Step 15.** `.github/workflows/check.yml` (BR10.1–BR10.5). Action commits re-verified with `git
+  ls-remote` and the releases API (dependency-check log). `scripts/check-identity.mjs` reads
+  `CHECK_IDENTITY_RANGE`, which the workflow sets to the push's before..after on `main` (the head
+  only when `before` is all zeros or unknown) and to the merge base with `origin/main` on
+  `bolt/**`; the guard's tests pass `env: {}` so the job's variable cannot leak into them, and one
+  new test proves the variable is read. Validation: PyYAML parse, every `uses:` pinned to 40 hex
+  characters, `bash -n` on the run steps, Prettier clean, the range logic simulated on this
+  branch. Not runnable locally.
+- **Step 16.** Records: `01-conventions.md` §2 (the matrix as built) and §13 (nine steps); FD-093
+  gains (6) `web-shared` and (7) the generated-header exclusion, agent-decided and awaiting the
+  owner; `ISSUES.md`: ISS-060, ISS-205, ISS-226 fixed in U3 T-010, ISS-127 note, new rows ISS-272
+  to ISS-299; the task file's Hand-off and `docs/implementation/handoffs/T-010.md`; research note
+  `docs/planning/research/2026-10-28-boundary-lint-and-coverage.md`. The team.md Code Style
+  correction is proposed in the hand-off, not edited.
+- **Step 17.** Gate below. **Step 18.** This file, `traceability.json`, `source-manifest.json`.
+
+## Coverage after (BR6.7)
+
+From the gate run's `coverage/coverage-summary.json`, 2026-10-28, this branch, thresholds on:
+
+| Package | Lines % | Covered / total | Files reported / expected |
+|---|---|---|---|
+| `packages/domain` | no lines (passes) | 0 / 0 | 1 / 1 |
+| `packages/contracts` | 100 | 317 / 317 | 42 / 42 |
+| `packages/application` | no lines (passes) | 0 / 0 | 1 / 1 |
+| `packages/database` | 97.1 | 565 / 582 | 46 / 46 |
+| `packages/adapters` | no lines (passes) | 0 / 0 | 1 / 1 |
+| `packages/i18n` | 100 | 54 / 54 | 4 / 4 |
+| `packages/test-support` | 96.5 | 890 / 922 | 43 / 43 |
+| `apps/web` | 99.5 | 418 / 420 | 67 / 67 |
+| `apps/worker` | 100 | 151 / 151 | 9 / 9 |
+
+Totals differ slightly from Phase B's figures because the formatting commit re-wrapped lines.
+
+## Gate (Step 17)
+
+`timeout 900 pnpm check`: exit 0 in 189 s. Typecheck 9 of 9; lint 0 errors and 1 warning that
+predates T-010 (`ISS-299`); "10 expected violations found"; Prettier clean; "No attribution
+markers (commits f91c9de..HEAD, tracked files)"; `test:coverage` 92 files, 999 passed, 2 expected
+fail; i18n parity 781 keys; contrast all pass; both builds done. `timeout 600 pnpm smoke`: exit 0
+in 19 s, 12 files, 20 tests.
+
+Mutation check (BR5.4): the worker's `no-restricted-imports` block set to `off` →
+`pnpm lint:boundaries` exit 1, "missing: FX8 … FX9 … FX10 … expected
+@typescript-eslint/no-restricted-imports"; the file restored from a copy → "10 expected violations
+found", exit 0.
+
+## Acceptance rows (functional-spec.md § 15), expected against observed
+
+| Check | Expected | Observed |
+|---|---|---|
+| `pnpm lint` | exit 0 | exit 0; 0 errors, 1 warning that predates T-010 (`ISS-299`) |
+| `pnpm lint:boundaries` | "10 expected violations found" | "10 expected violations found", exit 0 |
+| domain → application (temporary `import '@rogikotha/application'` in `packages/domain/src/index.ts`) | boundary error | `boundaries/dependencies`: no policy allowing "domain" to "application"; reverted |
+| component imports `node:fs` (temporary, `components/shared/DemoMarker.tsx`) | error | `@typescript-eslint/no-restricted-imports`: "Components may not import Node built-ins"; reverted |
+| worker imports `better-auth` (temporary, `apps/worker/src/main.ts`) | error | `@typescript-eslint/no-restricted-imports`: "The worker never holds an application session (AD-6)"; reverted |
+| `pnpm check` | exit 0, all nine steps | exit 0, nine steps |
+| `pnpm contrast` against `pnpm tools:contrast` | same pass output | identical apart from the echoed command; all pairs pass |
+| CI on the pushed branch | green, run URL in the hand-off | not run yet: the coordinator pushes the branch and records the URL (BR10.4) |
+| `pnpm check` wall clock | under 5 min, recorded | 189 s on the gate run; 304 s on the first run (`ISS-298`) |
+| 80% line floor per package (AC1.1.3) | every package ≥ 80% or zero lines | table above; a package below the floor exits 1 (negative proof) |
+| `format:check` in `pnpm check` and CI | present | step 4 of `pnpm check`; CI runs `pnpm check` |
+| The worker cannot reach identity, linkage or originals by import | refused | FX8, FX9, FX10 refused; FX11 type-only allowed; grep test kept |
+| No attribution in any file, commit or workflow | guard passes | `check:identity` passes; the workflow has no write step and a read-only token |
+
+## Files outside the manifest's path list
+
+`source-manifest.json` holds literal paths only and no `[` or `]`. Six files of the formatting
+commit have bracketed route segments and are listed here instead, with braces standing for the
+square brackets: `apps/web/src/app/{locale}/(patient)/doctors/{id}/page.tsx`,
+`apps/web/src/app/{locale}/(patient)/experiences/{id}/page.tsx`,
+`apps/web/src/app/{locale}/(patient)/facilities/{id}/page.tsx`,
+`apps/web/src/app/{locale}/(patient)/topics/{id}/page.tsx`,
+`apps/web/src/app/{locale}/admin/layout.tsx`,
+`apps/web/src/app/{locale}/admin/queue/{code}/page.tsx`.
+
+## Issues
+
+Found and fixed in U3 T-010: ISS-060, ISS-205, ISS-226, ISS-272, ISS-273, ISS-274, ISS-275,
+ISS-277, ISS-280, ISS-281, ISS-282, ISS-284, ISS-288, ISS-295, ISS-296. Recorded, open or for
+others: ISS-127 (note), ISS-276, ISS-278, ISS-279, ISS-283, ISS-285, ISS-286, ISS-287, ISS-289 to
+ISS-294, ISS-297, ISS-298, ISS-299. No open S1 or S2.

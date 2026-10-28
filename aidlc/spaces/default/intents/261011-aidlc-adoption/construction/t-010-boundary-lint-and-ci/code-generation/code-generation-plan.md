@@ -29,17 +29,17 @@ The build runs in three phases. Phases A and C are one developer each; in Phase 
 
 **Phase B — raise each package below 80% (WF9, Q7)**
 
-- [ ] **Step 11** — For each package below 80% from Step 10, one developer adds test files only, in that package, until it is at or above 80%: unit tests through public exports, builders, sentence names, no implementation-detail assertions; each runs only its own package's coverage command. A package that cannot reach 80% without a source change stops with an ISS row for the owner; the floor is never lowered (BR6.5).
+- [x] **Step 11** — For each package below 80% from Step 10, one developer adds test files only, in that package, until it is at or above 80%: unit tests through public exports, builders, sentence names, no implementation-detail assertions; each runs only its own package's coverage command. A package that cannot reach 80% without a source change stops with an ISS row for the owner; the floor is never lowered (BR6.5).
 
 **Phase C — gate, format, CI, records**
 
-- [ ] **Step 12** — Switch the per-package thresholds on (lines 80, all nine globs); `test:coverage` green; commit the Phase A–C work so far on the Bolt branch.
-- [ ] **Step 13** — Format (§ 8, Q9): `endOfLine: 'auto'` in `prettier.config.mjs`; `.prettierignore` with reasons; then one commit holding only `prettier --write .` output over the scope, verified by a whitespace-insensitive diff with no token change (BR7.4); `format:check` script.
-- [ ] **Step 14** — Root scripts and gate (WF5, BR8.1): `lint:boundaries`, `format:check`, `check:identity`, `test:coverage`, `contrast` (with `--tokens`), and `check` as the nine steps in order; `tools:contrast` unchanged; `pnpm check` wall clock recorded (BR8.3).
-- [ ] **Step 15** — CI (WF6): `.github/workflows/check.yml` per BR10.1–BR10.5 (actions pinned by hash, read-only token, no secrets, `postgres:18` service, init SQL, `db:migrate`, `pnpm check`, `pnpm smoke`).
-- [ ] **Step 16** — Documents and records (WF1 step 14): `01-conventions.md` §2 and §13; `ISSUES.md` (ISS-205, ISS-226, ISS-060 fixed in U3 T-010; ISS-127 note; F1–F9 with the next free ids, `Found in U3 T-010`); the task file's Hand-off and `docs/implementation/handoffs/T-010.md` (owned-path additions, task-text corrections, the size re-estimate); the team.md Code Style correction of Q4 proposed for the learnings step, not edited.
-- [ ] **Step 17** — Gate (WF1 step 15): `timeout 900 pnpm check` and `timeout 600 pnpm smoke` green; the manual acceptance rows of § 15; the mutation check (BR5.4: disable one rule block → `pnpm lint:boundaries` exits 1, restored). The CI run on the pushed Bolt head is triggered after the code review request and must be green before the merge (BR10.4).
-- [ ] **Step 18** — Step 5 files: `code-summary.md`, `traceability.json`, `source-manifest.json` (literal paths only, no `[`, `]` or `*`).
+- [x] **Step 12** — Switch the per-package thresholds on (lines 80, all nine globs); `test:coverage` green; commit the Phase A–C work so far on the Bolt branch.
+- [x] **Step 13** — Format (§ 8, Q9): `endOfLine: 'auto'` in `prettier.config.mjs`; `.prettierignore` with reasons; then one commit holding only `prettier --write .` output over the scope, verified by a whitespace-insensitive diff with no token change (BR7.4); `format:check` script.
+- [x] **Step 14** — Root scripts and gate (WF5, BR8.1): `lint:boundaries`, `format:check`, `check:identity`, `test:coverage`, `contrast` (with `--tokens`), and `check` as the nine steps in order; `tools:contrast` unchanged; `pnpm check` wall clock recorded (BR8.3).
+- [x] **Step 15** — CI (WF6): `.github/workflows/check.yml` per BR10.1–BR10.5 (actions pinned by hash, read-only token, no secrets, `postgres:18` service, init SQL, `db:migrate`, `pnpm check`, `pnpm smoke`).
+- [x] **Step 16** — Documents and records (WF1 step 14): `01-conventions.md` §2 and §13; `ISSUES.md` (ISS-205, ISS-226, ISS-060 fixed in U3 T-010; ISS-127 note; F1–F9 with the next free ids, `Found in U3 T-010`); the task file's Hand-off and `docs/implementation/handoffs/T-010.md` (owned-path additions, task-text corrections, the size re-estimate); the team.md Code Style correction of Q4 proposed for the learnings step, not edited.
+- [x] **Step 17** — Gate (WF1 step 15): `timeout 900 pnpm check` and `timeout 600 pnpm smoke` green; the manual acceptance rows of § 15; the mutation check (BR5.4: disable one rule block → `pnpm lint:boundaries` exits 1, restored). The CI run on the pushed Bolt head is triggered after the code review request and must be green before the merge (BR10.4).
+- [x] **Step 18** — Step 5 files: `code-summary.md`, `traceability.json`, `source-manifest.json` (literal paths only, no `[`, `]` or `*`).
 
 ## Files touched
 

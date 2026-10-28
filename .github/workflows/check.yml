@@ -1,0 +1,116 @@
+# The local gate on a clean machine (T-010, functional-spec.md WF6, BR10.1-BR10.5): a Bolt merges
+# only after this run is green on its branch head. Every action is pinned to a commit; the hashes
+# are recorded in docs/status/dependency-check-log.md (2026-10-28).
+name: check
+
+on:
+  push:
+    branches:
+      - main
+      - 'bolt/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          # A throwaway database on an ephemeral runner; the value differs per run and is no secret.
+          POSTGRES_PASSWORD: ci-${{ github.run_id }}-${{ github.run_attempt }}
+          POSTGRES_DB: rogikotha
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d rogikotha"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      APP_MODE: development
+      DATABASE_URL: postgres://rk_app:rk_app@localhost:5432/rogikotha
+      DATABASE_URL_WORKER: postgres://rk_worker:rk_worker@localhost:5432/rogikotha
+      DATABASE_URL_TEST: postgres://rk_app:rk_app@localhost:5432/rogikotha_test
+      DATABASE_URL_MAINTENANCE: postgres://rk_maintenance:rk_maintenance@localhost:5432/rogikotha
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: ci-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Check out the full history
+        # Full history and the remote `main`, so the identity guard can read the pushed range.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up pnpm
+        # Version from `packageManager` in package.json.
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Generate job-only secrets
+        run: |
+          for name in APP_ENCRYPTION_KEY BETTER_AUTH_SECRET; do
+            value="$(openssl rand -base64 32)"
+            echo "::add-mask::$value"
+            echo "$name=$value" >> "$GITHUB_ENV"
+          done
+
+      - name: Create roles, the test database and extensions
+        env:
+          SERVICE_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          for file in infra/compose/postgres-init/01-roles.sql infra/compose/postgres-init/02-extensions.sql; do
+            if command -v psql >/dev/null 2>&1; then
+              psql -v ON_ERROR_STOP=1 -d rogikotha -f "$file"
+            else
+              docker exec -i "$SERVICE_CONTAINER" psql -v ON_ERROR_STOP=1 -U postgres -d rogikotha < "$file"
+            fi
+          done
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Migrate the empty database
+        run: pnpm db:migrate
+
+      - name: Commit range for the identity guard
+        # main: the commits of this push (only the head when there is no earlier commit to compare
+        # with); a Bolt branch: everything since its merge base with main.
+        env:
+          EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          zero=0000000000000000000000000000000000000000
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            if [ -n "$EVENT_BEFORE" ] && [ "$EVENT_BEFORE" != "$zero" ] && git cat-file -e "$EVENT_BEFORE^{commit}" 2>/dev/null; then
+              range="$EVENT_BEFORE..$GITHUB_SHA"
+            else
+              range="$GITHUB_SHA^!"
+            fi
+          else
+            range="$(git merge-base origin/main HEAD)..HEAD"
+          fi
+          echo "Identity guard range: $range"
+          echo "CHECK_IDENTITY_RANGE=$range" >> "$GITHUB_ENV"
+
+      - name: pnpm check
+        run: pnpm check
+
+      - name: pnpm smoke
+        run: pnpm smoke

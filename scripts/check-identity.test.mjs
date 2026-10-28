@@ -52,14 +52,14 @@ describe('the identity guard', () => {
     const repo = aRepo();
     repo.commit('src/a.ts', 'export const a = 1;\n', 'T-010: add a');
 
-    expect(checkIdentity({ cwd: repo.dir }).hits).toEqual([]);
+    expect(checkIdentity({ cwd: repo.dir, env: {} }).hits).toEqual([]);
   });
 
   it('refuses a co-author trailer in a commit message', () => {
     const repo = aRepo();
     repo.commit('src/a.ts', 'export const a = 1;\n', `T-010: add a\n\n${TRAILER}`);
 
-    const { hits } = checkIdentity({ cwd: repo.dir });
+    const { hits } = checkIdentity({ cwd: repo.dir, env: {} });
 
     expect(hits).toContainEqual(expect.objectContaining({ marker: 'co-author trailer' }));
     expect(hits.every((hit) => hit.place.startsWith('commit '))).toBe(true);
@@ -69,7 +69,7 @@ describe('the identity guard', () => {
     const repo = aRepo();
     repo.commit('README.md', `# Title\n\n${ROBOT} ${FOOTER}\n`, 'T-010: add readme');
 
-    const markers = checkIdentity({ cwd: repo.dir }).hits.map(
+    const markers = checkIdentity({ cwd: repo.dir, env: {} }).hits.map(
       (hit) => `${hit.place} ${hit.marker}`,
     );
 
@@ -81,14 +81,14 @@ describe('the identity guard', () => {
     const prose = `| Model | Opus 4.8 |\nNever add a "${TRAILER.split(':')[0]}" trailer.\n`;
     repo.commit('notes.md', prose, 'T-010: Opus 4.8 wrote the plan');
 
-    expect(checkIdentity({ cwd: repo.dir }).hits).toEqual([]);
+    expect(checkIdentity({ cwd: repo.dir, env: {} }).hits).toEqual([]);
   });
 
   it('ignores the excluded record trees', () => {
     const repo = aRepo();
     repo.commit('aidlc/audit.md', `${TRAILER}\n`, 'T-010: add audit');
 
-    expect(checkIdentity({ cwd: repo.dir }).hits).toEqual([]);
+    expect(checkIdentity({ cwd: repo.dir, env: {} }).hits).toEqual([]);
   });
 
   it('refuses a tool address as the commit author', () => {
@@ -111,9 +111,20 @@ describe('the identity guard', () => {
       },
     );
 
-    expect(checkIdentity({ cwd: repo.dir }).hits).toContainEqual(
+    expect(checkIdentity({ cwd: repo.dir, env: {} }).hits).toContainEqual(
       expect.objectContaining({ marker: 'tool no-reply address' }),
     );
+  });
+
+  it('reads the commit range CI hands it through CHECK_IDENTITY_RANGE', () => {
+    const repo = aRepo();
+    repo.commit('src/a.ts', 'export const a = 1;\n', `T-010: add a\n\n${TRAILER}`);
+    repo.commit('src/b.ts', 'export const b = 1;\n', 'T-010: add b');
+
+    expect(checkIdentity({ cwd: repo.dir, env: {} }).hits).toEqual([]);
+    const pushed = checkIdentity({ cwd: repo.dir, env: { CHECK_IDENTITY_RANGE: 'HEAD~1^!' } });
+    expect(pushed.range).toBe('HEAD~1^!');
+    expect(pushed.hits).toContainEqual(expect.objectContaining({ marker: 'co-author trailer' }));
   });
 
   it('reports the line of a marker', () => {

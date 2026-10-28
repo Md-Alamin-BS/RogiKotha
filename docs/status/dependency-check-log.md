@@ -68,6 +68,10 @@ Rules:
   arrives as a platform optionalDependency. Keep `eslint` 10.10.0, `typescript-eslint` 8.70.0,
   `vitest` and `@vitest/coverage-v8` 4.1.11 (they move in lockstep) and `prettier` 3.9.6, because
   this Unit changes no installed version.
+- Re-check at plan Step 15 (2026-10-28, `git ls-remote` and the GitHub releases API): the three
+  tags still point at the commits above (`pnpm/action-setup` v6.1.0 is an annotated tag whose
+  commit is `ea17c68…`), and each is still its repository's latest release. The workflow pins
+  these commits.
 
 ### 2026-10-28 (U4 CR-011 — transactional outbox relay, queue policy, quiet dotenv)
 

@@ -153,7 +153,7 @@ describe('worker entry point', () => {
   }
 
   // Under load the first transform of `@rogikotha/database` passed 5 s, and a timed-out test's
-  // import later picked up the next test's fakes (ISS-272); transform it once, outside the tests.
+  // import later picked up the next test's fakes (ISS-295); transform it once, outside the tests.
   beforeAll(async () => {
     await import('@rogikotha/database');
     await import('./health.js');

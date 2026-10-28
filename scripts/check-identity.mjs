@@ -60,9 +60,13 @@ export function findMarkers(text) {
 
 const git = (cwd, args) => execFileSync('git', args, { cwd, encoding: 'utf8', maxBuffer: 1 << 28 });
 
-/** The commits to read: `--range` if given, else since main's merge base, else HEAD alone. */
-export function commitRange(cwd, explicitRange) {
+/**
+ * The commits to read: `--range` if given, else `CHECK_IDENTITY_RANGE` (CI sets the push range),
+ * else since main's merge base, else HEAD alone.
+ */
+export function commitRange(cwd, explicitRange, env = process.env) {
   if (explicitRange) return explicitRange;
+  if (env.CHECK_IDENTITY_RANGE) return env.CHECK_IDENTITY_RANGE;
   const branch = git(cwd, ['rev-parse', '--abbrev-ref', 'HEAD']).trim();
   if (branch !== 'main') {
     try {
@@ -112,8 +116,8 @@ export function checkTrackedFiles(cwd) {
   return hits;
 }
 
-export function checkIdentity({ cwd = process.cwd(), range } = {}) {
-  const resolvedRange = commitRange(cwd, range);
+export function checkIdentity({ cwd = process.cwd(), range, env = process.env } = {}) {
+  const resolvedRange = commitRange(cwd, range, env);
   return {
     range: resolvedRange,
     hits: [...checkCommits(cwd, resolvedRange), ...checkTrackedFiles(cwd)],

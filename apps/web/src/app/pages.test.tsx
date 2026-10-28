@@ -239,7 +239,7 @@ async function renderRoute(routeCase: RouteCase, locale: (typeof LOCALES)[number
 }
 
 // Under load the first import of a route (`/emergency` pulls in the whole contracts barrel) passed
-// 5 s inside its test (ISS-273); every route module is transformed once here instead.
+// 5 s inside its test (ISS-296); every route module is transformed once here instead.
 beforeAll(async () => {
   await Promise.all(ROUTES.map((routeCase) => routeCase.load()));
 }, 120_000);
