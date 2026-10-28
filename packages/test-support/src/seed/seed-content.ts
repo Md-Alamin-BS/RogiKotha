@@ -2,8 +2,8 @@
 // `period_*` from `period`, `sections` from `timeline` for detailed
 // reviews, tags, `claims`, `review_versions` v1, follow-ups + later care,
 // `latest_status`), facility reviews with criteria, comments (`k9` parent
-// `k8`), reactions (real rows so counts are derived, not stored), bookmarks
-// r6/r9 for shirin_88, drafts dr1/dr2.
+// `k8`), reactions (real rows so counts are derived, not stored), and the
+// corpus's bookmarks and drafts for shirin_88 (CR-012, BR3.6).
 //
 // ASSUMPTION(T-007): every corpus review/comment/facility-review carries
 // *two* authored variants (`{en, bn}` — data-model header: "two authored
@@ -46,7 +46,17 @@ import {
 } from '@rogikotha/database';
 import { eq } from 'drizzle-orm';
 
-import { COMMENTS, FACILITY_REVIEWS, FOLLOW_UPS, PERSONAS, REVIEWS, USER_DRAFTS, type Bilingual, type CorpusFollowUp } from '../corpus/index.js';
+import {
+  COMMENTS,
+  FACILITY_REVIEWS,
+  FOLLOW_UPS,
+  PERSONAS,
+  REVIEWS,
+  USER_BOOKMARKS,
+  USER_DRAFTS,
+  type Bilingual,
+  type CorpusFollowUp,
+} from '../corpus/index.js';
 import type { SeedContext } from './seed.js';
 
 /**
@@ -169,6 +179,10 @@ async function seedReactions(
 ): Promise<number> {
   const [already] = await db.select().from(reactions).where(eq(reactions.targetId, targetId)).limit(1);
   if (already) return 0;
+  // Each reaction needs its own pool account; wrapping would collide with the unique (target, account) index.
+  if (likes + dislikes > pool.length) {
+    throw new Error(`seed-content: ${targetKind} ${targetId} needs ${likes + dislikes} reactors, the pool holds ${pool.length}`);
+  }
   let count = 0;
   for (let i = 0; i < likes; i += 1) {
     await db.insert(reactions).values({ id: newId(), targetKind, targetId, accountId: pool[i % pool.length]!, value: 'like' });
@@ -390,30 +404,31 @@ export async function seedContent(db: Db, ctx: SeedContext): Promise<number> {
     inserted += await seedReactions(db, reactorPool, 'comment', row!.id, c.likes, c.dislikes);
   }
 
-  // --- bookmarks (shirin_88: r6, r9) ------------------------------------------
-  const shirinAccountId = ctx.accountIdByUsername.get('shirin_88');
-  if (shirinAccountId) {
-    for (const reviewSeedRef of ['r6', 'r9']) {
-      const reviewId = ctx.reviewIdBySeedRef.get(reviewSeedRef);
-      if (!reviewId) continue;
-      const already = await db.select().from(bookmarks).where(eq(bookmarks.accountId, shirinAccountId)).limit(50);
-      if (already.some((b) => b.reviewId === reviewId)) continue;
-      await db.insert(bookmarks).values({ accountId: shirinAccountId, reviewId });
-      inserted += 1;
-    }
+  // --- bookmarks (USER_BOOKMARKS, idempotent by account + review) ------------
+  for (const b of USER_BOOKMARKS) {
+    const accountId = ctx.accountIdByUsername.get(b.accountUsername);
+    const reviewId = ctx.reviewIdBySeedRef.get(b.reviewSeedRef);
+    if (!accountId || !reviewId) throw new Error(`seed-content: bookmark ${b.accountUsername}/${b.reviewSeedRef} has no seeded account or review`);
+    const already = await db.select().from(bookmarks).where(eq(bookmarks.accountId, accountId));
+    if (already.some((row) => row.reviewId === reviewId)) continue;
+    await db.insert(bookmarks).values({ accountId, reviewId });
+    inserted += 1;
   }
 
-  // --- drafts (dr1, dr2 — encrypted payload with the excerpt) -----------------
+  // --- drafts (USER_DRAFTS — payload with the title and excerpt) --------------
   for (const d of USER_DRAFTS) {
     const accountId = ctx.accountIdByUsername.get(d.accountUsername);
     if (!accountId) continue;
+    const payload = Buffer.from(JSON.stringify({ title: d.title, excerpt: d.excerpt }));
+    // ASSUMPTION(CR-012): a draft is the same draft when its account and stored
+    // payload match; counting an account's drafts duplicated them on a top-up
+    // run. T-301 must keep an idempotency key when it encrypts the payload.
     const already = await db.select().from(reviewDrafts).where(eq(reviewDrafts.accountId, accountId));
-    if (already.length >= USER_DRAFTS.filter((x) => x.accountUsername === d.accountUsername).length) continue;
+    if (already.some((row) => Buffer.from(row.payloadEnc).equals(payload))) continue;
     const doctorId = d.doctorSeedRef ? ctx.doctorIdBySeedRef.get(d.doctorSeedRef) : null;
     const blockedOnSubmissionId = d.blockedOnSubmissionSeedRef
       ? (ctx.submissionIdBySeedRef.get(d.blockedOnSubmissionSeedRef) ?? null)
       : null;
-    const payload = Buffer.from(JSON.stringify({ title: d.title, excerpt: d.excerpt }));
     await db.insert(reviewDrafts).values({
       id: newId(),
       accountId,

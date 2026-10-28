@@ -275,5 +275,379 @@ export const FACILITY_REVIEWS = [
       "recommend": "good",
       "overall": "good"
     }
+  },
+  {
+    "seedRef": "fr9",
+    "branchSeedRef": "f6",
+    "identity": "pseudo",
+    "author": {
+      "en": "rajshahi_rina",
+      "bn": "rajshahi_rina"
+    },
+    "period": {
+      "en": "April 2026",
+      "bn": "এপ্রিল ২০২৬"
+    },
+    "posted": {
+      "en": "Posted May 2026",
+      "bn": "প্রকাশ মে ২০২৬"
+    },
+    "likes": 8,
+    "dislikes": 0,
+    "body": {
+      "en": "I stayed four hours in the day-care ward for a breathing test and observation. The ward was clean, the nurses explained each step, and the discharge slip was ready before I asked. The lab report came within the hour and the bill matched what the counter quoted. Finding the lift to the second floor was the one confusing part.",
+      "bn": "শ্বাসের পরীক্ষা ও পর্যবেক্ষণের জন্য চার ঘণ্টা ডে-কেয়ার ওয়ার্ডে ছিলাম। ওয়ার্ড পরিচ্ছন্ন, নার্সরা প্রতিটি ধাপ বুঝিয়েছেন, না চাইতেই ছাড়পত্র তৈরি ছিল। ল্যাবের রিপোর্ট এক ঘণ্টার মধ্যে এল এবং কাউন্টারের বলা টাকার সঙ্গে বিল মিলেছে। দোতলার লিফট খুঁজে পাওয়াটাই একমাত্র বিভ্রান্তিকর ছিল।"
+    },
+    "criteria": {
+      "staff": "good",
+      "waiting": "good",
+      "cleanliness": "good",
+      "billing": "good",
+      "reportTime": "good",
+      "reportTrust": "good",
+      "admission": "good",
+      "recommend": "good",
+      "overall": "good"
+    }
+  },
+  {
+    "seedRef": "fr10",
+    "branchSeedRef": "f6",
+    "identity": "real",
+    "author": {
+      "en": "Farida Yasmin",
+      "bn": "ফরিদা ইয়াসমিন"
+    },
+    "period": {
+      "en": "February 2026",
+      "bn": "ফেব্রুয়ারি ২০২৬"
+    },
+    "posted": {
+      "en": "Posted March 2026",
+      "bn": "প্রকাশ মার্চ ২০২৬"
+    },
+    "likes": 5,
+    "dislikes": 1,
+    "body": {
+      "en": "We waited almost two hours past our slot because the serial list was handed out on paper and often skipped. Staff were polite once we were seen. The blood test report was a day late but matched what the doctor expected. My daughter’s observation stay was short, and the discharge papers had a mistake in her age that took twenty minutes to fix.",
+      "bn": "সিরিয়াল তালিকা কাগজে দেওয়া হয় আর প্রায়ই বাদ পড়ে, তাই আমাদের সময়ের প্রায় দুই ঘণ্টা পর ডাক পড়েছে। ডাক পাওয়ার পর কর্মীরা ভদ্র ছিলেন। রক্ত পরীক্ষার রিপোর্ট একদিন দেরিতে এসেছে, তবে ডাক্তার যা আশা করেছিলেন তার সঙ্গে মিলেছে। মেয়ের পর্যবেক্ষণের থাকা ছোট ছিল, ছাড়পত্রে বয়স ভুল লেখা ছিল, ঠিক করতে কুড়ি মিনিট লেগেছে।"
+    },
+    "criteria": {
+      "staff": "good",
+      "waiting": "poor",
+      "cleanliness": "mixed",
+      "billing": "good",
+      "reportTime": "mixed",
+      "reportTrust": "good",
+      "admission": "mixed",
+      "recommend": "mixed",
+      "overall": "mixed"
+    }
+  },
+  {
+    "seedRef": "fr11",
+    "branchSeedRef": "f6",
+    "identity": "anon",
+    "author": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "period": {
+      "en": "December 2025",
+      "bn": "ডিসেম্বর ২০২৫"
+    },
+    "posted": {
+      "en": "Posted January 2026",
+      "bn": "প্রকাশ জানুয়ারি ২০২৬"
+    },
+    "likes": 11,
+    "dislikes": 2,
+    "body": {
+      "en": "The corridor outside the observation room had water on the floor all afternoon and nobody put out a sign. I was asked to pay a deposit before anyone examined me, and the amount changed twice at the counter. The nurses on the ward were attentive, but the bill and the waiting were hard on a worried family.",
+      "bn": "পর্যবেক্ষণ কক্ষের বাইরের বারান্দায় সারা বিকাল মেঝেতে পানি ছিল, কেউ সতর্কবার্তা রাখেননি। পরীক্ষার আগেই জমা দিতে বলা হয়, কাউন্টারে অঙ্কটা দুবার বদলাল। ওয়ার্ডের নার্সরা মনোযোগী ছিলেন, কিন্তু বিল আর অপেক্ষা চিন্তিত পরিবারের জন্য কঠিন ছিল।"
+    },
+    "criteria": {
+      "staff": "good",
+      "waiting": "poor",
+      "cleanliness": "poor",
+      "billing": "poor",
+      "reportTime": "mixed",
+      "reportTrust": "mixed",
+      "admission": "mixed",
+      "recommend": "poor",
+      "overall": "poor"
+    }
+  },
+  {
+    "seedRef": "fr12",
+    "branchSeedRef": "f7",
+    "identity": "pseudo",
+    "author": {
+      "en": "rajshahi_rina",
+      "bn": "rajshahi_rina"
+    },
+    "period": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "posted": {
+      "en": "Posted July 2026",
+      "bn": "প্রকাশ জুলাই ২০২৬"
+    },
+    "likes": 6,
+    "dislikes": 0,
+    "body": {
+      "en": "The Kazla branch is smaller and quieter than the Shaheb Bazar one. Same group, but I waited twenty minutes instead of two hours. The lab was slower with reports, nearly a full day, though the doctor said the result agreed with her examination. A short stay for a nebuliser treatment was handled calmly, and the bill was printed and itemised.",
+      "bn": "কাজলা শাখা সাহেব বাজারেরটার চেয়ে ছোট ও শান্ত। একই গ্রুপ, কিন্তু দুই ঘণ্টার বদলে বিশ মিনিট অপেক্ষা করেছি। ল্যাব রিপোর্ট দিতে প্রায় পুরো একদিন নিয়েছে, তবে ডাক্তার বলেছেন ফল তাঁর পরীক্ষার সঙ্গে মিলেছে। নেবুলাইজার চিকিৎসার জন্য ছোট একটি থাকা শান্তভাবে সামলানো হয়েছে, আর বিল ছাপানো ও আইটেম ধরে ধরে।"
+    },
+    "criteria": {
+      "staff": "good",
+      "waiting": "good",
+      "cleanliness": "good",
+      "billing": "good",
+      "reportTime": "mixed",
+      "reportTrust": "good",
+      "admission": "good",
+      "recommend": "good",
+      "overall": "good"
+    }
+  },
+  {
+    "seedRef": "fr13",
+    "branchSeedRef": "f7",
+    "identity": "real",
+    "author": {
+      "en": "Jesmin Ara",
+      "bn": "জেসমিন আরা"
+    },
+    "period": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "posted": {
+      "en": "Posted April 2026",
+      "bn": "প্রকাশ এপ্রিল ২০২৬"
+    },
+    "likes": 3,
+    "dislikes": 1,
+    "body": {
+      "en": "Admission was quick, but the room was cold and the bed linen had not been changed. I asked, and it was changed within the hour. The cashier made an arithmetic mistake in our favour and told us about it, which I appreciated. The lab report came on time. I cannot judge whether the numbers were right.",
+      "bn": "ভর্তি দ্রুত হয়েছে, কিন্তু ঘরটা ঠান্ডা ছিল আর বিছানার চাদর বদলানো হয়নি। বলার পর এক ঘণ্টার মধ্যে বদলানো হয়েছে। ক্যাশিয়ার হিসাবে ভুল করেছিলেন আমাদের পক্ষেই, নিজেই জানিয়েছেন, ভালো লেগেছে। ল্যাব রিপোর্ট সময়মতো এসেছে। সংখ্যাগুলো ঠিক ছিল কি না আমি বিচার করতে পারব না।"
+    },
+    "criteria": {
+      "staff": "good",
+      "waiting": "good",
+      "cleanliness": "mixed",
+      "billing": "good",
+      "reportTime": "good",
+      "reportTrust": "mixed",
+      "admission": "good",
+      "recommend": "good",
+      "overall": "good"
+    }
+  },
+  {
+    "seedRef": "fr14",
+    "branchSeedRef": "f8",
+    "identity": "real",
+    "author": {
+      "en": "Mostafizur Rahman",
+      "bn": "মোস্তাফিজুর রহমান"
+    },
+    "period": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "posted": {
+      "en": "Posted April 2026",
+      "bn": "প্রকাশ এপ্রিল ২০২৬"
+    },
+    "likes": 9,
+    "dislikes": 0,
+    "body": {
+      "en": "I came for a migraine consultation and a blood test before starting a new medicine. The reception had a numbered token system that worked, the cleaner kept the floor dry, and the blood test report was on my phone by evening. I stayed two hours for a drip after I felt faint, and the nurse stayed with me. The bill was clear.",
+      "bn": "মাইগ্রেনের পরামর্শ ও নতুন ওষুধ শুরুর আগে রক্ত পরীক্ষার জন্য এসেছিলাম। রিসেপশনে নম্বর-টোকেন ব্যবস্থা ঠিকমতো চলেছে, পরিচ্ছন্নতাকর্মী মেঝে শুকনো রেখেছেন, সন্ধ্যার মধ্যে রক্ত পরীক্ষার রিপোর্ট ফোনে চলে এসেছে। মাথা ঝিমঝিম করায় দুই ঘণ্টা ড্রিপ নিতে হয়, নার্স পাশে ছিলেন। বিল স্পষ্ট ছিল।"
+    },
+    "criteria": {
+      "staff": "good",
+      "waiting": "good",
+      "cleanliness": "good",
+      "billing": "good",
+      "reportTime": "good",
+      "reportTrust": "good",
+      "admission": "good",
+      "recommend": "good",
+      "overall": "good"
+    }
+  },
+  {
+    "seedRef": "fr15",
+    "branchSeedRef": "f8",
+    "identity": "pseudo",
+    "author": {
+      "en": "rangpur_mon",
+      "bn": "rangpur_mon"
+    },
+    "period": {
+      "en": "January 2026",
+      "bn": "জানুয়ারি ২০২৬"
+    },
+    "posted": {
+      "en": "Posted February 2026",
+      "bn": "প্রকাশ ফেব্রুয়ারি ২০২৬"
+    },
+    "likes": 4,
+    "dislikes": 2,
+    "body": {
+      "en": "The pharmacy inside ran out of my mother’s medicine twice, so we had to buy it outside for more. The lab told us the reports would be ready at 4 pm and they came at 7. The ward staff were gentle with her, but the call bell by her bed did not work and I had to go and find a nurse.",
+      "bn": "ভেতরের ফার্মেসিতে মায়ের ওষুধ দুবার ফুরিয়ে গিয়েছিল, বাইরে থেকে বেশি দামে কিনতে হয়েছে। ল্যাব বলেছিল রিপোর্ট বিকেল ৪টায় হবে, এসেছে সন্ধ্যা ৭টায়। ওয়ার্ডের কর্মীরা মায়ের প্রতি কোমল ছিলেন, কিন্তু বিছানার পাশের কলবেল কাজ করেনি, নার্সকে খুঁজে আনতে হয়েছে।"
+    },
+    "criteria": {
+      "staff": "good",
+      "waiting": "mixed",
+      "cleanliness": "mixed",
+      "billing": "mixed",
+      "reportTime": "poor",
+      "reportTrust": "mixed",
+      "admission": "mixed",
+      "recommend": "mixed",
+      "overall": "mixed"
+    }
+  },
+  {
+    "seedRef": "fr16",
+    "branchSeedRef": "f9",
+    "identity": "pseudo",
+    "author": {
+      "en": "rumana_h",
+      "bn": "rumana_h"
+    },
+    "period": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "posted": {
+      "en": "Posted April 2026",
+      "bn": "প্রকাশ এপ্রিল ২০২৬"
+    },
+    "likes": 12,
+    "dislikes": 1,
+    "body": {
+      "en": "Check-in took five minutes. The HbA1c and kidney test reports came in four hours, as promised on the slip. The sample collector found my vein on the first try and explained the fasting rules in Bangla. When I repeated one test elsewhere the numbers were close, which reassured me, though I am not qualified to judge.",
+      "bn": "চেক-ইন পাঁচ মিনিটে হয়েছে। HbA1c ও কিডনি পরীক্ষার রিপোর্ট স্লিপে যেমন বলা ছিল, চার ঘণ্টায় এসেছে। রক্ত নেওয়ার কর্মী প্রথমবারেই শিরা পেয়েছেন এবং বাংলায় খালি পেটে থাকার নিয়ম বুঝিয়েছেন। একটি পরীক্ষা অন্য জায়গায় করালে সংখ্যা কাছাকাছি এসেছে, তাতে ভরসা পেয়েছি, তবে বিচার করার যোগ্যতা আমার নেই।"
+    },
+    "criteria": {
+      "staff": "good",
+      "waiting": "good",
+      "cleanliness": "good",
+      "billing": "good",
+      "reportTime": "good",
+      "reportTrust": "good",
+      "admission": "good",
+      "recommend": "good",
+      "overall": "good"
+    }
+  },
+  {
+    "seedRef": "fr17",
+    "branchSeedRef": "f9",
+    "identity": "pseudo",
+    "author": {
+      "en": "cumilla_jh",
+      "bn": "cumilla_jh"
+    },
+    "period": {
+      "en": "May 2026",
+      "bn": "মে ২০২৬"
+    },
+    "posted": {
+      "en": "Posted June 2026",
+      "bn": "প্রকাশ জুন ২০২৬"
+    },
+    "likes": 5,
+    "dislikes": 1,
+    "body": {
+      "en": "Check-in was disorganised: two queues with no signs, and my neighbour was sent to the wrong one. The report came a day after the promised time, and one line on the printout was smudged, which the desk reprinted without fuss. Billing was fair and clear. I would use them for simple tests but ask for a second opinion on anything important.",
+      "bn": "চেক-ইন এলোমেলো ছিল: দুটি লাইন, কোনো নির্দেশনা নেই, আমার প্রতিবেশীকে ভুল লাইনে পাঠানো হয়। রিপোর্ট কথা দেওয়া সময়ের একদিন পরে এসেছে, প্রিন্টআউটে একটা লাইন ঝাপসা ছিল যা ডেস্ক ঝামেলা ছাড়াই আবার ছাপিয়ে দিয়েছে। বিল ন্যায্য ও স্পষ্ট। সহজ পরীক্ষার জন্য যাব, তবে গুরুত্বপূর্ণ কিছুর জন্য দ্বিতীয় মত নেব।"
+    },
+    "criteria": {
+      "staff": "mixed",
+      "waiting": "mixed",
+      "cleanliness": "good",
+      "billing": "good",
+      "reportTime": "poor",
+      "reportTrust": "mixed",
+      "admission": "poor",
+      "recommend": "mixed",
+      "overall": "mixed"
+    }
+  },
+  {
+    "seedRef": "fr18",
+    "branchSeedRef": "f10",
+    "identity": "pseudo",
+    "author": {
+      "en": "ammu_of_tuli",
+      "bn": "ammu_of_tuli"
+    },
+    "period": {
+      "en": "July 2026",
+      "bn": "জুলাই ২০২৬"
+    },
+    "posted": {
+      "en": "Posted August 2026",
+      "bn": "প্রকাশ আগস্ট ২০২৬"
+    },
+    "likes": 7,
+    "dislikes": 0,
+    "body": {
+      "en": "Small and homely. The children’s waiting corner had books, and the nurse let our daughter keep her toy during the blood draw. We stayed two nights for observation and the nurse explained each medicine before giving it. The report was on time and the bill was a single printed page with every line explained.",
+      "bn": "ছোট ও ঘরোয়া। শিশুদের অপেক্ষার কোণে বই ছিল, রক্ত নেওয়ার সময় নার্স আমাদের মেয়েকে খেলনা ধরে রাখতে দিয়েছেন। পর্যবেক্ষণের জন্য দুই রাত ছিলাম, নার্স প্রতিটি ওষুধ দেওয়ার আগে বুঝিয়ে বলেছেন। রিপোর্ট সময়মতো এসেছে আর বিল ছিল এক পাতায়, প্রতিটি লাইন ব্যাখ্যাসহ।"
+    },
+    "criteria": {
+      "staff": "good",
+      "waiting": "good",
+      "cleanliness": "good",
+      "billing": "good",
+      "reportTime": "good",
+      "reportTrust": "good",
+      "admission": "good",
+      "recommend": "good",
+      "overall": "good"
+    }
+  },
+  {
+    "seedRef": "fr19",
+    "branchSeedRef": "f10",
+    "identity": "anon",
+    "author": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "period": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "posted": {
+      "en": "Posted July 2026",
+      "bn": "প্রকাশ জুলাই ২০২৬"
+    },
+    "likes": 4,
+    "dislikes": 1,
+    "body": {
+      "en": "Clean and quiet, but the clinic had only one cashier and one doctor on the day, so the evening wait stretched past two hours. The bill was explained after, not before. Discharge came with a handwritten sheet that was hard to read, and I had to phone to ask what one of the medicines was.",
+      "bn": "পরিচ্ছন্ন ও শান্ত, কিন্তু সেদিন ক্লিনিকে একজনমাত্র ক্যাশিয়ার ও একজন ডাক্তার ছিলেন, তাই সন্ধ্যার অপেক্ষা দুই ঘণ্টার বেশি হয়ে গেল। বিলের ব্যাখ্যা আগে নয়, পরে দেওয়া হয়েছে। ছাড়পত্র হাতে লেখা ছিল, পড়া কঠিন, একটি ওষুধ কী তা জানতে ফোন করতে হয়েছে।"
+    },
+    "criteria": {
+      "staff": "mixed",
+      "waiting": "poor",
+      "cleanliness": "good",
+      "billing": "mixed",
+      "reportTime": "mixed",
+      "reportTrust": "mixed",
+      "admission": "poor",
+      "recommend": "mixed",
+      "overall": "mixed"
+    }
   }
 ] as const satisfies CorpusFacilityReview[];

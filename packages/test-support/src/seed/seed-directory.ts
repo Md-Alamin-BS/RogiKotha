@@ -1,14 +1,14 @@
 // seed-directory: taxonomy terms (conditions from the corpus + specialties
 // derived from the doctor roster) + aliases (`conditions.aliases`, lang
 // guessed by `port-corpus.mjs`); organisations, branches, doctors with
-// `field_provenance`, chambers (`branch_id` resolved by chamber name =
-// branch name where it matches, else null); the two pending profile
-// submissions P-140/P-143, claim C-58, the two field changes.
+// `field_provenance`, chambers (`branch_id` resolved by `chamberBranch`,
+// else null); the corpus's pending profile submissions, claims and field
+// changes.
 //
-// ASSUMPTION(T-007): the prototype never says *who* submitted P-140/P-143,
-// claimed C-58, or proposed F-77/F-78 — every "submitted/claimed/proposed
-// by" column is a required FK. Narrower, reversible choice: attribute all
-// four to `shirin_88` (the storyboard's one ordinary, already-verified
+// ASSUMPTION(T-007): the prototype never says *who* submitted, claimed or
+// proposed any of them — every "submitted/claimed/proposed by" column is a
+// required FK. Narrower, reversible choice: attribute all of them to
+// `shirin_88` (the storyboard's one ordinary, already-verified
 // contributor), logged as an `ISS-` row rather than inventing a persona
 // with no basis in the corpus.
 //
@@ -40,6 +40,17 @@ const GENERIC_SUBMITTER_USERNAME = 'shirin_88';
 
 function keyify(s: string): string {
   return s.normalize('NFC').toLowerCase().replace(/\s+/g, '');
+}
+
+/**
+ * The branch a chamber name points at: the branch name, the branch label, or
+ * the prototype's composite "<name> — <label>" (U+2014 with spaces), checked
+ * in that order so every pre-FD-089 link resolves as before (CR-012, BR3.2).
+ */
+function chamberBranch(chamberName: string): (typeof BRANCHES)[number] | undefined {
+  const byName = BRANCHES.find((b) => b.name.en === chamberName || (b.branchLabel?.en as string | undefined) === chamberName);
+  if (byName) return byName;
+  return BRANCHES.find((b) => b.branchLabel !== null && `${b.name.en} — ${b.branchLabel.en}` === chamberName);
 }
 
 function nowProvenance(source: Provenance): { source: Provenance; updatedAt: string } {
@@ -223,7 +234,7 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
     let sortOrder = 0;
     for (const chamber of d.chambers) {
       const chamberName: string = chamber.name.en;
-      const branch = BRANCHES.find((b) => b.name.en === chamberName || (b.branchLabel?.en as string | undefined) === chamberName);
+      const branch = chamberBranch(chamberName);
       await db.insert(doctorChambers).values({
         id: newId(),
         doctorId: row!.id,

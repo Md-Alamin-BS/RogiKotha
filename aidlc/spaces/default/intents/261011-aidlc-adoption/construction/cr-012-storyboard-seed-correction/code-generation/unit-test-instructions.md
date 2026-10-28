@@ -15,6 +15,18 @@ pnpm smoke
 
 Then `timeout 300 pnpm test:int` and `pnpm check`. `code-summary.md` records the exact commands used.
 
+Runner verified on the Bolt branch before the first test (Step 2): `vitest/4.1.11` through `pnpm --filter @rogikotha/test-support exec vitest --version`; the default sweep `pnpm --filter @rogikotha/test-support exec vitest run` ran 6 files, 55 tests, all green; the standalone seed test ran 1 file, 3 tests, green. Exact unit-scoped commands, each with an outer timeout:
+
+```bash
+timeout 120 pnpm --filter @rogikotha/test-support exec vitest run
+timeout 300 pnpm --filter @rogikotha/test-support exec vitest run src/seed/seed.int.test.ts
+timeout 600 pnpm smoke
+timeout 300 pnpm test:int
+timeout 900 pnpm check
+```
+
+The standalone seed test and `pnpm test:int` (and `pnpm check`, which runs the database project) are never run at the same time.
+
 ## What to cover (design § 11)
 
 | Group | Tests | Rules |

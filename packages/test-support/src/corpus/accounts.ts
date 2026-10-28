@@ -25,6 +25,36 @@ export const ACCOUNTS = [
     "email": "admin_nadia@demo.rogikotha.local"
   },
   {
+    "username": "ammu_of_tuli",
+    "displayName": {
+      "en": "ammu_of_tuli",
+      "bn": "ammu_of_tuli"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "ammu_of_tuli@demo.rogikotha.local"
+  },
+  {
+    "username": "anon_author_fr11",
+    "displayName": {
+      "en": "anon_author_fr11",
+      "bn": "anon_author_fr11"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "anon_author_fr11@demo.rogikotha.local"
+  },
+  {
+    "username": "anon_author_fr19",
+    "displayName": {
+      "en": "anon_author_fr19",
+      "bn": "anon_author_fr19"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "anon_author_fr19@demo.rogikotha.local"
+  },
+  {
     "username": "anon_author_fr2",
     "displayName": {
       "en": "anon_author_fr2",
@@ -55,6 +85,16 @@ export const ACCOUNTS = [
     "email": "anon_author_r12@demo.rogikotha.local"
   },
   {
+    "username": "anon_author_r15",
+    "displayName": {
+      "en": "anon_author_r15",
+      "bn": "anon_author_r15"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "anon_author_r15@demo.rogikotha.local"
+  },
+  {
     "username": "anon_author_r2",
     "displayName": {
       "en": "anon_author_r2",
@@ -63,6 +103,36 @@ export const ACCOUNTS = [
     "role": null,
     "personaKind": "pseudonymous",
     "email": "anon_author_r2@demo.rogikotha.local"
+  },
+  {
+    "username": "anon_author_r20",
+    "displayName": {
+      "en": "anon_author_r20",
+      "bn": "anon_author_r20"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "anon_author_r20@demo.rogikotha.local"
+  },
+  {
+    "username": "anon_author_r23",
+    "displayName": {
+      "en": "anon_author_r23",
+      "bn": "anon_author_r23"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "anon_author_r23@demo.rogikotha.local"
+  },
+  {
+    "username": "anon_author_r4",
+    "displayName": {
+      "en": "anon_author_r4",
+      "bn": "anon_author_r4"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "anon_author_r4@demo.rogikotha.local"
   },
   {
     "username": "anon_author_r6",
@@ -93,6 +163,26 @@ export const ACCOUNTS = [
     "role": null,
     "personaKind": "pseudonymous",
     "email": "ctg_reader@demo.rogikotha.local"
+  },
+  {
+    "username": "cumilla_jh",
+    "displayName": {
+      "en": "cumilla_jh",
+      "bn": "cumilla_jh"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "cumilla_jh@demo.rogikotha.local"
+  },
+  {
+    "username": "cure_in_days",
+    "displayName": {
+      "en": "cure_in_days",
+      "bn": "cure_in_days"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "cure_in_days@demo.rogikotha.local"
   },
   {
     "username": "health_tips_bd",
@@ -135,6 +225,16 @@ export const ACCOUNTS = [
     "email": "nadia_k@demo.rogikotha.local"
   },
   {
+    "username": "named_dr-aminul-haque",
+    "displayName": {
+      "en": "Dr. Aminul Haque",
+      "bn": "ডা. আমিনুল হক"
+    },
+    "role": null,
+    "personaKind": "named",
+    "email": "named_dr-aminul-haque@demo.rogikotha.local"
+  },
+  {
     "username": "named_dr-farhana-rahman",
     "displayName": {
       "en": "Dr. Farhana Rahman",
@@ -145,6 +245,36 @@ export const ACCOUNTS = [
     "email": "named_dr-farhana-rahman@demo.rogikotha.local"
   },
   {
+    "username": "named_dr-mahmudul-hasan",
+    "displayName": {
+      "en": "Dr. Mahmudul Hasan",
+      "bn": "ডা. মাহমুদুল হাসান"
+    },
+    "role": null,
+    "personaKind": "named",
+    "email": "named_dr-mahmudul-hasan@demo.rogikotha.local"
+  },
+  {
+    "username": "named_farida-yasmin",
+    "displayName": {
+      "en": "Farida Yasmin",
+      "bn": "ফরিদা ইয়াসমিন"
+    },
+    "role": null,
+    "personaKind": "named",
+    "email": "named_farida-yasmin@demo.rogikotha.local"
+  },
+  {
+    "username": "named_jesmin-ara",
+    "displayName": {
+      "en": "Jesmin Ara",
+      "bn": "জেসমিন আরা"
+    },
+    "role": null,
+    "personaKind": "named",
+    "email": "named_jesmin-ara@demo.rogikotha.local"
+  },
+  {
     "username": "named_kamrul-islam",
     "displayName": {
       "en": "Kamrul Islam",
@@ -153,6 +283,36 @@ export const ACCOUNTS = [
     "role": null,
     "personaKind": "named",
     "email": "named_kamrul-islam@demo.rogikotha.local"
+  },
+  {
+    "username": "named_mostafizur-rahman",
+    "displayName": {
+      "en": "Mostafizur Rahman",
+      "bn": "মোস্তাফিজুর রহমান"
+    },
+    "role": null,
+    "personaKind": "named",
+    "email": "named_mostafizur-rahman@demo.rogikotha.local"
+  },
+  {
+    "username": "named_nasima-akter",
+    "displayName": {
+      "en": "Nasima Akter",
+      "bn": "নাসিমা আক্তার"
+    },
+    "role": null,
+    "personaKind": "named",
+    "email": "named_nasima-akter@demo.rogikotha.local"
+  },
+  {
+    "username": "named_shahana-parvin",
+    "displayName": {
+      "en": "Shahana Parvin",
+      "bn": "শাহানা পারভীন"
+    },
+    "role": null,
+    "personaKind": "named",
+    "email": "named_shahana-parvin@demo.rogikotha.local"
   },
   {
     "username": "named_sultana-begum",
@@ -193,6 +353,26 @@ export const ACCOUNTS = [
     "role": null,
     "personaKind": "pseudonymous",
     "email": "rafi_c@demo.rogikotha.local"
+  },
+  {
+    "username": "rajshahi_rina",
+    "displayName": {
+      "en": "rajshahi_rina",
+      "bn": "rajshahi_rina"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "rajshahi_rina@demo.rogikotha.local"
+  },
+  {
+    "username": "rangpur_mon",
+    "displayName": {
+      "en": "rangpur_mon",
+      "bn": "rangpur_mon"
+    },
+    "role": null,
+    "personaKind": "pseudonymous",
+    "email": "rangpur_mon@demo.rogikotha.local"
   },
   {
     "username": "reporter_1",

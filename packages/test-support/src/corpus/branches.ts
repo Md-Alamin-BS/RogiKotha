@@ -144,5 +144,155 @@ export const BRANCHES = [
     "doctorSeedRefs": [
       "d5"
     ]
+  },
+  {
+    "seedRef": "f6",
+    "orgSeedRef": "org-kashful-health-group",
+    "name": {
+      "en": "Kashful Community Hospital",
+      "bn": "কাশফুল কমিউনিটি হাসপাতাল"
+    },
+    "branchLabel": {
+      "en": "Shaheb Bazar branch",
+      "bn": "সাহেব বাজার শাখা"
+    },
+    "type": "hospital",
+    "city": {
+      "en": "Rajshahi",
+      "bn": "রাজশাহী"
+    },
+    "area": {
+      "en": "Shaheb Bazar",
+      "bn": "সাহেব বাজার"
+    },
+    "fieldProvenance": {
+      "name": "admin",
+      "branch": "admin",
+      "address": "community"
+    },
+    "avatarHue": 128,
+    "doctorSeedRefs": [
+      "d7"
+    ]
+  },
+  {
+    "seedRef": "f7",
+    "orgSeedRef": "org-kashful-health-group",
+    "name": {
+      "en": "Kashful Community Hospital",
+      "bn": "কাশফুল কমিউনিটি হাসপাতাল"
+    },
+    "branchLabel": {
+      "en": "Kazla branch",
+      "bn": "কাজলা শাখা"
+    },
+    "type": "hospital",
+    "city": {
+      "en": "Rajshahi",
+      "bn": "রাজশাহী"
+    },
+    "area": {
+      "en": "Kazla",
+      "bn": "কাজলা"
+    },
+    "fieldProvenance": {
+      "name": "admin",
+      "branch": "community",
+      "address": "community"
+    },
+    "avatarHue": 98,
+    "doctorSeedRefs": [
+      "d7"
+    ]
+  },
+  {
+    "seedRef": "f8",
+    "orgSeedRef": "org-kashful-health-group",
+    "name": {
+      "en": "Kashful Community Hospital",
+      "bn": "কাশফুল কমিউনিটি হাসপাতাল"
+    },
+    "branchLabel": {
+      "en": "Rangpur branch",
+      "bn": "রংপুর শাখা"
+    },
+    "type": "hospital",
+    "city": {
+      "en": "Rangpur",
+      "bn": "রংপুর"
+    },
+    "area": {
+      "en": "Modern More",
+      "bn": "মডার্ন মোড়"
+    },
+    "fieldProvenance": {
+      "name": "community",
+      "branch": "community",
+      "address": "community"
+    },
+    "avatarHue": 238,
+    "doctorSeedRefs": [
+      "d8"
+    ]
+  },
+  {
+    "seedRef": "f9",
+    "orgSeedRef": "org-jolrong-diagnostics-network",
+    "name": {
+      "en": "Jolrong Diagnostic Centre",
+      "bn": "জলরং ডায়াগনস্টিক সেন্টার"
+    },
+    "branchLabel": {
+      "en": "Cumilla branch",
+      "bn": "কুমিল্লা শাখা"
+    },
+    "type": "diagnostic",
+    "city": {
+      "en": "Cumilla",
+      "bn": "কুমিল্লা"
+    },
+    "area": {
+      "en": "Kandirpar",
+      "bn": "কান্দিরপাড়"
+    },
+    "fieldProvenance": {
+      "name": "admin",
+      "branch": "community",
+      "address": "admin"
+    },
+    "avatarHue": 185,
+    "doctorSeedRefs": [
+      "d9"
+    ]
+  },
+  {
+    "seedRef": "f10",
+    "orgSeedRef": "org-shobuj-chhaya-care-network",
+    "name": {
+      "en": "Shobuj Chhaya Family Clinic",
+      "bn": "সবুজ ছায়া ফ্যামিলি ক্লিনিক"
+    },
+    "branchLabel": {
+      "en": "Barishal Sadar branch",
+      "bn": "বরিশাল সদর শাখা"
+    },
+    "type": "clinic",
+    "city": {
+      "en": "Barishal",
+      "bn": "বরিশাল"
+    },
+    "area": {
+      "en": "Sadar Road",
+      "bn": "সদর রোড"
+    },
+    "fieldProvenance": {
+      "name": "provider",
+      "branch": "provider",
+      "address": "provider"
+    },
+    "avatarHue": 355,
+    "doctorSeedRefs": [
+      "d10"
+    ]
   }
 ] as const satisfies CorpusBranch[];

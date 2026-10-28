@@ -84,5 +84,64 @@ export const EVIDENCE_ITEMS = [
     },
     "prototypeState": "ready",
     "pageCount": 1
+  },
+  {
+    "seedRef": "e8",
+    "reviewSeedRef": "r13",
+    "group": "reviewed",
+    "label": {
+      "en": "Spirometry printout, April 2026",
+      "bn": "স্পাইরোমেট্রি প্রিন্টআউট, এপ্রিল ২০২৬"
+    },
+    "prototypeState": "ready",
+    "pageCount": 1
+  },
+  {
+    "seedRef": "e9",
+    "reviewSeedRef": "r15",
+    "group": "later",
+    "label": {
+      "en": "Spirometry report from the second doctor",
+      "bn": "দ্বিতীয় ডাক্তারের স্পাইরোমেট্রি রিপোর্ট"
+    },
+    "prototypeState": "ready",
+    "pageCount": 2
+  },
+  {
+    "seedRef": "e10",
+    "reviewSeedRef": "r16",
+    "group": "reviewed",
+    "label": {
+      "en": "Prescription, March 2026",
+      "bn": "প্রেসক্রিপশন, মার্চ ২০২৬"
+    },
+    "prototypeState": "ready",
+    "pageCount": 1
+  },
+  {
+    "seedRef": "e11",
+    "reviewSeedRef": "r16",
+    "group": "outcome",
+    "label": {
+      "en": "Headache diary, handwritten pages",
+      "bn": "মাথাব্যথার ডায়েরি, হাতে লেখা পাতা"
+    },
+    "prototypeState": "failed",
+    "pageCount": 0,
+    "failReason": {
+      "en": "The photo was too blurred to read, so a public copy could not be made.",
+      "bn": "ছবিটি এতটাই ঝাপসা ছিল যে পড়া যায়নি, তাই প্রকাশ্য কপি তৈরি করা যায়নি।"
+    }
+  },
+  {
+    "seedRef": "e12",
+    "reviewSeedRef": "r19",
+    "group": "outcome",
+    "label": {
+      "en": "HbA1c result, June 2026",
+      "bn": "HbA1c ফলাফল, জুন ২০২৬"
+    },
+    "prototypeState": "ready",
+    "pageCount": 1
   }
 ] as const satisfies CorpusEvidenceItem[];

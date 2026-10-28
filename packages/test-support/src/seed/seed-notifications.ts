@@ -1,5 +1,6 @@
-// seed-notifications: the five in-app notifications (`n1`..`n5`) for
-// `shirin_88` (CR-008 step 1 / ISS-173). `USER_NOTIFICATIONS` was ported
+// seed-notifications: the in-app notifications for `shirin_88` (CR-008
+// step 1 / ISS-173; n6–n10 from FD-089, n8 withheld — see
+// `WITHHELD_NOTIFICATIONS`). `USER_NOTIFICATIONS` was ported
 // into the corpus by T-007 but never consumed by any seed step —
 // `notifications` stayed empty even though `05-demo-storyboard.md:13`
 // describes `shirin_88` as having five seeded notifications.
@@ -27,12 +28,21 @@ const MESSAGE_KEY_BY_KIND: Record<(typeof USER_NOTIFICATIONS)[number]['kind'], s
   draft: 'notif.draftExpiring',
 };
 
-/** Parses the corpus's `when` strings ("2 days ago", "1 week ago", …) into a Date relative to now. */
+/**
+ * Prototype records the seed does not load, each with the binding decision
+ * that rules it out (CR-012, BR1.7). n8 is a decision notice to a reporter;
+ * FD-086 gives decision notices to the affected author only.
+ */
+const WITHHELD_NOTIFICATIONS: Readonly<Record<string, string>> = { n8: 'FD-086' };
+
+// ASSUMPTION(CR-012): a month in "N months ago" counts as 30 days.
+const DAYS_PER_UNIT: Record<string, number> = { day: 1, week: 7, month: 30 };
+
+/** Parses the corpus's `when` strings ("2 days ago", "1 week ago", "2 months ago") into a Date relative to now. */
 function parseRelativeAgo(en: string): Date {
-  const match = /^(\d+)\s+(day|days|week|weeks)\s+ago$/.exec(en.trim());
+  const match = /^(\d+)\s+(day|week|month)s?\s+ago$/.exec(en.trim());
   if (!match) throw new Error(`seed-notifications: cannot parse relative time from "${en}"`);
-  const amount = Number(match[1]);
-  const days = match[2]!.startsWith('week') ? amount * 7 : amount;
+  const days = Number(match[1]) * DAYS_PER_UNIT[match[2]!]!;
   return new Date(Date.now() - days * MS_PER_DAY);
 }
 
@@ -92,6 +102,22 @@ async function resolveNotificationFields(
       return { params: {}, route: '/me/security' };
     case 'n5':
       return { params: {}, route: '/me' };
+    case 'n6': {
+      // "nadia_k replied to your comment." -> k9, nadia_k's reply to
+      // shirin_88's k8 on r1.
+      const commentId = ctx.commentIdBySeedRef.get('k9');
+      const [comment] = commentId ? await db.select().from(comments).where(eq(comments.id, commentId)).limit(1) : [];
+      return { params: { reviewPublicId, commentPublicId: comment?.publicId }, route: `/experiences/${reviewPublicId}` };
+    }
+    case 'n7':
+      // "Your second prescription scan is waiting for you to cover any
+      // private details…": no seeded evidence item of shirin_88 waits for
+      // redaction, so there is no id to reference.
+      return { params: {}, route: '/me' };
+    case 'n9':
+      return { params: {}, route: '/me' };
+    case 'n10':
+      return { params: {}, route: '/me/security' };
     default:
       throw new Error(`seed-notifications: no id mapping for ${seedRef}`);
   }
@@ -107,6 +133,7 @@ export async function seedUserNotifications(db: Db, ctx: SeedContext): Promise<n
   const readAtNow = new Date();
 
   for (const n of USER_NOTIFICATIONS) {
+    if (Object.hasOwn(WITHHELD_NOTIFICATIONS, n.seedRef)) continue;
     const [existing] = await db.select().from(notifications).where(eq(notifications.dedupeKey, n.seedRef)).limit(1);
     if (existing) continue;
 

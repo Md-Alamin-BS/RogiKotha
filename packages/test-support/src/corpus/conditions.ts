@@ -97,5 +97,34 @@ export const CONDITIONS = [
       "গ্যাস্ট্রিক",
       "gastric"
     ]
+  },
+  {
+    "seedRef": "c9",
+    "name": {
+      "en": "Asthma",
+      "bn": "হাঁপানি"
+    },
+    "aliases": [
+      "asthma",
+      "হাঁপানি",
+      "shash",
+      "শ্বাসকষ্ট",
+      "wheezing"
+    ]
+  },
+  {
+    "seedRef": "c10",
+    "name": {
+      "en": "Migraine",
+      "bn": "মাইগ্রেন"
+    },
+    "aliases": [
+      "migraine",
+      "মাইগ্রেন",
+      "আধকপালে",
+      "মাথাব্যথা",
+      "headache",
+      "mathabatha"
+    ]
   }
 ] as const satisfies CorpusCondition[];

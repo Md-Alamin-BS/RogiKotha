@@ -289,3 +289,9 @@ export interface CorpusDraft {
   excerpt: Bilingual;
   blockedOnSubmissionSeedRef: string | null;
 }
+
+/** One review the signed-in demo user bookmarked (`RK.user.bookmarks`). */
+export interface CorpusBookmark {
+  accountUsername: string;
+  reviewSeedRef: string;
+}

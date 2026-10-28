@@ -688,5 +688,1151 @@ export const REVIEWS = [
         }
       }
     ]
+  },
+  {
+    "seedRef": "r13",
+    "doctorSeedRef": "d7",
+    "conditionSeedRef": "c9",
+    "sentiment": "positive",
+    "outcome": "helped",
+    "relationship": "self",
+    "identity": "pseudo",
+    "author": {
+      "en": "rajshahi_rina",
+      "bn": "rajshahi_rina"
+    },
+    "period": {
+      "en": "April 2026",
+      "bn": "এপ্রিল ২০২৬"
+    },
+    "posted": {
+      "en": "Posted May 2026",
+      "bn": "প্রকাশ মে ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 1,
+    "likes": 26,
+    "dislikes": 1,
+    "commentsCount": 3,
+    "claims": [],
+    "title": {
+      "en": "She watched me use the inhaler before changing anything",
+      "bn": "কিছু বদলানোর আগে উনি আমাকে ইনহেলার ব্যবহার করতে দেখলেন"
+    },
+    "body": {
+      "en": "I had been using a blue inhaler almost daily for two years and assumed the night cough was just something I had to live with. She asked me to show her how I used it, found I was not breathing out first or holding my breath afterwards, and corrected that before talking about stronger medicine. She also explained the difference between the inhaler for emergencies and the one for every day.",
+      "bn": "দুই বছর ধরে প্রায় প্রতিদিন নীল ইনহেলার ব্যবহার করছিলাম, ভেবেছিলাম রাতের কাশি নিয়েই থাকতে হবে। উনি আমাকে ইনহেলার ব্যবহার করে দেখাতে বললেন, দেখলেন আমি আগে শ্বাস ছাড়ছি না এবং পরে শ্বাস ধরে রাখছি না, আর কড়া ওষুধের কথা বলার আগে সেটাই ঠিক করে দিলেন। জরুরি দরকারের ইনহেলার আর প্রতিদিনের ইনহেলারের পার্থক্যও বুঝিয়ে বললেন।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "Night cough and wheezing three or four times a week, breathless on the stairs, for about two years.",
+          "bn": "সপ্তাহে তিন-চারবার রাতে কাশি ও শোঁ শোঁ শব্দ, সিঁড়িতে উঠলে হাঁপিয়ে যাওয়া, প্রায় দুই বছর ধরে।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Asthma that was not well controlled. A breathing test (spirometry) was done in the chamber.",
+          "bn": "হাঁপানি, যা ঠিকমতো নিয়ন্ত্রণে ছিল না। চেম্বারেই শ্বাসের পরীক্ষা (স্পাইরোমেট্রি) করা হয়।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "Inhaler technique corrected, a low-dose daily preventer inhaler added, and a written plan for what to do on a bad day.",
+          "bn": "ইনহেলার ব্যবহারের পদ্ধতি ঠিক করা, প্রতিদিনের জন্য কম মাত্রার প্রতিরোধক ইনহেলার যোগ, আর খারাপ দিনে কী করতে হবে তার লিখিত পরিকল্পনা।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "After eight weeks the night cough was down to once or twice a month and I stopped using the blue inhaler every day.",
+          "bn": "আট সপ্তাহ পর রাতের কাশি মাসে এক-দুইবারে নামল এবং নীল ইনহেলার আর রোজ লাগছে না।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Asthma",
+          "bn": "হাঁপানি"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Night cough",
+          "bn": "রাতের কাশি"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Salbutamol",
+          "bn": "সালবিউটামল"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Spirometry",
+          "bn": "স্পাইরোমেট্রি"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r14",
+    "doctorSeedRef": "d7",
+    "conditionSeedRef": "c9",
+    "sentiment": "mixed",
+    "outcome": "uncertain",
+    "relationship": "parent",
+    "identity": "real",
+    "author": {
+      "en": "Farida Yasmin",
+      "bn": "ফরিদা ইয়াসমিন"
+    },
+    "period": {
+      "en": "February 2026",
+      "bn": "ফেব্রুয়ারি ২০২৬"
+    },
+    "posted": {
+      "en": "Posted March 2026",
+      "bn": "প্রকাশ মার্চ ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 0,
+    "likes": 13,
+    "dislikes": 1,
+    "commentsCount": 2,
+    "claims": [],
+    "title": {
+      "en": "Thorough with my daughter, though the follow-up timing was unclear",
+      "bn": "মেয়ের ব্যাপারে খুঁটিয়ে দেখেছেন, তবে ফলো-আপের সময় স্পষ্ট ছিল না"
+    },
+    "body": {
+      "en": "My daughter is eleven and wheezes every winter. The doctor took a long history, asked about dust and pets at home, and did not rush to steroids. What I did not get was a clear answer on when to come back: first she said one month, then the receptionist said three. We are still deciding whether the new inhaler is helping because winter has only just ended.",
+      "bn": "আমার মেয়ের বয়স এগারো, প্রতি শীতে ওর শ্বাসের শব্দ হয়। ডাক্তার অনেকক্ষণ ধরে ইতিহাস শুনলেন, ঘরে ধুলো ও পোষা প্রাণী আছে কি না জিজ্ঞেস করলেন, তাড়াহুড়ো করে স্টেরয়েডে যাননি। যেটা পাইনি তা হলো কবে আবার আসব তার পরিষ্কার উত্তর: উনি বললেন এক মাস, রিসেপশনিস্ট বললেন তিন মাস। শীত সবে শেষ হয়েছে, তাই নতুন ইনহেলারে কাজ হচ্ছে কি না এখনো বুঝতে পারছি না।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "Wheezing and a dry cough at night every winter for three years, worse after cold mornings.",
+          "bn": "তিন বছর ধরে প্রতি শীতে রাতে শোঁ শোঁ শব্দ ও শুকনো কাশি, ঠান্ডা সকালের পর বেশি।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Childhood asthma, triggered by cold air and dust. No tests were ordered at the first visit.",
+          "bn": "শিশুদের হাঁপানি, ঠান্ডা বাতাস ও ধুলোয় বাড়ে। প্রথম ভিজিটে কোনো পরীক্ষা দেওয়া হয়নি।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "A low-dose preventer inhaler with a spacer, and advice about bedding and dust at home.",
+          "bn": "স্পেসারসহ কম মাত্রার প্রতিরোধক ইনহেলার এবং বিছানা ও ঘরের ধুলো নিয়ে পরামর্শ।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "Fewer night coughs since February, but it is too early in the season to say whether the inhaler is the reason.",
+          "bn": "ফেব্রুয়ারি থেকে রাতের কাশি কমেছে, কিন্তু মৌসুম সবে শেষ হয়েছে বলে ইনহেলারের কারণে কমেছে কি না বলা যাচ্ছে না।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Asthma",
+          "bn": "হাঁপানি"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Wheezing",
+          "bn": "শোঁ শোঁ শব্দ"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Budesonide",
+          "bn": "বুডেসোনাইড"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Spacer device",
+          "bn": "স্পেসার"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r15",
+    "doctorSeedRef": "d7",
+    "conditionSeedRef": "c9",
+    "sentiment": "negative",
+    "outcome": "none",
+    "relationship": "self",
+    "identity": "anon",
+    "author": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "period": {
+      "en": "December 2025",
+      "bn": "ডিসেম্বর ২০২৫"
+    },
+    "posted": {
+      "en": "Posted January 2026",
+      "bn": "প্রকাশ জানুয়ারি ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 1,
+    "likes": 16,
+    "dislikes": 4,
+    "commentsCount": 2,
+    "claims": [
+      "secondOpinion"
+    ],
+    "title": {
+      "en": "A rushed visit and no breathing test",
+      "bn": "তাড়াহুড়োর ভিজিট, শ্বাসের পরীক্ষা হয়নি"
+    },
+    "body": {
+      "en": "I came with a cough that had lasted six weeks. The consultation took about five minutes, I was given an inhaler and an antibiotic, and no breathing test was done. When it did not settle I saw a chest physician in another town, who ordered spirometry and said the antibiotic had not been needed. This is only what I was told — I am sharing it as my own experience.",
+      "bn": "ছয় সপ্তাহ ধরে কাশি নিয়ে গিয়েছিলাম। পরামর্শ প্রায় পাঁচ মিনিটের, একটি ইনহেলার ও একটি অ্যান্টিবায়োটিক দেওয়া হয়, শ্বাসের কোনো পরীক্ষা হয়নি। কমছে না দেখে অন্য শহরের একজন বক্ষব্যাধি বিশেষজ্ঞের কাছে গেলে উনি স্পাইরোমেট্রি করান এবং বলেন অ্যান্টিবায়োটিকের দরকার ছিল না। আমাকে যা বলা হয়েছে এটি সেটুকুই — নিজের অভিজ্ঞতা হিসেবে জানাচ্ছি।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "A dry cough for six weeks and tightness in the chest in the early morning.",
+          "bn": "ছয় সপ্তাহ ধরে শুকনো কাশি এবং ভোরের দিকে বুকে চাপ।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Told it was a lingering infection with an allergic part. No tests that day.",
+          "bn": "বলা হলো এটি সংক্রমণের জের, সঙ্গে অ্যালার্জির অংশ আছে। সেদিন কোনো পরীক্ষা হয়নি।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "One inhaler and a five-day antibiotic course.",
+          "bn": "একটি ইনহেলার ও পাঁচ দিনের অ্যান্টিবায়োটিক কোর্স।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "No change after two weeks. A second doctor ordered spirometry, found asthma, and changed the plan.",
+          "bn": "দুই সপ্তাহেও কোনো পরিবর্তন হয়নি। দ্বিতীয় ডাক্তার স্পাইরোমেট্রি করিয়ে হাঁপানি পেলেন এবং পরিকল্পনা বদলালেন।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Asthma",
+          "bn": "হাঁপানি"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Persistent cough",
+          "bn": "টানা কাশি"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Antibiotic",
+          "bn": "অ্যান্টিবায়োটিক"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Spirometry",
+          "bn": "স্পাইরোমেট্রি"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r16",
+    "doctorSeedRef": "d8",
+    "conditionSeedRef": "c10",
+    "sentiment": "positive",
+    "outcome": "helped",
+    "relationship": "self",
+    "identity": "real",
+    "author": {
+      "en": "Mostafizur Rahman",
+      "bn": "মোস্তাফিজুর রহমান"
+    },
+    "period": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "posted": {
+      "en": "Posted April 2026",
+      "bn": "প্রকাশ এপ্রিল ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 2,
+    "likes": 38,
+    "dislikes": 2,
+    "commentsCount": 3,
+    "claims": [],
+    "title": {
+      "en": "He asked about sleep and meals before prescribing",
+      "bn": "ওষুধ লেখার আগে ঘুম আর খাবার নিয়ে জিজ্ঞেস করলেন"
+    },
+    "body": {
+      "en": "I had a throbbing headache on one side two or three times a month and took painkillers every time. He asked me to keep a headache diary for four weeks, and that is what showed the pattern: skipped meals and short sleep before almost every attack. He explained the difference between a medicine for the attack and one to prevent it, and let me choose whether to start the preventer.",
+      "bn": "মাসে দুই-তিনবার এক পাশে দপদপ করা মাথাব্যথা হতো, প্রতিবারই ব্যথার ওষুধ খেতাম। উনি চার সপ্তাহ মাথাব্যথার ডায়েরি রাখতে বললেন, আর তাতেই ধরা পড়ল প্রায় প্রতিটি আক্রমণের আগে খাবার বাদ দেওয়া ও কম ঘুম। আক্রমণের সময়ের ওষুধ আর প্রতিরোধের ওষুধের পার্থক্য বুঝিয়ে বললেন, প্রতিরোধের ওষুধ শুরু করব কি না তা আমাকেই ঠিক করতে দিলেন।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "One-sided throbbing headache with nausea and light sensitivity, two or three times a month for almost three years.",
+          "bn": "প্রায় তিন বছর ধরে মাসে দুই-তিনবার এক পাশে দপদপ করা মাথাব্যথা, সঙ্গে বমি বমি ভাব ও আলোতে অস্বস্তি।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Migraine without aura. He said a brain scan was not needed because there were no warning signs.",
+          "bn": "অরা ছাড়া মাইগ্রেন। উনি বললেন কোনো বিপদ-লক্ষণ নেই বলে ব্রেইন স্ক্যানের দরকার নেই।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "A headache diary, regular meals and sleep, one tablet at the start of an attack, and a low-dose preventer that I chose to try.",
+          "bn": "মাথাব্যথার ডায়েরি, নিয়মিত খাবার ও ঘুম, আক্রমণের শুরুতে একটি ট্যাবলেট, আর কম মাত্রার একটি প্রতিরোধক ওষুধ যা আমি চেষ্টা করে দেখব বলে ঠিক করেছিলাম।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "Over four months, attacks dropped from about three a month to one every six weeks.",
+          "bn": "চার মাসে আক্রমণ মাসে প্রায় তিনবার থেকে ছয় সপ্তাহে একবারে নেমেছে।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Migraine",
+          "bn": "মাইগ্রেন"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Light sensitivity",
+          "bn": "আলোতে অস্বস্তি"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Propranolol",
+          "bn": "প্রোপ্রানোলল"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Headache diary",
+          "bn": "মাথাব্যথার ডায়েরি"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r17",
+    "doctorSeedRef": "d8",
+    "conditionSeedRef": "c10",
+    "sentiment": "mixed",
+    "outcome": "helped",
+    "relationship": "family",
+    "identity": "pseudo",
+    "author": {
+      "en": "rangpur_mon",
+      "bn": "rangpur_mon"
+    },
+    "period": {
+      "en": "January 2026",
+      "bn": "জানুয়ারি ২০২৬"
+    },
+    "posted": {
+      "en": "Posted February 2026",
+      "bn": "প্রকাশ ফেব্রুয়ারি ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 0,
+    "likes": 14,
+    "dislikes": 1,
+    "commentsCount": 2,
+    "claims": [],
+    "title": {
+      "en": "It helped my mother, but the explanation used English medical terms",
+      "bn": "মায়ের উপকার হয়েছে, তবে ব্যাখ্যা ছিল ইংরেজি চিকিৎসা-শব্দে"
+    },
+    "body": {
+      "en": "My mother is sixty-two and gets severe headaches behind the eye. The new medicine worked well. But much of the explanation used English terms she did not follow, and I had to ask him twice to repeat the instructions in plain Bangla. He did so politely when asked.",
+      "bn": "আমার মায়ের বয়স বাষট্টি, চোখের পেছনে প্রচণ্ড মাথাব্যথা হয়। নতুন ওষুধে ভালো কাজ হয়েছে। তবে ব্যাখ্যার বেশিরভাগই ইংরেজি শব্দে ছিল যা মা বুঝছিলেন না, আমাকে দুবার সহজ বাংলায় আবার বলতে অনুরোধ করতে হয়েছে। বললে উনি ভদ্রভাবেই বলে দিয়েছেন।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "Severe headaches behind the right eye, lasting most of a day, about twice a month.",
+          "bn": "ডান চোখের পেছনে প্রচণ্ড মাথাব্যথা, প্রায় সারাদিন থাকে, মাসে দুবার।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Migraine, after her blood pressure and eyesight were checked. Her pressure was normal.",
+          "bn": "রক্তচাপ ও দৃষ্টি পরীক্ষার পর মাইগ্রেন। রক্তচাপ স্বাভাবিক ছিল।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "A tablet at the start of an attack, and advice to avoid long gaps between meals.",
+          "bn": "আক্রমণের শুরুতে একটি ট্যাবলেট এবং খাবারের মাঝে লম্বা ফাঁক না রাখার পরামর্শ।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "Attacks became shorter and milder within two months. She is still unsure which instruction is for what.",
+          "bn": "দুই মাসের মধ্যে আক্রমণ ছোট ও হালকা হয়েছে। কোন নির্দেশ কীসের জন্য তা এখনো মা পুরোপুরি বুঝে উঠতে পারেননি।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Migraine",
+          "bn": "মাইগ্রেন"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Headache behind the eye",
+          "bn": "চোখের পেছনে মাথাব্যথা"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Sumatriptan",
+          "bn": "সুমাট্রিপটান"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Blood pressure check",
+          "bn": "রক্তচাপ পরীক্ষা"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r18",
+    "doctorSeedRef": "d8",
+    "conditionSeedRef": "c10",
+    "sentiment": "negative",
+    "outcome": "worse",
+    "relationship": "self",
+    "identity": "pseudo",
+    "author": {
+      "en": "nadia_k",
+      "bn": "nadia_k"
+    },
+    "period": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "posted": {
+      "en": "Posted July 2026",
+      "bn": "প্রকাশ জুলাই ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 0,
+    "likes": 17,
+    "dislikes": 9,
+    "commentsCount": 3,
+    "claims": [
+      "wrongRx"
+    ],
+    "title": {
+      "en": "The preventer made me dizzy and I was told to push through",
+      "bn": "প্রতিরোধের ওষুধে মাথা ঘুরত, বলা হলো সয়ে নিতে"
+    },
+    "body": {
+      "en": "He started a preventer for my migraines. From the third day I felt dizzy when standing up and twice nearly fell. When I phoned, the assistant said it settles in a week and to continue. It did not settle. I stopped it myself after ten days and called again, and only then was I given an appointment. I do not know whether a different dose would have helped. I am sharing what happened to me, not saying the medicine is wrong for everyone.",
+      "bn": "আমার মাইগ্রেনের জন্য উনি একটি প্রতিরোধক ওষুধ শুরু করেন। তৃতীয় দিন থেকে উঠে দাঁড়ালে মাথা ঘুরত, দুবার প্রায় পড়ে যাচ্ছিলাম। ফোন করলে সহকারী বললেন এক সপ্তাহে ঠিক হয়ে যায়, চালিয়ে যেতে। ঠিক হয়নি। দশ দিন পর নিজেই বন্ধ করে আবার ফোন করলে তবেই সময় পেলাম। অন্য মাত্রায় কাজ হতো কি না জানি না। আমার যা হয়েছে সেটাই জানাচ্ছি, ওষুধটি সবার জন্য ভুল বলছি না।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "Migraine twice a month, and a new problem: dizziness on standing, from the third day of the preventer.",
+          "bn": "মাসে দুবার মাইগ্রেন, আর নতুন সমস্যা: প্রতিরোধক ওষুধের তৃতীয় দিন থেকে উঠে দাঁড়ালে মাথা ঘোরা।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "At the second visit he said the dizziness was a side effect of the preventer.",
+          "bn": "দ্বিতীয় ভিজিটে উনি বললেন মাথা ঘোরা প্রতিরোধক ওষুধেরই পার্শ্বপ্রতিক্রিয়া।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "The preventer was stopped and a different one was started at a lower dose.",
+          "bn": "ওষুধটি বন্ধ করে কম মাত্রায় অন্য একটি শুরু করা হয়।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "The dizziness went away within four days of stopping. The new one has been tolerable so far.",
+          "bn": "বন্ধ করার চার দিনের মধ্যে মাথা ঘোরা চলে গেছে। নতুনটা এখন পর্যন্ত সহনীয়।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Migraine",
+          "bn": "মাইগ্রেন"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Dizziness",
+          "bn": "মাথা ঘোরা"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Amitriptyline",
+          "bn": "অ্যামিট্রিপটাইলিন"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Dose reduction",
+          "bn": "ডোজ কমানো"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r19",
+    "doctorSeedRef": "d9",
+    "conditionSeedRef": "c1",
+    "sentiment": "positive",
+    "outcome": "helped",
+    "relationship": "self",
+    "identity": "pseudo",
+    "author": {
+      "en": "rumana_h",
+      "bn": "rumana_h"
+    },
+    "period": {
+      "en": "February 2026",
+      "bn": "ফেব্রুয়ারি ২০২৬"
+    },
+    "posted": {
+      "en": "Posted March 2026",
+      "bn": "প্রকাশ মার্চ ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 1,
+    "likes": 29,
+    "dislikes": 1,
+    "commentsCount": 2,
+    "claims": [],
+    "title": {
+      "en": "He explained the numbers in a way my family could follow",
+      "bn": "সংখ্যাগুলো এমনভাবে বুঝিয়ে দিলেন যে পরিবারের সবাই বুঝল"
+    },
+    "body": {
+      "en": "I brought my husband and my son-in-law along, and he drew a simple chart on the back of the prescription showing what the fasting number and the after-meal number are for. He did not raise the dose until we had two weeks of readings. The visit was long, but it is the first time my family understood why I check at all.",
+      "bn": "স্বামী ও জামাইকে সঙ্গে নিয়ে গিয়েছিলাম, উনি প্রেসক্রিপশনের পেছনে একটা সহজ ছক এঁকে বোঝালেন খালি পেটের সংখ্যা আর খাবারের পরের সংখ্যা কীসের জন্য। দুই সপ্তাহের রিডিং না দেখে ডোজ বাড়াননি। ভিজিট লম্বা হয়েছে, কিন্তু আমি কেন রিডিং নিই তা এই প্রথম আমার পরিবার বুঝল।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "Tiredness, getting up at night to pass urine, and a slow-healing cut on the foot for about three months.",
+          "bn": "প্রায় তিন মাস ধরে ক্লান্তি, রাতে প্রস্রাবের জন্য উঠতে হওয়া, আর পায়ের একটি কাটা দেরিতে শুকানো।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Type 2 diabetes, newly found. HbA1c was 8.9.",
+          "bn": "টাইপ ২ ডায়াবেটিস, নতুন ধরা পড়ল। HbA1c ছিল ৮.৯।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "Metformin at a low dose, a walk after dinner, and a diet plan built on foods we already cook at home.",
+          "bn": "কম মাত্রায় মেটফরমিন, রাতের খাবারের পর হাঁটা, আর বাড়িতে যা রান্না হয় তা দিয়েই খাদ্য পরিকল্পনা।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "Fasting readings between 6 and 7.5 after ten weeks. HbA1c 6.9 at the follow-up.",
+          "bn": "দশ সপ্তাহ পর খালি পেটে রিডিং ৬ থেকে ৭.৫-এর মধ্যে। ফলো-আপে HbA1c ৬.৯।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Type 2 diabetes",
+          "bn": "টাইপ ২ ডায়াবেটিস"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Frequent urination",
+          "bn": "ঘন ঘন প্রস্রাব"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Metformin",
+          "bn": "মেটফরমিন"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Diet plan",
+          "bn": "খাদ্য পরিকল্পনা"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r20",
+    "doctorSeedRef": "d9",
+    "conditionSeedRef": "c1",
+    "sentiment": "mixed",
+    "outcome": "uncertain",
+    "relationship": "witness",
+    "identity": "pseudo",
+    "author": {
+      "en": "cumilla_jh",
+      "bn": "cumilla_jh"
+    },
+    "period": {
+      "en": "May 2026",
+      "bn": "মে ২০২৬"
+    },
+    "posted": {
+      "en": "Posted June 2026",
+      "bn": "প্রকাশ জুন ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 0,
+    "likes": 7,
+    "dislikes": 0,
+    "commentsCount": 1,
+    "claims": [],
+    "title": {
+      "en": "Clear advice for my neighbour, but I could not tell if it worked",
+      "bn": "প্রতিবেশীকে পরিষ্কার পরামর্শ দিয়েছেন, তবে কাজ হলো কি না বুঝিনি"
+    },
+    "body": {
+      "en": "I went with my elderly neighbour, who cannot hear well. The doctor spoke slowly, wrote the timings in large numbers and had me repeat everything back. I have not seen my neighbour’s readings since, so I cannot say whether the plan worked. I am only describing the visit.",
+      "bn": "কানে কম শোনেন এমন বয়স্ক প্রতিবেশীর সঙ্গে গিয়েছিলাম। ডাক্তার ধীরে কথা বললেন, সময়গুলো বড় সংখ্যায় লিখে দিলেন এবং আমাকে দিয়ে সবকিছু আবার বলিয়ে নিলেন। এরপর প্রতিবেশীর রিডিং দেখিনি, তাই পরিকল্পনা কাজ করেছে কি না বলতে পারি না। শুধু ভিজিটটার কথা লিখছি।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "My neighbour has had diabetes for nine years and his morning readings had been high.",
+          "bn": "আমার প্রতিবেশী নয় বছর ধরে ডায়াবেটিসে ভুগছেন, সকালের রিডিং বেশি আসছিল।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Long-standing type 2 diabetes. The doctor changed the timing of the evening dose.",
+          "bn": "দীর্ঘদিনের টাইপ ২ ডায়াবেটিস। ডাক্তার সন্ধ্যার ডোজের সময় বদলালেন।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "The evening tablet moved earlier, dose times written in large numbers, and a blood test booked.",
+          "bn": "সন্ধ্যার ট্যাবলেট আগে খাওয়ার ব্যবস্থা, ডোজের সময় বড় সংখ্যায় লেখা, আর একটি রক্ত পরীক্ষার তারিখ।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "I do not know the result. We have not been back.",
+          "bn": "ফলাফল জানি না। আমরা আর যাইনি।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Type 2 diabetes",
+          "bn": "টাইপ ২ ডায়াবেটিস"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "High morning readings",
+          "bn": "সকালে বেশি রিডিং"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Metformin",
+          "bn": "মেটফরমিন"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Dose timing",
+          "bn": "ডোজের সময় সমন্বয়"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r21",
+    "doctorSeedRef": "d9",
+    "conditionSeedRef": "c2",
+    "sentiment": "mixed",
+    "outcome": "none",
+    "relationship": "self",
+    "identity": "real",
+    "author": {
+      "en": "Nasima Akter",
+      "bn": "নাসিমা আক্তার"
+    },
+    "period": {
+      "en": "April 2026",
+      "bn": "এপ্রিল ২০২৬"
+    },
+    "posted": {
+      "en": "Posted May 2026",
+      "bn": "প্রকাশ মে ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 0,
+    "likes": 10,
+    "dislikes": 2,
+    "commentsCount": 2,
+    "claims": [
+      "secondOpinion"
+    ],
+    "title": {
+      "en": "Same dose after two visits and I still feel tired",
+      "bn": "দুই ভিজিটের পরও ডোজ একই, আর আমি এখনো ক্লান্ত"
+    },
+    "body": {
+      "en": "My TSH was high and he started levothyroxine. At the second visit three months later my TSH had come down but I still felt tired and my hair was still falling. He said the number was now in range, so the dose would stay. I went to another doctor for a second opinion, who also kept the dose but tested my iron and vitamin D, which had not been checked. I feel no better yet.",
+      "bn": "আমার টিএসএইচ বেশি ছিল, উনি লেভোথাইরক্সিন শুরু করলেন। তিন মাস পর দ্বিতীয় ভিজিটে টিএসএইচ নেমেছে, কিন্তু ক্লান্তি আর চুল পড়া রয়ে গেছে। উনি বললেন সংখ্যা এখন সীমার মধ্যে, তাই ডোজ একই থাকবে। দ্বিতীয় মতের জন্য অন্য ডাক্তারের কাছে গেলাম; উনিও ডোজ একই রাখলেন, তবে আয়রন ও ভিটামিন ডি পরীক্ষা করালেন যা আগে হয়নি। এখনো ভালো লাগছে না।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "Constant tiredness, feeling cold, weight gain and thinning hair over about six months.",
+          "bn": "প্রায় ছয় মাস ধরে অবিরাম ক্লান্তি, শীত শীত লাগা, ওজন বাড়া ও চুল পাতলা হওয়া।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Hypothyroidism, TSH 14.",
+          "bn": "হাইপোথাইরয়েড, টিএসএইচ ১৪।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "Levothyroxine 50 micrograms, with the TSH retested after three months.",
+          "bn": "লেভোথাইরক্সিন ৫০ মাইক্রোগ্রাম, তিন মাস পর টিএসএইচ আবার পরীক্ষা।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "TSH came down to 3.1 but the tiredness and hair loss are unchanged. A second doctor tested iron and vitamin D.",
+          "bn": "টিএসএইচ নেমে ৩.১ হয়েছে কিন্তু ক্লান্তি ও চুল পড়া একই। দ্বিতীয় ডাক্তার আয়রন ও ভিটামিন ডি পরীক্ষা করান।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Hypothyroidism",
+          "bn": "হাইপোথাইরয়েড"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Tiredness",
+          "bn": "ক্লান্তি"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Levothyroxine",
+          "bn": "লেভোথাইরক্সিন"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "TSH retest",
+          "bn": "টিএসএইচ পুনরায় পরীক্ষা"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r22",
+    "doctorSeedRef": "d10",
+    "conditionSeedRef": "c7",
+    "sentiment": "positive",
+    "outcome": "helped",
+    "relationship": "parent",
+    "identity": "pseudo",
+    "author": {
+      "en": "ammu_of_tuli",
+      "bn": "ammu_of_tuli"
+    },
+    "period": {
+      "en": "July 2026",
+      "bn": "জুলাই ২০২৬"
+    },
+    "posted": {
+      "en": "Posted August 2026",
+      "bn": "প্রকাশ আগস্ট ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 0,
+    "likes": 18,
+    "dislikes": 0,
+    "commentsCount": 2,
+    "claims": [],
+    "title": {
+      "en": "She told us exactly which signs meant coming back at once",
+      "bn": "ঠিক কোন লক্ষণ দেখলে সঙ্গে সঙ্গে ফিরে আসতে হবে, পরিষ্কার বলে দিলেন"
+    },
+    "body": {
+      "en": "Our daughter is seven and had a fever for six days. The doctor ordered a blood culture rather than guessing, explained why we should wait for it, and wrote a list of warning signs on a card: swollen belly, confusion, black stools. She also told us the cost of each test before we agreed. The fever settled on the fifth day of treatment.",
+      "bn": "আমাদের মেয়ের বয়স সাত, ছয় দিন ধরে জ্বর। ডাক্তার আন্দাজে না গিয়ে ব্লাড কালচার করালেন, কেন রিপোর্টের জন্য অপেক্ষা করতে হবে বুঝিয়ে বললেন, আর একটি কার্ডে বিপদের লক্ষণগুলো লিখে দিলেন: পেট ফুলে যাওয়া, অসংলগ্ন কথা, কালো পায়খানা। রাজি হওয়ার আগে প্রতিটি পরীক্ষার খরচও বলে দিলেন। চিকিৎসার পঞ্চম দিনে জ্বর নামল।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "Fever for six days, loss of appetite, stomach ache and a coated tongue.",
+          "bn": "ছয় দিন জ্বর, খিদে না থাকা, পেটে ব্যথা ও জিভে সাদা আস্তরণ।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Typhoid fever, based on the blood culture and her symptoms.",
+          "bn": "ব্লাড কালচার ও লক্ষণ দেখে টাইফয়েড জ্বর।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "An oral antibiotic for fourteen days, plenty of fluids, soft food, and a recheck visit on day seven.",
+          "bn": "চোদ্দো দিনের খাওয়ার অ্যান্টিবায়োটিক, প্রচুর পানীয়, নরম খাবার, আর সপ্তম দিনে আবার দেখানো।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "The fever was gone by day five of treatment. She was back at school after three weeks.",
+          "bn": "চিকিৎসার পঞ্চম দিনে জ্বর ছেড়ে যায়। তিন সপ্তাহ পর মেয়ে আবার স্কুলে যায়।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Typhoid fever",
+          "bn": "টাইফয়েড জ্বর"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Prolonged fever",
+          "bn": "দীর্ঘস্থায়ী জ্বর"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Azithromycin",
+          "bn": "অ্যাজিথ্রোমাইসিন"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Blood culture",
+          "bn": "ব্লাড কালচার"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r23",
+    "doctorSeedRef": "d10",
+    "conditionSeedRef": "c7",
+    "sentiment": "mixed",
+    "outcome": "helped",
+    "relationship": "parent",
+    "identity": "anon",
+    "author": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "period": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "posted": {
+      "en": "Posted July 2026",
+      "bn": "প্রকাশ জুলাই ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 0,
+    "likes": 5,
+    "dislikes": 0,
+    "commentsCount": 1,
+    "claims": [],
+    "title": {
+      "en": "Good care for my son, but a morning slot was hard to get",
+      "bn": "ছেলের যত্ন ভালো ছিল, তবে সকালের সময় পাওয়া কঠিন"
+    },
+    "body": {
+      "en": "My son recovered well from typhoid and the doctor spoke to him, not just to me, which he appreciated. The difficulty was appointments: the morning slots were gone two weeks ahead, so we saw her on a crowded evening and waited more than two hours.",
+      "bn": "আমার ছেলে টাইফয়েড থেকে ভালোভাবে সেরে উঠেছে, আর ডাক্তার শুধু আমার সঙ্গে নয়, ওর সঙ্গেও কথা বলেছেন, যা ও পছন্দ করেছে। সমস্যা ছিল সিরিয়াল: সকালের সময় দুই সপ্তাহ আগেই শেষ, তাই ভিড়ের সন্ধ্যায় দেখাতে হলো আর দুই ঘণ্টার বেশি অপেক্ষা করতে হলো।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "Fever for eight days with a headache and constipation.",
+          "bn": "আট দিন জ্বর, সঙ্গে মাথাব্যথা ও কোষ্ঠকাঠিন্য।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Typhoid fever. The doctor went through the test result with him in simple words.",
+          "bn": "টাইফয়েড জ্বর। পরীক্ষার ফল ডাক্তার ওকে সহজ কথায় বুঝিয়ে দেন।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "Antibiotics for two weeks, rest at home, and a diet of soft food.",
+          "bn": "দুই সপ্তাহের অ্যান্টিবায়োটিক, বাড়িতে বিশ্রাম ও নরম খাবার।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "The fever settled within a week and he was back to normal in three weeks.",
+          "bn": "এক সপ্তাহের মধ্যে জ্বর কমে, তিন সপ্তাহে সে স্বাভাবিক হয়।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Typhoid fever",
+          "bn": "টাইফয়েড জ্বর"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Prolonged fever",
+          "bn": "দীর্ঘস্থায়ী জ্বর"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Antibiotic course",
+          "bn": "অ্যান্টিবায়োটিক কোর্স"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Rest and soft diet",
+          "bn": "বিশ্রাম ও নরম খাবার"
+        }
+      }
+    ]
+  },
+  {
+    "seedRef": "r24",
+    "doctorSeedRef": "d10",
+    "conditionSeedRef": "c9",
+    "sentiment": "positive",
+    "outcome": "helped",
+    "relationship": "family",
+    "identity": "real",
+    "author": {
+      "en": "Shahana Parvin",
+      "bn": "শাহানা পারভীন"
+    },
+    "period": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "posted": {
+      "en": "Posted April 2026",
+      "bn": "প্রকাশ এপ্রিল ২০২৬"
+    },
+    "detailed": true,
+    "evidenceCount": 0,
+    "likes": 21,
+    "dislikes": 1,
+    "commentsCount": 2,
+    "claims": [],
+    "title": {
+      "en": "She taught my grandson to use the spacer in two minutes",
+      "bn": "দুই মিনিটে নাতিকে স্পেসার ব্যবহার শিখিয়ে দিলেন"
+    },
+    "body": {
+      "en": "My grandson is five and was frightened of the inhaler. The doctor let him hold the spacer and blow into it like a toy first, then showed me how to count his breaths. His parents work during the day, so she wrote the plan in Bangla for me to follow. He has had no night wheeze since.",
+      "bn": "আমার নাতির বয়স পাঁচ, ইনহেলার দেখে ভয় পেত। ডাক্তার আগে ওকে খেলনার মতো স্পেসার ধরতে ও ফুঁ দিতে দিলেন, তারপর আমাকে দেখালেন ওর শ্বাস গুনতে। ওর বাবা-মা দিনে কাজে থাকেন, তাই আমার অনুসরণের জন্য পরিকল্পনা বাংলায় লিখে দিলেন। এরপর থেকে রাতে ওর আর শোঁ শোঁ শব্দ হয়নি।"
+    },
+    "timeline": [
+      {
+        "key": "symptoms",
+        "text": {
+          "en": "Wheezing at night and after running about, and a cough that kept him awake, for two winters.",
+          "bn": "দুই শীত ধরে রাতে ও দৌড়ঝাঁপের পর শোঁ শোঁ শব্দ, কাশিতে ঘুম ভেঙে যাওয়া।"
+        }
+      },
+      {
+        "key": "diagnosis",
+        "text": {
+          "en": "Childhood asthma, with dust as the main trigger.",
+          "bn": "শিশুদের হাঁপানি, প্রধান কারণ ধুলো।"
+        }
+      },
+      {
+        "key": "treatment",
+        "text": {
+          "en": "A reliever inhaler with a spacer and mask, a preventer for the winter months, and advice to wash bedding every week.",
+          "bn": "স্পেসার ও মাস্কসহ জরুরি ইনহেলার, শীতের মাসগুলোর জন্য প্রতিরোধক ইনহেলার, আর প্রতি সপ্তাহে বিছানার চাদর ধোয়ার পরামর্শ।"
+        }
+      },
+      {
+        "key": "after",
+        "text": {
+          "en": "No night wheeze since the first month. One short cough with a cold in June cleared in three days.",
+          "bn": "প্রথম মাসের পর রাতে আর শোঁ শোঁ শব্দ হয়নি। জুনে সর্দির সঙ্গে অল্প কাশি তিন দিনে সেরে যায়।"
+        }
+      }
+    ],
+    "tags": [
+      {
+        "group": "condition",
+        "text": {
+          "en": "Asthma",
+          "bn": "হাঁপানি"
+        }
+      },
+      {
+        "group": "symptom",
+        "text": {
+          "en": "Night wheeze",
+          "bn": "রাতে শোঁ শোঁ শব্দ"
+        }
+      },
+      {
+        "group": "medicine",
+        "text": {
+          "en": "Salbutamol",
+          "bn": "সালবিউটামল"
+        }
+      },
+      {
+        "group": "treatment",
+        "text": {
+          "en": "Spacer device",
+          "bn": "স্পেসার"
+        }
+      }
+    ]
   }
 ] as const satisfies CorpusReview[];

@@ -41,6 +41,30 @@ export const PERSONAS = [
     "accountUsername": "anon_author_r12"
   },
   {
+    "key": "anon:r15",
+    "kind": "anonymous",
+    "displayName": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "username": null,
+    "avatarHue": 0,
+    "reviewSeedRef": "r15",
+    "accountUsername": "anon_author_r15"
+  },
+  {
+    "key": "anon:r23",
+    "kind": "anonymous",
+    "displayName": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "username": null,
+    "avatarHue": 0,
+    "reviewSeedRef": "r23",
+    "accountUsername": "anon_author_r23"
+  },
+  {
     "key": "anon:r6",
     "kind": "anonymous",
     "displayName": {
@@ -51,6 +75,30 @@ export const PERSONAS = [
     "avatarHue": 0,
     "reviewSeedRef": "r6",
     "accountUsername": "anon_author_r6"
+  },
+  {
+    "key": "anon:r4",
+    "kind": "anonymous",
+    "displayName": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "username": null,
+    "avatarHue": 0,
+    "reviewSeedRef": "r4",
+    "accountUsername": "anon_author_r4"
+  },
+  {
+    "key": "anon:r20",
+    "kind": "anonymous",
+    "displayName": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "username": null,
+    "avatarHue": 0,
+    "reviewSeedRef": "r20",
+    "accountUsername": "anon_author_r20"
   },
   {
     "key": "anon:fr2",
@@ -75,6 +123,30 @@ export const PERSONAS = [
     "avatarHue": 0,
     "reviewSeedRef": "fr7",
     "accountUsername": "anon_author_fr7"
+  },
+  {
+    "key": "anon:fr11",
+    "kind": "anonymous",
+    "displayName": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "username": null,
+    "avatarHue": 0,
+    "reviewSeedRef": "fr11",
+    "accountUsername": "anon_author_fr11"
+  },
+  {
+    "key": "anon:fr19",
+    "kind": "anonymous",
+    "displayName": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "username": null,
+    "avatarHue": 0,
+    "reviewSeedRef": "fr19",
+    "accountUsername": "anon_author_fr19"
   },
   {
     "key": "pseudonymous:shirin_88",
@@ -176,6 +248,50 @@ export const PERSONAS = [
     "accountUsername": "mirpur_11"
   },
   {
+    "key": "pseudonymous:rajshahi_rina",
+    "kind": "pseudonymous",
+    "displayName": {
+      "en": "rajshahi_rina",
+      "bn": "rajshahi_rina"
+    },
+    "username": "rajshahi_rina",
+    "avatarHue": 235,
+    "accountUsername": "rajshahi_rina"
+  },
+  {
+    "key": "named:Farida Yasmin",
+    "kind": "named",
+    "displayName": {
+      "en": "Farida Yasmin",
+      "bn": "ফরিদা ইয়াসমিন"
+    },
+    "username": "named_farida-yasmin",
+    "avatarHue": 272,
+    "accountUsername": "named_farida-yasmin"
+  },
+  {
+    "key": "named:Mostafizur Rahman",
+    "kind": "named",
+    "displayName": {
+      "en": "Mostafizur Rahman",
+      "bn": "মোস্তাফিজুর রহমান"
+    },
+    "username": "named_mostafizur-rahman",
+    "avatarHue": 309,
+    "accountUsername": "named_mostafizur-rahman"
+  },
+  {
+    "key": "pseudonymous:rangpur_mon",
+    "kind": "pseudonymous",
+    "displayName": {
+      "en": "rangpur_mon",
+      "bn": "rangpur_mon"
+    },
+    "username": "rangpur_mon",
+    "avatarHue": 346,
+    "accountUsername": "rangpur_mon"
+  },
+  {
     "key": "pseudonymous:nadia_k",
     "kind": "pseudonymous",
     "displayName": {
@@ -196,6 +312,50 @@ export const PERSONAS = [
     "username": "rumana_h",
     "avatarHue": 87,
     "accountUsername": "rumana_h"
+  },
+  {
+    "key": "pseudonymous:cumilla_jh",
+    "kind": "pseudonymous",
+    "displayName": {
+      "en": "cumilla_jh",
+      "bn": "cumilla_jh"
+    },
+    "username": "cumilla_jh",
+    "avatarHue": 23,
+    "accountUsername": "cumilla_jh"
+  },
+  {
+    "key": "named:Nasima Akter",
+    "kind": "named",
+    "displayName": {
+      "en": "Nasima Akter",
+      "bn": "নাসিমা আক্তার"
+    },
+    "username": "named_nasima-akter",
+    "avatarHue": 60,
+    "accountUsername": "named_nasima-akter"
+  },
+  {
+    "key": "pseudonymous:ammu_of_tuli",
+    "kind": "pseudonymous",
+    "displayName": {
+      "en": "ammu_of_tuli",
+      "bn": "ammu_of_tuli"
+    },
+    "username": "ammu_of_tuli",
+    "avatarHue": 97,
+    "accountUsername": "ammu_of_tuli"
+  },
+  {
+    "key": "named:Shahana Parvin",
+    "kind": "named",
+    "displayName": {
+      "en": "Shahana Parvin",
+      "bn": "শাহানা পারভীন"
+    },
+    "username": "named_shahana-parvin",
+    "avatarHue": 134,
+    "accountUsername": "named_shahana-parvin"
   },
   {
     "key": "named:Dr. Farhana Rahman",
@@ -229,5 +389,49 @@ export const PERSONAS = [
     "username": "shafiq_ctg",
     "avatarHue": 198,
     "accountUsername": "shafiq_ctg"
+  },
+  {
+    "key": "named:Dr. Mahmudul Hasan",
+    "kind": "named",
+    "displayName": {
+      "en": "Dr. Mahmudul Hasan",
+      "bn": "ডা. মাহমুদুল হাসান"
+    },
+    "username": "named_dr-mahmudul-hasan",
+    "avatarHue": 171,
+    "accountUsername": "named_dr-mahmudul-hasan"
+  },
+  {
+    "key": "named:Dr. Aminul Haque",
+    "kind": "named",
+    "displayName": {
+      "en": "Dr. Aminul Haque",
+      "bn": "ডা. আমিনুল হক"
+    },
+    "username": "named_dr-aminul-haque",
+    "avatarHue": 208,
+    "accountUsername": "named_dr-aminul-haque"
+  },
+  {
+    "key": "pseudonymous:cure_in_days",
+    "kind": "pseudonymous",
+    "displayName": {
+      "en": "cure_in_days",
+      "bn": "cure_in_days"
+    },
+    "username": "cure_in_days",
+    "avatarHue": 245,
+    "accountUsername": "cure_in_days"
+  },
+  {
+    "key": "named:Jesmin Ara",
+    "kind": "named",
+    "displayName": {
+      "en": "Jesmin Ara",
+      "bn": "জেসমিন আরা"
+    },
+    "username": "named_jesmin-ara",
+    "avatarHue": 282,
+    "accountUsername": "named_jesmin-ara"
   }
 ] as const satisfies CorpusPersona[];

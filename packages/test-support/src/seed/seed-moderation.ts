@@ -1,7 +1,8 @@
 // seed-moderation: cases with `code` from the corpus, lanes, `report_count`
 // / `distinct_reporters` from `reports`, `auto_hidden`, reasons, reports
 // rows from `reporter_N` accounts to make the counts true, decisions where
-// `auditLog` shows `record`, appeal for MOD-2011 with `appealText`, audit
+// `auditLog` shows `record`, an appeal for every `appeals`-lane case
+// (MOD-2011 on review r4, MOD-2018 on comment k27) with `appealText`, audit
 // events from `auditLog` with `created_at = now - timeMin`, staff
 // notifications. Sets the target content state to `hidden_pending_review`
 // where `autoHidden` is true.
@@ -20,9 +21,10 @@
 // ASSUMPTION(T-007): MOD-2038 targets evidence item `e6`, which has no
 // `hidden_pending_review`-equivalent state in `evidence_state` — this step
 // creates the case/report rows but does not flip `e6`'s own state (S4,
-// logged). MOD-2041 (comment `k3`) and MOD-2011 (review `r4`, via the
-// `account` → `review` target-kind mapping) do get their content state
-// flipped, since `comments.state`/`reviews.state` both have a
+// logged). Auto-hidden comments (MOD-2041 `k3`, MOD-2047 `k31`) and the
+// appealed targets (MOD-2011 review `r4`, via the `account` → `review`
+// target-kind mapping, and MOD-2018 comment `k27`) do get their content
+// state flipped, since `comments.state`/`reviews.state` both have a
 // `hidden_pending_review` value.
 import { newId } from '@rogikotha/contracts';
 import type { ReportReason, TargetKind } from '@rogikotha/contracts';
@@ -33,6 +35,7 @@ import {
   moderationCaseReasons,
   moderationCases,
   moderationDecisions,
+  personaLinks,
   reports,
   reviews,
   staffNotifications,
@@ -59,6 +62,37 @@ function resolveTargetId(ctx: SeedContext, kind: 'comment' | 'evidence' | 'accou
   return undefined;
 }
 
+/**
+ * The reason that fills a case's reports beyond its listed reasons, per case.
+ * FD-039 / ISS-221: MOD-2033's three further reports cite `factual`, so the
+ * case reads as the factual disagreement its summary describes. Only cases
+ * listed here are padded (CR-012, BR4.1).
+ */
+const REASON_PADDING: Readonly<Record<string, ReportReason>> = { 'MOD-2033': 'factual' };
+
+/** One reason per report: the case's listed reasons, padded from `REASON_PADDING`; any other shortfall fails (BR4.2). */
+function reportReasonsFor(c: { seedRef: string; reportCount: number; reportReasons: readonly ReportReason[] }): ReportReason[] {
+  const reasons = [...c.reportReasons];
+  if (reasons.length >= c.reportCount) return reasons;
+  const padding = REASON_PADDING[c.seedRef];
+  if (!padding) {
+    throw new Error(`seed-moderation: ${c.seedRef} has ${c.reportCount} reports but ${reasons.length} reasons and no padding entry`);
+  }
+  while (reasons.length < c.reportCount) reasons.push(padding);
+  return reasons;
+}
+
+/** The account behind the author persona of an appealed review or comment (MOD-2011: r_ahmed; MOD-2018: shafiq_ctg). */
+async function appellantAccountId(db: Db, targetKind: TargetKind, targetId: string): Promise<string> {
+  const [target] =
+    targetKind === 'review'
+      ? await db.select({ personaId: reviews.authorPersonaId }).from(reviews).where(eq(reviews.id, targetId)).limit(1)
+      : await db.select({ personaId: comments.authorPersonaId }).from(comments).where(eq(comments.id, targetId)).limit(1);
+  const [link] = target ? await db.select().from(personaLinks).where(eq(personaLinks.personaId, target.personaId)).limit(1) : [];
+  if (!link) throw new Error(`seed-moderation: no account behind the author of appealed ${targetKind} ${targetId}`);
+  return link.accountId;
+}
+
 export async function seedModeration(db: Db, ctx: SeedContext): Promise<number> {
   let inserted = 0;
   const modRashidId = ctx.accountIdByUsername.get('mod_rashid');
@@ -80,17 +114,11 @@ export async function seedModeration(db: Db, ctx: SeedContext): Promise<number> 
     const openedAt = new Date(Date.now() - c.ageHours * 60 * 60 * 1000);
 
     // CR-008 / ISS-174: `reportCount` is the prototype's own `reports`
-    // number (ported verbatim by `port-corpus.mjs`), which can exceed
-    // `reportReasons.length` when several reporters gave the same reason
-    // (MOD-2033: 6 reports, 3 authored reasons — `factual, factual,
-    // impersonation`). Pad by repeating the corpus's own last reason, per
-    // the task's instruction, rather than inventing an undocumented
-    // `other` the corpus never states. The four other cases are
-    // unaffected: their `reportReasons.length` already equals
-    // `reportCount`, so padding is a no-op for them.
-    const paddedReasons: ReportReason[] = [...c.reportReasons];
-    const lastReason: ReportReason = paddedReasons[paddedReasons.length - 1] ?? 'other';
-    while (paddedReasons.length < c.reportCount) paddedReasons.push(lastReason);
+    // number, which can exceed `reportReasons.length` when several reporters
+    // gave the same reason (MOD-2033: 6 reports, 3 listed reasons). The
+    // padding comes from `REASON_PADDING` (FD-039, ISS-221), not from
+    // repeating the last reason.
+    const paddedReasons = reportReasonsFor(c);
 
     const [caseRow] = await db
       .insert(moderationCases)
@@ -155,11 +183,18 @@ export async function seedModeration(db: Db, ctx: SeedContext): Promise<number> 
         .update(reviews)
         .set({ state: 'hidden_pending_review', hiddenAt: openedAt, hiddenReasonCode: c.reportReasons[0] ?? 'other' })
         .where(eq(reviews.id, targetId));
-    } else if (c.lane === 'appeals' && targetKind === 'review') {
-      await db
-        .update(reviews)
-        .set({ state: 'hidden_pending_review', hiddenAt: openedAt, hiddenReasonCode: 'other' })
-        .where(eq(reviews.id, targetId));
+    } else if (c.lane === 'appeals' && (targetKind === 'review' || targetKind === 'comment')) {
+      // ASSUMPTION(CR-012): MOD-2018 (comment k27) is seeded like MOD-2011: a
+      // `hide` decision with reason `other` by `mod_rashid`, appealed by the
+      // target's author (BR3.4).
+      if (targetKind === 'review') {
+        await db
+          .update(reviews)
+          .set({ state: 'hidden_pending_review', hiddenAt: openedAt, hiddenReasonCode: 'other' })
+          .where(eq(reviews.id, targetId));
+      } else {
+        await db.update(comments).set({ state: 'hidden_pending_review' }).where(eq(comments.id, targetId));
+      }
 
       await db.insert(moderationDecisions).values({
         id: newId(),
@@ -173,12 +208,11 @@ export async function seedModeration(db: Db, ctx: SeedContext): Promise<number> 
       });
       inserted += 1;
 
-      const appellantAccountId = ctx.accountIdByUsername.get('r_ahmed') /* r4's author, per the corpus */ ?? modRashidId;
       if (c.appealText) {
         await db.insert(appeals).values({
           id: newId(),
           caseId: caseRow!.id,
-          appellantAccountId,
+          appellantAccountId: await appellantAccountId(db, targetKind, targetId),
           text: c.appealText.bn,
           status: 'open',
           checklist: { freshReview: true },

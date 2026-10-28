@@ -70,6 +70,214 @@ export const FOLLOW_UPS = [
     }
   },
   {
+    "seedRef": "r3-fu-1",
+    "reviewSeedRef": "r3",
+    "kind": "follow_up",
+    "date": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "body": {
+      "en": "Three months on. The plan has not changed, my readings are steady and I have not had to repeat any tests.",
+      "bn": "তিন মাস পর। পরিকল্পনা বদলায়নি, রিডিং স্থির আছে, কোনো পরীক্ষা আবার করতে হয়নি।"
+    }
+  },
+  {
+    "seedRef": "r5-fu-1",
+    "reviewSeedRef": "r5",
+    "kind": "follow_up",
+    "date": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "body": {
+      "en": "Two months in. His pressure is normal on the lowest dose and we go back every three months.",
+      "bn": "দুই মাস হলো। সবচেয়ে কম ডোজেই ওর রক্তচাপ স্বাভাবিক, আর আমরা প্রতি তিন মাসে একবার দেখাতে যাই।"
+    }
+  },
+  {
+    "seedRef": "r9-fu-1",
+    "reviewSeedRef": "r9",
+    "kind": "follow_up",
+    "date": {
+      "en": "May 2026",
+      "bn": "মে ২০২৬"
+    },
+    "body": {
+      "en": "Seven months after finishing the physiotherapy I can tie my hair and sleep on that side again.",
+      "bn": "ফিজিওথেরাপি শেষ করার সাত মাস পর আমি আবার চুল বাঁধতে পারি এবং ওই পাশ ফিরে ঘুমাতে পারি।"
+    }
+  },
+  {
+    "seedRef": "r11-fu-1",
+    "reviewSeedRef": "r11",
+    "kind": "follow_up",
+    "date": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "body": {
+      "en": "Two months later, avoiding the two triggers has kept the symptoms mild. No new tests were needed.",
+      "bn": "দুই মাস পরে দুটি ট্রিগার এড়িয়ে চলায় লক্ষণ হালকা আছে। নতুন কোনো পরীক্ষা লাগেনি।"
+    }
+  },
+  {
+    "seedRef": "r13-fu-1",
+    "reviewSeedRef": "r13",
+    "kind": "follow_up",
+    "date": {
+      "en": "July 2026",
+      "bn": "জুলাই ২০২৬"
+    },
+    "body": {
+      "en": "Three months in. The night cough has nearly stopped and I have not needed the blue inhaler more than once a week.",
+      "bn": "তিন মাস হলো। রাতের কাশি প্রায় বন্ধ, নীল ইনহেলার সপ্তাহে একবারের বেশি লাগেনি।"
+    }
+  },
+  {
+    "seedRef": "r13-fu-2",
+    "reviewSeedRef": "r13",
+    "kind": "follow_up",
+    "date": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "body": {
+      "en": "Five months on. One mild flare in the first cold week, handled with the plan she wrote down. No hospital visit.",
+      "bn": "পাঁচ মাস হলো। প্রথম ঠান্ডা সপ্তাহে একবার হালকা বাড়াবাড়ি হয়েছিল, উনি যে পরিকল্পনা লিখে দিয়েছিলেন তাতেই সামলেছি। হাসপাতালে যেতে হয়নি।"
+    }
+  },
+  {
+    "seedRef": "r14-fu-1",
+    "reviewSeedRef": "r14",
+    "kind": "follow_up",
+    "date": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "body": {
+      "en": "Four months on: one cough-free spell of five weeks, then a few bad nights in a cold snap. I still cannot tell how much is the inhaler and how much is the weather.",
+      "bn": "চার মাস পর: একটানা পাঁচ সপ্তাহ কাশিহীন ছিল, তারপর হঠাৎ ঠান্ডায় কয়েক রাত খারাপ গেছে। ইনহেলারের কতটা আর আবহাওয়ার কতটা, এখনো বলতে পারছি না।"
+    }
+  },
+  {
+    "seedRef": "r15-fu-1",
+    "reviewSeedRef": "r15",
+    "kind": "follow_up",
+    "date": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "body": {
+      "en": "Two months into the second doctor’s plan the cough has settled and I use the inhaler only on bad mornings.",
+      "bn": "দ্বিতীয় ডাক্তারের পরিকল্পনায় দুই মাস পর কাশি থেমেছে, এখন শুধু খারাপ সকালে ইনহেলার ব্যবহার করি।"
+    }
+  },
+  {
+    "seedRef": "r16-fu-1",
+    "reviewSeedRef": "r16",
+    "kind": "follow_up",
+    "date": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "body": {
+      "en": "Three months in. Two mild attacks since March, both after missed meals.",
+      "bn": "তিন মাস হলো। মার্চের পর দুটি হালকা আক্রমণ হয়েছে, দুবারই খাবার বাদ দেওয়ার পর।"
+    }
+  },
+  {
+    "seedRef": "r16-fu-2",
+    "reviewSeedRef": "r16",
+    "kind": "follow_up",
+    "date": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "body": {
+      "en": "Six months on. One attack in the last ten weeks. I am still taking the preventer at the same dose.",
+      "bn": "ছয় মাস হলো। শেষ দশ সপ্তাহে একটি আক্রমণ হয়েছে। প্রতিরোধক ওষুধ একই ডোজে চলছে।"
+    }
+  },
+  {
+    "seedRef": "r18-fu-1",
+    "reviewSeedRef": "r18",
+    "kind": "follow_up",
+    "date": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "body": {
+      "en": "Two months on the lower-dose medicine: no dizziness, and attacks are down to two a month.",
+      "bn": "কম মাত্রার ওষুধে দুই মাস: মাথা ঘোরা নেই, আক্রমণ মাসে দুবারে নেমেছে।"
+    }
+  },
+  {
+    "seedRef": "r19-fu-1",
+    "reviewSeedRef": "r19",
+    "kind": "follow_up",
+    "date": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "body": {
+      "en": "Four months in. Fasting readings are still between 6 and 7 and I walk after dinner most days.",
+      "bn": "চার মাস হলো। খালি পেটে রিডিং এখনো ৬ থেকে ৭-এর মধ্যে, বেশিরভাগ দিন রাতের খাবারের পর হাঁটি।"
+    }
+  },
+  {
+    "seedRef": "r19-fu-2",
+    "reviewSeedRef": "r19",
+    "kind": "follow_up",
+    "date": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "body": {
+      "en": "Seven months on. HbA1c repeated at 6.7 and the dose has not changed.",
+      "bn": "সাত মাস পর। HbA1c আবার করে ৬.৭ এসেছে, ডোজ বদলায়নি।"
+    }
+  },
+  {
+    "seedRef": "r22-fu-1",
+    "reviewSeedRef": "r22",
+    "kind": "follow_up",
+    "date": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "body": {
+      "en": "A month after treatment ended: no fever, appetite back to normal, and the recheck visit found nothing more to do.",
+      "bn": "চিকিৎসা শেষের এক মাস পর: জ্বর নেই, খিদে স্বাভাবিক, আর শেষ দেখায় নতুন কিছু করার পাওয়া যায়নি।"
+    }
+  },
+  {
+    "seedRef": "r17-fu-1",
+    "reviewSeedRef": "r17",
+    "kind": "follow_up",
+    "date": {
+      "en": "May 2026",
+      "bn": "মে ২০২৬"
+    },
+    "body": {
+      "en": "Three months on the attacks are still milder. I now read the instructions out to her in Bangla every morning.",
+      "bn": "তিন মাস পরেও আক্রমণ হালকাই আছে। এখন আমি রোজ সকালে মাকে নির্দেশগুলো বাংলায় পড়ে শোনাই।"
+    }
+  },
+  {
+    "seedRef": "r24-fu-1",
+    "reviewSeedRef": "r24",
+    "kind": "follow_up",
+    "date": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "body": {
+      "en": "Five months on. No night wheeze. We went back once for a check and the dose stayed the same.",
+      "bn": "পাঁচ মাস পরেও রাতে শোঁ শোঁ শব্দ নেই। একবার দেখাতে গিয়েছিলাম, ডোজ একই আছে।"
+    }
+  },
+  {
     "seedRef": "r6-later",
     "reviewSeedRef": "r6",
     "kind": "later_care",
@@ -118,6 +326,125 @@ export const FOLLOW_UPS = [
     "laterProvider": {
       "en": "Another doctor at a different chamber",
       "bn": "অন্য চেম্বারের আরেকজন ডাক্তার"
+    }
+  },
+  {
+    "seedRef": "r2-later",
+    "reviewSeedRef": "r2",
+    "kind": "later_care",
+    "date": {
+      "en": "Posted February 2026",
+      "bn": "প্রকাশ ফেব্রুয়ারি ২০২৬"
+    },
+    "body": {
+      "en": "Went through the side-effect questions at a ten-minute visit and kept the same dose.",
+      "bn": "দশ মিনিটের ভিজিটে পার্শ্বপ্রতিক্রিয়ার প্রশ্নগুলো দেখে একই ডোজ রাখলেন।"
+    },
+    "laterProvider": {
+      "en": "The family’s local doctor",
+      "bn": "পরিবারের স্থানীয় ডাক্তার"
+    }
+  },
+  {
+    "seedRef": "r5-later",
+    "reviewSeedRef": "r5",
+    "kind": "later_care",
+    "date": {
+      "en": "Posted April 2026",
+      "bn": "প্রকাশ এপ্রিল ২০২৬"
+    },
+    "body": {
+      "en": "An ECG and an echo were normal, so no further tests were advised.",
+      "bn": "ইসিজি ও ইকো স্বাভাবিক এসেছে, তাই আর কোনো পরীক্ষার পরামর্শ দেওয়া হয়নি।"
+    },
+    "laterProvider": {
+      "en": "A cardiologist for a baseline heart check",
+      "bn": "হৃদ্‌যন্ত্রের প্রাথমিক পরীক্ষার জন্য একজন হৃদ্‌রোগ বিশেষজ্ঞ"
+    }
+  },
+  {
+    "seedRef": "r12-later",
+    "reviewSeedRef": "r12",
+    "kind": "later_care",
+    "date": {
+      "en": "Posted August 2026",
+      "bn": "প্রকাশ আগস্ট ২০২৬"
+    },
+    "body": {
+      "en": "A final check there found nothing more to treat, and a repeat test was not needed.",
+      "bn": "সেখানে শেষ দেখায় নতুন কিছু পাওয়া যায়নি এবং আবার পরীক্ষা করার দরকার হয়নি।"
+    },
+    "laterProvider": {
+      "en": "A paediatric clinic near our home",
+      "bn": "বাড়ির কাছের একটি শিশু ক্লিনিক"
+    }
+  },
+  {
+    "seedRef": "r14-later",
+    "reviewSeedRef": "r14",
+    "kind": "later_care",
+    "date": {
+      "en": "Posted March 2026",
+      "bn": "প্রকাশ মার্চ ২০২৬"
+    },
+    "body": {
+      "en": "Helped my daughter use the spacer correctly before games class.",
+      "bn": "খেলার ক্লাসের আগে মেয়েকে ঠিকভাবে স্পেসার ব্যবহার করতে সাহায্য করেন।"
+    },
+    "laterProvider": {
+      "en": "A school nurse for the daily routine",
+      "bn": "প্রতিদিনের রুটিনের জন্য স্কুলের নার্স"
+    }
+  },
+  {
+    "seedRef": "r15-later",
+    "reviewSeedRef": "r15",
+    "kind": "later_care",
+    "date": {
+      "en": "Posted January 2026",
+      "bn": "প্রকাশ জানুয়ারি ২০২৬"
+    },
+    "body": {
+      "en": "Spirometry was done, asthma was found, and the antibiotic was stopped.",
+      "bn": "স্পাইরোমেট্রি করা হয়, হাঁপানি ধরা পড়ে এবং অ্যান্টিবায়োটিক বন্ধ করা হয়।"
+    },
+    "laterProvider": {
+      "en": "A chest physician in another town",
+      "bn": "অন্য শহরের একজন বক্ষব্যাধি বিশেষজ্ঞ"
+    }
+  },
+  {
+    "seedRef": "r21-later",
+    "reviewSeedRef": "r21",
+    "kind": "later_care",
+    "date": {
+      "en": "Posted May 2026",
+      "bn": "প্রকাশ মে ২০২৬"
+    },
+    "body": {
+      "en": "Kept the same dose and tested iron and vitamin D, which had not been checked before.",
+      "bn": "একই ডোজ রাখলেন এবং আয়রন ও ভিটামিন ডি পরীক্ষা করালেন, যা আগে হয়নি।"
+    },
+    "laterProvider": {
+      "en": "A second doctor, for a second opinion",
+      "bn": "দ্বিতীয় মতের জন্য আরেকজন ডাক্তার"
+    }
+  },
+  {
+    "seedRef": "r23-later",
+    "reviewSeedRef": "r23",
+    "kind": "later_care",
+    "date": {
+      "en": "Posted July 2026",
+      "bn": "প্রকাশ জুলাই ২০২৬"
+    },
+    "body": {
+      "en": "The repeat test after treatment was reported as clear.",
+      "bn": "চিকিৎসার পর আবার করা পরীক্ষায় রিপোর্ট পরিষ্কার এসেছে।"
+    },
+    "laterProvider": {
+      "en": "A diagnostic lab for the repeat blood test",
+      "bn": "আবার রক্ত পরীক্ষার জন্য একটি ডায়াগনস্টিক ল্যাব"
     }
   }
 ] as const satisfies CorpusFollowUp[];

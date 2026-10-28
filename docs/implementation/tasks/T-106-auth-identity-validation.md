@@ -62,8 +62,8 @@ Independently prove the Phase 1 security and privacy claims on the real stack (c
 | Device cross-account | same browser, `admin_nadia` | approval required |
 | Step-up | apply config without step-up → refused; with step-up ok; after 5 min refused; tampered cookie refused | as stated |
 | Capability toggles | admin reveal with toggle off → refused + recorded; toggle on via config → allowed | two `identity_reveals` rows |
-| Alias leakage — profile | `/authors/anon_author_r4` and the public profile of that account | r4 absent |
-| Alias leakage — search | `search_documents` for r4 | no username/account fields |
+| Alias leakage — profile | `/authors/anon_author_r2` and the public profile of that account | r2 absent |
+| Alias leakage — search | `search_documents` for r2 | no username/account fields |
 | Alias leakage — DB | `SELECT` from public tables joined to `personas` | no path to `account_profiles` without `persona_links` |
 | Alias leakage — worker | connect as `rk_worker`, select `persona_links` | permission denied |
 | Alias leakage — logs | grep captured logs | no emails, tokens, anonymous usernames |

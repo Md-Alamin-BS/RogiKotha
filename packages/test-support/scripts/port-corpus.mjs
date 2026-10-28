@@ -41,9 +41,10 @@ function loadRK() {
 }
 
 // Romanised-Bengali ("Banglish") aliases that appear in RK.conditions[].aliases.
-// Hand-identified (data-model §4's "hard-coded Banglish list") — there are only
-// two in the whole corpus, both Latin-script transliterations of a Bengali word.
-const BANGLISH_ALIASES = new Set(['dayabetis', 'chulkani']);
+// Hand-identified (data-model §4's "hard-coded Banglish list"): Latin-script
+// transliterations of a Bengali word. `shash` and `mathabatha` arrived with the
+// FD-089 conditions c9 and c10 (CR-012, BR2.5).
+const BANGLISH_ALIASES = new Set(['dayabetis', 'chulkani', 'shash', 'mathabatha']);
 
 function guessAliasLang(alias) {
   if (/[ঀ-৿]/.test(alias)) return 'bn';
@@ -178,9 +179,21 @@ function buildReviews(RK) {
 /* ------------------------------------------------------------------ *
  * follow-ups.ts (RK.followUps + RK.laterCare)
  * ------------------------------------------------------------------ */
+// Reads follow-ups the way the prototype's own `followUpsFor` does: a review's
+// `RK.followUps` chain when it has one, otherwise its single inline `followUp`
+// (CR-012, BR2.2). Chains keep their existing emission order, so every
+// pre-FD-089 seedRef is unchanged; inline-only reviews (r17, r24) follow.
+function followUpChains(RK) {
+  const chains = Object.entries(RK.followUps);
+  for (const r of RK.reviews) {
+    if (!RK.followUps[r.id] && r.followUp) chains.push([r.id, [r.followUp]]);
+  }
+  return chains;
+}
+
 function buildFollowUps(RK) {
   const rows = [];
-  for (const [reviewId, entries] of Object.entries(RK.followUps)) {
+  for (const [reviewId, entries] of followUpChains(RK)) {
     entries.forEach((entry, i) => {
       rows.push({
         seedRef: `${reviewId}-fu-${i + 1}`,
@@ -280,17 +293,38 @@ const STORYBOARD_ACCOUNTS = {
   sa_founder: { role: 'super_admin' },
 };
 
+// The 14 named and pseudonymous personas of the pre-FD-089 corpus with their
+// hues, read from `src/corpus/personas.ts` before CR-012 (BR1.3, BR2.4).
+const PINNED_PERSONA_HUES = {
+  'pseudonymous:shirin_88': 77,
+  'named:Kamrul Islam': 114,
+  'pseudonymous:r_ahmed': 151,
+  'pseudonymous:abba_of_two': 188,
+  'named:Tanvir Ahmed': 225,
+  'pseudonymous:ctg_reader': 262,
+  'named:Sultana Begum': 299,
+  'pseudonymous:sylhet_nm': 336,
+  'pseudonymous:mirpur_11': 13,
+  'pseudonymous:nadia_k': 50,
+  'pseudonymous:rumana_h': 87,
+  'named:Dr. Farhana Rahman': 124,
+  'pseudonymous:health_tips_bd': 161,
+  'pseudonymous:shafiq_ctg': 198,
+};
+const LAST_PINNED_PERSONA_KEY = 'pseudonymous:shafiq_ctg';
+
 function buildPersonasAndAccounts(RK) {
   const personas = [];
   // ASSUMPTION(T-007): every `persona_links` row needs a non-null
   // `account_id` (02-data-model.md §3), but the prototype's "Anonymous"
-  // author text is reused across three unrelated reviews (r2, r8, r12) with
-  // no username of its own — only r4's anonymous author is named in the
-  // storyboard (`anon_author_r4`, "proves alias isolation"). Narrower,
-  // reversible option: synthesize one contributor account per anonymous
-  // review, `anon_author_<reviewSeedRef>`, following the storyboard's own
-  // naming convention, so every anonymous persona still links to a real
-  // (never-revealed-in-the-demo) account. Logged as an `ISS-` row.
+  // author text is reused across unrelated reviews with no username of its
+  // own. Narrower, reversible option: synthesize one contributor account per
+  // anonymous thread, `anon_author_<reviewSeedRef>`, so every anonymous
+  // persona still links to a real (never-revealed-in-the-demo) account. The
+  // name means "the account behind the anonymous persona in that thread",
+  // not the review's author: `anon_author_r4` is k16's commenter, while r4
+  // itself is r_ahmed's (CR-012). The storyboard's alias-isolation account
+  // is `anon_author_r2` (FD-039). Logged as `ISS-` rows.
   const accountsByUsername = new Map(
     Object.entries(STORYBOARD_ACCOUNTS).map(([username, cfg]) => [
       username,
@@ -302,8 +336,13 @@ function buildPersonasAndAccounts(RK) {
     return `anon_author_${reviewId}`;
   }
 
-  let hue = 40;
-  function nextHue() {
+  // A persona that existed before FD-089 keeps its hue (CR-012, BR2.4); new
+  // personas continue the `+37 mod 360` sequence after the last pinned hue.
+  // Without the pin, authors added by FD-089 are discovered first and shift
+  // five existing hues.
+  let hue = PINNED_PERSONA_HUES[LAST_PINNED_PERSONA_KEY];
+  function hueFor(key) {
+    if (Object.hasOwn(PINNED_PERSONA_HUES, key)) return PINNED_PERSONA_HUES[key];
     hue = (hue + 37) % 360;
     return hue;
   }
@@ -345,14 +384,15 @@ function buildPersonasAndAccounts(RK) {
   }
 
   for (const r of RK.reviews) noteAuthor(r.identity, r.author, r.id);
+  const personaKeys = new Set(personas.map((p) => p.key));
   for (const c of RK.comments) {
-    // Comments never carry `identity: 'anon'` alone without a thread context
-    // in this corpus except through the review they are posted on; the
-    // prototype gives each comment its own `identity`, matched here 1:1.
-    // No comment in this corpus is itself anonymous (`k5`'s author is
-    // identity: 'anon' but posts under the *review's* thread, r6 — handled
-    // by the review's own anon persona reuse below).
+    // An anonymous comment uses its thread's anonymous persona. When the
+    // thread's review is itself anonymous (k31 on r15), the review's persona
+    // and account are reused, so the thread has exactly one (CR-012, BR2.3);
+    // otherwise the first anonymous comment creates them (k5, k16, k42).
     if (c.identity === 'anon') {
+      if (personaKeys.has(`anon:${c.reviewId}`)) continue;
+      personaKeys.add(`anon:${c.reviewId}`);
       personas.push({
         key: `anon:${c.reviewId}`,
         kind: 'anonymous',
@@ -396,7 +436,7 @@ function buildPersonasAndAccounts(RK) {
       kind,
       displayName: bilingual(author),
       username,
-      avatarHue: nextHue(),
+      avatarHue: hueFor(`${kind}:${key}`),
       accountUsername: username,
     });
     if (!accountsByUsername.has(username)) {
@@ -519,6 +559,14 @@ function buildDrafts(RK) {
   }));
 }
 
+// The signed-in demo user's bookmarks, in prototype order (CR-012, BR2.6).
+function buildBookmarks(RK) {
+  return RK.user.bookmarks.map((reviewId) => ({
+    accountUsername: RK.user.username,
+    reviewSeedRef: reviewId,
+  }));
+}
+
 function buildConfig(RK) {
   return {
     limitedDataThreshold: RK.config.limitedDataThreshold,
@@ -607,9 +655,10 @@ import type {
 
   const notifHeader = `// Generated by \`pnpm --filter @rogikotha/test-support port\` from
 // ui-design-prototype/shared/rogikotha-data.js (RK.user.notifications,
-// RK.user.drafts, RK.moderation.notifications). Do not hand-edit — re-run
-// the script and commit the diff instead (types live in ./types.ts).
-import type { CorpusDraft, CorpusNotification, CorpusStaffNotification } from './types.js';
+// RK.user.drafts, RK.user.bookmarks, RK.moderation.notifications). Do not
+// hand-edit — re-run the script and commit the diff instead (types live in
+// ./types.ts).
+import type { CorpusBookmark, CorpusDraft, CorpusNotification, CorpusStaffNotification } from './types.js';
 
 `;
   fs.writeFileSync(
@@ -617,7 +666,8 @@ import type { CorpusDraft, CorpusNotification, CorpusStaffNotification } from '.
     notifHeader +
       `export const STAFF_NOTIFICATIONS = ${JSON.stringify(buildStaffNotifications(RK), null, 2)} as const satisfies CorpusStaffNotification[];\n\n` +
       `export const USER_NOTIFICATIONS = ${JSON.stringify(buildNotifications(RK), null, 2)} as const satisfies CorpusNotification[];\n\n` +
-      `export const USER_DRAFTS = ${JSON.stringify(buildDrafts(RK), null, 2)} as const satisfies CorpusDraft[];\n`,
+      `export const USER_DRAFTS = ${JSON.stringify(buildDrafts(RK), null, 2)} as const satisfies CorpusDraft[];\n\n` +
+      `export const USER_BOOKMARKS = ${JSON.stringify(buildBookmarks(RK), null, 2)} as const satisfies CorpusBookmark[];\n`,
     'utf8',
   );
 

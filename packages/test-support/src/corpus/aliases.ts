@@ -113,5 +113,60 @@ export const ALIASES = [
     "termSeedRef": "c8",
     "alias": "gastric",
     "lang": "en"
+  },
+  {
+    "termSeedRef": "c9",
+    "alias": "asthma",
+    "lang": "en"
+  },
+  {
+    "termSeedRef": "c9",
+    "alias": "হাঁপানি",
+    "lang": "bn"
+  },
+  {
+    "termSeedRef": "c9",
+    "alias": "shash",
+    "lang": "banglish"
+  },
+  {
+    "termSeedRef": "c9",
+    "alias": "শ্বাসকষ্ট",
+    "lang": "bn"
+  },
+  {
+    "termSeedRef": "c9",
+    "alias": "wheezing",
+    "lang": "en"
+  },
+  {
+    "termSeedRef": "c10",
+    "alias": "migraine",
+    "lang": "en"
+  },
+  {
+    "termSeedRef": "c10",
+    "alias": "মাইগ্রেন",
+    "lang": "bn"
+  },
+  {
+    "termSeedRef": "c10",
+    "alias": "আধকপালে",
+    "lang": "bn"
+  },
+  {
+    "termSeedRef": "c10",
+    "alias": "মাথাব্যথা",
+    "lang": "bn"
+  },
+  {
+    "termSeedRef": "c10",
+    "alias": "headache",
+    "lang": "en"
+  },
+  {
+    "termSeedRef": "c10",
+    "alias": "mathabatha",
+    "lang": "banglish"
   }
 ] as const satisfies CorpusAlias[];

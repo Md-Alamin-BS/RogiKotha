@@ -125,6 +125,121 @@ export const MODERATION_CASES = [
       "en": "My experience was hidden for naming a medicine. I only described what I was actually given and what happened to me. I did not tell anyone else what to take.",
       "bn": "ওষুধের নাম লেখার কারণে আমার অভিজ্ঞতা লুকানো হয়েছে। আমি শুধু আমাকে যা দেওয়া হয়েছিল এবং আমার যা হয়েছে তাই লিখেছি। কাউকে কিছু খেতে বলিনি।"
     }
+  },
+  {
+    "seedRef": "MOD-2047",
+    "lane": "critical",
+    "ageHours": 2,
+    "reportCount": 1,
+    "reportReasons": [
+      "privacy"
+    ],
+    "autoHidden": true,
+    "coordinated": false,
+    "targetKind": "comment",
+    "targetSeedRef": "k31",
+    "reviewSeedRef": "r15",
+    "summary": {
+      "en": "Comment includes a private phone number that belongs to a third person.",
+      "bn": "মন্তব্যে তৃতীয় এক ব্যক্তির ব্যক্তিগত ফোন নম্বর আছে।"
+    },
+    "note": {
+      "en": "Confirmed personal-data leaks are hidden on first credible report. The number is not shown in this console, and the commenter can post again without it.",
+      "bn": "নিশ্চিত ব্যক্তিগত তথ্য ফাঁস প্রথম বিশ্বাসযোগ্য রিপোর্টেই লুকানো হয়। নম্বরটি এই কনসোলে দেখানো হয় না, আর মন্তব্যকারী নম্বর ছাড়া আবার লিখতে পারেন।"
+    }
+  },
+  {
+    "seedRef": "MOD-2045",
+    "lane": "critical",
+    "ageHours": 5,
+    "reportCount": 3,
+    "reportReasons": [
+      "dangerous",
+      "dangerous",
+      "spam"
+    ],
+    "autoHidden": false,
+    "coordinated": false,
+    "targetKind": "comment",
+    "targetSeedRef": "k38",
+    "reviewSeedRef": "r18",
+    "summary": {
+      "en": "Comment tells readers to stop prescribed migraine medicine and use clove-oil nose drops instead.",
+      "bn": "মন্তব্যে পাঠকদের নির্ধারিত মাইগ্রেনের ওষুধ বন্ধ করে নাকে লবঙ্গ তেলের ফোঁটা দিতে বলা হয়েছে।"
+    },
+    "note": {
+      "en": "Dangerous instruction. Default policy keeps it visible with a strong warning and priority review. The commenter has posted similar text on other threads.",
+      "bn": "বিপজ্জনক নির্দেশনা। ডিফল্ট নীতিতে এটি কড়া সতর্কতাসহ দৃশ্যমান থাকে ও অগ্রাধিকারে দেখা হয়। মন্তব্যকারী অন্য আলোচনায়ও একই ধরনের লেখা দিয়েছেন।"
+    }
+  },
+  {
+    "seedRef": "MOD-2036",
+    "lane": "standard",
+    "ageHours": 30,
+    "reportCount": 2,
+    "reportReasons": [
+      "factual",
+      "factual"
+    ],
+    "autoHidden": false,
+    "coordinated": false,
+    "targetKind": "account",
+    "targetSeedRef": "r18",
+    "reviewSeedRef": "r18",
+    "summary": {
+      "en": "Author describes dizziness after a preventer medicine. Two reports disagree with the experience.",
+      "bn": "লেখক প্রতিরোধক ওষুধের পর মাথা ঘোরার কথা লিখেছেন। দুটি রিপোর্ট অভিজ্ঞতাটির সঙ্গে দ্বিমত।"
+    },
+    "note": {
+      "en": "A factual disagreement is not grounds for removal. It stays public while under review. The author names a medicine as their own experience, not as advice to others.",
+      "bn": "বিষয়গত দ্বিমত সরানোর কারণ নয়। পর্যালোচনার সময়ও এটি প্রকাশ্য থাকে। লেখক ওষুধের নাম নিজের অভিজ্ঞতা হিসেবে লিখেছেন, অন্যদের পরামর্শ হিসেবে নয়।"
+    }
+  },
+  {
+    "seedRef": "MOD-2031",
+    "lane": "standard",
+    "ageHours": 53,
+    "reportCount": 1,
+    "reportReasons": [
+      "factual"
+    ],
+    "autoHidden": false,
+    "coordinated": false,
+    "targetKind": "profile",
+    "targetSeedRef": "d9",
+    "reviewSeedRef": null,
+    "summary": {
+      "en": "Report says the second chamber listed at Kotbari closed last year.",
+      "bn": "রিপোর্টে বলা হয়েছে কোটবাড়ীর তালিকাভুক্ত দ্বিতীয় চেম্বারটি গত বছর বন্ধ হয়ে গেছে।"
+    },
+    "note": {
+      "en": "Profile facts are community submitted. Correcting them is a profile action, not a content action.",
+      "bn": "প্রোফাইলের তথ্য সম্প্রদায়ের জমা দেওয়া। এগুলো সংশোধন প্রোফাইল-সংক্রান্ত পদক্ষেপ, কনটেন্ট-সংক্রান্ত নয়।"
+    }
+  },
+  {
+    "seedRef": "MOD-2018",
+    "lane": "appeals",
+    "ageHours": 120,
+    "reportCount": 0,
+    "reportReasons": [],
+    "autoHidden": false,
+    "coordinated": false,
+    "targetKind": "comment",
+    "targetSeedRef": "k27",
+    "reviewSeedRef": "r13",
+    "summary": {
+      "en": "Author appeals the hiding of a comment that contained a link.",
+      "bn": "লেখক লিংকসহ একটি মন্তব্য লুকানোর বিরুদ্ধে আপিল করেছেন।"
+    },
+    "note": {
+      "en": "Appeals get a fresh review by someone who did not take the original decision, and a newly written reason. An outside link is shown with a warning and is not removed on that ground alone.",
+      "bn": "আপিল নতুন করে দেখেন এমন কেউ যিনি আগের সিদ্ধান্ত নেননি, এবং নতুন করে কারণ লেখা হয়। বাইরের লিংক সতর্কতাসহ দেখানো হয়, শুধু সেই কারণে সরানো হয় না।"
+    },
+    "appealText": {
+      "en": "My comment only linked to a public guide on using an inhaler, with pictures. I did not sell anything and I did not tell anyone to stop a medicine.",
+      "bn": "আমার মন্তব্যে শুধু ইনহেলার ব্যবহারের একটি প্রকাশ্য ছবিসহ নির্দেশিকার লিংক ছিল। আমি কিছু বিক্রি করিনি, কাউকে ওষুধ বন্ধ করতেও বলিনি।"
+    }
   }
 ] as const satisfies CorpusModerationCase[];
 
@@ -232,6 +347,94 @@ export const MODERATION_AUDIT_LOG = [
     "actor": "moderator:rashid",
     "timeMinAgo": 720,
     "targetSeedRef": "k3"
+  },
+  {
+    "seedRef": "a14",
+    "caseSeedRef": "MOD-2047",
+    "action": "hide",
+    "actor": "system:auto",
+    "timeMinAgo": 10,
+    "targetSeedRef": "k31"
+  },
+  {
+    "seedRef": "a15",
+    "caseSeedRef": "MOD-2047",
+    "action": "record",
+    "actor": "moderator:nadia",
+    "timeMinAgo": 18,
+    "targetSeedRef": "k31"
+  },
+  {
+    "seedRef": "a16",
+    "caseSeedRef": "MOD-2045",
+    "action": "warn",
+    "actor": "moderator:rashid",
+    "timeMinAgo": 15,
+    "targetSeedRef": "k38"
+  },
+  {
+    "seedRef": "a17",
+    "caseSeedRef": "MOD-2045",
+    "action": "note",
+    "actor": "moderator:rashid",
+    "timeMinAgo": 40,
+    "targetSeedRef": "k38"
+  },
+  {
+    "seedRef": "a18",
+    "caseSeedRef": "MOD-2036",
+    "action": "review",
+    "actor": "moderator:tabassum",
+    "timeMinAgo": 300,
+    "targetSeedRef": "r18"
+  },
+  {
+    "seedRef": "a19",
+    "caseSeedRef": "MOD-2036",
+    "action": "note",
+    "actor": "moderator:tabassum",
+    "timeMinAgo": 330,
+    "targetSeedRef": "r18"
+  },
+  {
+    "seedRef": "a20",
+    "caseSeedRef": "MOD-2031",
+    "action": "review",
+    "actor": "moderator:nadia",
+    "timeMinAgo": 600,
+    "targetSeedRef": "d9"
+  },
+  {
+    "seedRef": "a21",
+    "caseSeedRef": "MOD-2031",
+    "action": "note",
+    "actor": "moderator:nadia",
+    "timeMinAgo": 640,
+    "targetSeedRef": "d9"
+  },
+  {
+    "seedRef": "a22",
+    "caseSeedRef": "MOD-2018",
+    "action": "appeal",
+    "actor": "author:k27",
+    "timeMinAgo": 950,
+    "targetSeedRef": "k27"
+  },
+  {
+    "seedRef": "a23",
+    "caseSeedRef": "MOD-2018",
+    "action": "freshReview",
+    "actor": "moderator:rashid",
+    "timeMinAgo": 1200,
+    "targetSeedRef": "k27"
+  },
+  {
+    "seedRef": "a24",
+    "caseSeedRef": "MOD-2018",
+    "action": "note",
+    "actor": "moderator:rashid",
+    "timeMinAgo": 1260,
+    "targetSeedRef": "k27"
   }
 ] as const satisfies CorpusAuditRow[];
 
@@ -274,6 +477,66 @@ export const MODERATION_QUARANTINE = [
     "note": {
       "en": "Author has been asked to cover a second patient’s name before this can become public.",
       "bn": "প্রকাশের আগে আরেক রোগীর নাম ঢাকতে লেখককে বলা হয়েছে।"
+    }
+  },
+  {
+    "seedRef": "Q-893",
+    "reviewSeedRef": "r13",
+    "file": "spirometry_apr.pdf",
+    "sizeLabel": "1.2 MB",
+    "note": {
+      "en": "Metadata stripped, re-encoded, patient name covered and flattened into the page.",
+      "bn": "মেটাডেটা সরানো, পুনরায় এনকোড করা, রোগীর নাম ঢেকে পাতায় স্থায়ী করা হয়েছে।"
+    }
+  },
+  {
+    "seedRef": "Q-894",
+    "reviewSeedRef": "r16",
+    "file": "rx_march.jpg",
+    "sizeLabel": "2.0 MB",
+    "note": {
+      "en": "The author covered the phone number and patient name before publishing.",
+      "bn": "প্রকাশের আগে লেখক ফোন নম্বর ও রোগীর নাম ঢেকে দিয়েছেন।"
+    }
+  },
+  {
+    "seedRef": "Q-895",
+    "reviewSeedRef": "r16",
+    "file": "diary_pages.jpg",
+    "sizeLabel": "5.8 MB",
+    "note": {
+      "en": "The pages were too blurred to read, so no public copy was made. The author has been asked for a clearer photo.",
+      "bn": "পাতাগুলো এতটাই ঝাপসা যে পড়া যায়নি, তাই প্রকাশ্য কপি তৈরি হয়নি। লেখককে আরও পরিষ্কার ছবি দিতে বলা হয়েছে।"
+    }
+  },
+  {
+    "seedRef": "Q-896",
+    "reviewSeedRef": "r21",
+    "file": "iron_vitd_report.pdf",
+    "sizeLabel": "1.9 MB",
+    "note": {
+      "en": "The malware scan returned an error. The file is held, not published, until the scan completes.",
+      "bn": "ম্যালওয়্যার স্ক্যানে ত্রুটি এসেছে। স্ক্যান শেষ না হওয়া পর্যন্ত ফাইলটি প্রকাশ না করে আটকে রাখা হয়েছে।"
+    }
+  },
+  {
+    "seedRef": "Q-898",
+    "reviewSeedRef": "r22",
+    "file": "discharge_card.jpg",
+    "sizeLabel": "2.7 MB",
+    "note": {
+      "en": "The author has been asked to cover a child’s name before this can become public.",
+      "bn": "প্রকাশের আগে একটি শিশুর নাম ঢাকতে লেখককে বলা হয়েছে।"
+    }
+  },
+  {
+    "seedRef": "Q-899",
+    "reviewSeedRef": "r14",
+    "file": "clinic_report.docm",
+    "sizeLabel": "410 KB",
+    "note": {
+      "en": "Macro-enabled documents are rejected because they can run code. The author has been asked to send a PDF or a photo instead.",
+      "bn": "ম্যাক্রোসহ নথি কোড চালাতে পারে বলে বাতিল করা হয়। লেখককে এর বদলে পিডিএফ বা ছবি পাঠাতে বলা হয়েছে।"
     }
   }
 ] as const satisfies CorpusQuarantineStage[];
@@ -320,6 +583,132 @@ export const PROVIDER_SUBMISSIONS = [
       "en": "No duplicate found and nothing abusive in the submission.",
       "bn": "কোনো ডুপ্লিকেট পাওয়া যায়নি এবং জমায় আপত্তিকর কিছু নেই।"
     }
+  },
+  {
+    "seedRef": "P-144",
+    "name": {
+      "en": "Dr. Habibur Rahman",
+      "bn": "ডা. হাবিবুর রহমান"
+    },
+    "specialty": {
+      "en": "Orthopaedics",
+      "bn": "অর্থোপেডিকস"
+    },
+    "city": {
+      "en": "Barishal",
+      "bn": "বরিশাল"
+    },
+    "bmdc": "A-50217",
+    "duplicateOfDoctorSeedRef": null,
+    "note": {
+      "en": "No duplicate found and nothing abusive in the submission. Qualifications were left blank and will read Not provided.",
+      "bn": "কোনো ডুপ্লিকেট পাওয়া যায়নি এবং জমায় আপত্তিকর কিছু নেই। যোগ্যতা খালি রাখা হয়েছে, তাই “জানানো হয়নি” দেখাবে।"
+    }
+  },
+  {
+    "seedRef": "P-145",
+    "name": {
+      "en": "Dr. Tahmina Chowdhury",
+      "bn": "ডা. তাহমিনা চৌধুরী"
+    },
+    "specialty": {
+      "en": "Pulmonology",
+      "bn": "পালমোনোলজি"
+    },
+    "city": {
+      "en": "Rajshahi",
+      "bn": "রাজশাহী"
+    },
+    "bmdc": "A-44805",
+    "duplicateOfDoctorSeedRef": "d7",
+    "note": {
+      "en": "The name and BMDC number both match an existing profile. Merge rather than approve.",
+      "bn": "নাম ও বিএমডিসি নম্বর দুটিই বিদ্যমান প্রোফাইলের সঙ্গে মেলে। অনুমোদন না করে মিলিয়ে দিন।"
+    }
+  },
+  {
+    "seedRef": "P-147",
+    "name": {
+      "en": "Dr. Moshiur Alam",
+      "bn": "ডা. মশিউর আলম"
+    },
+    "specialty": {
+      "en": "Ophthalmology",
+      "bn": "চক্ষুরোগ"
+    },
+    "city": {
+      "en": "Mymensingh",
+      "bn": "ময়মনসিংহ"
+    },
+    "bmdc": "A-57003",
+    "duplicateOfDoctorSeedRef": null,
+    "note": {
+      "en": "No duplicate found. The chamber listed is a hospital that is not in the directory yet.",
+      "bn": "কোনো ডুপ্লিকেট পাওয়া যায়নি। তালিকাভুক্ত চেম্বারটি এমন একটি হাসপাতাল যা এখনো ডিরেক্টরিতে নেই।"
+    }
+  },
+  {
+    "seedRef": "P-148",
+    "name": {
+      "en": "Dr. Rehana Sharmin",
+      "bn": "ডা. রেহানা শারমিন"
+    },
+    "specialty": {
+      "en": "Gynaecology",
+      "bn": "স্ত্রীরোগ"
+    },
+    "city": {
+      "en": "Khulna",
+      "bn": "খুলনা"
+    },
+    "bmdc": "A-46690",
+    "duplicateOfDoctorSeedRef": null,
+    "note": {
+      "en": "Submitted by the doctor herself. No duplicate found and nothing abusive in the submission.",
+      "bn": "ডাক্তার নিজে জমা দিয়েছেন। কোনো ডুপ্লিকেট পাওয়া যায়নি এবং জমায় আপত্তিকর কিছু নেই।"
+    }
+  },
+  {
+    "seedRef": "P-149",
+    "name": {
+      "en": "Dr. Golam Mustafa",
+      "bn": "ডা. গোলাম মোস্তাফা"
+    },
+    "specialty": {
+      "en": "Endocrinology",
+      "bn": "এন্ডোক্রিনোলজি"
+    },
+    "city": {
+      "en": "Cumilla",
+      "bn": "কুমিল্লা"
+    },
+    "bmdc": "A-39874",
+    "duplicateOfDoctorSeedRef": "d9",
+    "note": {
+      "en": "The spelling differs, but the BMDC number matches an existing profile. Merge rather than approve.",
+      "bn": "বানান আলাদা, কিন্তু বিএমডিসি নম্বর বিদ্যমান প্রোফাইলের সঙ্গে মেলে। অনুমোদন না করে মিলিয়ে দিন।"
+    }
+  },
+  {
+    "seedRef": "P-151",
+    "name": {
+      "en": "Dr. Pulak Kumar Sen",
+      "bn": "ডা. পুলক কুমার সেন"
+    },
+    "specialty": {
+      "en": "ENT",
+      "bn": "নাক-কান-গলা"
+    },
+    "city": {
+      "en": "Sylhet",
+      "bn": "সিলেট"
+    },
+    "bmdc": "A-41912",
+    "duplicateOfDoctorSeedRef": null,
+    "note": {
+      "en": "No duplicate found. Two chambers were submitted, and only the first is shown until the second is confirmed.",
+      "bn": "কোনো ডুপ্লিকেট পাওয়া যায়নি। দুটি চেম্বার জমা হয়েছে; দ্বিতীয়টি নিশ্চিত না হওয়া পর্যন্ত শুধু প্রথমটি দেখানো হবে।"
+    }
   }
 ] as const satisfies CorpusProviderSubmission[];
 
@@ -334,6 +723,66 @@ export const PROVIDER_CLAIMS = [
     "note": {
       "en": "Claiming is independent of BMDC verification and grants no control over patient experiences.",
       "bn": "দাবি করা বিএমডিসি যাচাই থেকে আলাদা এবং রোগীদের অভিজ্ঞতায় কোনো নিয়ন্ত্রণ দেয় না।"
+    }
+  },
+  {
+    "seedRef": "C-59",
+    "doctorSeedRef": "d2",
+    "method": {
+      "en": "Matched against the clinic’s published phone number and a call to the front desk",
+      "bn": "ক্লিনিকের প্রকাশিত ফোন নম্বরের সঙ্গে মিলিয়ে ও রিসেপশনে ফোন করে"
+    },
+    "note": {
+      "en": "The claimant also asked to reply to experiences. Replies are public and carry a claimed-profile label.",
+      "bn": "দাবিকারী অভিজ্ঞতার উত্তর দিতেও চেয়েছেন। উত্তর প্রকাশ্য এবং দাবিকৃত-প্রোফাইল চিহ্নসহ দেখায়।"
+    }
+  },
+  {
+    "seedRef": "C-60",
+    "doctorSeedRef": "d3",
+    "method": {
+      "en": "A one-time code sent to the chamber’s listed phone number",
+      "bn": "চেম্বারের তালিকাভুক্ত ফোন নম্বরে পাঠানো একবারের কোড"
+    },
+    "note": {
+      "en": "A claimed profile can add chamber hours but cannot hide or edit any patient experience.",
+      "bn": "দাবিকৃত প্রোফাইলে চেম্বারের সময় যোগ করা যায়, কিন্তু রোগীর কোনো অভিজ্ঞতা লুকানো বা সম্পাদনা করা যায় না।"
+    }
+  },
+  {
+    "seedRef": "C-61",
+    "doctorSeedRef": "d6",
+    "method": {
+      "en": "A signed letter on the chamber’s letterhead",
+      "bn": "চেম্বারের লেটারহেডে সই করা একটি চিঠি"
+    },
+    "note": {
+      "en": "The letter matches the listed chamber. Claiming does not check the BMDC number, so the profile keeps showing Registration not verified.",
+      "bn": "চিঠিটি তালিকাভুক্ত চেম্বারের সঙ্গে মেলে। দাবি করা বিএমডিসি নম্বর যাচাই করে না, তাই প্রোফাইলে “রেজিস্ট্রেশন যাচাই করা হয়নি” দেখাতে থাকবে।"
+    }
+  },
+  {
+    "seedRef": "C-62",
+    "doctorSeedRef": "d7",
+    "method": {
+      "en": "Confirmed by phone through the hospital’s administration office",
+      "bn": "হাসপাতালের প্রশাসন অফিসে ফোন করে নিশ্চিত করা"
+    },
+    "note": {
+      "en": "Two chambers are listed for this doctor. The claim covers the profile, not either hospital’s page.",
+      "bn": "এই ডাক্তারের দুটি চেম্বার তালিকাভুক্ত। দাবিটি প্রোফাইলের জন্য, কোনো হাসপাতালের পাতার জন্য নয়।"
+    }
+  },
+  {
+    "seedRef": "C-63",
+    "doctorSeedRef": "d9",
+    "method": {
+      "en": "A one-time code sent to the chamber phone listed on the profile",
+      "bn": "প্রোফাইলে দেওয়া চেম্বারের ফোনে পাঠানো একবারের কোড"
+    },
+    "note": {
+      "en": "The claim was filed on the same day as a report about this profile. The two are handled separately.",
+      "bn": "এই প্রোফাইল নিয়ে রিপোর্টের একই দিনে দাবিটি জমা হয়েছে। দুটি আলাদাভাবে দেখা হচ্ছে।"
     }
   }
 ] as const satisfies CorpusProviderClaim[];
@@ -372,5 +821,107 @@ export const PROVIDER_FIELD_CHANGES = [
       "bn": "শনি–বুধ, বিকাল ৫–রাত ৯টা"
     },
     "protected": false
+  },
+  {
+    "seedRef": "F-79",
+    "doctorSeedRef": "d2",
+    "field": {
+      "en": "Consultation fee",
+      "bn": "পরামর্শ ফি"
+    },
+    "from": {
+      "en": "৳1,500",
+      "bn": "১,৫০০ টাকা"
+    },
+    "to": {
+      "en": "৳1,800",
+      "bn": "১,৮০০ টাকা"
+    },
+    "protected": false
+  },
+  {
+    "seedRef": "F-80",
+    "doctorSeedRef": "d3",
+    "field": {
+      "en": "Qualifications",
+      "bn": "শিক্ষাগত যোগ্যতা"
+    },
+    "from": {
+      "en": "MBBS, DDV",
+      "bn": "এমবিবিএস, ডিডিভি"
+    },
+    "to": {
+      "en": "MBBS, DDV, MD (Dermatology)",
+      "bn": "এমবিবিএস, ডিডিভি, এমডি (চর্মরোগ)"
+    },
+    "protected": true
+  },
+  {
+    "seedRef": "F-81",
+    "doctorSeedRef": "d6",
+    "field": {
+      "en": "Chamber hours",
+      "bn": "চেম্বারের সময়"
+    },
+    "from": {
+      "en": "Daily, 6–9 pm",
+      "bn": "প্রতিদিন, সন্ধ্যা ৬–৯টা"
+    },
+    "to": {
+      "en": "Daily, 6–10 pm",
+      "bn": "প্রতিদিন, সন্ধ্যা ৬–রাত ১০টা"
+    },
+    "protected": false
+  },
+  {
+    "seedRef": "F-82",
+    "doctorSeedRef": "d5",
+    "field": {
+      "en": "Consultation languages",
+      "bn": "পরামর্শের ভাষা"
+    },
+    "from": {
+      "en": "Bangla, English",
+      "bn": "বাংলা, ইংরেজি"
+    },
+    "to": {
+      "en": "Bangla, English, Hindi",
+      "bn": "বাংলা, ইংরেজি, হিন্দি"
+    },
+    "protected": false
+  },
+  {
+    "seedRef": "F-83",
+    "doctorSeedRef": "d4",
+    "field": {
+      "en": "Name",
+      "bn": "নাম"
+    },
+    "from": {
+      "en": "Dr. Mahmudul Hasan",
+      "bn": "ডা. মাহমুদুল হাসান"
+    },
+    "to": {
+      "en": "Dr. Md. Mahmudul Hasan",
+      "bn": "ডা. মো. মাহমুদুল হাসান"
+    },
+    "protected": true
+  },
+  {
+    "seedRef": "F-84",
+    "doctorSeedRef": "d8",
+    "field": {
+      "en": "Specialty",
+      "bn": "বিশেষত্ব"
+    },
+    "from": {
+      "en": "Neurology",
+      "bn": "নিউরোলজি"
+    },
+    "to": {
+      "en": "Neurology and Headache Medicine",
+      "bn": "নিউরোলজি ও মাথাব্যথা চিকিৎসা"
+    },
+    "protected": true
   }
 ] as const satisfies CorpusFieldChange[];

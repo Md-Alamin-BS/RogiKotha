@@ -24,7 +24,8 @@ import { config as loadDotenv } from 'dotenv';
 // than imported across the package boundary).
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..', '..', '..', '..');
-loadDotenv({ path: path.resolve(repoRoot, '.env') });
+// `quiet` keeps the output to the per-step counts (ISS-252, as ISS-203).
+loadDotenv({ path: path.resolve(repoRoot, '.env'), quiet: true });
 
 import { seedAccounts } from './seed-accounts.js';
 import { seedConfig } from './seed-config.js';

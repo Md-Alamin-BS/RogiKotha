@@ -10,19 +10,19 @@ delivered to Mailpit (`http://localhost:8025`).
 
 | Username | Role | State | Used for |
 |---|---|---|---|
-| `shirin_88` | contributor | verified, author of r1 (pseudonymous), one draft, two bookmarks, five notifications | the workspace, security page, an existing author |
+| `shirin_88` | contributor | verified, author of r1 (pseudonymous), four drafts (one blocked on a pending profile), eight bookmarks, nine notifications | the workspace, security page, an existing author |
 | `rafi_c` | contributor | verified, author of r6 (named) with follow-ups and later care | discussion, follow-ups, evidence viewer |
-| `anon_author_r4` | contributor | verified; author of r4 **anonymously** | proves alias isolation |
+| `anon_author_r2` | contributor | verified; author of r2 **anonymously** (its only persona) | proves alias isolation |
 | `reporter_1` … `reporter_6` | contributors | verified, no content | five-account auto-hide, the sixth for "duplicate report does not count" |
 | `newuser` | — | **not seeded** — created live in step 2 | registration flow |
 | `mod_rashid` | moderator | staff; no trusted device | staff device approval, queue |
 | `admin_nadia` | admin | staff; no trusted device (every staff account goes through device approval on first sign-in; it takes thirty seconds with Mailpit) | providers, holds |
 | `sa_founder` | super_admin | staff | reveal, config, rollback, appeals |
 
-Seeded content mirrors the prototype exactly (6 doctors, 5 facilities/branches, 8 conditions with
-aliases, 12 accounts, 8 facility accounts, 10 comments incl. `k8/k9/k10`, 7 evidence items with
-real synthetic PNG/PDF derivatives (T-007 generates them directly with sharp + PDF assembly and marks the seed `// TODO(T-304): re-seed through the pipeline`; after T-304 lands the seed runs the real pipeline), 5 moderation
-cases `MOD-2011…2041`, 13 audit events, staff notifications, config version 1).
+Seeded content mirrors the prototype exactly (10 doctors, 10 branches of 7 facilities, 10 conditions with
+aliases, 24 accounts, 19 facility accounts, 49 comments incl. `k8/k9/k10`, 12 evidence items with
+real synthetic PNG/PDF derivatives (T-007 generates them directly with sharp + PDF assembly and marks the seed `// TODO(T-304): re-seed through the pipeline`; after T-304 lands the seed runs the real pipeline), 10 moderation
+cases `MOD-2011…2047`, 24 audit events, staff notifications, config version 1).
 
 ## The walkthrough
 
@@ -36,7 +36,7 @@ third tab. Total ≈ 25 minutes.
 4. Open Dr. Farhana Rahman → provenance chips per field, **Registration not verified**, sentiment capsules "3 of 5 accounts", outcome rows, condition breakdown, chambers. Toggle to English (`অ`) — numerals switch, cap-drop, same information.
 5. Open the facility → nine criteria with their own distributions; note the copy that facility feedback never touches a doctor.
 6. Open experience r1 → thirteen sections, "Reviewer's label", follow-up spine with latest status on top, **Documents attached — not medically validated**, open the viewer: zoom, pan, move between the two prescription photos, rotate, download the processed image. Try `/api/evidence/items/<id>/original` → 403.
-7. Open `/authors/shirin_88` → public profile lists r1 and public comments only; r4 (anonymous) is nowhere; page is `noindex`.
+7. Open `/authors/shirin_88` → public profile lists r1 and public comments only; r2 (anonymous) is nowhere; page is `noindex`.
 
 ### Part 2 — Becoming a contributor ●
 8. Click Write → the gate callout; **Create an account** → register `newuser` (age + terms) → pending screen → Mailpit → confirm → `/me` welcome.
@@ -56,7 +56,7 @@ third tab. Total ≈ 25 minutes.
 
 ### Part 5 — Staff console (window B)
 18. `/admin/sign-in` as `mod_rashid` on this browser → **Approve this device** → Mailpit → link → password → console. Sign out and in again → straight in.
-19. Queue: critical lane shows the privacy case with SLA 24 h; standard lane shows MOD-2041 etc.; counts in the nav. Open the case → reporter reads **restricted**; pick **redact**, write the reason to author, **Record decision** → audit timeline gains the row; the author (`rafi_c`) gets a moderation notification with the appeal path, no reporter identity.
+19. Queue: critical lane shows the privacy case with SLA 24 h; MOD-2041 is in the critical lane; the standard lane includes MOD-2033 and MOD-2029; counts in the nav. Open the case → reporter reads **restricted**; pick **redact**, write the reason to author, **Record decision** → audit timeline gains the row; the author (`rafi_c`) gets a moderation notification with the appeal path, no reporter identity.
 20. Try to edit the narrative body → refused ("narrative is not editable through moderation").
 21. Bulk: select the critical lane → preview lists affected cases → confirm → each result recorded.
 22. Evidence: quarantine table with stages; place a **legal hold** on e1 with a reason; move the **demo clock** +91 days → run retention → e3's original expires (custody `original_expired`), e1's does not; release the hold.

@@ -245,5 +245,943 @@ export const COMMENTS = [
     "externalLink": null,
     "mentions": [],
     "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k11",
+    "reviewSeedRef": "r2",
+    "parentSeedRef": null,
+    "author": {
+      "en": "nadia_k",
+      "bn": "nadia_k"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "likes": 4,
+    "dislikes": 0,
+    "body": {
+      "en": "The rushed questions part is familiar. Next time write them down and hand over the list at the start; some doctors will answer in writing.",
+      "bn": "তাড়াহুড়োয় প্রশ্ন করতে না পারার ব্যাপারটা চেনা। পরের বার প্রশ্নগুলো লিখে নিয়ে শুরুতেই তালিকাটা হাতে দিন; কেউ কেউ লিখেও উত্তর দেন।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k12",
+    "reviewSeedRef": "r2",
+    "parentSeedRef": "k11",
+    "author": {
+      "en": "rumana_h",
+      "bn": "rumana_h"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "likes": 1,
+    "dislikes": 0,
+    "body": {
+      "en": "A sheet of questions saved me from forgetting half of them. I would do the same for a thyroid review.",
+      "bn": "প্রশ্নের একটা কাগজ থাকায় অর্ধেক প্রশ্ন ভুলে যাওয়া থেকে বেঁচেছি। থাইরয়েডের ফলো-আপেও এমনই করব।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k13",
+    "reviewSeedRef": "r3",
+    "parentSeedRef": null,
+    "author": {
+      "en": "abba_of_two",
+      "bn": "abba_of_two"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "January 2026",
+      "bn": "জানুয়ারি ২০২৬"
+    },
+    "likes": 3,
+    "dislikes": 0,
+    "body": {
+      "en": "Bringing the earlier results saved us money too. It is worth carrying the whole folder to the first visit.",
+      "bn": "আগের রিপোর্টগুলো নিয়ে যাওয়ায় আমাদেরও টাকা বেঁচেছে। প্রথম ভিজিটে পুরো ফাইলটাই নিয়ে যাওয়া ভালো।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k14",
+    "reviewSeedRef": "r4",
+    "parentSeedRef": null,
+    "author": {
+      "en": "sylhet_nm",
+      "bn": "sylhet_nm"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "July 2026",
+      "bn": "জুলাই ২০২৬"
+    },
+    "likes": 6,
+    "dislikes": 0,
+    "body": {
+      "en": "I had the same stomach pain on a different medicine and calling the chamber got me the same answer. Did the second doctor change the dose or the group?",
+      "bn": "অন্য একটি ওষুধে আমারও একই পেটব্যথা হয়েছিল, চেম্বারে ফোন করে একই উত্তর পেয়েছি। দ্বিতীয় ডাক্তার ডোজ বদলেছিলেন, নাকি গ্রুপ?"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k15",
+    "reviewSeedRef": "r4",
+    "parentSeedRef": "k14",
+    "author": {
+      "en": "r_ahmed",
+      "bn": "r_ahmed"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "July 2026",
+      "bn": "জুলাই ২০২৬"
+    },
+    "likes": 2,
+    "dislikes": 0,
+    "body": {
+      "en": "The group of medicine, not the dose. The pain stopped in four days.",
+      "bn": "ডোজ নয়, ওষুধের গ্রুপ বদলেছে। চার দিনে ব্যথা থেমেছে।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k16",
+    "reviewSeedRef": "r4",
+    "parentSeedRef": null,
+    "author": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "identity": "anon",
+    "when": {
+      "en": "August 2026",
+      "bn": "আগস্ট ২০২৬"
+    },
+    "likes": 1,
+    "dislikes": 0,
+    "body": {
+      "en": "Please do not stop a prescribed medicine on your own because of this account. Ask whoever prescribed it first.",
+      "bn": "এই বিবরণ পড়ে নিজে থেকে নির্ধারিত ওষুধ বন্ধ করবেন না। আগে যিনি ওষুধ দিয়েছেন তাঁকে জিজ্ঞেস করুন।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k17",
+    "reviewSeedRef": "r5",
+    "parentSeedRef": null,
+    "author": {
+      "en": "mirpur_11",
+      "bn": "mirpur_11"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "May 2026",
+      "bn": "মে ২০২৬"
+    },
+    "likes": 3,
+    "dislikes": 0,
+    "body": {
+      "en": "Starting low and rechecking in two weeks is what we were told as well. It is slower, but it felt safer.",
+      "bn": "আমাদেরও কম ডোজে শুরু করে দুই সপ্তাহ পর আবার দেখাতে বলা হয়েছিল। ধীর, কিন্তু নিরাপদ মনে হয়েছে।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k18",
+    "reviewSeedRef": "r7",
+    "parentSeedRef": null,
+    "author": {
+      "en": "Tanvir Ahmed",
+      "bn": "তানভীর আহমেদ"
+    },
+    "identity": "real",
+    "when": {
+      "en": "February 2026",
+      "bn": "ফেব্রুয়ারি ২০২৬"
+    },
+    "likes": 4,
+    "dislikes": 0,
+    "body": {
+      "en": "Good to read this. Did you book by phone beforehand, or just walk in late?",
+      "bn": "এটা পড়ে ভালো লাগল। আপনারা আগে ফোনে সিরিয়াল নিয়েছিলেন, নাকি দেরিতে সরাসরি গিয়েছিলেন?"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k19",
+    "reviewSeedRef": "r7",
+    "parentSeedRef": "k18",
+    "author": {
+      "en": "ctg_reader",
+      "bn": "ctg_reader"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "February 2026",
+      "bn": "ফেব্রুয়ারি ২০২৬"
+    },
+    "likes": 2,
+    "dislikes": 0,
+    "body": {
+      "en": "No booking. We walked in at about 9:40 pm and were seen.",
+      "bn": "সিরিয়াল নেওয়া ছিল না। রাত প্রায় ৯টা ৪০-এ সরাসরি গিয়েছিলাম, দেখিয়েছেন।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k20",
+    "reviewSeedRef": "r9",
+    "parentSeedRef": "k7",
+    "author": {
+      "en": "Sultana Begum",
+      "bn": "সুলতানা বেগম"
+    },
+    "identity": "real",
+    "when": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "likes": 3,
+    "dislikes": 0,
+    "body": {
+      "en": "Yes, the pain was worse for the first two weeks and then eased. He told me to expect that, which made it easier to keep going.",
+      "bn": "হ্যাঁ, প্রথম দুই সপ্তাহ ব্যথা বেড়েছিল, তারপর কমেছে। উনি আগেই বলেছিলেন এমন হবে, তাই চালিয়ে যেতে সহজ হয়েছে।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k21",
+    "reviewSeedRef": "r10",
+    "parentSeedRef": null,
+    "author": {
+      "en": "Dr. Mahmudul Hasan",
+      "bn": "ডা. মাহমুদুল হাসান"
+    },
+    "identity": "real",
+    "when": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "likes": 8,
+    "dislikes": 0,
+    "body": {
+      "en": "Thank you for describing both the consultation and the queue. The queue is a fair criticism, and we are starting a numbered token system at the chamber door from next month.",
+      "bn": "পরামর্শ আর সিরিয়াল দুটোর কথাই লেখার জন্য ধন্যবাদ। সিরিয়ালের সমালোচনা সঙ্গত, আগামী মাস থেকে চেম্বারের দরজায় নম্বর-টোকেন ব্যবস্থা চালু করছি।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": "d4"
+  },
+  {
+    "seedRef": "k22",
+    "reviewSeedRef": "r11",
+    "parentSeedRef": null,
+    "author": {
+      "en": "nadia_k",
+      "bn": "nadia_k"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "August 2026",
+      "bn": "আগস্ট ২০২৬"
+    },
+    "likes": 2,
+    "dislikes": 0,
+    "body": {
+      "en": "How did you spot the triggers? Was it one food or a combination?",
+      "bn": "ট্রিগারগুলো কীভাবে ধরলেন? একটা খাবার, নাকি কয়েকটার মিলিত প্রভাব?"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k23",
+    "reviewSeedRef": "r11",
+    "parentSeedRef": "k22",
+    "author": {
+      "en": "mirpur_11",
+      "bn": "mirpur_11"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "August 2026",
+      "bn": "আগস্ট ২০২৬"
+    },
+    "likes": 1,
+    "dislikes": 0,
+    "body": {
+      "en": "Two: very strong tea on an empty stomach and large evening meals. Not anything I would have guessed.",
+      "bn": "দুটি: খালি পেটে খুব কড়া চা আর রাতে ভারী খাবার। আন্দাজ করতে পারতাম না।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k24",
+    "reviewSeedRef": "r12",
+    "parentSeedRef": null,
+    "author": {
+      "en": "ammu_of_tuli",
+      "bn": "ammu_of_tuli"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "likes": 3,
+    "dislikes": 0,
+    "body": {
+      "en": "Ask for a written estimate before agreeing to injections. Most chambers will give one if you ask.",
+      "bn": "ইনজেকশনে রাজি হওয়ার আগে লিখিত আনুমানিক খরচ চেয়ে নিন। চাইলে বেশিরভাগ চেম্বারই দেয়।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k25",
+    "reviewSeedRef": "r13",
+    "parentSeedRef": null,
+    "author": {
+      "en": "Farida Yasmin",
+      "bn": "ফরিদা ইয়াসমিন"
+    },
+    "identity": "real",
+    "when": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "likes": 5,
+    "dislikes": 0,
+    "body": {
+      "en": "Checking the inhaler technique first is exactly what my daughter’s doctor did too. Many people never get that check.",
+      "bn": "আমার মেয়ের ডাক্তারও আগে ইনহেলার ব্যবহারের পদ্ধতিই দেখেছেন। অনেকে এই পরীক্ষাটাই কখনো পান না।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k26",
+    "reviewSeedRef": "r13",
+    "parentSeedRef": "k25",
+    "author": {
+      "en": "rajshahi_rina",
+      "bn": "rajshahi_rina"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "likes": 2,
+    "dislikes": 0,
+    "body": {
+      "en": "It took two minutes and changed more than the new medicine did.",
+      "bn": "দুই মিনিট লেগেছিল, আর নতুন ওষুধের চেয়েও বেশি বদলে দিয়েছে।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k27",
+    "reviewSeedRef": "r13",
+    "parentSeedRef": null,
+    "author": {
+      "en": "shafiq_ctg",
+      "bn": "shafiq_ctg"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "July 2026",
+      "bn": "জুলাই ২০২৬"
+    },
+    "likes": 3,
+    "dislikes": 0,
+    "body": {
+      "en": "A short guide to inhaler technique with pictures. It helped me explain it to my father.",
+      "bn": "ছবিসহ ইনহেলার ব্যবহারের একটি ছোট নির্দেশিকা। বাবাকে বোঝাতে আমার কাজে লেগেছে।"
+    },
+    "dangerous": false,
+    "externalLink": "https://example.org/inhaler-technique-guide",
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k28",
+    "reviewSeedRef": "r14",
+    "parentSeedRef": null,
+    "author": {
+      "en": "abba_of_two",
+      "bn": "abba_of_two"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "April 2026",
+      "bn": "এপ্রিল ২০২৬"
+    },
+    "likes": 2,
+    "dislikes": 0,
+    "body": {
+      "en": "We also got two different follow-up times from the chamber and the desk. Asking the doctor to write the date on the prescription fixed it.",
+      "bn": "আমরাও চেম্বার আর ডেস্ক থেকে দুই রকম ফলো-আপের সময় পেয়েছিলাম। ডাক্তারকে প্রেসক্রিপশনে তারিখ লিখে দিতে বলায় সমাধান হয়েছে।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k29",
+    "reviewSeedRef": "r14",
+    "parentSeedRef": "k28",
+    "author": {
+      "en": "Farida Yasmin",
+      "bn": "ফরিদা ইয়াসমিন"
+    },
+    "identity": "real",
+    "when": {
+      "en": "April 2026",
+      "bn": "এপ্রিল ২০২৬"
+    },
+    "likes": 1,
+    "dislikes": 0,
+    "body": {
+      "en": "Thank you, I will do that next time.",
+      "bn": "ধন্যবাদ, পরের বার এটাই করব।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k30",
+    "reviewSeedRef": "r15",
+    "parentSeedRef": null,
+    "author": {
+      "en": "nadia_k",
+      "bn": "nadia_k"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "February 2026",
+      "bn": "ফেব্রুয়ারি ২০২৬"
+    },
+    "likes": 6,
+    "dislikes": 0,
+    "body": {
+      "en": "Sorry you went through such a long cough. A breathing test is a reasonable thing to ask for at the first visit.",
+      "bn": "এত লম্বা কাশির কষ্ট পেয়েছেন জেনে খারাপ লাগল। প্রথম ভিজিটেই শ্বাসের পরীক্ষা চাওয়া যুক্তিসঙ্গত।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k31",
+    "reviewSeedRef": "r15",
+    "parentSeedRef": null,
+    "author": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "identity": "anon",
+    "when": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "likes": 0,
+    "dislikes": 0,
+    "body": {
+      "en": "My aunt had the same thing. Call her on 01XXX-XXXXXX and she will tell you the name of the other doctor.",
+      "bn": "আমার খালারও একই হয়েছিল। ওঁকে 01XXX-XXXXXX নম্বরে ফোন করুন, অন্য ডাক্তারের নাম বলে দেবেন।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k32",
+    "reviewSeedRef": "r16",
+    "parentSeedRef": null,
+    "author": {
+      "en": "Dr. Aminul Haque",
+      "bn": "ডা. আমিনুল হক"
+    },
+    "identity": "real",
+    "when": {
+      "en": "May 2026",
+      "bn": "মে ২০২৬"
+    },
+    "likes": 9,
+    "dislikes": 0,
+    "body": {
+      "en": "Thank you for the careful account. The diary does most of the work, as you found. If anyone reading is starting a preventer, please tell the chamber about any dizziness in the first week.",
+      "bn": "যত্ন নিয়ে লেখার জন্য ধন্যবাদ। আপনি যেমন দেখেছেন, ডায়েরিই বেশিরভাগ কাজ করে। যিনি পড়ছেন এবং প্রতিরোধক ওষুধ শুরু করছেন, প্রথম সপ্তাহে মাথা ঘুরলে অনুগ্রহ করে চেম্বারকে জানাবেন।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": "d8"
+  },
+  {
+    "seedRef": "k33",
+    "reviewSeedRef": "r16",
+    "parentSeedRef": null,
+    "author": {
+      "en": "rangpur_mon",
+      "bn": "rangpur_mon"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "May 2026",
+      "bn": "মে ২০২৬"
+    },
+    "likes": 4,
+    "dislikes": 0,
+    "body": {
+      "en": "My mother’s doctor was the same man, and he asked about meals too. Did he explain what to do if an attack starts at night?",
+      "bn": "আমার মায়ের ডাক্তারও একই মানুষ, উনিও খাবারের কথা জিজ্ঞেস করেছিলেন। রাতে আক্রমণ শুরু হলে কী করতে হবে তা কি বলেছিলেন?"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k34",
+    "reviewSeedRef": "r16",
+    "parentSeedRef": "k33",
+    "author": {
+      "en": "Mostafizur Rahman",
+      "bn": "মোস্তাফিজুর রহমান"
+    },
+    "identity": "real",
+    "when": {
+      "en": "May 2026",
+      "bn": "মে ২০২৬"
+    },
+    "likes": 2,
+    "dislikes": 0,
+    "body": {
+      "en": "Yes: take the tablet, lie down in a dark room and drink water. He wrote it on the prescription.",
+      "bn": "হ্যাঁ: ট্যাবলেট খাওয়া, অন্ধকার ঘরে শুয়ে থাকা আর পানি পান করা। প্রেসক্রিপশনেই লিখে দিয়েছিলেন।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k35",
+    "reviewSeedRef": "r17",
+    "parentSeedRef": null,
+    "author": {
+      "en": "Dr. Aminul Haque",
+      "bn": "ডা. আমিনুল হক"
+    },
+    "identity": "real",
+    "when": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "likes": 7,
+    "dislikes": 0,
+    "body": {
+      "en": "Thank you, and I am sorry the explanation was hard to follow. I will use plain Bangla first and English terms only if asked.",
+      "bn": "ধন্যবাদ, আর ব্যাখ্যা বুঝতে কষ্ট হয়েছে বলে দুঃখিত। এখন থেকে আগে সহজ বাংলায় বলব, ইংরেজি শব্দ শুধু চাইলে।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": "d8"
+  },
+  {
+    "seedRef": "k36",
+    "reviewSeedRef": "r17",
+    "parentSeedRef": "k35",
+    "author": {
+      "en": "rangpur_mon",
+      "bn": "rangpur_mon"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "March 2026",
+      "bn": "মার্চ ২০২৬"
+    },
+    "likes": 3,
+    "dislikes": 0,
+    "body": {
+      "en": "Thank you, doctor. The last visit was much easier for her.",
+      "bn": "ধন্যবাদ ডাক্তার। শেষ ভিজিটটা মায়ের জন্য অনেক সহজ ছিল।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k37",
+    "reviewSeedRef": "r18",
+    "parentSeedRef": null,
+    "author": {
+      "en": "rangpur_mon",
+      "bn": "rangpur_mon"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "August 2026",
+      "bn": "আগস্ট ২০২৬"
+    },
+    "likes": 6,
+    "dislikes": 0,
+    "body": {
+      "en": "I am sorry. A phone call should not have to wait ten days. If it happens again, ask to speak to the doctor directly and not the assistant.",
+      "bn": "দুঃখিত। একটা ফোনের জন্য দশ দিন অপেক্ষা করা উচিত নয়। আবার হলে সহকারীর বদলে সরাসরি ডাক্তারের সঙ্গে কথা বলতে চাইবেন।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k38",
+    "reviewSeedRef": "r18",
+    "parentSeedRef": null,
+    "author": {
+      "en": "cure_in_days",
+      "bn": "cure_in_days"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "August 2026",
+      "bn": "আগস্ট ২০২৬"
+    },
+    "likes": 0,
+    "dislikes": 7,
+    "body": {
+      "en": "Never take preventer tablets, they damage the brain. Put clove oil drops in your nose at the first sign instead and stop all medicines.",
+      "bn": "প্রতিরোধক ট্যাবলেট কখনো খাবেন না, এতে মস্তিষ্কের ক্ষতি হয়। প্রথম লক্ষণেই নাকে লবঙ্গ তেলের ফোঁটা দিন আর সব ওষুধ বন্ধ করে দিন।"
+    },
+    "dangerous": true,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k39",
+    "reviewSeedRef": "r18",
+    "parentSeedRef": "k38",
+    "author": {
+      "en": "nadia_k",
+      "bn": "nadia_k"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "August 2026",
+      "bn": "আগস্ট ২০২৬"
+    },
+    "likes": 5,
+    "dislikes": 0,
+    "body": {
+      "en": "@cure_in_days please do not tell people to stop prescribed medicines.",
+      "bn": "@cure_in_days দয়া করে নির্ধারিত ওষুধ বন্ধ করতে বলবেন না।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [
+      "cure_in_days"
+    ],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k40",
+    "reviewSeedRef": "r19",
+    "parentSeedRef": null,
+    "author": {
+      "en": "Kamrul Islam",
+      "bn": "কামরুল ইসলাম"
+    },
+    "identity": "real",
+    "when": {
+      "en": "April 2026",
+      "bn": "এপ্রিল ২০২৬"
+    },
+    "likes": 4,
+    "dislikes": 0,
+    "body": {
+      "en": "The chart idea is good. My wife asked for the same on the back of my plan.",
+      "bn": "ছকের ধারণাটা ভালো। আমার স্ত্রীও আমার পরিকল্পনার পেছনে একই জিনিস চেয়ে নিয়েছেন।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k41",
+    "reviewSeedRef": "r19",
+    "parentSeedRef": "k40",
+    "author": {
+      "en": "rumana_h",
+      "bn": "rumana_h"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "April 2026",
+      "bn": "এপ্রিল ২০২৬"
+    },
+    "likes": 2,
+    "dislikes": 0,
+    "body": {
+      "en": "It cost nothing and helped more than any leaflet.",
+      "bn": "কোনো খরচ নেই, অথচ যেকোনো লিফলেটের চেয়ে বেশি কাজে লেগেছে।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k42",
+    "reviewSeedRef": "r20",
+    "parentSeedRef": null,
+    "author": {
+      "en": "Anonymous",
+      "bn": "নাম প্রকাশ না করে"
+    },
+    "identity": "anon",
+    "when": {
+      "en": "July 2026",
+      "bn": "জুলাই ২০২৬"
+    },
+    "likes": 1,
+    "dislikes": 0,
+    "body": {
+      "en": "Writing the times in large numbers is a small kindness that older patients really need.",
+      "bn": "সময়গুলো বড় সংখ্যায় লিখে দেওয়া ছোট একটা সদয়তা, বয়স্ক রোগীদের সত্যিই দরকার।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k43",
+    "reviewSeedRef": "r21",
+    "parentSeedRef": null,
+    "author": {
+      "en": "mirpur_11",
+      "bn": "mirpur_11"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "likes": 6,
+    "dislikes": 0,
+    "body": {
+      "en": "Iron and vitamin D were checked for me too after months of tiredness. In my case it was low iron, not the thyroid.",
+      "bn": "মাসের পর মাস ক্লান্তির পর আমারও আয়রন আর ভিটামিন ডি পরীক্ষা হয়েছিল। আমার ক্ষেত্রে থাইরয়েড নয়, আয়রনের ঘাটতি ছিল।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k44",
+    "reviewSeedRef": "r21",
+    "parentSeedRef": "k43",
+    "author": {
+      "en": "Nasima Akter",
+      "bn": "নাসিমা আক্তার"
+    },
+    "identity": "real",
+    "when": {
+      "en": "June 2026",
+      "bn": "জুন ২০২৬"
+    },
+    "likes": 2,
+    "dislikes": 0,
+    "body": {
+      "en": "Thank you, I will ask about those tests at my next visit.",
+      "bn": "ধন্যবাদ, পরের ভিজিটে ওই পরীক্ষাগুলোর কথা জিজ্ঞেস করব।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k45",
+    "reviewSeedRef": "r22",
+    "parentSeedRef": null,
+    "author": {
+      "en": "ctg_reader",
+      "bn": "ctg_reader"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "likes": 4,
+    "dislikes": 0,
+    "body": {
+      "en": "The warning-signs card is a good idea. Did she say which hospital to go to at night?",
+      "bn": "বিপদের লক্ষণের কার্ডটা ভালো ধারণা। রাতে কোন হাসপাতালে যেতে হবে তা কি বলেছিলেন?"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k46",
+    "reviewSeedRef": "r22",
+    "parentSeedRef": "k45",
+    "author": {
+      "en": "ammu_of_tuli",
+      "bn": "ammu_of_tuli"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "September 2026",
+      "bn": "সেপ্টেম্বর ২০২৬"
+    },
+    "likes": 3,
+    "dislikes": 0,
+    "body": {
+      "en": "She named the nearest children’s ward and wrote its number on the card.",
+      "bn": "কাছের শিশু ওয়ার্ডের নাম বলেছিলেন এবং কার্ডে ওদের নম্বর লিখে দিয়েছিলেন।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k47",
+    "reviewSeedRef": "r23",
+    "parentSeedRef": null,
+    "author": {
+      "en": "abba_of_two",
+      "bn": "abba_of_two"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "August 2026",
+      "bn": "আগস্ট ২০২৬"
+    },
+    "likes": 2,
+    "dislikes": 0,
+    "body": {
+      "en": "Evening slots are hard everywhere. Calling when the chamber opens for the next day’s morning list worked for us.",
+      "bn": "সন্ধ্যার সিরিয়াল সবখানেই কঠিন। চেম্বার খোলার সময় ফোন করে পরদিন সকালের তালিকায় নাম লেখানো আমাদের কাজে দিয়েছে।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k48",
+    "reviewSeedRef": "r24",
+    "parentSeedRef": null,
+    "author": {
+      "en": "rajshahi_rina",
+      "bn": "rajshahi_rina"
+    },
+    "identity": "pseudo",
+    "when": {
+      "en": "May 2026",
+      "bn": "মে ২০২৬"
+    },
+    "likes": 4,
+    "dislikes": 0,
+    "body": {
+      "en": "Letting him hold the spacer as a toy first is clever. I will try it with my nephew.",
+      "bn": "আগে খেলনার মতো স্পেসার ধরতে দেওয়ার বুদ্ধিটা চমৎকার। আমার ভাগ্নের সঙ্গে চেষ্টা করব।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
+  },
+  {
+    "seedRef": "k49",
+    "reviewSeedRef": "r24",
+    "parentSeedRef": "k48",
+    "author": {
+      "en": "Shahana Parvin",
+      "bn": "শাহানা পারভীন"
+    },
+    "identity": "real",
+    "when": {
+      "en": "May 2026",
+      "bn": "মে ২০২৬"
+    },
+    "likes": 1,
+    "dislikes": 0,
+    "body": {
+      "en": "Please do tell us how it goes.",
+      "bn": "কেমন হলো, জানাবেন কিন্তু।"
+    },
+    "dangerous": false,
+    "externalLink": null,
+    "mentions": [],
+    "providerForDoctorSeedRef": null
   }
 ] as const satisfies CorpusComment[];

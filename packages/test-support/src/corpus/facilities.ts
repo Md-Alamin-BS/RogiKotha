@@ -31,5 +31,26 @@ export const FACILITY_ORGS = [
       "en": "Mirpur Care Hospital",
       "bn": "মিরপুর কেয়ার হাসপাতাল"
     }
+  },
+  {
+    "seedRef": "org-kashful-health-group",
+    "name": {
+      "en": "Kashful Health Group",
+      "bn": "কাশফুল হেলথ গ্রুপ"
+    }
+  },
+  {
+    "seedRef": "org-jolrong-diagnostics-network",
+    "name": {
+      "en": "Jolrong Diagnostics Network",
+      "bn": "জলরং ডায়াগনস্টিকস নেটওয়ার্ক"
+    }
+  },
+  {
+    "seedRef": "org-shobuj-chhaya-care-network",
+    "name": {
+      "en": "Shobuj Chhaya Care Network",
+      "bn": "সবুজ ছায়া কেয়ার নেটওয়ার্ক"
+    }
   }
 ] as const satisfies CorpusFacilityOrg[];

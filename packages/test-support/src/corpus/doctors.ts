@@ -344,5 +344,247 @@ export const DOCTORS = [
     },
     "claimed": false,
     "avatarHue": 340
+  },
+  {
+    "seedRef": "d7",
+    "name": {
+      "en": "Dr. Tahmina Chowdhury",
+      "bn": "ডা. তাহমিনা চৌধুরী"
+    },
+    "specialty": {
+      "en": "Pulmonology",
+      "bn": "পালমোনোলজি"
+    },
+    "qualifications": {
+      "en": "MBBS, FCPS (Medicine), MD (Pulmonology)",
+      "bn": "এমবিবিএস, এফসিপিএস (মেডিসিন), এমডি (পালমোনোলজি)"
+    },
+    "bmdc": "A-44805",
+    "gender": "female",
+    "languages": {
+      "en": "Bangla, English",
+      "bn": "বাংলা, ইংরেজি"
+    },
+    "fee": {
+      "en": "৳1,000",
+      "bn": "১,০০০ টাকা"
+    },
+    "city": {
+      "en": "Rajshahi",
+      "bn": "রাজশাহী"
+    },
+    "area": {
+      "en": "Shaheb Bazar",
+      "bn": "সাহেব বাজার"
+    },
+    "chambers": [
+      {
+        "name": {
+          "en": "Kashful Community Hospital — Shaheb Bazar branch",
+          "bn": "কাশফুল কমিউনিটি হাসপাতাল — সাহেব বাজার শাখা"
+        },
+        "hours": {
+          "en": "Sat–Wed, 5–8 pm",
+          "bn": "শনি–বুধ, বিকাল ৫–৮টা"
+        },
+        "provenance": "provider"
+      },
+      {
+        "name": {
+          "en": "Kashful Community Hospital — Kazla branch",
+          "bn": "কাশফুল কমিউনিটি হাসপাতাল — কাজলা শাখা"
+        },
+        "hours": {
+          "en": "Thu, 10 am–1 pm",
+          "bn": "বৃহস্পতি, সকাল ১০টা–দুপুর ১টা"
+        },
+        "provenance": "community"
+      }
+    ],
+    "fieldProvenance": {
+      "name": "community",
+      "specialty": "community",
+      "bmdc": "community",
+      "qualifications": "provider",
+      "fee": "community"
+    },
+    "claimed": false,
+    "avatarHue": 120
+  },
+  {
+    "seedRef": "d8",
+    "name": {
+      "en": "Dr. Aminul Haque",
+      "bn": "ডা. আমিনুল হক"
+    },
+    "specialty": {
+      "en": "Neurology",
+      "bn": "নিউরোলজি"
+    },
+    "qualifications": {
+      "en": "MBBS, FCPS (Medicine), MD (Neurology)",
+      "bn": "এমবিবিএস, এফসিপিএস (মেডিসিন), এমডি (নিউরোলজি)"
+    },
+    "bmdc": "A-36129",
+    "gender": "male",
+    "languages": {
+      "en": "Bangla, English",
+      "bn": "বাংলা, ইংরেজি"
+    },
+    "fee": {
+      "en": "৳1,300",
+      "bn": "১,৩০০ টাকা"
+    },
+    "city": {
+      "en": "Rangpur",
+      "bn": "রংপুর"
+    },
+    "area": {
+      "en": "Modern More",
+      "bn": "মডার্ন মোড়"
+    },
+    "chambers": [
+      {
+        "name": {
+          "en": "Kashful Community Hospital — Rangpur branch",
+          "bn": "কাশফুল কমিউনিটি হাসপাতাল — রংপুর শাখা"
+        },
+        "hours": {
+          "en": "Sat–Thu, 4–8 pm",
+          "bn": "শনি–বৃহস্পতি, বিকাল ৪–৮টা"
+        },
+        "provenance": "admin"
+      }
+    ],
+    "fieldProvenance": {
+      "name": "admin",
+      "specialty": "provider",
+      "bmdc": "admin",
+      "qualifications": "provider",
+      "fee": "provider"
+    },
+    "claimed": true,
+    "avatarHue": 250
+  },
+  {
+    "seedRef": "d9",
+    "name": {
+      "en": "Dr. Golam Mostofa",
+      "bn": "ডা. গোলাম মোস্তফা"
+    },
+    "specialty": {
+      "en": "Endocrinology",
+      "bn": "এন্ডোক্রিনোলজি"
+    },
+    "qualifications": {
+      "en": "MBBS, MD (Endocrinology and Metabolism)",
+      "bn": "এমবিবিএস, এমডি (এন্ডোক্রিনোলজি ও মেটাবলিজম)"
+    },
+    "bmdc": "A-39874",
+    "gender": "male",
+    "languages": {
+      "en": "Bangla, English",
+      "bn": "বাংলা, ইংরেজি"
+    },
+    "fee": {
+      "en": "৳900",
+      "bn": "৯০০ টাকা"
+    },
+    "city": {
+      "en": "Cumilla",
+      "bn": "কুমিল্লা"
+    },
+    "area": {
+      "en": "Kandirpar",
+      "bn": "কান্দিরপাড়"
+    },
+    "chambers": [
+      {
+        "name": {
+          "en": "Jolrong Diagnostic Centre — Cumilla branch",
+          "bn": "জলরং ডায়াগনস্টিক সেন্টার — কুমিল্লা শাখা"
+        },
+        "hours": {
+          "en": "Sun–Thu, 5–9 pm",
+          "bn": "রবি–বৃহস্পতি, সন্ধ্যা ৫–৯টা"
+        },
+        "provenance": "community"
+      },
+      {
+        "name": {
+          "en": "Kotbari Doctors’ Chamber",
+          "bn": "কোটবাড়ী ডক্টরস চেম্বার"
+        },
+        "hours": {
+          "en": "Fri, 9 am–12 noon",
+          "bn": "শুক্র, সকাল ৯টা–দুপুর ১২টা"
+        },
+        "provenance": "community"
+      }
+    ],
+    "fieldProvenance": {
+      "name": "community",
+      "specialty": "community",
+      "bmdc": "community",
+      "qualifications": "community",
+      "fee": "community"
+    },
+    "claimed": false,
+    "avatarHue": 50
+  },
+  {
+    "seedRef": "d10",
+    "name": {
+      "en": "Dr. Lutfun Nahar",
+      "bn": "ডা. লুৎফুন নাহার"
+    },
+    "specialty": {
+      "en": "Paediatrics",
+      "bn": "শিশুরোগ"
+    },
+    "qualifications": {
+      "en": "MBBS, DCH, MD (Paediatrics)",
+      "bn": "এমবিবিএস, ডিসিএইচ, এমডি (শিশুরোগ)"
+    },
+    "bmdc": "A-48356",
+    "gender": "female",
+    "languages": {
+      "en": "Bangla, English",
+      "bn": "বাংলা, ইংরেজি"
+    },
+    "fee": {
+      "en": "৳700",
+      "bn": "৭০০ টাকা"
+    },
+    "city": {
+      "en": "Barishal",
+      "bn": "বরিশাল"
+    },
+    "area": {
+      "en": "Sadar Road",
+      "bn": "সদর রোড"
+    },
+    "chambers": [
+      {
+        "name": {
+          "en": "Shobuj Chhaya Family Clinic — Barishal Sadar branch",
+          "bn": "সবুজ ছায়া ফ্যামিলি ক্লিনিক — বরিশাল সদর শাখা"
+        },
+        "hours": {
+          "en": "Daily, 4–8 pm",
+          "bn": "প্রতিদিন, বিকাল ৪–৮টা"
+        },
+        "provenance": "provider"
+      }
+    ],
+    "fieldProvenance": {
+      "name": "provider",
+      "specialty": "provider",
+      "bmdc": "community",
+      "qualifications": "provider",
+      "fee": "community"
+    },
+    "claimed": false,
+    "avatarHue": 310
   }
 ] as const satisfies CorpusDoctor[];

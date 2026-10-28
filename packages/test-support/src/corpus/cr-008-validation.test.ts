@@ -27,15 +27,21 @@ describe('CR-008 corpus invariants', () => {
     expect(counts).toMatchObject({ 'MOD-2011': 0, 'MOD-2029': 1, 'MOD-2038': 1, 'MOD-2041': 2 });
   });
 
-  it('has exactly one shirin_88 notification per notification kind', () => {
-    expect(USER_NOTIFICATIONS).toHaveLength(5);
+  // CR-012 rewrote the next two tests: FD-089 grew the notifications from five
+  // (one per kind) to ten, with times in months, and the seed withholds n8
+  // under FD-086. They keep their intent: the seeded notifications are all
+  // shirin_88's, cover every kind, and carry times the seed can parse.
+  it('gives shirin_88 nine seeded notifications, n8 withheld, still covering every notification kind', () => {
+    const seeded = USER_NOTIFICATIONS.filter((n) => n.seedRef !== 'n8');
+    expect(USER_NOTIFICATIONS).toHaveLength(10);
+    expect(seeded).toHaveLength(9);
     expect(new Set(USER_NOTIFICATIONS.map((n) => n.accountUsername))).toEqual(new Set(['shirin_88']));
-    expect([...USER_NOTIFICATIONS.map((n) => n.kind)].sort()).toEqual([...NOTIFICATION_KINDS].sort());
+    expect(new Set(seeded.map((n) => n.kind))).toEqual(new Set(NOTIFICATION_KINDS));
   });
 
   it('uses relative times the notification seed step can parse, so its insert never throws', () => {
     for (const n of USER_NOTIFICATIONS) {
-      expect(n.when.en, n.seedRef).toMatch(/^\d+\s+(day|days|week|weeks)\s+ago$/);
+      expect(n.when.en, n.seedRef).toMatch(/^\d+\s+(day|days|week|weeks|month|months)\s+ago$/);
     }
   });
 });
