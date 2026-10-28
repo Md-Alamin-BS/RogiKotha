@@ -48,6 +48,22 @@ export default defineConfig({
       'packages/*/vitest.config.ts',
       'apps/*/vitest.config.ts',
       'scripts/vitest.config.ts',
+      // T-010 (BR6.2, D10): the seed integration test runs in every combined run so `seed/**` is
+      // measured. It resets and seeds `DATABASE_URL_TEST`, which `database` (group 1) also uses,
+      // so it runs alone in group 2, after that project ends; groups run one after another
+      // (https://vitest.dev/config/sequence#sequence-grouporder, Vitest 4.1.11).
+      {
+        test: {
+          name: 'test-support-seed',
+          root: './packages/test-support',
+          environment: 'node',
+          include: ['src/seed/seed.int.test.ts'],
+          fileParallelism: false,
+          sequence: { groupOrder: 2 },
+          testTimeout: 180_000,
+          hookTimeout: 180_000,
+        },
+      },
     ],
     coverage: {
       provider: 'v8',

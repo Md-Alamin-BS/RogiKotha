@@ -1,60 +1,36 @@
 // Seed integration test (task step 9's three named assertions). Runs
-// against `DATABASE_URL_TEST` (this worktree's isolated
-// `rogikotha_test_t007`, per the loop coordinator's assignment).
+// against `DATABASE_URL_TEST`.
 //
-// This file resets and migrates the schema itself — it is deliberately
-// **excluded** from the default `pnpm test`/`pnpm check`/`pnpm test:int`
-// sweep (see `vitest.config.ts`'s `exclude`) rather than sharing a project
-// with `packages/database`'s own int tests, which reset the exact same
-// physical test database in their own `beforeAll`: running both in the
-// same `vitest` invocation risks two concurrent `DROP SCHEMA public
-// CASCADE` calls racing each other. Run this file on its own:
+// This file resets and migrates the schema itself, so it never shares a run
+// slot with `packages/database`'s own int tests, which use the same physical
+// test database. In the root runs (`pnpm test`, `pnpm test:coverage`,
+// `pnpm check`) it is the `test-support-seed` project of `vitest.workspace.ts`,
+// which runs after the `database` project has ended (T-010). It is excluded
+// from the plain `test-support` project and can be run on its own:
 //
 //   pnpm --filter @rogikotha/test-support exec vitest run src/seed/seed.int.test.ts
-//
-// (passing an explicit file path bypasses this project's `exclude`). See
-// the hand-off / ISSUES.md for the full reasoning and the exact command
-// used to verify this file for T-007.
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 import { createDb, type Db } from '@rogikotha/database';
 import { config as loadDotenv } from 'dotenv';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { Pool } from 'pg';
+import type { Pool } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+// T-010: the reset `pnpm db:reset` and the database project use (CR-007's lock timeout, both
+// schemas dropped together, `pgboss` reinstalled before the migrations). The package exports no
+// reset, and a seed test may import database code (FD-040).
+import { runReset } from '../../../database/src/reset';
 import { MODERATION_CASES } from '../corpus/index.js';
 import { runSeed } from './seed.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 loadDotenv({ path: path.resolve(here, '..', '..', '..', '..', '.env') });
 
-const migrationsFolder = path.resolve(here, '..', '..', '..', 'database', 'src', 'migrations');
 const url = process.env.DATABASE_URL_TEST!;
 
 let db: Db;
 let pool: Pool;
-
-async function resetAndMigrate(): Promise<void> {
-  const resetPool = new Pool({ connectionString: url });
-  try {
-    await resetPool.query('DROP SCHEMA public CASCADE');
-    await resetPool.query('CREATE SCHEMA public');
-    await resetPool.query('CREATE EXTENSION IF NOT EXISTS pg_trgm');
-    await resetPool.query('CREATE EXTENSION IF NOT EXISTS citext');
-    await resetPool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto');
-    await resetPool.query('DROP SCHEMA IF EXISTS drizzle CASCADE');
-  } finally {
-    await resetPool.end();
-  }
-  const migrator = createDb(url);
-  try {
-    await migrate(migrator.db, { migrationsFolder, migrationsTable: 'drizzle_migrations', migrationsSchema: 'public' });
-  } finally {
-    await migrator.pool.end();
-  }
-}
 
 async function scalar(sql: string, params: unknown[] = []): Promise<number> {
   const result = await pool.query<{ n: string }>(sql, params);
@@ -70,29 +46,89 @@ const EXPECTED_COUNTS: readonly { id: string; label: string; sql: string; n: num
   { id: 'DC1', label: 'doctors', sql: 'select count(*) as n from doctors', n: 10 },
   { id: 'DC2', label: 'organisations', sql: 'select count(*) as n from facilities', n: 7 },
   { id: 'DC3', label: 'branches', sql: 'select count(*) as n from facility_branches', n: 10 },
-  { id: 'DC4', label: 'conditions', sql: "select count(*) as n from taxonomy_terms where kind = 'condition'", n: 10 },
-  { id: 'DC5', label: 'specialties', sql: "select count(*) as n from taxonomy_terms where kind = 'specialty'", n: 9 },
+  {
+    id: 'DC4',
+    label: 'conditions',
+    sql: "select count(*) as n from taxonomy_terms where kind = 'condition'",
+    n: 10,
+  },
+  {
+    id: 'DC5',
+    label: 'specialties',
+    sql: "select count(*) as n from taxonomy_terms where kind = 'specialty'",
+    n: 9,
+  },
   { id: 'DC6', label: 'aliases', sql: 'select count(*) as n from taxonomy_aliases', n: 33 },
   { id: 'DC7', label: 'chambers', sql: 'select count(*) as n from doctor_chambers', n: 13 },
   { id: 'DC8', label: 'reviews', sql: 'select count(*) as n from reviews', n: 24 },
-  { id: 'DC9', label: 'follow-ups', sql: "select count(*) as n from review_follow_ups where kind = 'follow_up'", n: 21 },
-  { id: 'DC10', label: 'later care', sql: "select count(*) as n from review_follow_ups where kind = 'later_care'", n: 10 },
-  { id: 'DC11', label: 'facility reviews', sql: 'select count(*) as n from facility_reviews', n: 19 },
+  {
+    id: 'DC9',
+    label: 'follow-ups',
+    sql: "select count(*) as n from review_follow_ups where kind = 'follow_up'",
+    n: 21,
+  },
+  {
+    id: 'DC10',
+    label: 'later care',
+    sql: "select count(*) as n from review_follow_ups where kind = 'later_care'",
+    n: 10,
+  },
+  {
+    id: 'DC11',
+    label: 'facility reviews',
+    sql: 'select count(*) as n from facility_reviews',
+    n: 19,
+  },
   { id: 'DC12', label: 'comments', sql: 'select count(*) as n from comments', n: 49 },
   { id: 'DC13', label: 'evidence items', sql: 'select count(*) as n from evidence_items', n: 12 },
-  { id: 'DC14', label: 'moderation cases', sql: 'select count(*) as n from moderation_cases', n: 10 },
+  {
+    id: 'DC14',
+    label: 'moderation cases',
+    sql: 'select count(*) as n from moderation_cases',
+    n: 10,
+  },
   { id: 'DC15', label: 'reports', sql: 'select count(*) as n from reports', n: 17 },
   { id: 'DC16', label: 'appeals', sql: 'select count(*) as n from appeals', n: 2 },
-  { id: 'DC16', label: 'hide decisions', sql: "select count(*) as n from moderation_decisions where action = 'hide'", n: 2 },
-  { id: 'DC17', label: 'case audit rows', sql: "select count(*) as n from audit_events where stream like 'case:%'", n: 24 },
-  { id: 'DC18', label: 'user notifications (n8 withheld, FD-086)', sql: 'select count(*) as n from notifications', n: 9 },
-  { id: 'DC19', label: 'staff notifications', sql: 'select count(*) as n from staff_notifications', n: 12 },
+  {
+    id: 'DC16',
+    label: 'hide decisions',
+    sql: "select count(*) as n from moderation_decisions where action = 'hide'",
+    n: 2,
+  },
+  {
+    id: 'DC17',
+    label: 'case audit rows',
+    sql: "select count(*) as n from audit_events where stream like 'case:%'",
+    n: 24,
+  },
+  {
+    id: 'DC18',
+    label: 'user notifications (n8 withheld, FD-086)',
+    sql: 'select count(*) as n from notifications',
+    n: 9,
+  },
+  {
+    id: 'DC19',
+    label: 'staff notifications',
+    sql: 'select count(*) as n from staff_notifications',
+    n: 12,
+  },
   { id: 'DC20', label: 'drafts', sql: 'select count(*) as n from review_drafts', n: 4 },
   { id: 'DC21', label: 'bookmarks', sql: 'select count(*) as n from bookmarks', n: 8 },
   { id: 'DC22', label: 'submissions', sql: 'select count(*) as n from profile_submissions', n: 8 },
   { id: 'DC22', label: 'claims', sql: 'select count(*) as n from profile_claims', n: 6 },
-  { id: 'DC22', label: 'field changes', sql: 'select count(*) as n from profile_field_changes', n: 8 },
-  { id: 'derived', label: 'accounts (48 corpus + 50 reactors)', sql: 'select count(*) as n from account_profiles', n: 98 },
+  {
+    id: 'DC22',
+    label: 'field changes',
+    sql: 'select count(*) as n from profile_field_changes',
+    n: 8,
+  },
+  {
+    id: 'derived',
+    label: 'accounts (48 corpus + 50 reactors)',
+    sql: 'select count(*) as n from account_profiles',
+    n: 98,
+  },
   { id: 'derived', label: 'personas', sql: 'select count(*) as n from personas', n: 38 },
   { id: 'derived', label: 'reactions', sql: 'select count(*) as n from reactions', n: 683 },
 ];
@@ -116,7 +152,12 @@ async function caseFacts(code: string): Promise<{
   reasons: Record<string, number>;
   reportRowReasons: Record<string, number>;
 }> {
-  const caseRow = await pool.query<{ id: string; report_count: number; distinct_reporters: number; target_id: string }>(
+  const caseRow = await pool.query<{
+    id: string;
+    report_count: number;
+    distinct_reporters: number;
+    target_id: string;
+  }>(
     'select id, report_count, distinct_reporters, target_id from moderation_cases where code = $1',
     [code],
   );
@@ -143,7 +184,7 @@ async function caseFacts(code: string): Promise<{
 
 beforeAll(async () => {
   if (!url) throw new Error('DATABASE_URL_TEST is not set (check .env)');
-  await resetAndMigrate();
+  await runReset(url, { terminateStaleBackends: true });
   const created = createDb(url);
   db = created.db;
   pool = created.pool;
@@ -179,13 +220,33 @@ describe('seed', () => {
     const facts = await caseFacts('MOD-2033');
     expect(facts.reasons).toEqual({ factual: 5, impersonation: 1 });
     expect(facts.reportRowReasons).toEqual({ factual: 5, impersonation: 1 });
-    expect(facts).toMatchObject({ reportCount: 6, distinctReporters: 6, reportRows: 6, reportRowReporters: 6 });
+    expect(facts).toMatchObject({
+      reportCount: 6,
+      distinctReporters: 6,
+      reportRows: 6,
+      reportRowReporters: 6,
+    });
   });
 
   it('keeps the report counts, reporters and reasons of the other pre-FD-089 cases', async () => {
-    expect(await caseFacts('MOD-2011')).toMatchObject({ reportCount: 0, distinctReporters: 0, reportRows: 0, reasons: {} });
-    expect(await caseFacts('MOD-2029')).toMatchObject({ reportCount: 1, distinctReporters: 1, reportRows: 1, reasons: { impersonation: 1 } });
-    expect(await caseFacts('MOD-2038')).toMatchObject({ reportCount: 1, distinctReporters: 1, reportRows: 1, reasons: { privacy: 1 } });
+    expect(await caseFacts('MOD-2011')).toMatchObject({
+      reportCount: 0,
+      distinctReporters: 0,
+      reportRows: 0,
+      reasons: {},
+    });
+    expect(await caseFacts('MOD-2029')).toMatchObject({
+      reportCount: 1,
+      distinctReporters: 1,
+      reportRows: 1,
+      reasons: { impersonation: 1 },
+    });
+    expect(await caseFacts('MOD-2038')).toMatchObject({
+      reportCount: 1,
+      distinctReporters: 1,
+      reportRows: 1,
+      reasons: { privacy: 1 },
+    });
     expect(await caseFacts('MOD-2041')).toMatchObject({
       reportCount: 2,
       distinctReporters: 2,
@@ -196,13 +257,26 @@ describe('seed', () => {
   });
 
   it('gives each new case as many report rows from distinct reporters as its report count', async () => {
-    for (const [code, n] of [['MOD-2047', 1], ['MOD-2045', 3], ['MOD-2036', 2], ['MOD-2031', 1], ['MOD-2018', 0]] as const) {
-      expect(await caseFacts(code), code).toMatchObject({ reportCount: n, distinctReporters: n, reportRows: n, reportRowReporters: n });
+    for (const [code, n] of [
+      ['MOD-2047', 1],
+      ['MOD-2045', 3],
+      ['MOD-2036', 2],
+      ['MOD-2031', 1],
+      ['MOD-2018', 0],
+    ] as const) {
+      expect(await caseFacts(code), code).toMatchObject({
+        reportCount: n,
+        distinctReporters: n,
+        reportRows: n,
+        reportRowReporters: n,
+      });
     }
   });
 
   it('puts MOD-2041 in the critical lane and every case in its prototype lane', async () => {
-    const result = await pool.query<{ code: string; lane: string }>('select code, lane from moderation_cases');
+    const result = await pool.query<{ code: string; lane: string }>(
+      'select code, lane from moderation_cases',
+    );
     const lanes = Object.fromEntries(result.rows.map((r) => [r.code, r.lane]));
     expect(lanes['MOD-2041']).toBe('critical');
     expect(lanes).toEqual(Object.fromEntries(MODERATION_CASES.map((c) => [c.seedRef, c.lane])));
@@ -212,7 +286,13 @@ describe('seed', () => {
   });
 
   it("seeds both appeals as a hidden target, one hide decision and one open appeal by the target's author", async () => {
-    const result = await pool.query<{ code: string; status: string; actions: string[]; appellant: string; appeal_status: string }>(`
+    const result = await pool.query<{
+      code: string;
+      status: string;
+      actions: string[];
+      appellant: string;
+      appeal_status: string;
+    }>(`
       select c.code, c.status,
              array(select d.action::text from moderation_decisions d where d.case_id = c.id) as actions,
              ap.username as appellant, a.status as appeal_status
@@ -223,15 +303,39 @@ describe('seed', () => {
       order by c.code
     `);
     expect(result.rows).toEqual([
-      { code: 'MOD-2011', status: 'appealed', actions: ['hide'], appellant: 'r_ahmed', appeal_status: 'open' },
-      { code: 'MOD-2018', status: 'appealed', actions: ['hide'], appellant: 'shafiq_ctg', appeal_status: 'open' },
+      {
+        code: 'MOD-2011',
+        status: 'appealed',
+        actions: ['hide'],
+        appellant: 'r_ahmed',
+        appeal_status: 'open',
+      },
+      {
+        code: 'MOD-2018',
+        status: 'appealed',
+        actions: ['hide'],
+        appellant: 'shafiq_ctg',
+        appeal_status: 'open',
+      },
     ]);
-    expect(await scalar("select count(*) as n from comments where seed_ref = 'k27' and state = 'hidden_pending_review'")).toBe(1);
-    expect(await scalar("select count(*) as n from reviews where seed_ref = 'r4' and state = 'hidden_pending_review'")).toBe(1);
+    expect(
+      await scalar(
+        "select count(*) as n from comments where seed_ref = 'k27' and state = 'hidden_pending_review'",
+      ),
+    ).toBe(1);
+    expect(
+      await scalar(
+        "select count(*) as n from reviews where seed_ref = 'r4' and state = 'hidden_pending_review'",
+      ),
+    ).toBe(1);
   });
 
   it("links anon_author_r2's only persona to r2 and to no other content or reaction", async () => {
-    const personas = await pool.query<{ persona_id: string; kind: string; review_seed_ref: string | null }>(`
+    const personas = await pool.query<{
+      persona_id: string;
+      kind: string;
+      review_seed_ref: string | null;
+    }>(`
       select pl.persona_id, p.kind, r.seed_ref as review_seed_ref
       from persona_links pl
       join account_profiles a on a.id = pl.account_id
@@ -243,31 +347,61 @@ describe('seed', () => {
     const persona = personas.rows[0]!;
     expect(persona).toMatchObject({ kind: 'anonymous', review_seed_ref: 'r2' });
 
-    const authored = await pool.query<{ seed_ref: string }>('select seed_ref from reviews where author_persona_id = $1', [persona.persona_id]);
+    const authored = await pool.query<{ seed_ref: string }>(
+      'select seed_ref from reviews where author_persona_id = $1',
+      [persona.persona_id],
+    );
     expect(authored.rows.map((r) => r.seed_ref)).toEqual(['r2']);
-    expect(await scalar('select count(*) as n from comments where author_persona_id = $1', [persona.persona_id])).toBe(0);
-    expect(await scalar('select count(*) as n from facility_reviews where author_persona_id = $1', [persona.persona_id])).toBe(0);
-    expect(await scalar('select count(*) as n from reactions where public_persona_id = $1', [persona.persona_id])).toBe(0);
     expect(
-      await scalar("select count(*) as n from reactions x join account_profiles a on a.id = x.account_id where a.username = 'anon_author_r2'"),
+      await scalar('select count(*) as n from comments where author_persona_id = $1', [
+        persona.persona_id,
+      ]),
+    ).toBe(0);
+    expect(
+      await scalar('select count(*) as n from facility_reviews where author_persona_id = $1', [
+        persona.persona_id,
+      ]),
+    ).toBe(0);
+    expect(
+      await scalar('select count(*) as n from reactions where public_persona_id = $1', [
+        persona.persona_id,
+      ]),
+    ).toBe(0);
+    expect(
+      await scalar(
+        "select count(*) as n from reactions x join account_profiles a on a.id = x.account_id where a.username = 'anon_author_r2'",
+      ),
     ).toBe(0);
   });
 
   it('leaves no seeded row pointing at a missing parent', async () => {
     const orphanQueries: Record<string, string> = {
-      'reviews -> doctors': 'select count(*) as n from reviews r left join doctors d on d.id = r.doctor_id where d.id is null',
-      'reviews -> personas': 'select count(*) as n from reviews r left join personas p on p.id = r.author_persona_id where p.id is null',
-      'comments -> reviews': 'select count(*) as n from comments c left join reviews r on r.id = c.review_id where r.id is null',
-      'comments -> personas': 'select count(*) as n from comments c left join personas p on p.id = c.author_persona_id where p.id is null',
-      'comments -> parent': 'select count(*) as n from comments c left join comments p on p.id = c.parent_id where c.parent_id is not null and p.id is null',
-      'evidence -> reviews': 'select count(*) as n from evidence_items e left join reviews r on r.id = e.review_id where r.id is null',
-      'follow-ups -> reviews': 'select count(*) as n from review_follow_ups f left join reviews r on r.id = f.review_id where r.id is null',
-      'facility reviews -> branches': 'select count(*) as n from facility_reviews f left join facility_branches b on b.id = f.branch_id where b.id is null',
-      'branches -> facilities': 'select count(*) as n from facility_branches b left join facilities f on f.id = b.facility_id where f.id is null',
-      'chambers -> branches': 'select count(*) as n from doctor_chambers c left join facility_branches b on b.id = c.branch_id where c.branch_id is not null and b.id is null',
-      'chambers -> doctors': 'select count(*) as n from doctor_chambers c left join doctors d on d.id = c.doctor_id where d.id is null',
-      'bookmarks -> reviews': 'select count(*) as n from bookmarks b left join reviews r on r.id = b.review_id where r.id is null',
-      'persona links -> accounts': 'select count(*) as n from persona_links l left join account_profiles a on a.id = l.account_id where a.id is null',
+      'reviews -> doctors':
+        'select count(*) as n from reviews r left join doctors d on d.id = r.doctor_id where d.id is null',
+      'reviews -> personas':
+        'select count(*) as n from reviews r left join personas p on p.id = r.author_persona_id where p.id is null',
+      'comments -> reviews':
+        'select count(*) as n from comments c left join reviews r on r.id = c.review_id where r.id is null',
+      'comments -> personas':
+        'select count(*) as n from comments c left join personas p on p.id = c.author_persona_id where p.id is null',
+      'comments -> parent':
+        'select count(*) as n from comments c left join comments p on p.id = c.parent_id where c.parent_id is not null and p.id is null',
+      'evidence -> reviews':
+        'select count(*) as n from evidence_items e left join reviews r on r.id = e.review_id where r.id is null',
+      'follow-ups -> reviews':
+        'select count(*) as n from review_follow_ups f left join reviews r on r.id = f.review_id where r.id is null',
+      'facility reviews -> branches':
+        'select count(*) as n from facility_reviews f left join facility_branches b on b.id = f.branch_id where b.id is null',
+      'branches -> facilities':
+        'select count(*) as n from facility_branches b left join facilities f on f.id = b.facility_id where f.id is null',
+      'chambers -> branches':
+        'select count(*) as n from doctor_chambers c left join facility_branches b on b.id = c.branch_id where c.branch_id is not null and b.id is null',
+      'chambers -> doctors':
+        'select count(*) as n from doctor_chambers c left join doctors d on d.id = c.doctor_id where d.id is null',
+      'bookmarks -> reviews':
+        'select count(*) as n from bookmarks b left join reviews r on r.id = b.review_id where r.id is null',
+      'persona links -> accounts':
+        'select count(*) as n from persona_links l left join account_profiles a on a.id = l.account_id where a.id is null',
       'cases -> target': `select count(*) as n from moderation_cases c
         where not exists (
           select 1 from comments x where c.target_kind = 'comment' and x.id = c.target_id
@@ -277,7 +411,9 @@ describe('seed', () => {
     };
     const orphans: Record<string, number> = {};
     for (const [label, sql] of Object.entries(orphanQueries)) orphans[label] = await scalar(sql);
-    expect(orphans).toEqual(Object.fromEntries(Object.keys(orphanQueries).map((label) => [label, 0])));
+    expect(orphans).toEqual(
+      Object.fromEntries(Object.keys(orphanQueries).map((label) => [label, 0])),
+    );
   });
 
   it("keeps 'Not provided' demonstrable: new doctors have no about text and new branches no address, everything else filled", async () => {
@@ -287,7 +423,23 @@ describe('seed', () => {
     expect(newDoctors.rows).toHaveLength(4);
     for (const d of newDoctors.rows) {
       expect(d, String(d.seed_ref)).toMatchObject({ about_en: null, about_bn: null });
-      for (const column of ['name_en', 'name_bn', 'specialty_id', 'qualifications_en', 'qualifications_bn', 'bmdc_number', 'gender', 'languages_en', 'languages_bn', 'fee_display_en', 'fee_display_bn', 'city_en', 'city_bn', 'area_en', 'area_bn']) {
+      for (const column of [
+        'name_en',
+        'name_bn',
+        'specialty_id',
+        'qualifications_en',
+        'qualifications_bn',
+        'bmdc_number',
+        'gender',
+        'languages_en',
+        'languages_bn',
+        'fee_display_en',
+        'fee_display_bn',
+        'city_en',
+        'city_bn',
+        'area_en',
+        'area_bn',
+      ]) {
         expect(d[column], `${String(d.seed_ref)}.${column}`).not.toBeNull();
       }
     }
@@ -321,7 +473,9 @@ describe('seed', () => {
       where d.seed_ref = 'd1' and r.state = 'published'
       group by r.sentiment
     `);
-    const bySentiment = Object.fromEntries(result.rows.map((row) => [row.sentiment, Number(row.n)]));
+    const bySentiment = Object.fromEntries(
+      result.rows.map((row) => [row.sentiment, Number(row.n)]),
+    );
     // d1 has five reviews in the corpus (r1..r5); r4 is hidden_pending_review
     // (seed-moderation.ts, MOD-2011's appeal), so only four are published:
     // r1 positive, r2 mixed, r3 positive, r5 positive.
