@@ -131,7 +131,7 @@ rules:
     category: authorization
     applies_to: "E14 worker, apps/worker/src/health.ts, apps/worker/package.json"
     trigger: "pnpm lint; Code Generation"
-    logic: "IF a worker file imports drizzle-orm, drizzle-orm/* or pg THEN refuse; health.ts calls the outbox repository's pending count; apps/worker/package.json declares no drizzle-orm"
+    logic: "IF a worker file imports drizzle-orm, drizzle-orm/* or pg THEN refuse; health.ts calls PgOutbox.countPending(db), which counts rows with processed_at null (dead events excluded, since CR-011's markDead sets processed_at); apps/worker/package.json declares no drizzle-orm"
     violation: "Raw SQL spreads into worker handlers; FX10 fails; ISS-205 stays open"
     source: "Question 3 answer A, ISS-205, 01-conventions.md §2"
   - id: BR3.7
@@ -455,13 +455,13 @@ rules:
     violation: "Files outside owned paths without a reason fail the reviewer's diff check (team.md step 4)"
     source: "team.md Way of Working step 4, functional-spec.md § 12"
   - id: BR12.6
-    statement: "Code Generation starts only after CR-011 is on main, and the re-check list of functional-spec.md § 16 is worked through first."
+    statement: "Code Generation starts only after CR-011 (merged, 2d8a424, re-checked) and CR-012 are on main, and the open items of functional-spec.md § 16 are worked through first."
     category: policy
     applies_to: "The Bolt for U3"
     trigger: "Start of Code Generation"
-    logic: "IF CR-011 is not merged THEN do not start; IF it is THEN re-read the files § 16 names and update this design where they changed"
-    violation: "Formatting, ISS-205's move and the worker rules would conflict with CR-011's rewrite of the same files"
-    source: "CR-011 'Parallel-safe with' (apps/worker/src, packages/database/src/queue, the env files), team.md (serial Construction)"
+    logic: "IF CR-012 is still in flight THEN do not start; IF it is merged THEN re-read the test-support imports, the next free ISS and FD ids, and re-measure Prettier and coverage before planning the formatting commit and the coverage raise"
+    violation: "The formatting commit and the boundary rules would conflict with CR-012's changes to packages/test-support, and the coverage raise would be planned on stale figures"
+    source: "CR-011 'Parallel-safe with' (apps/worker/src, packages/database/src/queue, the env files), CR-012 owned paths (packages/test-support), team.md (serial Construction)"
 ```
 
 ## Rules summary
@@ -524,4 +524,4 @@ rules:
 | BR12.3 | §2, §13, `tools/README.md` updated; team.md through learnings | constraint |
 | BR12.4 | ISS-205, ISS-226, ISS-060 closed; new rows recorded | policy |
 | BR12.5 | Owned-path additions and task corrections listed | policy |
-| BR12.6 | Start after CR-011; re-check list first | policy |
+| BR12.6 | Start after CR-011 and CR-012; open re-check items first | policy |

@@ -58,6 +58,6 @@
     { "id": "BR12.3", "status": "N/A", "target": "FD-040 (written into 01-conventions.md section 2); T-010 step 6 (tools/README paragraph)" },
     { "id": "BR12.4", "status": "N/A", "target": "project.md Mandated (ISS rows); ISS-060, ISS-127, ISS-205, ISS-226" },
     { "id": "BR12.5", "status": "N/A", "target": "team.md Way of Working step 4 (reviewer checks files outside owned paths)" },
-    { "id": "BR12.6", "status": "N/A", "target": "CR-011 parallel-safety note; team.md serial Construction (D13)" }
+    { "id": "BR12.6", "status": "N/A", "target": "CR-011 parallel-safety note (merged 2d8a424, re-checked); CR-012 owned paths in packages/test-support; team.md serial Construction (D13)" }
   ]
 }

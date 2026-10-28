@@ -2,7 +2,7 @@
 
 Unit U3 (kind `packaging`, size S in `unit-of-work.md`, re-estimated M–L by Question 7; not high risk) delivers T-010 for US1.1 (NFR11, D10). Lead perspective: architect. Support perspective: developer (ESLint flat-config mechanics, Vitest 4 coverage, Prettier, GitHub Actions), written into §§ 10–12 and synthesised in § 13.
 
-Draft of 2026-10-28, written while U4 CR-011 was being built. § 16 lists what the lead re-checks once CR-011 is on `main`.
+Draft of 2026-10-28, written while U4 CR-011 was being built, then re-checked the same day against CR-011 as merged (`main` at `2d8a424`). § 16 records the re-check results and what is still open (the Prettier and coverage re-measure, and U6 CR-012, which was being built on `bolt/cr-012-storyboard-seed-correction` and touches `packages/test-support/`).
 
 Inputs: `unit-of-work.md` (U3), `unit-of-work-story-map.md` (US1.1), `stories.md` (AC1.1.1–AC1.1.5), `requirements.md` (NFR6, NFR11, NFR13), `components.md` (worker boundary), `contract-summary.md` (C13 `worker_import_rule`; no runtime contract on U3's edges), T-010, T-011 (`check:motion`), CR-011 (its hand-off), `01-conventions.md` §1, §2, §7, §10, §13, team.md, `org.md`, FD-040, FD-091, ISS-060, ISS-102, ISS-127, ISS-205, ISS-226, the dependency-check log, and the code listed in `functional-design-questions.md` "Context".
 
@@ -12,14 +12,19 @@ This file is the source of truth for the workflows and state transitions. The da
 
 `pnpm check` becomes the full gate the conventions already describe. ESLint gains boundary rules that encode `01-conventions.md` §2 with FD-040, team.md and Questions 1–5: every source file belongs to one of fourteen elements, imports follow a default-deny matrix, externals are limited where §2 limits them, and the worker's AD-6 bans work on specifiers, so they bite before Better Auth is installed. A manifest-driven fixture proves every forbidden edge is refused and every allowed exception is accepted. Vitest measures line coverage of every workspace package with source code in the same run as the tests and fails below 80%; this Unit first adds the tests that bring each package to the floor. Prettier `--check` joins the gate after one formatting-only commit, with git owning line endings. A narrow identity guard refuses attribution trailers and footers. `tools/contrast.mjs` takes `--tokens` and fails closed in that mode. A GitHub Actions workflow runs the same gate on `main` and `bolt/**` against a `postgres:18` service, and a Bolt merges only after its CI run is green. ISS-205 (raw SQL in the worker), ISS-226 (the seed edge) and ISS-060 (no identity guard) close.
 
-## 2. As is (baseline, working tree of 2026-10-28)
+## 2. As is (baseline, 2026-10-28)
+
+The ESLint, script, Prettier, coverage and contrast facts below were read on the working tree while CR-011 was being built. The worker and `packages/database/src/queue/` facts were re-read on `main` at `2d8a424` after CR-011 merged. CR-011 did not change the root `package.json`, `vitest.workspace.ts`, `eslint.config.mjs`, `prettier.config.mjs`, `apps/worker/package.json`, `packages/database/package.json` or `apps/worker/src/container.test.ts`.
 
 - **ESLint** 10 flat config (`eslint.config.mjs`): `@eslint/js` recommended, `typescript-eslint` `recommendedTypeChecked` with `projectService`, three extra rules, `disableTypeChecked` for `*.mjs`, `*.cjs`, `*.config.ts`, `vitest.workspace.ts`; the marked slot `// T-010 adds boundaries here`; `eslint-config-prettier` last. Ignores include `tools/**`, `docs/**`, `.github/**` and the engine directories. No boundary plugin installed.
 - **Root scripts** (`package.json`): `check` = `typecheck && lint && test && i18n:check && build` (five steps). `test` runs every Vitest project through `vitest.workspace.ts`, including `database` (needs the compose PostgreSQL). `contrast` = `node tools/contrast.mjs` (the prototype file). `@vitest/coverage-v8` ^4.1.11 and `prettier` ^3.9.6 are installed; no coverage block exists in any Vitest config; there is no `format:check`.
 - **Import inventory** (every `from '…'` in `packages/*/src` and `apps/*/src`):
   - `contracts` → `zod`, `uuid`; `i18n` → `next-intl`; `database` → `contracts`, `drizzle-orm`, `pg`, `pg-boss`, `dotenv`, Node built-ins; `test-support` → `contracts`, `database` (only under `src/seed/`; `fakes/repositories-superset.test.ts` names it in a comment only), `drizzle-orm`, `pg`, `sharp`, `dotenv`, `zod`, Node built-ins.
   - `apps/web` source → `next`, `next-intl`, `react`, `contracts`; nothing imports `server/`, `database`, `adapters` or `test-support`. Ten component tests and one `lib` test import `node:fs`, `node:path`, `node:module`, `node:url`. `apps/web/package.json` lists `@rogikotha/test-support` as a devDependency that nothing uses.
-  - `apps/worker` → `database` (types and classes), `dotenv`, `zod`, Node built-ins, and **`drizzle-orm`** in `health.ts` (ISS-205).
+  - `apps/worker` (on `main` at `2d8a424`: `container.ts`, `env.ts`, `handlers/index.ts`, `handlers/outbox-relay.ts`, `health.ts`, `index.ts`, `logger.ts`, `main.ts`, `registry.ts`, plus five test files) → `@rogikotha/database` (classes `PgOutbox`, `PgOutboxRelayStore`, `PgBossQueue`, `createDb`, `closeDb`, `QueuePolicyMismatchError`; types `Db`, `RelayStore`, `EventPlan`, `OutboxEventRow`, `PlannedJob`, `EventOutcome`, `RelayBatchOptions`, `WorkOptions`), `dotenv`, `zod`, `node:url`, `node:path`, and **`drizzle-orm`** in `health.ts` (ISS-205, still open). Tests import only `vitest` and Node built-ins. Worker relative imports carry a `.js` suffix (`handlers/index.ts` → `./outbox-relay.js`); `packages/database` relative imports are extensionless since CR-009.
+  - `packages/database/src/queue/` (on `main`): `pg-boss-queue.ts` (`pg-boss`), `outbox-relay-store.ts` and `sql-executor.ts` (`pg` types only, so no `pg-boss` or `pg` type leaves the package), `queue-declaration.ts`, `index.ts` (exports all four), and the test-only helper `queue-test-support.ts` (imports `../test-setup`, not exported from `index.ts`). The tests add `pg`, `drizzle-orm`, `node:crypto` and `node:perf_hooks`. Everything stays inside the `database` element, whose externals are unrestricted.
+  - Outbox repository (`packages/database/src/repositories/outbox.ts` on `main`): `PgOutbox` has `append(tx, …)`, `claimUnprocessed(sql: SqlExecutor, limit)`, `markProcessed(sql, id)`, `recordFailedAttempt(sql, id)` and `markDead(sql, id)`. `markDead` sets `processed_at`, so "pending" (`processed_at is null`) already leaves out dead events. The worker container holds both `db: Db` and `outbox: PgOutbox`.
+  - Both `env.ts` files call dotenv `config({ path, quiet: true })` (ISS-203 closed); `apps/worker/src/env.test.ts` and `packages/database/src/env.int.test.ts` import only `vitest`.
   - `domain`, `application`, `adapters` hold one placeholder file each (`export {};`).
 - **Worker AD-6 check today:** `apps/worker/src/container.test.ts` scans non-test worker sources for the text `better-auth|identity.reveal|dataRequest.delete`.
 - **Prettier** (`prettier --check`, read-only): 309 files flagged; with `--end-of-line auto`, 129. The 180 extra are CRLF working-tree files (`core.autocrlf=true`; `.gitattributes` says `* text=auto eol=lf`, but this checkout holds CRLF files, for example `prettier.config.mjs`). The 129: `test-support` 42, `database` 37 (10 drizzle `meta/*.json`), `apps/web` 22 (3 ported stylesheets), `contracts` 11, `apps/worker` 6, `i18n` 5, root Markdown 4, `infra/compose` 2.
@@ -57,12 +62,12 @@ Differences from the task's step 2, each with its source: E7 (FD-040), E9 and E1
 
 ### WF1 — Code Generation order (the Unit end to end)
 
-1. **Preconditions (BR12.6).** CR-011 is squash-merged on `main`. The Bolt branch `bolt/t-010-boundary-lint-and-ci` starts from `main`. Work through § 16 and update this design where the merged code differs.
+1. **Preconditions (BR12.6).** CR-011 is squash-merged on `main` (`2d8a424`, re-checked in § 16). U6 CR-012 touches `packages/test-support/`; if it is still in flight, U3 waits for its merge, because the boundary rules classify the seed files and the formatting commit rewrites 42 `test-support` files. The Bolt branch `bolt/t-010-boundary-lint-and-ci` starts from `main`. Work through the open items of § 16.
 2. **Baseline.** `pnpm infra:up`; `pnpm check` and `pnpm smoke` green; record test, smoke and int counts. Read the open `ISSUES.md` rows in this area: ISS-060, ISS-127, ISS-205, ISS-226 and any row CR-011 added for `apps/worker` or `packages/database/src/queue`.
 3. **Research and dependency check (BR12.2).** For `eslint-plugin-boundaries`: the latest stable release (not simply the newest; 7.4.0 was about two days old on 2026-10-28), ESLint 10 and flat-config support in its changelog, which rules are current (`boundaries/dependencies` versus `element-types` and `external`) and whether a TypeScript import resolver is needed for `@rogikotha/*` and `@/`. If ESLint 10 is unsupported, take `dependency-cruiser` (`.dependency-cruiser.cjs`, `pnpm lint:deps`) and say so in the hand-off. Also: `@vitest/coverage-v8` 4.1.x (`include` and uncovered files, glob thresholds, a glob with zero lines), Prettier 3.9.x, `actions/checkout`, `actions/setup-node`, `pnpm/action-setup` (current release and commit hash), `postgres:18`. Append one dated entry; save non-trivial findings under `docs/planning/research/`.
 4. **Decision entry (BR12.1).** Append the next free FD row (FD-093 at the time of writing) with the rulings of Questions 1–5 and "decided by the agent on the owner's standing instruction of 2026-10-27; awaiting the owner's confirmation".
 5. **Boundary rules (WF2).** Install the plugin (and resolver, if needed). Write `eslint.boundaries.mjs` from § 3 and spread it into the marked slot. Add `lint-fixtures/**` to the root ignores. Run `pnpm lint`; handle every finding by BR4.1 and BR4.2. Expected findings from § 2: `apps/worker/src/health.ts` (`drizzle-orm`), nothing else.
-6. **ISS-205 (Q3).** Add a pending-count method to the outbox repository with an integration test, call it from `health.ts`, remove `drizzle-orm` from `apps/worker/package.json`; remove the unused `@rogikotha/test-support` devDependency from `apps/web/package.json` (Q5).
+6. **ISS-205 (Q3).** Add `countPending(db: Db): Promise<number>` to `PgOutbox` beside CR-011's methods (`processed_at is null`, which already leaves out dead events because `markDead` sets `processed_at`), with an integration test in `packages/database/src/outbox.int.test.ts`. `health.ts` calls `ctx.outbox.countPending(ctx.db)`; the container already holds both, so `container.ts` does not change. Remove `drizzle-orm` from `apps/worker/package.json`. Remove the unused `@rogikotha/test-support` devDependency from `apps/web/package.json` (Q5). Record the `outbox.ts` and `outbox.int.test.ts` edits as owned-path additions, as CR-011 did in ISS-248.
 7. **Fixture proof (WF3).** Fixture files (§ 6), manifest, `scripts/check-boundaries-fixture.mjs`, the `tooling` Vitest project and its smoke assertion (BR5.5).
 8. **Identity guard (WF8).** `scripts/check-identity.mjs` and its tests in the `tooling` project.
 9. **Coverage (WF4, WF9).** Coverage block in `vitest.workspace.ts` with `include`, exclusions (§ 7) and no thresholds yet; `test:coverage` script; measure; raise each package below 80% with test files; switch the per-package thresholds on.
@@ -195,7 +200,7 @@ All under `lint-fixtures/boundary-violation/`, in the repository's `packages/…
 
 - **Scope:** every workspace package; the thresholds map is written for all nine (`packages/{domain,contracts,application,database,adapters,i18n,test-support}/src/**`, `apps/{web,worker}/src/**`), lines 80 each. Empty packages pass with zero lines (BR6.3); to be verified in Code Generation that Vitest 4 treats a glob with zero lines as passing and not as an error (§ 16).
 - **Counted files:** `include` lists the nine source roots so untested files appear at 0% (BR6.2). Code Generation proves it: the report's file count per package equals the package's non-excluded source files.
-- **Exclusions (Q8, BR6.4):** `**/*.test.ts`, `**/*.test.tsx` (smoke and int tests included by these), `**/test-setup.ts`, `**/global-setup.ts`, test-only helper modules (for example `*-test-support.ts` in `packages/database/src/queue/`, if CR-011 keeps that name), `**/*.d.ts`, and files with a generated header (none today; `packages/i18n/src/keys.ts` has no such header and counts). Entry points, route files and corpus data count.
+- **Exclusions (Q8, BR6.4):** `**/*.test.ts`, `**/*.test.tsx` (smoke and int tests included by these), `**/test-setup.ts`, `**/global-setup.ts`, test-only helper modules (`**/*-test-support.ts`; today exactly `packages/database/src/queue/queue-test-support.ts`, confirmed on `main`: it imports `../test-setup` and is not exported from `queue/index.ts`; `sql-executor.ts` is exported source and counts), `**/*.d.ts`, and files with a generated header (none today; `packages/i18n/src/keys.ts` has no such header and counts). Entry points, route files and corpus data count.
 - **Run:** one run in `pnpm check` (BR6.6); `pnpm test` stays without coverage for quick local runs.
 - **Expected raise work (from § 2, before untested files are added to the count):** `contracts` +17 lines or more; `test-support` +112 or more; `apps/web` and `apps/worker` unknown until untested files count; `database` unmeasured. This is the reason for the M–L re-estimate (Question 7).
 
@@ -230,7 +235,7 @@ export const elements = [
 
 - **One `no-restricted-imports` per file set (BR3.7).** Flat config replaces a rule's options when a later block matches the same file. Write one block for worker source and tests (AD-6 and Q3 bans together), one for component source (Node built-ins and server libraries), and none that overlaps them. Use the TypeScript variant where the type-only allowance is needed (`allowTypeImports` for the root `@rogikotha/application` path only).
 - **Node built-ins:** ban both `node:*` and bare names (`fs`, `path`, `crypto`, …), taken from `module.builtinModules` in the config file.
-- **Resolution:** `@rogikotha/*` resolves through the pnpm workspace symlinks to `packages/*/src/index.ts` (`exports` point at source). Files reached through `node_modules` must be classified by their real path, not as external; the fixture's FX1, FX3, FX5, FX6 fail if they are not. `@/` needs `apps/web/tsconfig.json`'s paths, through the TypeScript resolver if the plugin does not read them.
+- **Resolution:** `@rogikotha/*` resolves through the pnpm workspace symlinks to `packages/*/src/index.ts` (`exports` point at source). Files reached through `node_modules` must be classified by their real path, not as external; the fixture's FX1, FX3, FX5, FX6 fail if they are not. `@/` needs `apps/web/tsconfig.json`'s paths, through the TypeScript resolver if the plugin does not read them. Relative specifiers come in two styles: the worker writes `./outbox-relay.js` for a `.ts` file, `packages/database` is extensionless (CR-009). The resolver must map a `.js` specifier to its `.ts` source; otherwise every worker relative import is unresolved and BR1.3 turns lint red.
 - **Fixture and type-aware rules:** the fixture block uses `disableTypeChecked`, so no tsconfig is needed for it and it stays out of every tsconfig `include` (task step 4's separate `lint-fixtures/tsconfig.json` is then unnecessary; add it only if the resolver needs one).
 - **Stubbing uninstalled packages:** FX8 imports `better-auth`, which is not installed; `no-restricted-imports` matches the text, so no stub is needed.
 
@@ -310,17 +315,35 @@ Findings (proposed ISS rows; severities per team.md):
 | Hard rule: reporter identity, private linkage and originals cannot reach the worker | BR3.4, BR3.5 (imports); the grants are CR-006's |
 | Hard rule: no attribution in any file, commit or workflow | BR10.2, BR11.1 |
 
-## 16. Re-check after CR-011 lands, and risks to verify
+## 16. Re-check after CR-011, open items, and risks to verify
 
-Re-check on `main` before Code Generation (BR12.6):
+Re-checked on `main` at `2d8a424` (CR-011 merged), 2026-10-28, read-only:
 
-- `apps/worker/src/**`: the final import list (new `relayOnce`, `planEvent`, `decideFailure`, `logOutcomes` files; any new external), whether `health.ts` still imports `drizzle-orm`, and whether `container.test.ts` still exists unchanged.
-- `packages/database/src/repositories/outbox.ts`: the method names after CR-011 (`claimUnprocessed`, `markProcessed`, `recordFailedAttempt`, `markDead`), so the ISS-205 count is added beside them; `packages/database/src/queue/` new files (`outbox-relay-store.ts`, `queue-declaration.ts`, the test helper module) for element classification and the coverage exclusion of test-only helpers.
-- Both `env.ts` files and the new `apps/worker/src/env.test.ts`, `packages/database/src/env.int.test.ts`: externals and test-file category.
-- The Prettier figures (CR-011 adds and rewrites files in the format scope) and the coverage of `apps/worker` and `packages/database` (CR-011 adds tests).
-- `ISSUES.md`: the next free ISS id (CR-011 used up to ISS-257 or later) and any new row in the worker or queue area.
-- `docs/status/decision-log.md`: the next free FD id (FD-093 if still free).
-- Root `package.json` and `vitest.workspace.ts`: unchanged by CR-011 (expected), so the `check` composition starts from § 2.
+| Item | Result | Effect on this design |
+|---|---|---|
+| Worker import list | Externals are still `dotenv`, `zod`, `node:url`, `node:path` and `drizzle-orm` (`health.ts` only); `@rogikotha/database` gives classes and types only; no application, Better Auth or `pg` import; relative imports use `.js` suffixes (§ 2) | No rule change. The ISS-205 fix is still needed (Q3). § 10 adds the `.js` resolution requirement |
+| `container.test.ts` | Unchanged since T-009 | BR3.8 holds |
+| Outbox repository | `append`, `claimUnprocessed`, `markProcessed`, `recordFailedAttempt`, `markDead`, all on a `SqlExecutor` (or `Tx` for `append`); `markDead` sets `processed_at` | WF1 step 6: `countPending(db: Db)` beside them; the heartbeat's meaning ("not yet processed or dead") is unchanged |
+| New `queue/` files | `outbox-relay-store.ts`, `queue-declaration.ts`, `sql-executor.ts` (exported source); `queue-test-support.ts` (test-only helper, imports `../test-setup`, not exported) | All in the `database` element, no restriction hit. The coverage exclusion `**/*-test-support.ts` matches exactly the helper (§ 7); the test-file category already lists that pattern (`entities.md` FileCategory) |
+| Both `env.ts` files and their tests | `quiet: true` in both; the two new tests import only `vitest` | No rule change |
+| Root and package manifests, `vitest.workspace.ts`, ESLint and Prettier configs | Unchanged by CR-011 | § 2 baseline and the `check` composition hold |
+| ISS ids | Highest is ISS-257 on `main`, on the CR-012 branch and in the working tree; CR-011's rows ISS-248..ISS-257 are outside U3's area (ISS-252, the seed's dotenv banner, is `test-support`'s) | The new rows F1–F9 take the next free ids when written, ISS-258 or later; CR-012 may take some first |
+| FD ids | Highest is FD-092 on `main` and on the CR-012 branch | FD-093 is still free; confirm at WF1 step 4, after CR-012 |
+
+Still open before Code Generation:
+
+- **Prettier and coverage re-measure**, deferred by the coordinator while a build runs on this machine. CR-011 added and rewrote files under `apps/worker/src` and `packages/database/src`, so the § 2 figures (129 files, the per-package coverage) are from before it. The re-measure also adds `packages/database`, which the first trial left out.
+- **U6 CR-012** (`packages/test-support/` and docs). After it merges: re-read the `test-support` imports (the seed edge, any new file outside `seed/` that touches `database`), the next free ISS and FD ids, and the `test-support` Prettier and coverage figures.
+
+Risks to verify in Code Generation and Build and Test:
+
+- The adopted `eslint-plugin-boundaries` release supports ESLint 10 and classifies workspace-symlinked files by real path; otherwise the fallback (WF1 step 3).
+- The resolver maps the worker's `.js` relative specifiers to `.ts` files (§ 10).
+- Vitest 4: uncovered files appear with `include` set across projects; a glob threshold matching only zero-line files passes; a failed threshold makes the run exit non-zero.
+- `pnpm check` stays under 5 minutes with coverage on; if not, BR8.3.
+- The runner's `psql` can run `02-extensions.sql` (`\c`); otherwise `docker exec`.
+- `next build` succeeds in CI without a `.env`.
+- The formatting commit does not touch the ignored trees and changes no token.
 
 Risks to verify in Code Generation and Build and Test:
 
@@ -377,6 +400,7 @@ Text fallback: a workspace package contains elements and has one coverage thresh
 - `aidlc/spaces/default/memory/team.md` (Way of Working, Testing Posture, Code Style), `org.md` (Testing Posture for `classic`), `project.md` (Mandated: decision log, dependency check, ISS rows).
 - `docs/implementation/01-conventions.md` §1, §2, §7, §8, §10, §13; `docs/status/decision-log.md` FD-040, FD-091; `docs/status/dependency-check-log.md` (entries of 2026-09-10, 2026-09-13, 2026-10-28); `docs/implementation/ISSUES.md` ISS-060, ISS-102, ISS-127, ISS-205, ISS-226.
 - `docs/implementation/tasks/T-011-patient-design-and-motion-system.md` (`check:motion`); `docs/implementation/tasks/CR-011-queue-dedup-reset-and-quiet-env.md` (owned paths, hand-off).
+- CR-011 as merged, `main` at `2d8a424`: `apps/worker/src/**`, `apps/worker/package.json`, `packages/database/src/queue/**`, `packages/database/src/repositories/outbox.ts`, both `env.ts` files and their tests (read with `git show`, 2026-10-28).
 - Code on the working tree of 2026-10-28: `eslint.config.mjs`, `package.json` files, `vitest.workspace.ts` and every `vitest.config.ts`, `prettier.config.mjs`, `.prettierignore`, `.gitattributes`, `tsconfig.base.json`, `tools/contrast.mjs`, `tools/README.md`, `apps/worker/src/container.test.ts`, `apps/worker/src/health.ts`, `infra/compose/docker-compose.yml`, `infra/compose/postgres-init/*.sql`, `infra/compose/.env.example`.
 - Read-only measurements of 2026-10-28: `prettier --check` (with and without `--end-of-line auto`), a Vitest coverage run of every project except `database` with its report written outside the repository, and `tools/contrast.mjs` run in memory against three stylesheets.
 - npm registry, `eslint-plugin-boundaries` `latest` (7.4.0, peer `eslint >=6.0.0`), and the plugin's README (rules `boundaries/dependencies`, `boundaries/element-types`, `boundaries/external`, `boundaries/no-unknown-files`; `boundaries/elements` and file-category settings), read 2026-10-28.

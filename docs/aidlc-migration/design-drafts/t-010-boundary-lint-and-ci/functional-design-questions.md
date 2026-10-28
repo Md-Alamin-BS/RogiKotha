@@ -1,6 +1,6 @@
 # Functional Design — questions (U3 `t-010-boundary-lint-and-ci`)
 
-Draft written ahead of the stage on 2026-10-28, while U4 CR-011 was being built on `bolt/cr-011-queue-dedup-reset-and-quiet-env`. The lead finalises it when AI-DLC reaches this Unit's Functional Design; `functional-spec.md` § 16 lists what must be re-checked once CR-011 is on `main`.
+Draft written ahead of the stage on 2026-10-28, while U4 CR-011 was being built, and re-checked the same day against CR-011 as merged (`main` at `2d8a424`): no answer changed, Question 3's fix is now concrete. The lead finalises it when AI-DLC reaches this Unit's Functional Design; `functional-spec.md` § 16 has the re-check results and the items still open (the Prettier and coverage re-measure, and U6 CR-012 in `packages/test-support/`).
 
 Context:
 - Unit U3 (kind `packaging`, size S, not high risk) delivers T-010 (`docs/implementation/tasks/T-010-boundary-lint-and-ci.md`) for story US1.1 (NFR11, D10). Inputs read: `unit-of-work.md` (U3: "boundary lint, format check, 80% coverage floor and CI (D10, FD-040 test-support seed edge, ISS-205)"; depends on U1 CR-009 and U2 CR-007, both merged), `unit-of-work-story-map.md` (US1.1 → U2, U3, U4, U5, U43, U44), `stories.md` (AC1.1.1–AC1.1.5), `requirements.md` (NFR6, NFR11, NFR13), `components.md` (the worker boundary open point), `contract-summary.md` (no runtime contract on U3's edges; C13's `worker_import_rule`).
@@ -66,7 +66,7 @@ May the worker import **`drizzle-orm` or `pg`** directly (ISS-205: "decide in T-
 
 Why this is open: `apps/worker/src/health.ts` runs `select count(*) … from outbox_events where processed_at is null` with `drizzle-orm`'s `sql`, and `apps/worker/package.json` declares `drizzle-orm`. `01-conventions.md` §2 gives `apps/worker → application, contracts, database, adapters`, so table access belongs in a `packages/database` repository. The task says "do not fix other packages' violations here", but ISS-205's owner column names T-010, and the fix is one repository method.
 
-A. **Forbid both; fix ISS-205 in this Unit** (recommended): move the count into the outbox repository (for example `countPending`) with an integration test, have `health.ts` call it, drop `drizzle-orm` from `apps/worker/package.json`. Recorded as an owned-path addition. Done after CR-011 is on `main`, because CR-011 rewrites the outbox repository and `apps/worker/src/`.
+A. **Forbid both; fix ISS-205 in this Unit** (recommended): add `countPending(db)` to `PgOutbox` beside CR-011's methods, with an integration test; `health.ts` calls `ctx.outbox.countPending(ctx.db)` (the worker container already holds both); drop `drizzle-orm` from `apps/worker/package.json`. Recorded as an owned-path addition. Re-checked on `main` at `2d8a424`: `health.ts` is the only `drizzle-orm` import in the worker, and the count keeps its meaning, because CR-011's `markDead` sets `processed_at`.
 B. **Forbid both, suppress the one line** with `// eslint-disable-next-line … -- ISS-205` and leave the move to a later Unit. Green today, but a known violation of §2 stays in the tree.
 C. **Allow `drizzle-orm` and `pg` in the worker.** Contradicts §2; table access would spread into handlers.
 X. Other (please specify)
