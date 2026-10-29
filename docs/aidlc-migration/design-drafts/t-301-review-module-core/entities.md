@@ -2,7 +2,9 @@
 
 Source of truth for the data shape this Unit writes and reads. Built from T-301 (with its FD-080 and FD-090 amendments), `02-data-model.md` §3, §6, §7, §16 and §17, `components.md` (Review, Identity), `contract-summary.md` (C4, C8, C9, C15), the schema files on `main` (`packages/database/src/schema/{review,identity,evidence,enums}.ts`, migration `0004_deferred_fks.sql`), the U14 T-201 design draft and the answers in `functional-design-questions.md`. Workflows, ports and view models are in `functional-spec.md`; decision logic is in `rules.md`.
 
-The Unit adds no table and no column. It changes two things in the database, each a forward-only migration: the FD-090 worker grant on `review_drafts` (BR2.6), and the timing of one foreign key, `persona_links_review_id_reviews_id_fk`, which becomes `DEFERRABLE INITIALLY DEFERRED` unless U11 T-104 already did it (Question 5). Entities owned by another component are listed because this Unit's commands cross them; the owner is named on each.
+The Unit adds no table and no column. It changes the database with one forward-only migration, the FD-090 worker grant on `review_drafts` (BR2.6). The timing of one foreign key, `persona_links_review_id_reviews_id_fk`, which must be `DEFERRABLE INITIALLY DEFERRED` (Question 5), is changed by U11 T-104's migration (its Question 7 A); this Unit adds that migration only if T-104 merged without it. Entities owned by another component are listed because this Unit's commands cross them; the owner is named on each.
+
+Refreshed 2026-10-29: the persona attributes follow the U11 T-104 draft and Questions 17–19 (thread alias, profile username, "Former member"), the page condition follows U14 T-201's linked-condition-first rule, the draft payload has no FR46 field (FD entry (a)), and the audit actor rests on FD entry (d) (`functional-spec.md` § 17).
 
 ```yaml
 entities:
@@ -53,7 +55,7 @@ entities:
       - { name: term_id, type: uuid, required: false, references: TaxonomyTerm.id, constraints: "a resolved or newly provisional term of the group's kind (BR3.8)" }
       - { name: free_text, type: text, required: false, constraints: "kept as written; used only when resolution is ambiguous" }
       - { name: not_sure, type: boolean, required: true, default: false }
-      - { name: created_at, type: timestamp, required: true, constraints: "tag order; the first condition tag is the page's condition (BR6.8)" }
+      - { name: created_at, type: timestamp, required: true, constraints: "tag order; the first condition tag with a term, else the first free-text condition tag, is the page's condition (BR6.8, U14 BR3.9)" }
     constraints:
       - "Exactly one of term_id, free_text, not_sure (database check)"
       - "One effective term at most once per group per review (BR3.8)"
@@ -105,6 +107,7 @@ entities:
       - { name: seedRef, type: text, required: false, constraints: "seed drafts only, for idempotency (Question 14); never projected" }
     constraints:
       - "Unknown keys are dropped; no rating, score or stars key exists (BR2.2, BR3.12)"
+      - "No What went well or What could improve field: FR46 is deferred from release 1 (BR3.13, FD entry (a)); such keys are dropped like any unknown key"
       - "Encoded size at most 64 KiB (BR2.2)"
 
   - name: FacilityReview
@@ -133,9 +136,10 @@ entities:
     attributes:
       - { name: id, type: uuid, required: true, unique: true, constraints: "never projected" }
       - { name: kind, type: enum, required: true, allowed_values: [named, pseudonymous, anonymous] }
-      - { name: display_name, type: text, required: true, constraints: "projected for named personas only" }
-      - { name: username, type: text, required: false, constraints: "projected for pseudonymous personas only, never on a named byline (BR6.4)" }
-      - { name: avatar_hue, type: integer, required: false }
+      - { name: display_name, type: text, required: true, constraints: "named: the display name on the byline; anonymous: the random thread alias (patient-xxxx, T-104 BR2.1), shown only on its own page and discussion (BR6.4, Question 17)" }
+      - { name: username, type: text, required: false, constraints: "pseudonymous: the name on the byline; named and pseudonymous: profileUsername for the profile link (FR11, AC10.2.1, Question 18); never for anonymous or de-identified personas" }
+      - { name: avatar_hue, type: integer, required: false, constraints: "constant for anonymous personas (T-104 BR1.6)" }
+      - { name: deidentified_at, type: timestamp, required: false, constraints: "added by U11 T-104 (the owner's answer to its Question 15); set: the byline shows Former member with no name, username or profile link, and the page lists no other accounts (BR6.4, BR6.9, Question 19)" }
     relationships:
       - { to: PersonaLink, cardinality: "one-to-one", direction: "Persona has one private PersonaLink" }
 
@@ -145,10 +149,10 @@ entities:
     attributes:
       - { name: persona_id, type: uuid, required: true, unique: true, references: Persona.id }
       - { name: account_id, type: uuid, required: true, references: AccountProfile.id }
-      - { name: review_id, type: uuid, required: false, references: Review.id, constraints: "set for a review's anonymous alias; the foreign key becomes DEFERRABLE INITIALLY DEFERRED so the link can be written before the review in one transaction (Question 5); null for an anonymous facility review (BR8.2)" }
+      - { name: review_id, type: uuid, required: false, references: Review.id, constraints: "set for a review's anonymous alias; the foreign key is DEFERRABLE INITIALLY DEFERRED (U11 T-104's migration, or this Unit's fallback) so the link can be written before the review in one transaction (Question 5); null for an anonymous facility review (BR8.2)" }
     constraints:
       - "No rk_worker privilege; readable only through Identity's PrivateIdentityRepository (AD-3)"
-      - "Review learns at most one boolean from it: identity.ownsAnyPersona (Question 8)"
+      - "Review learns at most one boolean from it: identity.ownsAnyPersona (Question 8), asked of U11 T-104's finalisation"
 
   - name: EvidenceItemForPublish
     owner: Evidence
@@ -221,7 +225,7 @@ entities:
     attributes:
       - { name: stream, type: text, required: true, constraints: "review:<id> or facility_review:<id>" }
       - { name: action, type: text, required: true, constraints: "publish" }
-      - { name: actor, type: text, required: true, constraints: "persona:<authorPersonaId>, never account:<id> (BR4.7)" }
+      - { name: actor, type: text, required: true, constraints: "persona:<authorPersonaId>, never account:<id> (BR4.7, FD entry (d)); the provisional terms a publish creates carry the same actor (BR3.8)" }
       - { name: details, type: "map", required: true, constraints: "{kind, identityMode, tagCount, evidenceLinked, evidencePending} or {identityMode, criteriaAnswered}" }
 ```
 
@@ -230,4 +234,4 @@ entities:
 - **Review-owned entities** (`Review`, `ReviewTag`, `ReviewDraft`, `FacilityReview`) are written by the three commands of this Unit (`review.saveDraft`, `review.publish`, `facilityReview.publish`) and read by its queries. A review carries no account column; its author is a persona. The draft is the one place an account id sits next to content, as the domain design accepts, and only its owner and (for id, account and expiry) the worker can read it.
 - **Value objects**: `DraftPayload` (partial, bounded, encrypted), `PeriodMonth` (month precision, never a day in public), `Claim` (three codes), `ConditionKey` (the repeat-episode match), `DomainPublicationState` (the stored enum plus the domain-only `deleted`), `ReviewPublishedEvent` (four keys) and `ReviewAuditRow` (actor is the persona).
 - **Borrowed entities**: `Persona` and `PersonaLink` (Identity; Review never reads the link, it gets one boolean for the repeat check), `EvidenceItemForPublish` (Evidence, through a port built later), `TaxonomyTerm` (Taxonomy, resolved and possibly created as provisional inside the publish transaction).
-- **Database changes**: the FD-090 grant and the deferrable persona-link foreign key. No table or column is added.
+- **Database changes**: the FD-090 grant; the deferrable persona-link foreign key only if U11 T-104 merged without it. No table or column is added.

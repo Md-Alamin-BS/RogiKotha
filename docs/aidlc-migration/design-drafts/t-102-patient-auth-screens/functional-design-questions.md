@@ -2,9 +2,16 @@
 
 Draft written ahead of the stage, while another Unit builds. The lead finalises it when the workflow reaches this Unit's Functional Design; then it moves to `<record>/construction/t-102-patient-auth-screens/functional-design/`.
 
+Refreshed 2026-10-29, against `main` at `14c21a9` (T-010 merged), the refreshed T-011 and T-101 drafts and the owner queue:
+- Question 4 carries the owner's answer B, and the design files follow it.
+- New Questions 14 and 15 are answered by the agent under the owner's no-questions instruction of 2026-10-29.
+- "Settled before this stage" gains FD-093, the T-011 refresh and the T-101 refresh.
+- The findings from the refresh are F17–F26 in `functional-spec.md` § 14.
+
 Context:
 - Unit U9 (kind `ui`, size L, **high risk**: authentication) delivers T-102 (`docs/implementation/tasks/T-102-patient-auth-screens.md`, with the FD-091 amendment and the FD-053 and FD-057 amendments) for stories US3.1 and US3.2 (`unit-of-work-story-map.md`). It depends on U8 T-101 (commands, actions, `getActor`), U3 T-010 (boundary lint, coverage floor) and U45 T-011 (the FD-091 design and motion system). Its two owner gates are the D-001 auth-screen review (FD-053) before Code Generation and the auth-screen review on the T-011 look before the Unit closes (FD-091 acceptance row).
 - Inputs read: `unit-of-work.md` (U9 and the decision-change table), `unit-of-work-dependency.md`, `unit-of-work-story-map.md`, `requirements.md` (FR1–FR9, FR91, FR95, NFR4, NFR6, NFR7, NFR13), `stories.md` (AC3.1.1–AC3.1.6, AC3.2.1–AC3.2.5, and for reference AC2.3.1–AC2.3.4, AC2.4.1–AC2.4.5, AC12.1.6), `docs/status/decision-log.md` (FD-013, FD-022, FD-024, FD-034, FD-042, FD-053, FD-057, FD-058, FD-059, FD-063, FD-088, FD-091), `docs/implementation/01-conventions.md` §5–§9, `03-routes-and-contracts.md` §1, §2, §4, §6, `docs/design/auth-screens-spec.md` (all), `05-demo-storyboard.md` (Part 2, steps 8–10), the D-001 prototype (`ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/app.js`: `authField`, `authPasswordField`, `authErrorSummary`, `renderRegister`, `renderSignin`, `renderVerify`, `renderReset`, `renderSecurity`, `renderAccountEntry`, `openAuthGate`, `openStepUp`, `workspaceNav`, the `#account` click handler and the auth submit handlers), the sibling drafts `design-drafts/t-101-better-auth-adapter/` (the actions and Actor this Unit consumes) and `design-drafts/t-011-patient-design-and-motion-system/` (tokens, `RouteTransition`, sheet entry, the static set), and `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md` (owner answers on T-101: R1 the worker holds a separate mail-only key; R2 FR90 feedback is text only).
+- Read again for the 2026-10-29 refresh: `main` at `14c21a9` with T-010 merged (`eslint.boundaries.mjs`, `vitest.workspace.ts`, the root scripts, `.prettierignore`, `apps/web/src/app/pages.test.tsx`, `app/layouts.test.tsx`, FD-093 in `docs/status/decision-log.md`), the T-101 draft refreshed 2026-10-29 (`AuthGateway`, `account.getOwnAccount`, `account.resendOwnVerification`, `OwnAccountVM`, `Actor.refusal`, session items with `browser` and `os`, the ENT-004 keys added there, FD-094 to FD-097), the T-011 draft refreshed 2026-10-29 (spacing tokens, `data-press`, `PublishTick` consumers, `contrast:patient`, `check:motion`, the `next/font/local` mock, `smoke:e2e`), CR-004's BR4.3, and the owner queue rows of 2026-10-28 and 2026-10-29.
 - Code read on the CR-012 Bolt branch (no file in this Unit's area differs from `main`): `apps/web/src/app/[locale]/layout.tsx`, `app/[locale]/(patient)/layout.tsx`, the placeholder pages `register`, `sign-in`, `verify-email`, `reset-password`, `me/security`, `me`, `write`, the finished `terms` and `privacy` pages, `components/patient/{Masthead,Tabs,ViewShell,Policy}.tsx`, `components/shared/{Sheet,LiveRegion,Icon,ThemeControls}.tsx`, `lib/{announce,cookies,metadata,titles}.ts`, `proxy.ts`, `server/actions/preferences.ts`, `styles/patient.css` (`.field-error`, `.ctl.account`, `.link-btn`, `.check`, `.opt-row`, `.kv`), `packages/contracts/src/{actor,errors}.ts`, `schemas/account.ts`, `view-models/security.ts`, `packages/i18n/src/format.ts` and every `auth.*`, `errors.auth.*`, `policy.*`, `mine.*`, `nav.*` and `user2.*` key in both dictionaries.
 - Open `ISSUES.md` rows in this area: ISS-020 (no email or display-name error key), ISS-021 (dev "simulate link" copy), ISS-022 (account entry's signed-in title), ISS-028 (Terms/Privacy links point at `#about`), ISS-029 (owner T-102: `/me` not session-aware in the prototype), ISS-030 (prototype has no `?token=`), ISS-031, ISS-032 (rate-limit and suspended copy unwired), ISS-033 (password equals email, T-101 Q7), ISS-035 (register language switches the interface), ISS-036 (demo session toggle, not ported), ISS-097 (invented person glyph), ISS-124 (`/sign-out` has no route), ISS-137 (the whole dictionary ships to the client), ISS-227 (preference write failures are silent).
 - Dependency check: T-102 adds no package. It is the first Unit to use React 19.3 `useActionState` with server actions and `Intl.Segmenter`, so Code Generation re-checks `next` 16.3.4, `react` 19.3.0 and `next-intl` ^4.14.4 (latest log entry 2026-09-13, older than 3 days) for form-action and progressive-enhancement issues and appends a dated entry (BR14.4).
@@ -16,7 +23,7 @@ These facts shape the questions below.
 1. **A server component cannot set a cookie.** Next.js allows cookie writes only in server actions and route handlers. Task step 3 ("With token → call the verify action; success → redirect") runs in the page render, so the session cookie that T-101's `account.verifyEmail` creates could not be set there.
 2. **The owned paths miss three files the steps need.** The viewer prop and the one `AuthGateSheet` live in `app/[locale]/(patient)/layout.tsx` (steps 7 and 9; T-011 now also edits this file). The welcome callout `auth.verify.done` shows on `/me` (`me/page.tsx`, a T-409 placeholder). The `/write` gate (step 9, storyboard step 8) shows on `write/page.tsx`, a T-306 placeholder. None of the three is in T-102's owned paths.
 3. **Echoing the email in the URL puts an address in browser history and access logs.** Step 2 redirects to `/verify-email?email=…`.
-4. **03 §2 says view models never contain emails**, but spec §3.2 and §3.6 show the signed-in holder's own address on the pending banner (on `/me` and `/write`) and on `/me/security`. T-101's draft raised this as F5 for this Unit.
+4. **03 §2 says view models never contain emails**, but spec §3.2 and §3.6 show the signed-in holder's own address on the pending banner (on `/me` and `/write`) and on `/me/security`. T-101's draft raised this as F5 for this Unit. (The owner answered on 2026-10-28: masked, Question 4 B; T-101's FD-095 carries it.)
 5. **The suspended-account copy names an appeal route that does not exist.** `errors.auth.accountSuspended` reads "You can appeal from your workspace", and step 4 links to `/me`. A suspended account gets no session (T-101 BR3.6), so it cannot reach `/me`, and FD-088 defers appeals and says decision notices name no appeal route until appeals exist.
 6. **The sign-in delay is in seconds, the copy in minutes.** From the 3rd failure the refusal carries `retryAfterSec` of 1–30 s (FD-063); `errors.auth.rateLimited` says "Try again in {minutes} minutes". T-101's draft raised this as F4. The English copy also has no plural form ("1 minutes").
 7. **T-101's `signOutEverywhere` takes no password** (T-101 Q10 A, `SignOutEverywhereInput` is `{}`). An inline password field in front of it, as step 8 and spec §3.6 describe, would be checked by nothing.
@@ -33,7 +40,10 @@ These facts shape the questions below.
 - **No CAPTCHA (FD-058)**; the delay arrives as `auth.rate_limited` with `retryAfterSec` (FD-063, T-101 WF4).
 - **Unconfirmed accounts sign in, browse and edit settings, but cannot contribute** (FR4, AC3.1.4, T-101 Q2 A): the signed-in-unverified state of spec §1 exists.
 - **No step-up in T-101** (T-101 Q10 A); T-103 brings `account.stepUp` and swaps it into `SecuritySettings` later.
-- **Motion and look come from T-011** (FD-091): tokens, `RouteTransition` in the patient layout (T-011 Q4 A), the sheet entry, press feedback, the static set; page styles go in T-102's own section of `patient.css`, marked `/* added: T-102 reason */`.
+- **Motion and look come from T-011** (FD-091): tokens (spacing `--space-1…8`, `--grid-min`, `--measure` included), `RouteTransition` in the patient layout (T-011 Q4 A), the sheet entry, press feedback (`data-press` for classes outside its list), the static set, no shared-element morph (T-011 Q10 A); page styles go in T-102's own section of `patient.css`, marked `/* added: T-102 reason */`, Prettier-formatted with double quotes; `pnpm check` has eleven steps with `contrast:patient` and `check:motion`; `pnpm smoke` stays Vitest-only and Playwright specs run under `smoke:e2e`.
+- **Import boundaries and tests (FD-093, T-010 merged):** components import server actions and nothing else under `server/`; `web-shared` (`src/lib`, `src/i18n`) carries the component limits; nothing in `apps/*` imports `test-support`; the 80% line floor counts untested files; page Units update `app/pages.test.tsx` when they replace placeholders; CI must be green on the Bolt head before a merge.
+- **The holder's own email is shown masked (owner's answer to Question 4, 2026-10-28).** T-101 builds the data side: `account.getOwnAccount` returns `OwnAccountVM {username, displayName, emailVerified, emailMasked}`, and `account.resendOwnVerification` resends without an address. Its proposed FD-095 amends 03 §2 and allows the mask only in `SecurityVM` and the pending banner, only on `noindex` pages. T-101 appends FD-095 before its code, so it is on the log before this Unit builds.
+- **T-101's other shapes (refreshed draft):** session items carry `browser` and `os`; the four missing field-error keys are added there with this Unit's copy; the Actor carries no persona and no display name (the display name comes from `OwnAccountVM`) and gets an optional `refusal` on an anonymous Actor whose session belongs to a suspended or banned account; `staffRole` stays unset until T-103 (whose build waits for the owner's review, T-103 R1).
 
 ## Settled in this design without a question
 
@@ -60,6 +70,10 @@ These follow from the decisions, the contracts, the hard rules or the code. `fun
 - **`WorkspaceNav` is created here with its four links** (`nav.mine`, `mine.bookmarks`, `mine.notifications`, `auth.security.nav`) as `Link`s with `aria-current="page"` (not the prototype's `aria-pressed` buttons); T-409 owns it afterwards (both task files name it).
 - **Errors appear without movement; nothing auth-specific is animated** beyond the T-011 primitives and the choices in Question 11.
 - **ISS-021, ISS-030 and ISS-036 do not apply to the React port** (no simulate controls, real `?token=` links, no demo session toggle): closed as "not applicable after T-102". ISS-029 is handed to T-409, which builds the session-aware `/me`.
+- **Helpers outside the actions file** (refresh): a `'use server'` module exports only async functions, and components import nothing under `server/` except actions (FD-093 (1)), so `sanitiseNext`, the form-state type and its initial value, `initials()` and the pending-cookie name live in `apps/web/src/lib/`, and the cached viewer loader in `app/[locale]/(patient)/viewer.ts`.
+- **Confirmations without a second live region** (refresh): T-011's `PublishTick` and CR-004 BR4.3 keep one live region, so a confirmation that replaces a form is announced through `useAnnounce()` and one that greets an arrival takes focus; no callout carries `role="status"`. The error summary keeps `role="alert"` with focus (task step 1).
+- **The error title from the summary** (refresh): `generateMetadata` cannot see an action's state and `pages.test.tsx` asserts the plain title, so `ErrorSummary` renders the prefixed `<title>`.
+- **The T-010 tests move with the pages** (refresh): `pages.test.tsx` and `layouts.test.tsx` gain the mocks of `@/server/auth`, `@/server/actions/account` and `next/headers` and pass `searchParams`; no assertion is removed.
 
 ## Question 1
 
@@ -95,7 +109,7 @@ X. Other (please specify)
 
 ## Question 4 — needs the owner (data boundary: the 03 §2 view-model rule)
 
-Spec §3.2 and §3.6 show a signed-in holder their own email address (on the pending banner on `/me` and `/write`, and on `/me/security`). 03 §2 says view models never contain emails (fact 4). Changing that rule needs an FD entry, so this question is not pre-filled. Until it is answered, the design follows C (the rule as written).
+Spec §3.2 and §3.6 show a signed-in holder their own email address (on the pending banner on `/me` and `/write`, and on `/me/security`). 03 §2 says view models never contain emails (fact 4). Changing that rule needs an FD entry, so this question was not pre-filled. Until the owner answered, the design followed C (the rule as written); since the answer (B) it follows B.
 
 A. **Show the holder their own full address, as a named exception** (recommended). One read-only field, `ownEmail`, appears only in `SecurityVM` and the pending-banner view model, only for the signed-in holder, only on `noindex` pages under `/me/*` and `/write`, never cached, never logged and never in any public or staff projection. 03 §2 gains one sentence, recorded in an FD entry. People can check which address the account uses, which is what most sites show.
 B. **Show a masked address** (`s****@example.test`). It helps people recognise the address with less exposure, but it is still part of the address in a view model, so it needs the same FD entry, and a masked address is harder to check for typos.
@@ -103,6 +117,8 @@ C. **Show no address while signed in.** The pending banner uses a new no-address
 X. Other (please specify)
 
 [Answer]: B (the owner's answer, 2026-10-28: show the holder's own address masked; needs a new FD entry amending 03 §2 before this Unit's code)
+
+Applied in the refresh of 2026-10-29: the FD entry is T-101's proposed FD-095, which T-101 appends before its code, and its `account.getOwnAccount` makes the mask. The masked address appears in `SecurityVM` on `/me/security` and in the pending banner on `/me`. Where it can show is Question 14. The design files no longer follow C anywhere.
 
 ## Question 5
 
@@ -201,9 +217,30 @@ X. Other (please specify)
 
 [Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change when this draft is finalised). Option B would change FD-053 and needs the owner. Under A the two reviews themselves are the owner's to give.
 
+## Question 14 — where the masked address shows (added 2026-10-29)
+
+The owner chose the masked address (Question 4 B). Spec §3.2 shows the address on the pending banner on `/me` and on `/write`, and spec §3.6 shows it on `/me/security`. T-101's proposed FD-095 allows the mask only in `SecurityVM` and the pending banner, and only "on `noindex` pages rendered per request and never cached". `/me` and `/me/security` are `noindex`. `/write` is indexable (`pages.test.tsx` asserts it has no `robots` field; `01-conventions.md` §8 does not list it), and it is T-306's page. Where does the masked address show?
+
+A. **On `/me/security` and on the `/me` banner only** (recommended). The `/write` banner and a signed-in `/verify-email` show `auth.verify.bodyNoEmail`. Every signed-in resend uses `account.resendOwnVerification`, so nobody needs to see or type the address to get a new link. This follows FD-095 as written, keeps the mask in the fewest places and changes no page's indexing. A finding asks T-101 to word FD-095's banner as "(`/me`)" before appending it (F25).
+B. **Also on the `/write` banner, with `/write` made `noindex`.** This is one line in `/write`'s metadata, one `pages.test.tsx` row and one `01-conventions.md` §8 entry. The writer sees the address where they are about to publish. But it changes a T-306 page's indexing for one banner line and puts the mask in a third place.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29; to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md when this draft is finalised)
+
+## Question 15 — a session ended by a suspension (added 2026-10-29)
+
+T-101's refreshed draft gives `Actor` an optional `refusal` (`suspended` or `banned`). It is set on the anonymous Actor of a session whose account was suspended or banned after it signed in, "so T-102 can show `errors.auth.accountSuspended`". Without it, the person is simply signed out on their next request and learns why only if they try to sign in again. What do the screens do with it?
+
+A. **Show the reworded suspended message once, on `/sign-in`, above the form** (recommended). This is where a person whose session ended lands when they try to continue. The masthead stays signed out, no account detail is shown, and there is no appeal route (Question 6, FD-088). The form still works, and a submit gets the same message (BR4.5).
+B. **Show nothing.** The field stays unused, and the person finds out only by signing in again.
+C. **Show it in the chrome on every page** (a banner under the masthead). Louder, but it puts account state into every public page's payload for a visitor who is, by then, anonymous.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29; to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md when this draft is finalised)
+
 ## Raised for the owner, not decided in this stage
 
-- **Question 4 (own email on signed-in pages).** A data-boundary change to 03 §2; needs an FD entry. The design follows C until it is answered.
+- **Question 4 (own email on signed-in pages).** Answered by the owner on 2026-10-28: masked (B). The FD entry is T-101's FD-095; this Unit's code waits for it on the log (WF0 step 1).
 - **The two FD-053/FD-091 reviews (Question 13).** Only the owner can give them; Code Generation waits for the first.
 
 ## Findings for the ISS register (proposed rows, each `Found in U9 T-102`)
@@ -214,7 +251,7 @@ X. Other (please specify)
 | F2 | S2 | The owned paths omit `(patient)/layout.tsx`, `me/page.tsx` and `write/page.tsx`, which steps 7 and 9, the "Spec §6 flow" row and storyboard step 8 need (Question 1) | U9 T-102 |
 | F3 | S2 | `errors.auth.accountSuspended` and step 4 name an appeal route; FD-088 defers appeals and forbids naming one, and a suspended account cannot reach `/me` (Question 6) | U9 T-102 |
 | F4 | S2 | Step 2's `/verify-email?email=` puts the address in the URL, browser history and request logs (Question 3) | U9 T-102 |
-| F5 | S3 | 03 §2 forbids emails in view models; spec §3.2 and §3.6 show the holder's address while signed in (Question 4; T-101 F5) | founder (FD entry) |
+| F5 | S3 → resolved | 03 §2 forbids emails in view models; spec §3.2 and §3.6 show the holder's address while signed in (Question 4; T-101 F5). Resolved by the owner's answer B and T-101's FD-095 | founder (answered 2026-10-28); U8 T-101 (FD-095) |
 | F6 | S3 | `errors.auth.rateLimited` says minutes and has no English plural; the FD-063 delay is 1–30 s (Question 5; T-101 F4) | U9 T-102 |
 | F7 | S3 | Spec §3.6's inline password before Sign out everywhere would be checked by nothing (T-101 Q10 A; Question 7; T-101 F13) | U9 T-102, U10 T-103 |
 | F8 | S3 | T-101's single English session label breaks FD-024 on Bengali pages (Question 10) | U8 T-101, U9 T-102 |
@@ -226,3 +263,4 @@ X. Other (please specify)
 | F14 | S4 | `ASSUMPTION(T-102)`: the token may stay in Next's development request log line; the production log rule is T-502's | U41 T-502 |
 | F15 | S4 | Dependency re-check due for `next`, `react`, `next-intl` (entries 2026-09-13) before the first `useActionState` forms | U9 T-102 (Code Generation) |
 | F16 | S4 | ISS-021, ISS-030, ISS-036 no longer apply after the React port; ISS-028 and ISS-124 close with T-102; ISS-029 moves to T-409 | U9 T-102 (register update) |
+| F17–F26 | S1–S4 | Found in the 2026-10-29 refresh against T-010, T-011 and T-101: `'use server'` exports, the route-table and layout tests, the error title, the masked address on an indexable page, live regions, the display-name source, `smoke:e2e`, FD-095's wording, the gate provider in page tests | see `functional-spec.md` § 14 (each S1 and S2 designed out) |

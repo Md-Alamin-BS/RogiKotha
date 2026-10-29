@@ -4,6 +4,12 @@ Draft written ahead of the stage. The lead finalises it when the workflow reache
 
 Source of truth for the data shape this Unit works on. Built from T-103 (with FD-051 and FD-053), `02-data-model.md` §0, §2, §11, §12 and §16, `contract-summary.md` (C2, C5, C15), the code on `main` (`packages/database/src/schema/{account,notification}.ts`, `packages/contracts/src/{actor,config-values,errors,enums}.ts`, `schemas/{staff,account}.ts`, `view-models/security.ts`) and U8's draft entities (`design-drafts/t-101-better-auth-adapter/entities.md`), which this file extends and does not repeat. Workflows and state transitions are in `functional-spec.md`; decision logic is in `rules.md`.
 
+Refreshed 2026-10-29 against T-010 as merged and the refreshed U8 T-101 draft.
+- Hashes and signatures come from the `Crypto` adapter (`tokenHash`, `signClaims`, `verifyClaims`).
+- Staff sessions come from `AuthGateway.createSession` in the two new library-call scope purposes.
+- The mail recipient uses the mail-only key (T-101's proposed mail-only key FD, numbered when appended; FD-094 is the owner's D13 change), and ISS-108 is closed by U8.
+- New entries: `StaffAccess`, `LibraryCallScope (purposes added)`, `CryptoPort (methods added)` and `StaffSignInCommandInput`.
+
 Three kinds of entity appear here: **persisted** rows (existing tables; this Unit adds one column and one partial unique index and no table), **cookies** (state the browser holds, with no server-side copy except a hash), and **value objects** that cross a boundary. Logical types only; the physical columns are the ones on `main` plus the migration of `functional-spec.md` § 10.3.
 
 ```yaml
@@ -30,7 +36,7 @@ entities:
     attributes:
       - { name: id, type: uuid-v7, required: true, unique: true, constraints: "internal id; shown to the owner only as TrustedDeviceVM.id for revoke" }
       - { name: account_id, type: uuid-v7, required: true, references: AccountProfile.id, constraints: "cascade delete" }
-      - { name: device_hash, type: hex-sha256, required: true, constraints: "sha256 of the 32-byte cookie secret; never the secret (BR2.1); the same hash may appear under several accounts (one browser, several staff accounts)" }
+      - { name: device_hash, type: hex-sha256, required: true, constraints: "Crypto.tokenHash of the 32-byte cookie secret (SHA-256, lowercase hex, computed in the adapter); never the secret (BR2.1); the same hash may appear under several accounts (one browser, several staff accounts)" }
       - { name: label, type: text, required: true, constraints: "browser family and OS from the user agent by U8's label helper; a fixed key-free fallback such as 'Unknown browser' is rendered from i18n, not stored" }
       - { name: first_seen_at, type: timestamp, required: true }
       - { name: last_seen_at, type: timestamp, required: true, constraints: "moved at staff sign-in and approval only (ASSUMPTION(T-103), F13)" }
@@ -53,10 +59,10 @@ entities:
     attributes:
       - { name: id, type: uuid-v7, required: true, unique: true, constraints: "the dedupe key of its email is device-approval:<id>" }
       - { name: device_id, type: uuid-v7, required: true, references: StaffDevice.id, constraints: "cascade delete" }
-      - { name: token_hash, type: hex-sha256, required: true, unique: true, constraints: "sha256 of a 32-byte random token; the token itself exists only in the email link (BR5.1)" }
+      - { name: token_hash, type: hex-sha256, required: true, unique: true, constraints: "Crypto.tokenHash of a Crypto.randomToken() value (32 bytes); the token itself exists only in the email link (BR5.1)" }
       - { name: expires_at, type: timestamp, required: true, constraints: "created_at + 30 minutes" }
       - { name: used_at, type: timestamp, required: false, constraints: "set on success, on supersede by a newer token and on device revoke (BR5.5)" }
-      - { name: failed_attempts, type: integer, required: true, default: 0, min: 0, max: 3, constraints: "new column (Question 5); at 3 the token is refused as invalid (BR5.2)" }
+      - { name: failed_attempts, type: integer, required: true, default: 0, min: 0, max: 3, constraints: "new column (Question 5); at 3 the token is refused as invalid (BR5.2); each increment is committed although the command refuses, through U8's recorded flag (Question 12)" }
       - { name: created_at, type: timestamp, required: true }
     constraints:
       - "At most one usable token per device: issuing a new one marks the others used (BR5.5)"
@@ -70,7 +76,8 @@ entities:
     owner: "Better Auth through the account repository (U8)"
     description: "A staff session is an ordinary session; it carries no device column. Its id binds the step-up cookie."
     constraints:
-      - "Created from the staff screens only by staff.signIn (approved device) and staff.approveDevice, through the library (BR4.5, Question 2)"
+      - "Created from the staff screens only by staff.signIn (approved device) and staff.approveDevice, through AuthGateway.createSession with purpose staffSignIn or approveDevice, as the last step of the command (BR4.5, Question 2)"
+      - "Its id comes back from AuthGateway.getSession and binds the step-up cookie (F22)"
       - "A session alone never gives staff powers: BR3.1 adds the device check on every request"
       - "Absolute 30 days from creation, as every session (U8 BR4.1; AC3.2.4 'normal or administrative')"
 
@@ -82,7 +89,7 @@ entities:
       - { name: category, type: enum, required: true, allowed_values: [device_approval], constraints: "the value this Unit writes; always sent (essential), like verification, reset and security (BR9.1)" }
       - { name: message_key, type: i18n-key, required: true, allowed_values: [email.staff.deviceApproval] }
       - { name: params, type: object, required: true, constraints: "{link} only, an absolute URL APP_URL/<locale>/admin/approve-device?token=<token>; cleared to {} at the final status (U8 BR6.8)" }
-      - { name: to_email_enc, type: ciphertext, required: true, constraints: "encrypted with the mail-only recipient key (owner's answer to U8 R1) through RecipientDirectory" }
+      - { name: to_email_enc, type: ciphertext, required: true, constraints: "encrypted with MAIL_RECIPIENT_KEY through U8's mailCrypto in RecipientDirectory (T-101's proposed mail-only key row)" }
       - { name: dedupe_key, type: text, required: true, constraints: "device-approval:<approvalId>" }
 
   - name: AuditEvent (staff actions)
@@ -93,7 +100,7 @@ entities:
       - { name: stream, type: text, required: true, constraints: "account:<accountId> (the staff account concerned; for staff_role_changed, the target account)" }
       - { name: action, type: enum, required: true, allowed_values: [staff_signed_in, staff_device_requested, staff_device_approval_failed, staff_device_approved, staff_device_revoked, step_up, step_up_failed, staff_role_changed] }
       - { name: actor, type: text, required: true, constraints: "account:<id>; anonymous for staff_device_approval_failed and staff_device_approved, which happen before the session exists" }
-      - { name: details, type: object, required: true, constraints: "ids, enums, counts only: {deviceId}, {deviceId, attempt}, {deviceId, current}, {purpose}, {from, to, step_up}; never a token, secret, hash, email, user agent or IP (BR10.2)" }
+      - { name: details, type: object, required: true, constraints: "ids, enums, counts only: {deviceId}, {deviceId, attempt}, {deviceId, current}, {purpose}, {from, to, step_up}; never a token, secret, hash, email, user agent or IP (BR10.2); each action has a detail builder in U8's allowlist (ISS-108 closed by U8)" }
 
   - name: OutboxEvent (device approved)
     kind: persisted
@@ -118,11 +125,49 @@ entities:
     name_in_browser: rk_stepup
     attributes:
       - { name: payload, type: object, required: true, constraints: "{a: accountId, s: sessionId, u: until (epoch seconds)}, base64url JSON" }
-      - { name: mac, type: base64url, required: true, constraints: "HMAC-SHA256 with the HKDF-derived key (BR7.2)" }
+      - { name: mac, type: base64url, required: true, constraints: "HMAC-SHA256 under the per-purpose key (purpose rk_stepup) that the Crypto adapter derives from BETTER_AUTH_SECRET; made by Crypto.signClaims, checked by Crypto.verifyClaims in constant time (BR7.2, Question 11)" }
       - { name: flags, type: text, required: true, constraints: "HttpOnly; SameSite=Strict; Secure iff https; Path=/; Max-Age 300 (BR7.1)" }
     constraints:
       - "No server-side copy; valid only for the same account and session and before until (BR7.3)"
       - "Cleared on sign-out"
+
+  - name: StaffAccess
+    kind: value object (request scope)
+    source: "packages/application/src/modules/account/staff-access.ts staffAccessFor(accountId, deviceSecret?)"
+    attributes:
+      - { name: state, type: enum, required: true, allowed_values: [approved, pending, unknown, revoked] }
+      - { name: deviceId, type: uuid-v7, required: false, constraints: "the open row's id; server-side only" }
+    constraints:
+      - "Computed once per request from Crypto.tokenHash(secret) and StaffRepository.findOpenDevice; feeds resolveActor (BR3.1), getStaffContext (BR3.4), staff.signIn (BR2.3) and staff.listDevices (BR6.1)"
+
+  - name: LibraryCallScope (purposes added)
+    kind: value object (web tier, AsyncLocalStorage, U8's)
+    source: "apps/web/src/server/better-auth/library-scope.ts"
+    attributes:
+      - { name: purpose, type: enum, required: true, allowed_values: [register, issueVerification, verify, issueReset, reset, changePassword, signIn, staffSignIn, approveDevice], constraints: "staffSignIn and approveDevice are added here; set by AuthGateway.createSession from its purpose argument" }
+      - { name: sessionAllowed, type: boolean, required: true, constraints: "set only by createSession, which only a command that has decided calls (BR4.5)" }
+    constraints:
+      - "No command-context flag: the application holds no async-local state (U8)"
+
+  - name: CryptoPort (methods added)
+    kind: port
+    source: "packages/application/src/ports/crypto.ts (U8's port), implemented by packages/adapters/src/crypto, faked by FakeCrypto"
+    attributes:
+      - { name: signClaims, type: "(purpose, claims: Record<string, string | number>) => string", required: true, constraints: "base64url(JSON).base64url(HMAC-SHA256) under the per-purpose key" }
+      - { name: verifyClaims, type: "(purpose, value: string) => Record<string, string | number> | null", required: true, constraints: "two parts, at most 256 characters, constant-time MAC check before parsing" }
+      - { name: tokenHash, type: "(token: string) => string", required: true, constraints: "SHA-256 of the UTF-8 token, lowercase hex" }
+    constraints:
+      - "Strings in and out, so application needs no byte encoding and no Node built-in (FD-093, F18, F21); key material never leaves the adapter"
+
+  - name: StaffSignInCommandInput
+    kind: value object (command input)
+    source: "packages/contracts/src/schemas/staff.ts (new, beside StaffSignInInput)"
+    attributes:
+      - { name: email, type: email-address, required: true }
+      - { name: password, type: text, required: true, min: 1, max: 256 }
+      - { name: deviceSecret, type: base64url, required: false, constraints: "at most 64 characters; read by the server action from rk_staff_device, never from the form" }
+    constraints:
+      - ".strict(); staff.approveDevice's command input adds the same optional deviceSecret to ApproveDeviceInput"
 
   - name: StaffContext
     kind: value object (request scope)
@@ -138,7 +183,7 @@ entities:
     source: "packages/contracts/src/actor.ts (shape unchanged; one field's meaning narrowed)"
     attributes:
       - { name: staffRole, type: enum, required: false, allowed_values: [super_admin, admin, moderator], constraints: "set only with an approved device and status active (BR3.1)" }
-      - { name: capabilities, type: list<Capability>, required: true, default: [], constraints: "resolveCapabilities(staffRole, config); empty without staff powers" }
+      - { name: capabilities, type: list<Capability>, required: true, default: [], constraints: "resolveCapabilities(staffRole, (await config.current()).capabilities); empty without staff powers; U8 leaves it [] for everyone, and only this Unit fills it" }
       - { name: stepUp, type: object, required: false, constraints: "{rechecked_at} only after BR7.3 passes" }
     constraints:
       - "Carries no device hash, no cookie value and no email"
@@ -212,4 +257,4 @@ entities:
 - **A staff session is an ordinary session.** The `Actor` gets `staffRole` and `capabilities` only when the profile is active, has a role and the request carries an approved device for that account; the capability table stays in `contracts/actor.ts` and the four toggles in `ConfigValues.capabilities`.
 - **Two cookies** hold the browser's side: `rk_staff_device` (the device secret, 90 days, Lax) and `rk_stepup` (a signed 5-minute proof bound to the account and the session, Strict).
 - **Records**: eight audit actions on the `account:<id>` stream with allowlisted details, one `account.securityEvent {deviceApproved}` outbox event, and one `device_approval` email per approval through `queueEmail` with the recipient encrypted under the mail-only key.
-- **Contract changes break no consumer**: `StaffSignInInput`, `STEP_UP_PURPOSES`, `auth.device_mismatch` and two `TrustedDeviceVM` fields are additive; `StepUpInput.purpose` is a new required field on an input nothing calls yet.
+- **Contract changes break no consumer**: `StaffSignInInput`, `StaffSignInCommandInput`, `STEP_UP_PURPOSES`, `auth.device_mismatch` and two `TrustedDeviceVM` fields are additive; `StepUpInput.purpose` is a new required field on an input nothing calls yet. The three `Crypto` methods and the two scope purposes extend U8's port and scope additively.

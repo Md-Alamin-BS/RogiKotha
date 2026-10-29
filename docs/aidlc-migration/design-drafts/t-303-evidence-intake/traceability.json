@@ -1,0 +1,46 @@
+{
+  "stage": "functional-design",
+  "unit": "t-303-evidence-intake",
+  "upstream_ids": [
+    "AC7.1.1", "AC7.1.2", "AC7.1.3", "AC7.1.4", "AC7.1.5", "AC7.1.6",
+    "AC6.1.6"
+  ],
+  "coverage": [
+    { "id": "AC7.1.1", "status": "OK", "target": "BR2.1, BR3.3, BR3.5, BR3.6, BR4.1 (intake half: private quarantine under server keys, encrypted, nothing public); scanning and re-encoding are U24 T-304, publication of the processed copy U25 T-305" },
+    { "id": "AC7.1.2", "status": "OK", "target": "BR2.1, BR2.2, BR2.8 (extension, MIME and name refused before storage); magic-byte mismatch is U24 T-304" },
+    { "id": "AC7.1.3", "status": "OK", "target": "BR2.3, BR2.4, BR2.5, BR2.6 (10 files, 15 MiB, 100 MiB per draft, before scanning, with the limit named by its error key)" },
+    { "id": "AC7.1.4", "status": "OK", "target": "BR6.1, BR6.5, BR6.6, BR7.2, BR7.3 (author sees the exact file, the reason key, Replace and Remove; text unaffected); the failure itself is U24 T-304" },
+    { "id": "AC7.1.5", "status": "OK", "target": "BR7.2, BR7.1 (current state shown through stateKey; no string promises a completion time); polling schedule U26 T-306" },
+    { "id": "AC7.1.6", "status": "OK", "target": "BR4.4, BR3.7, BR8.2, BR8.5 (no file name in logs, audit, custody, payloads, errors or view models); metadata stripping U24 T-304, noindex U28 T-308, search U18 T-205" },
+    { "id": "AC6.1.6", "status": "OK", "target": "BR6.6, BR5.4, BR7.4 and WF6 itemsOfDraft/bindToReview (a processing file is bound privately and never public; the text publishes at once)" }
+  ],
+  "reverse": [
+    { "id": "BR1.1", "status": "OK", "target": "AC7.1.1 (verified author, C8 requires verified)" },
+    { "id": "BR1.2", "status": "OK", "target": "AC7.1.3 (per-draft limits need the actor's own draft); T-303 threat 'Uploading to another user's draft'" },
+    { "id": "BR1.3", "status": "N/A", "target": "Database guarantee behind BR1.2 (Question 1, FD entry (a))" },
+    { "id": "BR1.4", "status": "OK", "target": "AC7.1.4 (author privately sees the file; T-303 acceptance 'Owner only')" },
+    { "id": "BR1.5", "status": "OK", "target": "AC7.1.4 (Remove action; T-303 acceptance 'Owner only')" },
+    { "id": "BR1.6", "status": "N/A", "target": "T-303 threat 'Flooding' (rate limit 40 per hour), no story criterion" },
+    { "id": "BR2.7", "status": "OK", "target": "AC7.1.2 (an unusable file is refused before processing)" },
+    { "id": "BR3.1", "status": "N/A", "target": "T-303 acceptance 'Path traversal', 01-conventions §4 server-generated keys" },
+    { "id": "BR3.2", "status": "N/A", "target": "Technical defence in depth behind BR3.1" },
+    { "id": "BR3.4", "status": "OK", "target": "AC7.1.3 (oversized upload leaves no partial file; T-303 acceptance 'Limits')" },
+    { "id": "BR4.2", "status": "N/A", "target": "T-303 acceptance 'Custody + outbox' (on storage failure nothing is inserted)" },
+    { "id": "BR4.3", "status": "N/A", "target": "T-303 acceptance 'Idempotent', 01-conventions §3 retryable commands" },
+    { "id": "BR4.5", "status": "N/A", "target": "FD-038 transactional relay; U24 T-304 § 6.4" },
+    { "id": "BR4.6", "status": "OK", "target": "AC7.1.4 (the exact rejected file is identified per file)" },
+    { "id": "BR5.1", "status": "N/A", "target": "02-data-model.md §17 evidence state machine, written once by this Unit (T-303 step 1)" },
+    { "id": "BR5.2", "status": "N/A", "target": "02-data-model.md §0 and §17 failure reasons per stage" },
+    { "id": "BR5.3", "status": "N/A", "target": "Concurrency rule shared with U24 T-304 WF9" },
+    { "id": "BR6.2", "status": "N/A", "target": "01-conventions §5 audit rule; custody append-only (02 §10)" },
+    { "id": "BR6.3", "status": "OK", "target": "AC7.1.4 (Remove deletes the file); T-303 acceptance 'Remove states'" },
+    { "id": "BR6.4", "status": "N/A", "target": "FD-021 legal holds and FD-079's author-facing pattern" },
+    { "id": "BR8.1", "status": "N/A", "target": "FD-015, FD-016 identity boundary; FD entry (d)" },
+    { "id": "BR8.3", "status": "N/A", "target": "ISS-139, ISS-239, 02-data-model.md §16 PR2 and PR3, FD-092; FD entry (b); T-303 acceptance 'Worker grants'" },
+    { "id": "BR8.4", "status": "N/A", "target": "C15 recipient rule, FD-070" },
+    { "id": "BR9.1", "status": "N/A", "target": "T-010 boundary matrix (FD-093)" },
+    { "id": "BR9.2", "status": "N/A", "target": "T-010 test pins (ISS-294, migration-count pins)" },
+    { "id": "BR9.3", "status": "N/A", "target": "80% line-coverage floor (D10)" },
+    { "id": "BR9.4", "status": "N/A", "target": "ADR 0011, FD-024, project.md Mandated bilingual rule" }
+  ]
+}

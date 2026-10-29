@@ -49,7 +49,7 @@
     {
       "id": "AC12.1.6",
       "status": "OK",
-      "target": "BR4.1, BR4.2, BR4.3, BR4.4, BR4.5, BR9.1 (correct lang, landmarks, headings, focus and call-link names on the emergency, policy and home pages in both locales); the axe run with no serious or critical violations is U42 T-503"
+      "target": "BR4.1, BR4.2, BR4.3, BR4.4, BR4.5, BR9.1, BR1.7 (correct lang, landmarks, headings, focus and call-link names on the emergency, policy, home and 404 pages in both locales); the axe run with no serious or critical violations is U42 T-503"
     },
     {
       "id": "AC5.1.1",
@@ -104,7 +104,7 @@
     {
       "id": "AC4.3.5",
       "status": "OK",
-      "target": "BR2.3, BR2.4 (a facility without accounts is said in words, never 0; Limited data on sparse teaser rows)"
+      "target": "BR2.3, BR2.4 (a facility without accounts is said in words, never 0; Limited data on sparse teaser rows, from a threshold in the range 2-50; no facility figure at all when facility feedback is hidden)"
     }
   ],
   "reverse": [
@@ -131,7 +131,7 @@
     {
       "id": "BR1.7",
       "status": "N/A",
-      "target": "Question 7, ISS-120, 01-conventions.md §6 and §7.2, FD-024"
+      "target": "Question 7, ISS-120, 01-conventions.md §6 and §7.2, FD-024; FD-093 and eslint.boundaries.mjs (no JSON import, finding F18); app/root.test.tsx"
     },
     {
       "id": "BR2.2",
@@ -151,7 +151,7 @@
     {
       "id": "BR2.9",
       "status": "N/A",
-      "target": "FD-008, FD-022, Question 1, T-207 step 3, fd-022-lawful-placement.test.tsx, fd-022-lawful-key-usage.test.ts"
+      "target": "FD-008, FD-022, Question 1 (the owner's answer A, 2026-10-29: Terms and Privacy), functional-spec.md section 17 (FD entry), T-207 step 3, fd-022-lawful-placement.test.tsx, fd-022-lawful-key-usage.test.ts"
     },
     {
       "id": "BR2.11",
@@ -191,7 +191,7 @@
     {
       "id": "BR3.10",
       "status": "N/A",
-      "target": "T-207 step 3, FD-008, FD-022, FD-044 (nav.about kicker), Question 1"
+      "target": "T-207 step 3, FD-008, FD-022, FD-044 (nav.about kicker), Question 1 (the owner's answer A: Terms gains the lawful-access section last)"
     },
     {
       "id": "BR3.11",
@@ -226,7 +226,7 @@
     {
       "id": "BR5.4",
       "status": "N/A",
-      "target": "T-011 BR4.7 and BR9.1, T-207 FD-091 acceptance row 'motion check', finding F6"
+      "target": "T-011 BR4.7, BR6.5, BR6.11 and BR9.1 (refreshed 2026-10-29: hover lifts removed, press list, data-press), T-207 FD-091 acceptance row 'motion check', findings F6 and F15"
     },
     {
       "id": "BR5.5",
@@ -246,12 +246,12 @@
     {
       "id": "BR7.1",
       "status": "N/A",
-      "target": "FD-091, FD-032, project.md Code Style (FD-091 patient styles), T-207 FD-091 amendment, 01-conventions.md §7.2"
+      "target": "FD-091, FD-032, project.md Code Style (FD-091 patient styles), T-207 FD-091 amendment, 01-conventions.md §7.2, T-011 BR3.6 and Question 9 (spacing tokens, Prettier)"
     },
     {
       "id": "BR7.2",
       "status": "N/A",
-      "target": "team.md Testing Posture (UI units), T-207 acceptance rows"
+      "target": "team.md Testing Posture (UI units), T-207 acceptance rows, T-011 WF8 (contrast:patient and check:motion in pnpm check)"
     },
     {
       "id": "BR8.1",
@@ -281,17 +281,27 @@
     {
       "id": "BR9.3",
       "status": "N/A",
-      "target": "team.md Way of Working steps 2–4, T-207 acceptance rows, risk-and-sequencing-rationale.md (R-03)"
+      "target": "team.md Way of Working steps 2–4 and 6, T-207 acceptance rows, risk-and-sequencing-rationale.md (R-03), T-010 (CI green on the Bolt head before merge)"
     },
     {
       "id": "BR9.4",
       "status": "N/A",
-      "target": "T-207 step 3, FD-022, BR2.9"
+      "target": "T-207 step 3, FD-008, FD-022, BR2.9, Question 1 (the owner's answer A), finding F23"
     },
     {
       "id": "BR9.5",
       "status": "N/A",
       "target": "project.md Mandated (ISS rows), team.md Way of Working, unit-of-work.md U20"
+    },
+    {
+      "id": "BR9.6",
+      "status": "N/A",
+      "target": "app/pages.test.tsx (T-010); team.md Way of Working (pnpm check green before merge); finding F10"
+    },
+    {
+      "id": "BR9.7",
+      "status": "N/A",
+      "target": "team.md Testing Posture (80% line floor); T-010 D10 and vitest.workspace.ts (untested files counted); finding F20"
     }
   ]
 }

@@ -2,7 +2,14 @@
 
 Draft written ahead of the stage. The lead finalises it when the workflow reaches this Unit; then it moves to `<record>/construction/t-103-staff-access-and-devices/functional-design/`.
 
-Component-level design for `functional-spec.md` (workflows WF1–WF10) and `rules.md` (BR1.1–BR12.5). It follows answer A to all ten questions in `functional-design-questions.md`, which await the owner's confirmation. Upstream: `unit-of-work.md` U10, `stories.md` US3.2 (AC3.2.5) and US11.1 (AC11.1.2), `auth-screens-spec.md` §4 and §5, the D-001 prototype (`ui-design-prototype/admin/app.js` `renderSignin`, `renderApprove`, `renderSecurity`, `renderStaffAccount`, `openStepUp`, and `admin/index.html`). The staff console keeps the Chart Tray look and the verbatim port of the prototype's `admin.css` (FD-030, FD-091, `project.md` Code Style); no new class is expected, and any that proves necessary is added to `admin.css` with `/* added: T-103 reason */`.
+Component-level design for `functional-spec.md` (workflows WF1–WF10) and `rules.md` (BR1.1–BR12.5). It follows answer A to all thirteen questions in `functional-design-questions.md`, which await the owner's confirmation. Upstream: `unit-of-work.md` U10, `stories.md` US3.2 (AC3.2.5) and US11.1 (AC11.1.2), `auth-screens-spec.md` §4 and §5, the D-001 prototype (`ui-design-prototype/admin/app.js` `renderSignin`, `renderApprove`, `renderSecurity`, `renderStaffAccount`, `openStepUp`, and `admin/index.html`). The staff console keeps the Chart Tray look and the verbatim port of the prototype's `admin.css` (FD-030, FD-091, `project.md` Code Style); no new class is expected, and any that proves necessary is added to `admin.css` with `/* added: T-103 reason */`.
+
+**The owner approved these screens as they are in the prototype** (`ui-design-prototype/admin/`, staff console look) on 2026-10-29 (FD-053; R1, which first said the build waits for that approval). This file follows those screens; the approval is copied into this Unit's record before Code Generation (BR12.5). Copy added for states the prototype does not show (the device-mismatch error, the `{minutes}` digits, the account-menu label: `functional-spec.md` § 8) changes no layout.
+
+Refreshed 2026-10-29 against T-010 as merged, the refreshed T-101 and T-102 drafts and U45 T-011's recorded design:
+- Every component imports only `contracts`, `i18n`, `web-shared` (`@/lib/*`, `@/i18n/routing`) and server actions under `apps/web/src/server/actions/**`, and gets its data by props (FD-093 (1)).
+- The shared form parts are U9's `components/patient/auth/{PasswordField,ErrorSummary,SessionsTable,ChangePasswordForm}.tsx`. U9 merges before this Unit.
+- `StepUpSheet` uses U45's sheet entry motion and `data-press`, and adds no CSS and no motion rule.
 
 The snippets below are interface-level sketches, not code to copy.
 
@@ -21,15 +28,17 @@ app/[locale]/admin/layout.tsx                 imports globals.css, admin.css; me
     └── page.tsx, queue/**, evidence, providers, config, notifications   (moved, unchanged)
 
 components/admin/auth/
-├── StaffSignInForm.tsx        'use client' (useActionState) — works without JS
-├── ApproveDevicePending.tsx   server
-├── ApproveDeviceRecheck.tsx   'use client' (useActionState) — works without JS
-├── StaffSecurity.tsx          server, with RevokeDeviceButton (client) and U9's parts
-├── RoleChip.tsx               server
-└── StaffAccountMenu.tsx       'use client' (opens Sheet)
-components/shared/StepUpSheet.tsx   'use client': StepUpSheet + useStepUp()
-components/shared/PasswordField.tsx  (U9's, if merged; otherwise a local field in auth/ with the same markup)
+├── StaffSignInForm.tsx        'use client' (useActionState, action staffSignIn) — works without JS
+├── ApproveDevicePending.tsx   server (props from the page: label, firstSeen, devInboxUrl?)
+├── ApproveDeviceRecheck.tsx   'use client' (useActionState, action approveDevice) — works without JS
+├── StaffSecurity.tsx          server (props: devices, sessions), with RevokeDeviceButton (client, action revokeDevice) and U9's parts
+├── RoleChip.tsx               server (prop: role, from the layout's Actor)
+└── StaffAccountMenu.tsx       'use client' (opens Sheet; U8's signOut action)
+components/shared/StepUpSheet.tsx   'use client': StepUpSheet + useStepUp() (action stepUp)
+components/patient/auth/{PasswordField,ErrorSummary,SessionsTable,ChangePasswordForm}.tsx   (U9's, reused unchanged)
 ```
+
+Imports allowed by T-010 for every file above: `@rogikotha/contracts`, `@rogikotha/i18n` (and `/format`), `@/lib/*`, `@/i18n/routing`, `components/**`, and `@/server/actions/{staff,step-up,account}`. Never `@/server/auth`, `@/server/container`, `@rogikotha/database`, `@rogikotha/adapters`, `better-auth`, `next/headers` or a Node built-in. Pages and layouts under `app/` read the Actor and the staff context through `@/server/auth` and pass plain props down.
 
 ## 2. Files
 
@@ -42,7 +51,8 @@ components/shared/PasswordField.tsx  (U9's, if merged; otherwise a local field i
 | `apps/web/src/components/admin/auth/*.tsx` and tests | New | yes |
 | `apps/web/src/components/admin/Masthead.tsx` | Add `RoleChip` and `StaffAccountMenu` in `.controls`, before `ThemeControls`; remove the `TODO(T-103)` | yes |
 | `apps/web/src/components/shared/StepUpSheet.tsx` and test | New | yes |
-| `apps/web/src/components/patient/auth/SecuritySettings.tsx` | One-line swap to `useStepUp()` only if U9 merged and Q9 changes; with Q9 A nothing to swap | yes |
+| `apps/web/src/components/patient/auth/SecuritySettings.tsx` | No change with Q9 A (`confirm='inline'` stays); a one-line swap to `useStepUp()` only if Q9 changes | yes |
+| `apps/web/src/components/patient/auth/{PasswordField,ErrorSummary,SessionsTable,ChangePasswordForm}.tsx` | Reused, unchanged (U9's) | not edited |
 | `packages/i18n/messages/{en,bn}.json` | `errors.auth.deviceMismatch`, `staff.account.menu` (new); `staff.device.body` (`{minutes}`) | yes |
 
 ## 3. Components
@@ -120,7 +130,8 @@ The page sets `Referrer-Policy: no-referrer` (BR5.11) and renders the form witho
 ### 3.5 `RoleChip` and `StaffAccountMenu` (masthead, spec §4)
 
 - `RoleChip` (server): `<span className="ctl" title={t('staff.role.chipTitle', {role: t(roleKey)})}><span>{chip}</span></span>` with `chip` = `SA` / `AD` / `MO` and `roleKey` = `admin.role.sa` / `admin.role.admin` / `admin.role.mod`. Read-only: not a button, no `aria-pressed`, no handler (BR10.7).
-- `StaffAccountMenu` (client): a `button.ctl` labelled `staff.account.menu` (visually the person glyph from the prototype's `renderStaffAccount`, inline SVG through `Icon`), opening `Sheet` titled `staff.account.menu` with a link to `/<locale>/admin/security` (`staff.security.title`) and a sign-out form (`.btn.ghost.small`, `auth.signOut`, posting U8's `account.signOut`). It shows no name or email (the console has no "current user" line, and view models carry no email).
+- `RoleChip` gets `role` as a prop from the `(console)` layout, which reads the Actor through `@/server/auth`; the component imports nothing from `server/`.
+- `StaffAccountMenu` (client): a `button.ctl` labelled `staff.account.menu` (visually the person glyph from the prototype's `renderStaffAccount`, inline SVG through `Icon`), opening `Sheet` titled `staff.account.menu` with a link to `/<locale>/admin/security` (`staff.security.title`) and a sign-out form (`.btn.ghost.small`, `auth.signOut`, posting U8's `signOut` server action from `@/server/actions/account`, which also deletes `rk_stepup`). It shows no name or email (the console has no "current user" line, and view models carry no email).
 
 ### 3.6 `StepUpSheet` and `useStepUp()` (spec §4.4)
 
@@ -133,7 +144,8 @@ const result = await withStepUp(() => applyConfig(input));
 
 - `sheet` is `<Sheet open title={t('staff.stepUp.title')}>` containing `<p className="note">{t('staff.stepUp.body')}</p>`, one password `.field` with a Show toggle, the error line (`errors.auth.invalidCredentials`, `errors.auth.rateLimited`) and `<button className="btn primary">{t('staff.stepUp.confirm')}</button>`.
 - `withStepUp(fn)`: run `fn`; if the result is `auth.step_up_required`, open the sheet and wait; on a successful `stepUp({password, purpose})` close it, clear the field and run `fn` once more; on close or Escape return the original error (BR7.8).
-- Only `.overlay`, `.sheet`, `.field`, `.btn`, `.note` (both stylesheets define them), so the patient side (U39's account deletion) reuses it under `patient.css`.
+- Only `.overlay`, `.sheet`, `.field`, `.btn`, `.note` (both stylesheets define them), so the patient side (U39's account deletion) reuses it under `patient.css`. On the patient side the sheet gets U45's entry motion from `.sheet` and `.overlay` and its button carries `data-press`; under `admin.css` nothing moves. The component adds no CSS and no motion rule (U45 BR4.7), so `check:motion` and `contrast:patient` stay green.
+- `StepUpSheet` imports the `stepUp` action from `@/server/actions/step-up` and `Sheet` from `components/shared/Sheet.tsx`; it never sees the signed cookie value (the action returns `{rechecked_at}` only).
 
 ## 4. States and accessibility
 
@@ -159,3 +171,4 @@ All keys exist in both files except the three in `functional-spec.md` § 8. Scre
 - `StaffSecurity`: device rows with the this-device badge; revoke button per row; Bengali dates.
 - `RoleChip`: the `title` for each of the three roles in both languages; no button role.
 - `StepUpSheet`: `withStepUp` re-runs once after success, never after cancel, clears the field on close.
+- All of them: rendered with props only (no server import), so the tests need no `next/headers` mock; the boundary lint covers the imports.

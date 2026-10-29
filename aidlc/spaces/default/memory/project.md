@@ -76,7 +76,7 @@
 
 - NEVER offer a "highest rated" sort (PRODUCT.md hard rule). (affirmed 2026-10-15)
 
-- NEVER use team Unit ownership or a parallel swarm for Construction while the no-identity rule stands (D13). (affirmed 2026-10-15)
+- NEVER build two Units in parallel when they depend on each other or touch the same files, and NEVER let a parallel build put tool, model or agent identity into a commit; independent Units are built in parallel through AI-DLC's swarm with one worktree and test database each (D13 as changed by the owner, FD-094). (amended by the owner 2026-10-29)
 
 - NEVER run `git reset --hard`, `git checkout --` or `git clean` on a dirty working tree (`01-conventions.md` §12). (affirmed 2026-10-15)
 

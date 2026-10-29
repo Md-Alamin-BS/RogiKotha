@@ -4,13 +4,16 @@ Draft written ahead of the stage. The lead finalises it when the workflow reache
 
 Source of truth for the Unit's decision logic. Built from `unit-of-work.md` (U11 and the deletion participants table), `unit-of-work-story-map.md` (US3.3), `requirements.md` (FR10, FR11, FR13, FR78), `stories.md` (AC3.3.1–AC3.3.6, AC10.2.1, AC10.2.3, AC10.3.3), `contract-summary.md` (C4, C5, C15 and the ownership rules), T-104, FD-008, FD-015, FD-016, FD-022, FD-065, FD-067, FD-069, FD-077, FD-078, FD-079, FD-086, FD-090, FD-092, FD-093, AD-3, the prototype (`byline()`, `accountsByAuthor()`, `renderPerson()`), the U8 and U10 drafts (`design-drafts/t-101-better-auth-adapter/`, `t-103-staff-access-and-devices/`) and the open `ISSUES.md` rows ISS-090, ISS-108, ISS-159, ISS-262 and ISS-264.
 
-The rules that depend on a question follow the answers in `functional-design-questions.md`: Questions 1–14 were chosen on the owner's standing instruction of 2026-10-27 and await the owner's confirmation; Question 15 is the owner's and BR6.3 holds both options until it is answered. `functional-spec.md` § 14 lists what changes if the owner reverses an answer. "Private repository" always means `PrivateIdentityRepository`, implemented only by `packages/database/src/repositories/identity-private.ts`. "Attempt" means one call of `identity.reveal` by a signed-in account whose input parsed.
+Refreshed 2026-10-29 against T-010 as merged (`14c21a9`), the refreshed U8 T-101 and U10 T-103 drafts, the T-201, T-202, T-207 and T-301 drafts and the owner's answers. The rules that changed are BR1.1, BR1.3, BR1.5–BR1.8, BR2.1–BR2.3, BR2.6, BR3.1, BR3.3, BR3.5, BR4.1, BR4.7, BR4.9, BR5.2, BR5.3, BR5.5, BR6.3, BR6.6, BR7.1–BR7.4, BR8.2, BR8.3 and BR8.5. BR3.7, BR7.8, BR8.6 and BR8.7 are new. A second pass the same day aligned the byline with the T-301 draft (its Question 18 A and F25: `profileUsername` for named and pseudonymous personas, no alias on list surfaces) and added `ownsAnyPersona` and the pseudonymous id of `currentPersonaOf` (T-301 Question 8, its F29).
+
+The rules that depend on a question follow the answers in `functional-design-questions.md`. Questions 1–14 were chosen on the owner's standing instruction of 2026-10-27. Question 15 is the owner's answer, B (2026-10-29). Questions 16–18 and R1 were decided by the agent under the owner's no-questions instruction of 2026-10-29. All but Question 15 await the owner's confirmation. `functional-spec.md` § 14 lists what changes if the owner reverses an answer. "Private repository" always means `PrivateIdentityRepository`, implemented only by `packages/database/src/repositories/identity-private.ts`. "Attempt" means one call of `identity.reveal` by a signed-in account whose input parsed.
 
 **Authorization and audit at a glance** (each line is a rule below):
 
 - `identity.reveal` requires: signed in → capability `identity.reveal` (Super Admin always; Admin and Moderator only with their toggle, U10) → a step-up under 5 minutes old → 20 attempts per hour (BR4.1, BR4.2, BR4.9).
 - Every attempt writes exactly one `identity_reveals` row, one audit row on the `identity` stream and one `identity.revealed` outbox event, whether granted or refused; malformed input and signed-out callers are refused and logged, not recorded (BR4.3, BR4.11, BR5.1).
 - A granted reveal returns `username` and `displayName`; `email` only to a Super Admin; never an account id or a persona id (BR4.7, BR4.8).
+- One public byline shape, `BylineVM`: named → display name and profile username; pseudonymous → username and profile username; anonymous → the thread alias on thread surfaces and no name on list surfaces; after deletion → "Former member" only; never an id (BR1.3, BR1.7, BR6.3).
 - Audit details on the `identity` stream: `revealId`, `targetKind`, `targetId`, `outcome`, `granted`, `requesterRole`, `purpose`, `personaKind?`, `step_up`; never the reason, an account id of the revealed person, a username or an email (BR5.5). `identity.deidentify` audits `account:<id>` `identity_deidentified {removedLinks, keptLinks}` (BR6.6).
 - Only the identity module receives the private repository; only `identity-private.ts` touches `persona_links` and `identity_reveals`; the worker can do neither (BR3.1–BR3.4).
 
@@ -22,7 +25,7 @@ rules:
     category: constraint
     applies_to: "packages/database/src/schema/identity.ts, every migration"
     trigger: "Any schema change"
-    logic: "personas columns stay {id, kind, display_name, username, avatar_hue, created_at} (plus deidentified_at only if Q15 = B); a schema test fails if a column whose name contains account, user or email is added to personas"
+    logic: "personas columns stay {id, kind, display_name, username, avatar_hue, created_at, deidentified_at} (deidentified_at added by this Unit's migration, Q15 B, with the check constraint personas_deidentified_scrubbed_ck of BR6.3); a schema test fails if a column whose name contains account, user or email is added to personas"
     violation: "An account column on a public table is a direct join from public content to the account (S1, threat T1)"
     source: "AD-3, 02-data-model.md §3, T-104 threat 1"
   - id: BR1.2
@@ -30,17 +33,17 @@ rules:
     category: constraint
     applies_to: "identity.createDefaultPersonas, account.register"
     trigger: "account.register creates a new account"
-    logic: "IF the account already has a named and a pseudonymous persona THEN return their ids ELSE insert named {display_name = displayName, username} and pseudonymous {display_name = username, username}, the same random avatar hue, and one persona_links row each with review_id null; no audit row of its own"
+    logic: "IF the account already has a named and a pseudonymous persona THEN return their ids ELSE insert named {display_name = displayName, username} and pseudonymous {display_name = username, username}, the same random avatar hue, and one persona_links row each with review_id null, through PrivateIdentityRepository.createDefault; no audit row of its own; U8's AccountRepository.insertDefaultPersonas (TODO(T-104)) is removed and account.register calls this operation instead (F28)"
     violation: "Missing or extra personas fail T-104's 'Register still works' row and U8's register test"
-    source: "T-104 step 3, C4 createDefaultPersonas, U8 BR1.10, 03 §4 account.register"
+    source: "T-104 step 3, C4 createDefaultPersonas, U8 BR1.10 and § 6.2 (insertDefaultPersonas TODO(T-104)), 03 §4 account.register"
   - id: BR1.3
-    statement: "The public projection of a persona is {kind, displayName, username?, avatarHue}, with username only for named and pseudonymous personas, and never any account field."
+    statement: "The public projection of a persona is the one BylineVM shape: personaKind, avatarHue, and exactly the fields its kind allows (named: displayName, initials and profileUsername; pseudonymous: username, initials and profileUsername; anonymous: alias, on the thread surface only; de-identified: formerMember), never any account field."
     category: constraint
-    applies_to: "packages/domain/src/identity/projection.ts, identity.publicProjection, PersonaPublicVM"
+    applies_to: "packages/domain/src/identity/{projection,byline}.ts, identity.publicProjection, identity.bylinesFor, BylineVM (PersonaPublicVM is its alias)"
     trigger: "Any public rendering of a persona"
-    logic: "publicProjection(p) = {kind: p.kind, displayName: p.displayName, username: p.kind === 'anonymous' ? undefined : p.username, avatarHue: p.avatarHue}; property test over 1 000 generated personas: the JSON contains no key from the denylist (id, personaId, accountId, account_id, email, reviewId, review_id, createdAt, userId, authUserId, linkId)"
-    violation: "A denylisted key in public JSON is a linkage leak (S1)"
-    source: "T-104 step 1 and acceptance row 'No linkage in projection', C4 publicProjection, 03 §2"
+    logic: "named → {personaKind, displayName, initials, profileUsername = username, avatarHue}; pseudonymous → {personaKind, username, initials, profileUsername = username, avatarHue}; anonymous → {personaKind, alias = display_name, avatarHue: 0} on the thread surface and {personaKind, avatarHue: 0} on the list surface; deidentified_at set → {personaKind, formerMember: true, avatarHue: 0}; profileUsername follows FR11 and AC10.2.1 (a public profile shows the username and display name with the account's non-anonymous contributions) and T-301 Q18 A, which supersedes T-202 Q7 A; property test over 1 000 generated personas: the JSON contains no key from the denylist (id, personaId, accountId, account_id, email, reviewId, review_id, createdAt, userId, authUserId, linkId) and the field presence is exactly as listed for each kind and surface"
+    violation: "A denylisted key in public JSON is a linkage leak (S1); a profile username on an anonymous or former-member byline links what FD-015 and FR13 keep apart (S1); an alias on a list card carries it out of its thread; a second byline shape in another module drifts (F27)"
+    source: "T-104 step 1 and acceptance row 'No linkage in projection', C4 publicProjection, 03 §2, FR11, AC10.2.1, Questions 6, 15 and 17, T-301 draft Question 18 A and F25"
   - id: BR1.4
     statement: "No view model or byline data carries a persona id, an account id, a review id or a persona timestamp."
     category: constraint
@@ -50,11 +53,11 @@ rules:
     violation: "A persona id in a view model lets readers match anonymous personas across pages by id or by creation time (threat T2, F23)"
     source: "03 §2 (view models never carry accountId or private linkage), FD-015, design decision"
   - id: BR1.5
-    statement: "A persona is an immutable snapshot: its kind, display name, username and hue never change, except for the de-identification step of BR6.3."
+    statement: "A persona is an immutable snapshot: its kind, display name, username and hue never change, except for the one-way de-identification scrub of BR6.3."
     category: constraint
     applies_to: "PrivateIdentityRepository, IdentityRepository"
     trigger: "Any write to personas"
-    logic: "The repositories expose no update of personas other than deidentifyNames (only if Q15 = B); a rename creates a new persona (BR6.7)"
+    logic: "The repositories expose no update of personas other than scrubDeidentified (BR6.3), which only sets deidentified_at, empties display_name, nulls username and sets avatar_hue 0, never the reverse; a rename creates a new persona (BR6.7)"
     violation: "Editing a snapshot rewrites old bylines retroactively (threat T6)"
     source: "AD-3, 02-data-model.md §3 rules, T-104 threat 6"
   - id: BR1.6
@@ -62,23 +65,23 @@ rules:
     category: constraint
     applies_to: "createDefaultPersonas, personaFor, renameNamed"
     trigger: "A persona is created"
-    logic: "named and pseudonymous: hue = random integer 0-359 from the Crypto port, the pseudonymous persona copies the named one's, a rename copies the current one's; anonymous: hue = 0, never derived from the account or the thread"
+    logic: "named and pseudonymous: hue = random integer 0-359 drawn from Crypto.randomBytes (rejection sampling, F30), the pseudonymous persona copies the named one's, a rename copies the current one's; anonymous: hue = 0, never derived from the account or the thread; a de-identified persona: hue 0 (BR6.3)"
     violation: "A hue shared by one account's anonymous personas would correlate threads (threat T2)"
     source: "FD-015, seed corpus (anonymous avatarHue 0), prototype byline (anonymous avatar shows a dash)"
   - id: BR1.7
-    statement: "identity.bylinesFor returns, per persona and in input order, the kind, the name, the initials, the chip key, whether it is anonymous and, for named and pseudonymous personas, the username for the profile link; components pick the lede key by variant."
+    statement: "identity.bylinesFor({personaIds, surface}) returns, per persona and in input order, the one BylineVM of BR1.3 for that surface; every module that shows an author takes it from identity, and components pick the lede key, the chip and the link by personaKind and variant."
     category: calculation
-    applies_to: "packages/domain/src/identity/byline.ts, identity.bylinesFor, BylineVM"
+    applies_to: "packages/domain/src/identity/byline.ts, identity.bylinesFor, BylineVM; consumers U14 T-201 (ProviderExperience), U15 T-202, U16 T-203, U21 T-301, U27 T-307, U30 T-401, U31 T-402, U38 T-409"
     trigger: "A page renders review, comment or reaction bylines"
-    logic: "name = displayName (anonymous: the alias, Q6); initials: named = first grapheme of the first and the last word after removing a leading Dr. or ডা., pseudonymous = '@' + first grapheme, anonymous = none; chipKey = byline.identity.real | byline.identity.pseudo | compose.identity.anon; profileUsername only for named and pseudonymous; at most 200 ids per call; unknown ids are omitted"
-    violation: "Different byline data per page breaks AC3.3.1's 'the chosen identity is shown on the review, on the author's comments and in that thread's reaction lists'"
-    source: "T-104 step 7, prototype byline() and initials(), AC3.3.1, Question 6"
+    logic: "fields per BR1.3; initials: named = first grapheme of the first and of the last word after removing a leading Dr. or ডা. (Intl.Segmenter), pseudonymous = '@' + first grapheme, anonymous and former member = none; surface thread (the experience page and its preview, comments, the thread's reaction lists) or list (experience cards, facility accounts, search results, profile lists), list omitting alias and nothing else; components: named → the display name linking to /<locale>/authors/<profileUsername> with chip byline.identity.real; pseudonymous → @username linking to /<locale>/authors/<profileUsername> with chip byline.identity.pseudo; anonymous → byline.anonSentence (with the alias on the thread surface) and chip compose.identity.anon, never a link; former member → byline.formerMember, no chip, never a link; at most 200 ids per call; unknown ids are omitted; no module reads personas to build its own byline"
+    violation: "Different byline data per page breaks AC3.3.1's 'the chosen identity is shown on the review, on the author's comments and in that thread's reaction lists'; a byline without the alias fails AC3.3.2 (F27)"
+    source: "T-104 step 7, prototype byline() and initials() (a real-name author's name links to the profile), AC3.3.1, AC3.3.2, AC10.2.1, Questions 6 and 17, T-301 draft Question 18 A and F25 (supersedes T-202 Q7 A)"
   - id: BR1.8
     statement: "Lookups by username return the pseudonymous persona of that username, else the current named one, and never an anonymous persona; a persona's username is a copy of its account's username and is not validated again by identity."
     category: policy
     applies_to: "IdentityRepository.findPublicByUsername, identity.publicByUsername"
     trigger: "A mention, a profile route or any other code resolves a username"
-    logic: "WHERE username = :u AND kind IN (pseudonymous, named) ORDER BY kind = pseudonymous DESC, created_at DESC LIMIT 1; anonymous personas have username null and are never matched, even when :u equals an alias; the stored value is matched exactly, so seeded named_<slug> names with hyphens still resolve (Q11)"
+    logic: "WHERE username = :u AND kind IN (pseudonymous, named) AND deidentified_at IS NULL ORDER BY kind = pseudonymous DESC, created_at DESC LIMIT 1; anonymous personas have username null and are never matched, even when :u equals an alias; a scrubbed persona has username null and is never matched; the stored value is matched exactly, so seeded named_<slug> names with hyphens still resolve (Q11)"
     violation: "Resolving an alias or an anonymous persona by name is the path FD-015 forbids (mentions, profiles)"
     source: "FD-015, AC3.3.3, 03 §4 comment.post (anonymous personas cannot be mentioned), ISS-159, ISS-264, Question 11"
 
@@ -88,7 +91,7 @@ rules:
     category: calculation
     applies_to: "packages/domain/src/identity/alias.ts newAnonymousAlias"
     trigger: "A new anonymous persona is created"
-    logic: "Draw bytes; keep a byte b only if b < 248; char = ALPHABET[b % 31]; repeat until 4 chars; alias = 'patient-' + chars; no hash or encoding of an account id, review id, time or counter"
+    logic: "Draw bytes from Crypto.randomBytes (the port method added here, F30); keep a byte b only if b < 248; char = ALPHABET[b % 31]; repeat until 4 chars; alias = 'patient-' + chars; no hash or encoding of an account id, review id, time or counter; the seed calls the same pure function with a seeded byte source keyed by the corpus persona key (F26)"
     violation: "An alias derived from account data links threads (threat T2); a confusable character or a biased draw weakens the alias space"
     source: "T-104 step 1 (alphabet, no confusables), FD-015, construction.md Security"
   - id: BR2.2
@@ -96,7 +99,7 @@ rules:
     category: constraint
     applies_to: "personaFor, the migration (personas_anonymous_alias_uq)"
     trigger: "Inserting an anonymous persona hits the alias unique index"
-    logic: "Partial unique index on personas(display_name) WHERE kind = anonymous; on its unique violation roll back the savepoint and retry with a new alias; after 5 attempts return err internal and log identity.alias_exhausted {attempts}; ASSUMPTION(T-104): 4 characters suffice for the demo (F22)"
+    logic: "Partial unique index on personas(display_name) WHERE kind = anonymous; PrivateIdentityRepository.createAnonymousPersona runs its inserts in a savepoint of its own and returns alias_taken on that index's unique violation, leaving the caller's transaction usable (the application cannot open a savepoint on its opaque Tx, Q18); identity retries with a new alias; after 5 attempts return err internal and log identity.alias_exhausted {attempts}; ASSUMPTION(T-104): 4 characters suffice for the demo (F22)"
     violation: "Two anonymous authors with one alias in a thread are indistinguishable; an unbounded retry loop hangs a publish"
     source: "T-104 step 3 (alias uniqueness retried on collision), acceptance test 'alias collision retry'"
   - id: BR2.3
@@ -104,7 +107,7 @@ rules:
     category: constraint
     applies_to: "personaFor, PrivateIdentityRepository.findAnonymousFor, the migration (persona_links_account_review_uq)"
     trigger: "Anonymous mode with a review id"
-    logic: "Look up persona_links (account_id, review_id); found THEN its persona; ELSE create the persona and link in a savepoint; a unique violation on (account_id, review_id) WHERE review_id IS NOT NULL THEN roll back the savepoint and re-read the existing link"
+    logic: "Look up persona_links (account_id, review_id); found THEN its persona; ELSE createAnonymousPersona (the repository's savepoint); thread_taken (a unique violation on (account_id, review_id) WHERE review_id IS NOT NULL) THEN re-read the existing link"
     violation: "Two personas for one author in one thread breaks AC3.3.1 ('no other identity anywhere in the thread'); a shared persona across threads breaks AC3.3.2 and FD-015"
     source: "T-104 step 3 and acceptance row 'Alias scoped', FD-015, AC3.3.1, AC3.3.2"
   - id: BR2.4
@@ -128,7 +131,7 @@ rules:
     category: constraint
     applies_to: "IdentityRepository, identity.publicByUsername, bylinesFor"
     trigger: "Any public lookup or listing"
-    logic: "username null; profileUsername absent in BylineVM; findPublicByUsername excludes it; identity offers no 'personas of the same account' query on the public side"
+    logic: "username null; an anonymous BylineVM carries only personaKind, avatarHue 0 and, on the thread surface only, alias; never profileUsername, and components never link it; findPublicByUsername excludes it; identity offers no 'personas of the same account' query on the public side"
     violation: "Fails AC3.3.3 (anonymous content on the profile, activity, mentions or other reviews) and FD-015"
     source: "FD-015, AC3.3.2, AC3.3.3, prototype accountsByAuthor() returning [] for anonymous"
   - id: BR2.7
@@ -162,7 +165,7 @@ rules:
     category: constraint
     applies_to: "packages/database/src/repositories/identity-private.ts and every other source file"
     trigger: "Any source change"
-    logic: "A unit test lists every non-test source file importing the personaLinks or identityReveals table symbols and allows only repositories/identity-private.ts, schema/*.ts, migrations and the FD-040 seed; the account repository's persona reads move to identity (BR3.5)"
+    logic: "A unit test lists every non-test source file importing the personaLinks or identityReveals table symbols and allows only repositories/identity-private.ts, schema/*.ts, migrations and the FD-040 seed; U8's interim AccountRepository.insertDefaultPersonas is removed (F28), so the account repository neither reads nor writes personas or persona_links (BR3.5)"
     violation: "A second reader is a second path to the account behind an anonymous persona (S1, threat T5)"
     source: "T-104 goal and step 2, AD-3, 02-data-model.md §3 ('readable only by identity module')"
   - id: BR3.2
@@ -174,7 +177,7 @@ rules:
     violation: "Another module holding the repository can join personas to accounts outside the reveal command (threat T5)"
     source: "Question 8, T-104 step 6 and threat 5, C4 (accountsOf, personasOf, deidentify)"
   - id: BR3.3
-    statement: "The private operations accountsOf, personasOf and currentPersonaOf are internal: callable by application modules and the web composition root, never exposed as a server action or route handler."
+    statement: "The private operations accountsOf, personasOf, currentPersonaOf and ownsAnyPersona are internal: callable by application modules and the web composition root, never exposed as a server action or route handler."
     category: authorization
     applies_to: "packages/application/src/modules/identity/internal/, apps/web/src/server/actions/**"
     trigger: "Any server action or route handler is added"
@@ -186,7 +189,7 @@ rules:
     category: authorization
     applies_to: "rk_worker grants, eslint boundary rules, apps/worker"
     trigger: "Any worker change or grant change"
-    logic: "Integration test as rk_worker: select from persona_links and from identity_reveals each fail with permission denied (-t worker-grants); FD-093's lint refuses a worker value import of modules/identity/; no grant change in this Unit"
+    logic: "Integration test as rk_worker: select from persona_links and from identity_reveals each fail with permission denied (-t worker-grants); FD-093's lint refuses a worker value import of modules/identity/ by any specifier, a relative path included (FD-093 (2)); no grant change in this Unit"
     violation: "Fails T-104's 'Worker cannot read links' row; breaks FD-092 and AD-6"
     source: "T-104 step 5, 02-data-model.md §16 (f), FD-092, FD-093, 01-conventions §11"
   - id: BR3.5
@@ -194,9 +197,9 @@ rules:
     category: constraint
     applies_to: "apps/web/src/server/auth.ts getActor"
     trigger: "Every request that resolves an Actor"
-    logic: "personaId = identity.currentPersonaOf({accountId}).namedPersonaId; the account repository has no method that reads personas or persona_links"
+    logic: "U8's getActor leaves personaId unset; identity.currentPersonaOf({accountId}) returns {namedPersonaId, pseudonymousPersonaId} (the pseudonymous id serves U21 T-301's write-free preview, its Question 8 refresh); this Unit adds personaId = namedPersonaId to the inputs server/auth.ts gathers for a non-deleted account Actor (cached per request), passed through U8's pure resolveActor; the account repository has no method that reads personas or persona_links"
     violation: "The account repository reading persona_links is a second reader (BR3.1, F9)"
-    source: "U8 draft getActor ('personaId = the named persona'), AD-3, finding F9"
+    source: "U8 refreshed draft BR4.3 ('T-104 fills it through identity.currentPersonaOf') and F26, AD-3, finding F9, T-301 draft Question 8 refresh and F29"
   - id: BR3.6
     statement: "Identity logs never put an account id and a persona id, an alias or a username in one line, and never log a reveal reason, a revealed identity or an email."
     category: constraint
@@ -205,6 +208,14 @@ rules:
     logic: "Allowed fields: event, correlationId, one opaque id kind per line (personaId or accountId or revealId), enums, counts; a log-capture test runs every identity operation and asserts no line holds both an account id and a persona id, and none holds an email, an alias, a username or the reason"
     violation: "Account and persona pairs in logs re-create the private link outside the database (threat T8, S1)"
     source: "T-104 threat 8, 01-conventions §11"
+  - id: BR3.7
+    statement: "identity.ownsAnyPersona({accountId, personaIds}) answers one boolean: whether any of the given personas is linked to the account; nothing else about the link leaves identity."
+    category: authorization
+    applies_to: "packages/application/src/modules/identity/internal/owns-any-persona.ts, PrivateIdentityRepository.ownsAny; caller U21 T-301 (review.publish, the repeat-episode flag of FD-080)"
+    trigger: "A module needs to know whether an account is the author behind one of a few personas"
+    logic: "personaIds: 1-50 uuids, de-duplicated, ELSE validation; ownsAny(tx, accountId, personaIds) = EXISTS (SELECT 1 FROM persona_links WHERE account_id = :a AND persona_id = ANY(:ids)); returns true or false only, never which persona, how many or of which kind; internal (BR3.3) and unreachable from the worker (BR3.4); the result is never logged, and the caller keeps it only as its own flag"
+    violation: "A per-persona answer or a public path is an account-to-persona oracle (S1); giving Review accountsOf instead would hand it account ids (T-301 Question 8 option B)"
+    source: "T-301 draft Question 8 A and F29, FD-080 (repeat-episode flag), C4 (additive), AD-3"
 
   # Group 4 — Reveal authorization
   - id: BR4.1
@@ -212,9 +223,9 @@ rules:
     category: authorization
     applies_to: "packages/application/src/modules/identity/commands/reveal-identity.ts"
     trigger: "Every call"
-    logic: "requires: {authenticated: true, capability: 'identity.reveal', stepUp: true}; order authenticated → capability → stepUp (U10 BR7.4), so an actor without the capability gets forbidden, not a password prompt"
+    logic: "requires: {authenticated: true, capability: 'identity.reveal', stepUp: true}; U8's order authenticated → verifiedEmail → notRestricted → staffRole → capability → stepUp → owner, so an actor without the capability gets forbidden, not a password prompt; Actor.stepUp is filled by U10 from rk_stepup"
     violation: "Reveal without capability or step-up fails AC3.3.5 and FD-016 (S1)"
-    source: "T-104 step 4, C4 reveal, AC3.3.5, FD-016, U10 BR7.4"
+    source: "T-104 step 4, C4 reveal, AC3.3.5, FD-016, U8 BR7.11, U10 BR7.3 and BR7.4"
   - id: BR4.2
     statement: "The capability comes only from U10's table: Super Admin always, Admin and Moderator only when their revealIdentity toggle is on, read on every request."
     category: authorization
@@ -260,7 +271,7 @@ rules:
     category: authorization
     applies_to: "identity.reveal, RevealContact (modules/account/reveal-contact.ts)"
     trigger: "A linked account was found"
-    logic: "contactForReveal(tx, accountId, {withEmail: actor.staffRole === 'super_admin'}); withEmail false THEN the implementation does not read the auth user; a deleted account gives its username and last display name and no email"
+    logic: "contactForReveal(tx, accountId, {withEmail: actor.staffRole === 'super_admin'}); withEmail true THEN the email is read with U8's AccountRepository.findOwnEmail(accountId), web tier only; withEmail false THEN the implementation does not read the auth user; a deleted account gives its username and last display name and no email"
     violation: "An email shown to an Admin or Moderator goes beyond T-104 step 4 and C4 (email?: super admin only)"
     source: "T-104 step 4 (email only for super_admin), C4 RevealContact and result, Question 3"
   - id: BR4.8
@@ -276,7 +287,7 @@ rules:
     category: policy
     applies_to: "identity.reveal, RateLimiter port"
     trigger: "Every authorised-so-far attempt"
-    logic: "Key identity:reveal:account:<accountId>, 20 per 60 minutes, checked after the step-up check; over THEN onRefused records rate_limited and the result carries retryAfterSec"
+    logic: "Key identity:reveal:account:<accountId>, 20 per 60 minutes, checked after the step-up check and before the target is resolved; over THEN the attempt is recorded with outcome rate_limited and the result carries retryAfterSec; recorded either by onRefused, if U8's defineCommand offers a command-level limit that refuses through it (U8 BR7.11), or by the handler with err('rate_limited', {recorded: true})"
     violation: "One step-up window could otherwise reveal without bound (threat T10)"
     source: "Question 13, T-104 threat 4, 03 §3 RateLimiter"
   - id: BR4.10
@@ -310,17 +321,17 @@ rules:
     category: constraint
     applies_to: "packages/application/src/command.ts defineCommand, identity.reveal onRefused"
     trigger: "A capability, step-up or rate-limit refusal of a signed-in account"
-    logic: "defineCommand calls onRefused({actor, input, refusal}) for every refusal after authenticated (widening U10 BR7.4, which runs it on step-up only); onRefused runs in withTx and writes the record with the target unresolved; IF it throws THEN log identity.refusal_unrecorded {correlationId} and return err internal; the attempt is refused either way"
-    violation: "A capability refusal without a row breaks BR5.1 (F12); a refusal reported normally after its record failed hides a gap in the record"
-    source: "01-conventions §3 (onRefused), T-104 step 4 (catch the refusal inside the wrapper for this command only), U10 BR7.4, Question 1"
+    logic: "U8's defineCommand calls onRefused({actor, input, refusal}) for every refusal after authenticated, in its own committed transaction (U8 BR7.11; this Unit does not change command.ts); identity.reveal's onRefused writes the record with the target unresolved; IF it throws THEN log identity.refusal_unrecorded {correlationId} and return err internal; the attempt is refused either way"
+    violation: "A capability refusal without a row breaks BR5.1 (F12, closed by U8); a refusal reported normally after its record failed hides a gap in the record"
+    source: "01-conventions §3 (onRefused), T-104 step 4 (catch the refusal inside the wrapper for this command only), U8 BR7.11, Question 1"
   - id: BR5.3
     statement: "A handler-level outcome is recorded in the command's own transaction, together with the link read; a granted identity leaves the server only after that transaction commits, and a failed commit returns internal with no identity."
     category: constraint
     applies_to: "identity.reveal handler, defineCommand"
     trigger: "An authorised attempt"
-    logic: "Granted: record, audit and outbox in the handler's tx, then ok; refusals at BR4.4–BR4.6: record, then err(code, {recorded: true}); defineCommand commits a handler err only when recorded is set (by default an err rolls back, so no other command changes)"
+    logic: "Granted: record, audit and outbox in the handler's tx, then ok; refusals at BR4.4–BR4.6 (and BR4.9 when the handler checks the limit): record, then err(code, {recorded: true}); U8's UnitOfWork commits a handler err only when recorded is set and strips the flag (by default an err rolls back)"
     violation: "An identity returned with no record, or a refusal whose record rolled back, breaks BR5.1 (threat T3)"
-    source: "C4 reveal, 01-conventions §3 (one transaction with audit and outbox), design decision (functional-spec.md § 10.2)"
+    source: "C4 reveal, 01-conventions §3 (one transaction with audit and outbox), U8 BR7.11 and § 10.1, functional-spec.md § 10.2"
   - id: BR5.4
     statement: "An identity_reveals row holds the requester account, the requester's staff role or null, the target kind and id, the purpose, the outcome, the reason, granted, and the revealed account only when granted."
     category: constraint
@@ -334,9 +345,9 @@ rules:
     category: constraint
     applies_to: "identity.reveal through AuditWriter"
     trigger: "recordAttempt"
-    logic: "details = {revealId, targetKind, targetId, outcome, granted, requesterRole: role | null, purpose, personaKind?, step_up: actor.stepUp !== undefined}; never the reason, the revealed account id, a username, a display name or an email; AuditWriter's allowlist check (recursive, ISS-108) passes"
+    logic: "details = {revealId, targetKind, targetId, outcome, granted, requesterRole: role | null, purpose, personaKind?, step_up: actor.stepUp !== undefined}, built by the identity stream's detail builder added to U8's allowlist; never the reason, the revealed account id, a username, a display name or an email; U8's recursive allowlist check (ISS-108, closed by U8) passes"
     violation: "Free text or identity data in audit_events, which the console reads, spreads the reveal beyond its record (S1)"
-    source: "01-conventions §5 (allowlisted details), audit_events stream identity (02-data-model.md §9), U10 BR7.5, ISS-108"
+    source: "01-conventions §5 (allowlisted details), audit_events stream identity (02-data-model.md §9), U10 BR7.5, ISS-108 (U8 BR8.2)"
   - id: BR5.6
     statement: "The identity.revealed outbox event carries {revealId, granted, outcome, targetKind, targetCode?, requesterRole} and nothing that identifies a person."
     category: constraint
@@ -380,13 +391,13 @@ rules:
     violation: "A foreign kept id hides a caller bug that could keep the wrong links"
     source: "Design decision (C4 keepPersonaIds)"
   - id: BR6.3
-    statement: "After de-identification a named or pseudonymous persona's public display follows the owner's answer to Question 15: A keeps the snapshot as it is; B shows 'Former member' and no username."
+    statement: "After de-identification a named or pseudonymous persona shows 'Former member', with no username, no initials and no profile link, and its stored snapshot is scrubbed in the same transaction."
     category: policy
-    applies_to: "identity.deidentify, publicProjection, bylinesFor"
-    trigger: "identity.deidentify removed a persona's link"
-    logic: "A: no persona change. B: set personas.deidentified_at = now for the account's named and pseudonymous personas whose links were removed; the projection then returns displayName omitted, username omitted, formerMember true, and components render byline.formerMember; held (kept) personas change only when T-309's function removes their link"
-    violation: "Undecided: A leaves a deleted person's real name public (FR13 says 'de-identifies'); B contradicts C4, the Units table and T-410 ('personas keep their snapshots'); building either without the owner's answer changes a data boundary unilaterally"
-    source: "T-104 step 3 and acceptance row 'Deidentify', C4 deidentify notes, T-410 step 3, unit-of-work deletion participants, FR13, AC10.3.3, Question 15"
+    applies_to: "identity.deidentify, PrivateIdentityRepository.scrubDeidentified, publicProjection, bylinesFor, the migration's personas_deidentified_scrubbed_ck"
+    trigger: "identity.deidentify removed a named or pseudonymous persona's link"
+    logic: "scrubDeidentified(tx, personaIds) for the removed personas of kind named or pseudonymous: deidentified_at = now, display_name = '', username = null, avatar_hue = 0; CHECK (deidentified_at IS NULL OR (kind <> 'anonymous' AND display_name = '' AND username IS NULL AND avatar_hue = 0)); the projection then returns {personaKind, formerMember: true, avatarHue: 0} and components render byline.formerMember; anonymous personas are never scrubbed (BR6.4); held (kept) personas change only when T-309's FD-090 function removes their link, and that function applies the same scrub (FD-<next: Former member>, F32)"
+    violation: "Keeping the name stored or public leaves a deleted person identifiable on retained posts and readable by rk_worker (FR13 'de-identifies', threat T14)"
+    source: "T-104 step 3 and acceptance row 'Deidentify', FR13, AC10.3.3, Question 15 (the owner's answer B, 2026-10-29), Question 16, FD-<next: Former member> (amends C4, T-410 step 3 and the Units table)"
   - id: BR6.4
     statement: "De-identification never changes an anonymous persona: its alias text stays and only its link goes."
     category: constraint
@@ -404,11 +415,11 @@ rules:
     violation: "Deleting reveal history breaks AC3.3.5's unchangeable audit"
     source: "T-410 step 3, 02-data-model.md §10, AC3.3.5"
   - id: BR6.6
-    statement: "identity.deidentify writes one audit row on account:<accountId>, action identity_deidentified, with the two counts."
+    statement: "identity.deidentify writes one audit row on account:<accountId>, action identity_deidentified, with the three counts."
     category: constraint
     applies_to: "identity.deidentify"
     trigger: "identity.deidentify succeeds"
-    logic: "details {removedLinks, keptLinks}; no persona ids"
+    logic: "details {removedLinks, keptLinks, scrubbed}; no persona ids; built by the detail builder added to U8's allowlist"
     violation: "An irreversible privacy change without an audit row breaks 01-conventions §5"
     source: "01-conventions §5 (every state change audited)"
   - id: BR6.7
@@ -434,15 +445,15 @@ rules:
     category: policy
     applies_to: "contract-summary.md C4 and C15, 03-routes-and-contracts.md §4, 02-data-model.md §3"
     trigger: "Code Generation"
-    logic: "C4: personaFor as an internal operation, bylinesFor, publicByUsername, currentPersonaOf, RevealIdentityInput with purpose and REVEAL_TARGET_KINDS, result {username, displayName, email?}, RevealTarget with targetCode, RevealContact with displayName and withEmail; C15: identity.revealed payload; 03 §4 the same; 02 §3 the new columns, enums and indexes"
+    logic: "FD-<next: Former member> appended before any code; C4: personaFor as an internal operation, bylinesFor with its surface and the one BylineVM (PersonaPublicVM its alias), publicByUsername, currentPersonaOf with the pseudonymous id, ownsAnyPersona, RevealIdentityInput with purpose and REVEAL_TARGET_KINDS, result {username, displayName, email?}, RevealTarget with targetCode, RevealContact with displayName and withEmail, deidentify with the Former-member scrub; C15: identity.revealed payload; 03 §2 BylineVM with profileUsername (T-202's Byline renders a named author as a profile link, F33), 03 §4 the same as C4; 02 §3 the new columns, enums, indexes and the check constraint; unit-of-work.md deletion participants and T-410 step 3 per FD-<next: Former member>"
     violation: "Leaving the old text recreates source drift"
-    source: "contract-summary.md (the provider Unit owns its block; consumers ignore unknown fields), errors.ts header rule"
+    source: "contract-summary.md (the provider Unit owns its block; consumers ignore unknown fields), errors.ts header rule, project.md Mandated (FD entry before code)"
   - id: BR7.2
     statement: "All schema changes of this Unit are one forward-only migration with the next free number."
     category: constraint
     applies_to: "packages/database/src/migrations/"
     trigger: "Code Generation"
-    logic: "The ten items of functional-spec.md § 7 in one drizzle custom migration whose journal timestamp is later than the previous one; migrations.int.test.ts count + 1"
+    logic: "The ten items of functional-spec.md § 7 in one drizzle custom migration whose journal timestamp is later than the previous one; migrations.int.test.ts and validator-probes.int.test.ts (P8) counts + 1, each with a comment; no SECURITY DEFINER function, so the CR-006 adversarial test's definer list is unchanged"
     violation: "An out-of-order journal entry is skipped silently (the CR-006 lesson)"
     source: "02-data-model.md (forward-only), CR-006 hand-off"
   - id: BR7.3
@@ -450,7 +461,7 @@ rules:
     category: policy
     applies_to: "packages/i18n/messages/{en,bn}.json"
     trigger: "A key is added"
-    logic: "errors.identity.reasonTooShort; byline.formerMember only if Q15 = B; Bengali flagged for the owner's review (FD-042 precedent)"
+    logic: "errors.identity.reasonTooShort; byline.formerMember (en 'Former member', bn 'প্রাক্তন সদস্য', Q15 B); Bengali flagged for the owner's review (FD-042 precedent)"
     violation: "A key without its Bengali string fails the parity check and the project rule"
     source: "project.md Mandated (Bengali and English), ADR 0011"
   - id: BR7.4
@@ -458,7 +469,7 @@ rules:
     category: policy
     applies_to: "docs/implementation/ISSUES.md"
     trigger: "End of Code Generation"
-    logic: "Closed: ISS-090 (identity half: reveal_target_kind), ISS-108 if fixed here (Q12), ISS-159 and ISS-264 (ruling of Q11); updated: ISS-262 (identity offers the mechanism, Q10; the product rule stays with U30); new rows F1–F25 of functional-spec.md § 9"
+    logic: "Closed: ISS-090 (identity half: reveal_target_kind), ISS-290 (the identity fake replaced), ISS-159 and ISS-264 (ruling of Q11), ISS-108 only if it was still open and fixed here (Q12; U8 closes it); noted: ISS-294 (the stub test updated in the same commit); updated: ISS-262 (identity offers the mechanism, Q10; the product rule stays with U30); new rows F1–F33 of functional-spec.md § 9.2 that are still open or record a decision"
     violation: "An unrecorded defect breaks the defect-register rule"
     source: "project.md Mandated (ISS rows), team.md Way of Working"
   - id: BR7.5
@@ -485,6 +496,14 @@ rules:
     logic: "The account subject's id is used only inside the transaction to call RevealContact and fill revealed_account_id when granted; the outbox carries the case code, not the account"
     violation: "Breaks the PRODUCT.md hard rule on reporter identity and FD-086 (S1)"
     source: "PRODUCT.md hard rule (project.md Forbidden), 01-conventions §5, FD-086, 03 §4 moderation.revealReporter"
+  - id: BR7.8
+    statement: "Identity adds no copy about anonymity limits or staff access: the public experience page carries no anonymity caveat, the composer's note is reworded without the legal or staff-access sentence by U26 T-306, and the explanation lives on both the Terms and the Privacy Policy."
+    category: policy
+    applies_to: "packages/i18n/messages (identity keys), compose.identity.anonNote (U26 T-306, U27 T-307), the experience page margin (U21 T-301)"
+    trigger: "Code Generation of this Unit and of the Units that render these strings"
+    logic: "This Unit changes neither compose.identity.anonNote nor any policy text; BylineVM and the projections carry no anonymity note; the FD entries are U21 T-301's (its Q16 A) and U20 T-207's (its Q1, the owner's answer)"
+    violation: "A staff-access or lawful-disclosure warning on the review page or in the writing flow fails AC3.3.6 and FD-022"
+    source: "R1 (decided by the agent under the owner's no-questions instruction of 2026-10-29), T-301 draft Q16 A, T-207 draft Q1 (owner), FD-008, FD-022, AC3.3.6"
 
   # Group 8 — Verification
   - id: BR8.1
@@ -500,15 +519,15 @@ rules:
     category: validation
     applies_to: "identity.smoke.test.ts"
     trigger: "Code Generation"
-    logic: "A seeded anonymous persona's projection has an alias and no username; personaFor returns the same persona twice for one thread"
+    logic: "A seeded anonymous persona's thread byline has an alias and neither username nor profileUsername, and its list byline has no alias; personaFor returns the same persona twice for one thread"
     violation: "Fails team.md (cumulative smoke suite)"
     source: "team.md Testing Posture"
   - id: BR8.3
-    statement: "pnpm check, pnpm smoke and pnpm test:int are green before the Unit is done."
+    statement: "pnpm check, pnpm smoke and pnpm test:int are green before the Unit is done, and CI is green on the pushed Bolt head before merge."
     category: validation
     applies_to: "U11"
     trigger: "End of Code Generation and Build and Test"
-    logic: "All three exit 0 on the Bolt branch and on main after the merge"
+    logic: "All three exit 0 on the Bolt branch and on main after the merge; pnpm check is the eleven-step gate (T-010's typecheck, lint, lint:boundaries, format:check, check:identity, test:coverage, i18n:check, contrast and build, plus U45's contrast:patient and check:motion); pnpm test:int covers U8's database, web-int and worker-int projects; .github/workflows/check.yml green on the Bolt head"
     violation: "Fails T-104's 'Checks' row and team.md Way of Working"
     source: "T-104 acceptance row 'Checks', team.md Way of Working"
   - id: BR8.4
@@ -522,11 +541,27 @@ rules:
   - id: BR8.5
     statement: "Every package this Unit touches stays at or above 80 % line coverage."
     category: validation
-    applies_to: "packages/domain, application, database, contracts, apps/web"
+    applies_to: "packages/domain, application, adapters, database, contracts, test-support, apps/web"
     trigger: "Build and Test"
-    logic: "Measured with @vitest/coverage-v8 from T-010's thresholds; never lowered to pass (D10)"
+    logic: "Measured by pnpm test:coverage with T-010's thresholds (80% lines per package, every source file counted, untested files at 0%); domain and application are measured as soon as they hold code; never lowered to pass (D10)"
     violation: "Below the floor blocks the merge"
-    source: "team.md Testing Posture"
+    source: "team.md Testing Posture, T-010 (vitest.workspace.ts COVERAGE_ROOTS)"
+  - id: BR8.6
+    statement: "Every file this Unit creates or changes sits where the T-010 boundary matrix allows its imports, and pnpm lint and pnpm lint:boundaries prove it with no new suppression."
+    category: constraint
+    applies_to: "eslint.boundaries.mjs, 01-conventions.md §2, every file in functional-spec.md § 6.4"
+    trigger: "Code Generation"
+    logic: "domain imports nothing; application imports only domain and contracts, no external package, no Node built-in and no database API (savepoints are the repository's, Q18; random bytes through Crypto.randomBytes); only identity-private.ts reads persona_links and identity_reveals; adapters are built only in server/container.ts; the worker gains nothing and cannot reach modules/identity (FD-093 (2) and U8's import-graph test of @rogikotha/application/worker)"
+    violation: "A red pnpm lint is S1; a re-export that carries identity code into the worker breaks AD-6"
+    source: "FD-093, 01-conventions.md §2 as built by T-010, U8 BR7.12"
+  - id: BR8.7
+    statement: "The tests T-010 pinned are updated in the same commit as the change they pin."
+    category: constraint
+    applies_to: "packages/database/src/repositories/not-implemented.test.ts, migrations.int.test.ts, validator-probes.int.test.ts, packages/test-support/src/fakes/repositories-superset.test.ts"
+    trigger: "Code Generation"
+    logic: "PgIdentityRepository leaves STUB_REPOSITORIES (ISS-294); both exact migration counts go up by one with a comment; the superset test pairs the new identity fakes with identity.ts and identity-private.ts (or the fakes implement their ports, with a comment); the account fake loses insertDefaultPersonas; no assertion is removed or skipped"
+    violation: "A stale pin turns pnpm check red (S1)"
+    source: "ISS-294, ISS-242, ISS-223, ISS-290, team.md Testing Posture"
 ```
 
 ## Rules summary
@@ -535,7 +570,7 @@ rules:
 |---|---|---|
 | BR1.1 | `personas` public, no account column | constraint |
 | BR1.2 | Two default personas at registration, idempotent | constraint |
-| BR1.3 | Allowlisted projection | constraint |
+| BR1.3 | Allowlisted projection; profile username; alias on thread surfaces only | constraint |
 | BR1.4 | No ids or timestamps in view models | constraint |
 | BR1.5 | Personas are immutable snapshots | constraint |
 | BR1.6 | Avatar hue random, anonymous fixed 0 | constraint |
@@ -556,6 +591,7 @@ rules:
 | BR3.4 | Worker denied and import-barred | authorization |
 | BR3.5 | `Actor.personaId` through identity | constraint |
 | BR3.6 | Logs never pair accounts and personas | constraint |
+| BR3.7 | `ownsAnyPersona`: one boolean, internal | authorization |
 | BR4.1 | Capability and step-up required | authorization |
 | BR4.2 | Capability only from U10's table | authorization |
 | BR4.3 | Input shape; malformed not recorded | validation |
@@ -577,7 +613,7 @@ rules:
 | BR5.8 | `granted` means an identity was returned | constraint |
 | BR6.1 | De-identify removes links except kept | constraint |
 | BR6.2 | Kept ids must belong to the account | validation |
-| BR6.3 | Display names after deletion (owner, Q15) | policy |
+| BR6.3 | "Former member" after deletion, snapshot scrubbed (Q15 B, Q16) | policy |
 | BR6.4 | Anonymous aliases unchanged | constraint |
 | BR6.5 | Reveal history untouched | constraint |
 | BR6.6 | De-identify audited | constraint |
@@ -590,8 +626,11 @@ rules:
 | BR7.5 | Owned-path additions recorded | policy |
 | BR7.6 | No new dependency | policy |
 | BR7.7 | Reporter identity only through reveal | authorization |
+| BR7.8 | No anonymity or staff-access copy from identity (R1) | policy |
 | BR8.1 | Tests per level | validation |
 | BR8.2 | Smoke grows | validation |
 | BR8.3 | All checks green | validation |
 | BR8.4 | Adversarial tests, collaborators, sign-off | validation |
 | BR8.5 | Coverage floor | validation |
+| BR8.6 | Placement under the T-010 boundaries | constraint |
+| BR8.7 | T-010's pins updated with the change | constraint |

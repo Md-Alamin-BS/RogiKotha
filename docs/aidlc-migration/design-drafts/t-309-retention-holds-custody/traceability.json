@@ -1,0 +1,220 @@
+{
+  "stage": "functional-design",
+  "unit": "t-309-retention-holds-custody",
+  "upstream_ids": [
+    "AC7.3.1",
+    "AC7.3.2",
+    "AC7.3.3",
+    "AC7.3.4",
+    "AC7.3.5",
+    "AC7.3.6",
+    "AC7.3.7",
+    "AC7.3.8",
+    "AC7.3.9",
+    "AC10.3.3"
+  ],
+  "coverage": [
+    {
+      "id": "AC7.3.1",
+      "status": "OK",
+      "target": "BR1.9, BR4.4, BR4.5, BR4.6, BR4.10, BR4.1, BR4.3"
+    },
+    {
+      "id": "AC7.3.2",
+      "status": "OK",
+      "target": "BR1.2, BR1.3, BR1.4, BR1.5, BR1.8"
+    },
+    {
+      "id": "AC7.3.3",
+      "status": "Deferred",
+      "target": "Bulk retention preview and execute deferred after release 1 (FD-088); no bulk file, view model or migration is built"
+    },
+    {
+      "id": "AC7.3.4",
+      "status": "Deferred",
+      "target": "Bulk retention authorization deferred with the bulk action (FD-088); retention.bulk stays super_admin only in contracts (FD-051)"
+    },
+    {
+      "id": "AC7.3.5",
+      "status": "OK",
+      "target": "BR2.6, BR2.10, BR2.13, BR3.1, BR3.2, BR3.4, BR4.4, BR4.9, BR5.2, BR2.2, BR2.3, BR2.4, BR2.5, BR5.1, BR5.6"
+    },
+    {
+      "id": "AC7.3.6",
+      "status": "OK",
+      "target": "BR2.7, BR2.8, BR2.9, BR3.6, BR2.11"
+    },
+    {
+      "id": "AC7.3.7",
+      "status": "N/A",
+      "target": "Original access with a stated purpose is built by U25 T-305 (evidence.authorizeOriginal); this Unit only labels its original_accessed custody event (BR7.1)"
+    },
+    {
+      "id": "AC7.3.8",
+      "status": "N/A",
+      "target": "Refusal of original access is built by U25 T-305; this Unit adds no original route"
+    },
+    {
+      "id": "AC7.3.9",
+      "status": "N/A",
+      "target": "Removal of an unsafe file is built by U25 T-305 and U33 T-404; this Unit shows the removed custody event in the custody log (BR7.1) and keeps removal independent of holds (BR2.10)"
+    },
+    {
+      "id": "AC10.3.3",
+      "status": "OK",
+      "target": "BR2.12, BR3.3, BR5.3 (hold side: activeHoldsFor, account holds, held persona links); the deletion request itself is built by U39 T-410"
+    }
+  ],
+  "reverse": [
+    {
+      "id": "BR1.1",
+      "status": "N/A",
+      "target": "FD-004, FD-068, FD-082, C3 retention.currentPolicy"
+    },
+    {
+      "id": "BR1.6",
+      "status": "N/A",
+      "target": "FD-082, PRODUCT.md (numerals follow the language)"
+    },
+    {
+      "id": "BR1.7",
+      "status": "N/A",
+      "target": "FD-068, FD-082, acceptance row 'FD-068: one source'"
+    },
+    {
+      "id": "BR2.1",
+      "status": "N/A",
+      "target": "FD-079, C3 hold_target_kinds"
+    },
+    {
+      "id": "BR3.5",
+      "status": "N/A",
+      "target": "FD-079, T-309 hard-rule checklist"
+    },
+    {
+      "id": "BR3.7",
+      "status": "N/A",
+      "target": "FD-079, T-302 BR6.1"
+    },
+    {
+      "id": "BR3.8",
+      "status": "N/A",
+      "target": "FD-064, ADR-002, acceptance row 'FD-064'"
+    },
+    {
+      "id": "BR4.2",
+      "status": "N/A",
+      "target": "01-conventions.md §4 (all now from Clock), Question 18"
+    },
+    {
+      "id": "BR4.7",
+      "status": "N/A",
+      "target": "FD-090, T-309 step 6(d), Question 16"
+    },
+    {
+      "id": "BR4.8",
+      "status": "N/A",
+      "target": "C2, FD-068, Question 4"
+    },
+    {
+      "id": "BR4.11",
+      "status": "N/A",
+      "target": "FD-093, AD-6, eslint.boundaries.mjs"
+    },
+    {
+      "id": "BR5.4",
+      "status": "N/A",
+      "target": "Question 18, FD entry (c)"
+    },
+    {
+      "id": "BR5.5",
+      "status": "N/A",
+      "target": "FD-037, FD-092, Question 19, FD entry (c)"
+    },
+    {
+      "id": "BR5.7",
+      "status": "N/A",
+      "target": "01-conventions.md, T-010, ISS-294"
+    },
+    {
+      "id": "BR5.8",
+      "status": "N/A",
+      "target": "C1, AD-6, 01-conventions.md §11"
+    },
+    {
+      "id": "BR6.1",
+      "status": "N/A",
+      "target": "AD-14, T-309 step 8"
+    },
+    {
+      "id": "BR6.2",
+      "status": "N/A",
+      "target": "AD-14, Question 13, FD entry (f)"
+    },
+    {
+      "id": "BR6.3",
+      "status": "N/A",
+      "target": "C14, AD-14"
+    },
+    {
+      "id": "BR6.4",
+      "status": "N/A",
+      "target": "C14, T-309 step 8, Question 14"
+    },
+    {
+      "id": "BR6.5",
+      "status": "N/A",
+      "target": "T-309 step 8"
+    },
+    {
+      "id": "BR7.2",
+      "status": "N/A",
+      "target": "T-309 step 7, 03 §4 evidence.listForStaff, FD-036"
+    },
+    {
+      "id": "BR7.3",
+      "status": "N/A",
+      "target": "FD-021, T-309 step 5 (listHolds)"
+    },
+    {
+      "id": "BR7.4",
+      "status": "N/A",
+      "target": "C3 (internal), FD-079"
+    },
+    {
+      "id": "BR7.5",
+      "status": "N/A",
+      "target": "PRODUCT.md hard rules, owner's counts-only answer"
+    },
+    {
+      "id": "BR8.1",
+      "status": "N/A",
+      "target": "FD-093, eslint.boundaries.mjs"
+    },
+    {
+      "id": "BR8.2",
+      "status": "N/A",
+      "target": "ISS-294, T-010"
+    },
+    {
+      "id": "BR8.3",
+      "status": "N/A",
+      "target": "team.md Testing Posture, D10"
+    },
+    {
+      "id": "BR8.4",
+      "status": "N/A",
+      "target": "ADR 0011, FD-024, project.md Mandated"
+    },
+    {
+      "id": "BR9.1",
+      "status": "N/A",
+      "target": "project.md Mandated (FD before code)"
+    },
+    {
+      "id": "BR9.2",
+      "status": "N/A",
+      "target": "team.md Way of Working, project.md Mandated"
+    }
+  ]
+}

@@ -4,6 +4,12 @@ Draft written ahead of the stage. The lead finalises it when the workflow reache
 
 Source of truth for the data shape this Unit works on. Built from T-105 (with FD-063, FD-068, FD-072, FD-082, FD-083 and the C1 sign-in ranges), `02-data-model.md` §10 and §11, `contract-summary.md` (C1, C15), the code on the working tree (`packages/database/src/schema/administration.ts`, `migrations/0000_init.sql`, `0003_triggers.sql`; `packages/contracts/src/{config-values,enums,errors}.ts`, `schemas/administration.ts`, `view-models/config.ts`; `packages/test-support/src/{seed/seed-config.ts, builders/config.ts, fakes/config-provider.ts}`) and U8's and U10's draft entities (`SignInSettings`, `CapabilityToggles`, `StepUpPurpose`), which this file extends and does not repeat. Workflows and state transitions are in `functional-spec.md`; decision logic is in `rules.md`.
 
+Refreshed 2026-10-29:
+- `limitedDataThreshold` is 2–50 (the owner's R2), and release 1 holds only the seven blocks (the owner's R1).
+- `parseConfigValues` returns a zod-free parse result from `contracts` (Question 11), and the version-1 upgrade fills a missing `signIn` block (Question 12).
+- `config_rejected` has a second form for a missing or stale step-up, `step_up: false`, written by the command's `onRefused` (Question 13, T-106 F25, AC11.1.2).
+- `ConfigRepository.insertVersion` runs in a savepoint and returns `conflict` (Question 13).
+
 Three kinds of entity appear here: **persisted** rows (two existing tables; this Unit adds no table and no column, and one migration rewrites stored values and adds append-only triggers), **value objects** that cross a boundary (the configuration values, the diff, the command inputs and the view models) and one **in-memory** snapshot (the provider cache). Logical types only.
 
 ```yaml
@@ -55,7 +61,7 @@ entities:
       - { name: thresholds.criticalHours, type: integer, required: true, default: 24, min: 1, max: 168 }
       - { name: thresholds.standardDays, type: integer, required: true, default: 3, min: 1, max: 30 }
       - { name: thresholds.appealDays, type: integer, required: true, default: 7, min: 1, max: 30, constraints: "kept although appeals are deferred (FD-088); U33 reads it after release 1" }
-      - { name: limitedDataThreshold, type: integer, required: true, default: 5, min: 1, max: 50, constraints: "min becomes 2 if the owner answers R2 with A; decides Limited data only, never a score (BR1.3)" }
+      - { name: limitedDataThreshold, type: integer, required: true, default: 5, min: 2, max: 50, constraints: "the owner's R2 answer (2026-10-29): 1 is refused, so Limited data can never be switched off; decides Limited data only, never a score (BR1.3)" }
       - { name: reportReasons, type: list<ReportReason>, required: true, default: "all thirteen", constraints: "a set; always contains ALWAYS_ENABLED_REPORT_REASONS (BR1.4)" }
       - { name: capabilities, type: CapabilityToggles, required: true, constraints: "U10's four toggles, default false (BR1.5)" }
       - { name: featureVisibility.facilityAccounts, type: boolean, required: true, default: true }
@@ -64,9 +70,10 @@ entities:
       - { name: emergency.healthLine, type: text, required: true, default: "16263", constraints: "^[0-9-]{3,15}$" }
       - { name: emergency.crisisLine, type: text, required: true, default: "09612-119911", constraints: "^[0-9-]{3,15}$" }
       - { name: emergency.lastVerified, type: date (YYYY-MM-DD), required: true, default: "2026-08-21", constraints: "real date, not after today; changes whenever a number changes (BR1.7, BR1.8)" }
-      - { name: signIn, type: SignInSettings, required: true, constraints: "U8's block with this Unit's ranges: delayAfterFailures 1-9 (3), windowMinutes 1-1440 (15), firstDelaySeconds 1-60 (1), maxDelaySeconds 1-300 and >= firstDelaySeconds (30), severeFailures 2-10 and > delayAfterFailures (10) (BR1.9)" }
+      - { name: signIn, type: SignInSettings, required: true, constraints: "U8's block, added with these ranges (its Q8 C, this Unit's Question 1); a version-1 value without it is filled with FD-063's defaults on upgrade (Question 12): delayAfterFailures 1-9 (3), windowMinutes 1-1440 (15), firstDelaySeconds 1-60 (1), maxDelaySeconds 1-300 and >= firstDelaySeconds (30), severeFailures 2-10 and > delayAfterFailures (10) (BR1.9)" }
     constraints:
       - "No retention block (FD-082); a retention key is an unknown key (config.invariant)"
+      - "Release 1 holds only these seven blocks; the other FR100 and AC11.1.1 settings move to release 2 (R1, the release-1 settings FD row)"
       - "No key under auth, security, identity, audit, database, evidence.allowlist or capabilities.super_admin can exist (BR3.1)"
 
   - name: AlwaysEnabledReportReasons
@@ -76,6 +83,17 @@ entities:
       - { name: value, type: enum, required: true, allowed_values: [privacy, threat, unsafeFile, dangerous, other] }
     constraints:
       - "Superset of CRITICAL_REPORT_REASONS (Question 4); closes ISS-079"
+
+  - name: ConfigParseResult
+    kind: value object (contracts function result)
+    source: "packages/contracts/src/config-values.ts parseConfigValues(raw) (new, Question 11)"
+    attributes:
+      - { name: ok, type: boolean, required: true }
+      - { name: values, type: ConfigValues, required: false, constraints: "present when ok" }
+      - { name: findings, type: "list<{path, code, messageKey}>", required: false, constraints: "present when not ok; code in config.invariant, config.out_of_range, validation; path is a known setting path" }
+      - { name: unknownKeyCount, type: integer, required: false, constraints: "unknown key names are counted, never returned (BR2.3)" }
+    constraints:
+      - "No zod type crosses into application (FD-093); the zod issue mapping lives beside the schema"
 
   - name: ConfigCandidate
     kind: value object (command input part)
@@ -181,9 +199,10 @@ entities:
       - { name: stream, type: text, required: true, constraints: "'config'" }
       - { name: action, type: enum, required: true, allowed_values: [config_applied, config_rolled_back, config_rejected] }
       - { name: actor, type: account, required: true }
-      - { name: details, type: json, required: true, constraints: "applied and rolled back: {version, rolledBackFrom?, changes: [{path, before, after}], step_up: true}; rejected: {operation, code, paths, unknownKeyCount, step_up: true}; never the reason text or an unknown key name (BR8.1, BR8.3)" }
+      - { name: details, type: json, required: true, constraints: "applied and rolled back: {version, rolledBackFrom?, changes: [{path, before, after}], step_up: true}; rejected after the step-up (the handler, recorded): {operation, code, paths, unknownKeyCount, step_up: true}; rejected for a missing or stale step-up (onRefused): {operation, code: auth.step_up_required, step_up: false}; never the reason text or an unknown key name (BR8.1, BR8.3, BR8.4)" }
     constraints:
       - "target_kind left empty: the enum has no config value (ISS-090)"
+      - "Only a Super Admin on an approved device ever has a config_rejected row; forbidden refusals write none (AC11.1.6)"
 
   - name: ConfigAppliedEvent
     kind: persisted (existing table)
@@ -210,17 +229,17 @@ entities:
       - { name: latest, type: "(tx?) => Promise<StoredVersion | null>", required: true }
       - { name: findVersion, type: "(version) => Promise<StoredVersion | null>", required: true }
       - { name: history, type: "({page, pageSize}) => Promise<{items, total}>", required: true }
-      - { name: insertVersion, type: "(tx, row) => Promise<Result<void>>", required: true, constraints: "unique violation => conflict" }
+      - { name: insertVersion, type: "(tx, row) => Promise<Result<void, 'conflict'>>", required: true, constraints: "runs in a savepoint of its own inside packages/database; a unique violation on config_versions_version_unique => err('conflict') with the outer transaction still usable (Question 13)" }
       - { name: insertChanges, type: "(tx, version, diff) => Promise<void>", required: true }
     constraints:
-      - "Implemented by PgConfigRepository, replacing the three NotImplemented stubs of T-004 (ISS-091 naming)"
+      - "Implemented by PgConfigRepository, replacing the three NotImplemented stubs of T-004 (ISS-091 naming); the class leaves STUB_REPOSITORIES in not-implemented.test.ts (ISS-294)"
 ```
 
 ## Summary
 
 - **Two existing tables** hold the configuration: `ConfigVersion` (one complete, normalised configuration per row, the highest is current) and `ConfigChange` (one row per changed setting). After this Unit's migration both are append-only in the database, and no stored row has a `retention` block.
-- **`ConfigValues` at schema version 2** has seven strict blocks; its ranges are the contract's, except the two sign-in ranges narrowed by Question 1, and the limited-data minimum the owner may raise (R2). Five report reasons can never be switched off.
+- **`ConfigValues` at schema version 2** has seven strict blocks and, in release 1, nothing more (R1); its ranges are the contract's, except the two sign-in ranges narrowed by Question 1 and the limited-data minimum of 2 (R2). Five report reasons can never be switched off.
 - **Commands take the whole candidate** as a plain JSON object and validate it themselves, so each failure gets its precise code; the result of a preview is a diff plus a validation result.
-- **Records**: three audit actions on the `config` stream with known paths and bounded values only, and one `config.applied` outbox row per change through `ConfigEventSink`.
+- **Records**: three audit actions on the `config` stream with known paths and bounded values only (`config_rejected` in two forms: after the step-up, and for a missing step-up), and one `config.applied` outbox row per change through `ConfigEventSink`.
 - **One in-memory snapshot** per process, valid for 5 seconds of process time, falls back to the last good values or the defaults and never throws.
-- **Contract changes**: the three input schemas, two view models, `ALWAYS_ENABLED_REPORT_REASONS`, `CONFIG_SCHEMA_VERSION` and the asynchronous `current()` (Question 2). No consumer of the inputs exists yet; the port's callers are drafts that add `await`.
+- **Contract changes**: the three input schemas, two view models, `ALWAYS_ENABLED_REPORT_REASONS`, `CONFIG_SCHEMA_VERSION`, `parseConfigValues` and `limitedDataThreshold` 2–50. The asynchronous `current()` (Question 2) is built by U8. No consumer of the inputs exists yet.

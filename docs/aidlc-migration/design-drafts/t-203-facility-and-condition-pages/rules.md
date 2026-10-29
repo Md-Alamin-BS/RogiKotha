@@ -2,27 +2,29 @@
 
 Source of truth for the Unit's decision logic. Built from `unit-of-work.md` (U16), `unit-of-work-story-map.md` (US4.3, US5.3, US6.4), `requirements.md` (FR24–FR27, FR36–FR38, FR48–FR52, FR95, FR100, NFR4, NFR6, NFR7, NFR13), `stories.md`, `contract-summary.md` (C6, C7), T-203 with its FD-091 amendment, the hard rules in `project.md` and `PRODUCT.md`, `01-conventions.md` §6–§9 and §14, and the three upstream drafts (`t-201-directory-and-taxonomy-modules`, `t-202-doctor-index-and-profile`, `t-011-patient-design-and-motion-system`). The workflows that apply these rules are in `functional-spec.md`, the component contracts in `frontend-components.md`, and the data shapes in `entities.md`.
 
-Rules that depend on an answer in `functional-design-questions.md` name the question in `source`. Questions 2–15 are answered A on the owner's standing instruction and await confirmation; **Question 1 needs the owner** and changes no rule below under its options A and C (option B adds a sentiment block, `functional-spec.md` § 14). "T-202 Qn" names a question of the T-202 draft whose answer these pages inherit.
+Rules that depend on an answer in `functional-design-questions.md` name the question in `source`. Question 1 is the owner's answer A (the nine criteria; no rule below changes, and an FD entry rewords FR49 and AC6.4.3, `functional-spec.md` § 17); Question 3 is C under the owner's answer to finding F2; Questions 2 and 4–15 are answered A on the owner's standing instruction of 2026-10-27 and await confirmation; Question 16 is decided by the agent under the owner's no-questions instruction of 2026-10-29. "T-202 Qn", "T-201 Qn", "T-105 Qn" and "T-011 Qn" name questions of those drafts whose answers these pages inherit.
+
+Refreshed 2026-10-29 (T-010 as merged, the refreshed T-201, T-011 and T-105 drafts, the owner's answers): changed BR1.1, BR1.2, BR1.7, BR2.7, BR2.8, BR3.7, BR3.8, BR3.11, BR3.12, BR5.5, BR6.1, BR7.1, BR7.2, BR8.2, BR8.3, BR9.1, BR9.3; new BR3.13, BR9.5, BR9.6. No rule ID is reused or renumbered.
 
 ```yaml
 rules:
   # 1. Routing, loading and freshness
   - id: BR1.1
-    statement: "Pages read facilities and conditions only through the directory and taxonomy queries wired in the web composition root; components receive view models and plain values as props and never import database, adapters, test-support, server/container or node: modules."
+    statement: "Pages read facilities and conditions only through the directory and taxonomy queries wired in the web composition root, and the configuration only through T-105's getConfig(); components receive view models and plain values as props and import only contracts, i18n, the shared helpers (@/lib, @/i18n), server actions and other components, never application, database, adapters, test-support, server/container.ts, server/config.ts, Node built-ins or the server libraries the lint bans."
     category: constraint
     applies_to: "facilities/page.tsx, facilities/[publicId]/page.tsx, topics/page.tsx, topics/[publicId]/page.tsx, every component in the owned paths"
     trigger: "Any data a page renders"
-    logic: "page -> container -> directory.listFacilities | directory.getFacility | directory.resolvePublicId(kind facility) | taxonomy.listConditions | taxonomy.getCondition | taxonomy.resolvePublicId -> view model -> components; a component import of @rogikotha/database, @rogikotha/adapters, @rogikotha/test-support, server/container or node:* is forbidden"
-    violation: "A boundary import fails T-010's boundaries lint (FD-093) and the reviewer's diff check"
-    source: "01-conventions.md §2 and §8, FD-093, team.md Code Style (Boundaries), C6, C7"
+    logic: "page (element web) -> container (web-server) -> directory.listFacilities | directory.getFacility | directory.resolvePublicId(kind facility) | taxonomy.listConditions | taxonomy.getCondition | taxonomy.resolvePublicId -> view model -> components (web-components); page -> await getConfig() (web-server) -> plain values -> components; a component may import contracts, i18n, web-shared, web-actions and web-components only (eslint.boundaries.mjs); segment parsing is stripSlug from @rogikotha/contracts (BR1.2), the actor comes from await getActor() (T-101, server/auth.ts, web-server), facilityLabel sits beside FacilityLink (web-components)"
+    violation: "A boundary import fails pnpm lint (eslint-plugin-boundaries, FD-093) and the reviewer's diff check"
+    source: "01-conventions.md §2 and §8, FD-093 (1), (5), (6), eslint.boundaries.mjs, team.md Code Style (Boundaries), C6, C7, T-105 BR9.2"
   - id: BR1.2
-    statement: "The facility and condition segments hold a public id with an optional trailing slug; a malformed id is a 404, the slug is ignored, and every link the app writes has no slug."
+    statement: "The facility and condition segments hold a public id (10 characters of lowercase Crockford base32) with an optional trailing slug; a malformed id is a 404, the slug is ignored, and every link the app writes has no slug."
     category: validation
     applies_to: "facilities/[publicId]/page.tsx, topics/[publicId]/page.tsx, FacilityLink, ConditionLink, BrowseCard hrefs"
     trigger: "A request to /{locale}/facilities/{segment} or /{locale}/topics/{segment}"
-    logic: "parseSegment (T-202 BR1.2, shared under Question 11): match ^([a-z2-7]{10})(?:-[^/]*)?$; no match -> notFound(); match -> publicId = group 1"
-    violation: "A slugged URL that 404s, or a 500 on a malformed id (S1, red demo)"
-    source: "01-conventions.md §9, 03-routes-and-contracts.md §1, T-202 BR1.2, Question 11"
+    logic: "publicId = stripSlug(decodeURIComponent(segment)) from @rogikotha/contracts (ids.ts: ^[0-9a-hjkmnp-tv-z]{10}(-.*)?$, digits and letters without i, l, o, u); null -> notFound(); no page-local regex"
+    violation: "A slugged URL that 404s, a valid id that 404s because a local pattern drifted from the contract (finding F23), or a 500 on a malformed id (S1, red demo)"
+    source: "01-conventions.md §9, 03-routes-and-contracts.md §1, packages/contracts/src/ids.ts (PUBLIC_ID_RE, stripSlug), T-202 BR1.2 and its finding F16 (refreshed 2026-10-29), finding F23"
   - id: BR1.3
     statement: "Before loading a facility the page resolves its public id; a merged or old id answers a permanent redirect (308) to the current branch under the same locale."
     category: constraint
@@ -56,13 +58,13 @@ rules:
     violation: "A stale count after a hide or restore fails AC6.4.4"
     source: "FR50, AC6.4.4, T-202 BR1.7"
   - id: BR1.7
-    statement: "Each page sets its metadata from the data it renders: the indexes are titled with nav.facilities and nav.condition, the facility page with its label, the condition page with its name, each followed by the brand; all four are indexable with a canonical URL without slug and with language alternates."
+    statement: "Each page sets its metadata from the data it renders: the indexes are titled with nav.facilities and nav.condition, the facility page with its label, the condition page with its name, each followed by the brand; all four are indexable (no robots field) with a canonical URL without slug and with language alternates."
     category: policy
     applies_to: "generateMetadata of the four pages"
     trigger: "Page render"
-    logic: "facilities: documentTitle('facilities', t); topics: documentTitle('topics', t); facility: facilityLabel(vm) + ' — ' + brand.name; condition: vm.name + ' — ' + brand.name; robots index; alternates.canonical = /{locale}/{facilities|topics}[/{publicId}]; alternates.languages en and bn"
-    violation: "A placeholder title departs from titleForView; a slugged canonical splits search indexing"
-    source: "01-conventions.md §8 and §9, prototype titleForView (facilities, facility, topics, condition), T-203 step 7"
+    logic: "facilities: documentTitle('facilities', t); topics: documentTitle('topics', t); facility: facilityLabel(vm) + ' — ' + brand.name; condition: vm.name + ' — ' + brand.name; no robots field (pages.test.tsx reads an absent field as indexable; only noindex() pages set one); alternates.canonical = /{locale}/{facilities|topics}[/{publicId}]; alternates.languages en and bn"
+    violation: "A placeholder title departs from titleForView; a slugged canonical splits search indexing; robots {index: true} turns the route-table test red"
+    source: "01-conventions.md §8 and §9, lib/metadata.ts noindex(), app/pages.test.tsx, prototype titleForView (facilities, facility, topics, condition), T-203 step 7"
   - id: BR1.8
     statement: "A detail page loads once per request: generateMetadata and the page share one cached loader keyed by locale and public id."
     category: constraint
@@ -126,17 +128,17 @@ rules:
     category: policy
     applies_to: "FacilityEntry, FacilityProfile (hero, criteria panel, each criterion), ConditionPage (head, SentimentBlock, OutcomeBlock)"
     trigger: "vm.accountsLimitedData or dist.limitedData is true"
-    logic: "card and hero and condition head: Badge plain label.limitedData when accountsLimitedData; criteria panel: p.limited 'label.limitedData — label.limitedDataWhy {threshold}' once when accountsLimitedData; each criterion with dist.limitedData: span.limited-tag label.limitedData after its denominator, plus the why line when the facility itself is not limited; condition distributions: T-202 DistBlock and OutcomeBlock behaviour"
+    logic: "card and hero and condition head: Badge plain label.limitedData when accountsLimitedData (on cards and in the hero the flag is present only when feedbackVisible, T-201 BR2.12); criteria panel: p.limited 'label.limitedData — label.limitedDataWhy {threshold}' once when accountsLimitedData; each criterion with dist.limitedData: span.limited-tag label.limitedData after its denominator, plus the why line when the facility itself is not limited; condition distributions: T-202 DistBlock and OutcomeBlock behaviour"
     violation: "Sparse figures without the mark break the hard rule (S1); on the seed every facility and nine of ten conditions are limited"
-    source: "project.md Mandated (Limited data), FR51, AC4.3.5, AC6.4.2, T-201 BR2.4, T-202 Question 3, Question 4"
+    source: "project.md Mandated (Limited data), FR51, AC4.3.5, AC6.4.2, T-201 BR2.4 and BR2.12, T-202 Question 3, Question 4"
   - id: BR2.8
-    statement: "The limited-data explanation states the configured threshold, read once per request from ConfigProvider and formatted for the locale."
+    statement: "The limited-data explanation states the configured threshold, read once per request with await getConfig() and formatted for the locale; the threshold lies between 2 and 50, so Limited data can never be switched off."
     category: calculation
     applies_to: "label.limitedDataWhy wherever these pages render it"
     trigger: "A page renders a limited-data explanation"
-    logic: "threshold = config.current().limitedDataThreshold; t('label.limitedDataWhy', {threshold: formatNumber(threshold, locale)}); no literal number in copy or code"
+    logic: "threshold = (await getConfig()).limitedDataThreshold in the page's loader, passed to the components as a prop; t('label.limitedDataWhy', {threshold: formatNumber(threshold, locale)}); no literal number in copy or code; T-105 validates 2–50"
     violation: "Copy that names 5 after a Super Admin changed the setting misinforms the reader (S3)"
-    source: "project.md Mandated (configured threshold), FR100, T-202 Question 4"
+    source: "project.md Mandated (configured threshold), FR100, T-202 Question 4, T-105 Question 2 (asynchronous) and R2 (the owner's answer: 2–50)"
   - id: BR2.9
     statement: "A missing value is never blank and never 0: a facility account without an overall gets the badge 'Not provided'; a place without a hospital reads 'Not provided' in the unknown style; missing area, city, specialty or branch parts are left out of their line."
     category: validation
@@ -236,21 +238,21 @@ rules:
     violation: "Latin digits under bn fail the task row 'Locales' and the equal-languages hard rule"
     source: "project.md Mandated (numerals follow the language), FD-024, 01-conventions.md §6, T-202 BR3.5"
   - id: BR3.7
-    statement: "A facility's label is its name, followed by ' — ' and its branch name when one is present; the hero puts the branch name first in its sub-line; no parent badge is shown."
+    statement: "A facility's label is its own name (the hospital), followed by ' — ' and its branch label when one is present; the hero's h1 is the own name and its sub-line puts the label first; when the organisation's name differs, the card and the hero carry the badge 'Part of {organisation}'."
     category: calculation
     applies_to: "FacilityEntry, FacilityProfile, ConditionPage facilities panel, metadata"
     trigger: "Rendering a facility name"
-    logic: "facilityLabel(vm) = name + (branchName ? ' — ' + branchName : ''); hero h1 = name; p.p-spec = [branchName, area + ', ' + city] present parts joined with ' · '"
-    violation: "Two branches with the same visible title; a parent badge that repeats the title"
-    source: "T-201 Question 9 A, T-203 steps 1 and 3.1, Question 3"
+    logic: "facilityLabel(vm) = name + (branchName ? ' — ' + branchName : ''); hero h1 = name; p.p-spec = [branchName, area + ', ' + city] present parts joined with ' · '; IF parentName THEN Badge plain t('facility.parent', {parent: parentName}) in span.doc-flags and div.p-flags (T-201 sets parentName only when it differs from name); f1: 'Shefa General Hospital — Dhanmondi branch', 'Part of Shefa Health Group'; f2: 'Bandar Diagnostic Centre', no badge"
+    violation: "Two branches with the same visible title; one place under two names across facility pages, chambers and condition pages (finding F2); a badge that repeats the title"
+    source: "T-201 Question 9 C and BR3.11, the owner's answer to finding F2 (2026-10-28), prototype facilityEntry and renderFacility, T-203 steps 1 and 3.1, Questions 3 C and 16"
   - id: BR3.8
-    statement: "The other-branches panel lists the facility's other visible branches only, each as '{branchName}' with its area, and is left out when there are none."
+    statement: "The other-branches panel lists the facility's other visible branches only, each titled by its label, or its own name when it has no label, with its area, and is left out when there are none."
     category: calculation
     applies_to: "FacilityProfile aside"
     trigger: "vm.siblings is non-empty"
-    logic: "MiniList of MiniRow(href /facilities/{publicId}, Avatar(publicId, hue, 38), title branchName, sub area when present); the current branch is never listed (the view model excludes it; the component also filters on publicId)"
-    violation: "A branch listing itself fails the task row 'Siblings exclude self'"
-    source: "Prototype branchesOf and renderFacility, T-203 step 3.5 and acceptance row"
+    logic: "MiniList of MiniRow(href /facilities/{publicId}, Avatar(publicId, avatarHue, 38), title branchName ?? name, sub area when present); the current branch is never listed (the view model excludes it; the component also filters on publicId)"
+    violation: "A branch listing itself fails the task row 'Siblings exclude self'; a row with no title when a sibling has no label"
+    source: "Prototype branchesOf and renderFacility (o.branch || o.name), T-201 § 7 (siblings), T-203 step 3.5 and acceptance row"
   - id: BR3.9
     statement: "Count phrases come from parameter keys with English plurals, the visible number formatted for the locale; no copy is built by joining a number and a word, and no copy is lowercased by script."
     category: calculation
@@ -268,21 +270,29 @@ rules:
     violation: "A '0 patient experiences · 0 doctors' head or empty panels make the page look broken"
     source: "Prototype renderTopicIndex comment, T-203 step 5, Question 6"
   - id: BR3.11
-    statement: "When facility feedback is hidden by configuration, the page leaves out every feedback element and adds no copy."
+    statement: "When facility feedback is hidden by configuration, the profile and the index cards leave out every feedback element and add no copy."
     category: calculation
-    applies_to: "FacilityProfile"
-    trigger: "vm.feedbackVisible is false"
-    logic: "omit the criteria panel, the visits section, the account-count and limited-data badges and the 'Describe your visit' button; keep the hero, Not verified, the separation callout, doctors here and other branches"
-    violation: "Nine 'Not provided' criteria would tell readers nobody wrote"
-    source: "FR100 (feature visibility), T-201 WF4, Question 8"
+    applies_to: "FacilityProfile, FacilityEntry, FacilityIndex"
+    trigger: "vm.feedbackVisible or card.feedbackVisible is false"
+    logic: "profile: omit the criteria panel, the visits section, the account-count and limited-data badges and the 'Describe your visit' button; keep the hero, Not verified, Part of, the separation callout, doctors here and other branches; card: accountsTotal, accountsLimitedData and overall are absent (T-201 BR2.12), so omit the count badge, the limited badge and the compact distribution; keep the title, the type line, Not verified and Part of"
+    violation: "Nine 'Not provided' criteria, or index cards with facility figures, while facility feedback is off"
+    source: "FR100 (feature visibility), T-201 WF4, WF5 and BR2.12, Question 8"
   - id: BR3.12
-    statement: "Avatars are the prototype's generated SVG seeded by the public id with the view model's hue, at 48 px on cards, 118 px in the hero and 38 px in mini rows."
+    statement: "Avatars are the prototype's generated SVG seeded by the public id with the view model's hue (stored per branch, T-201 Question 12 A), at 48 px on cards, 118 px in the hero and 38 px in mini rows."
     category: calculation
     applies_to: "FacilityEntry, FacilityProfile, ConditionPage mini rows"
     trigger: "Rendering an avatar"
     logic: "Avatar(seed = publicId, hue = avatarHue, size); aria-hidden"
     violation: "An avatar that changes between languages for the same profile"
-    source: "T-202 Question 8, T-201 Question 8"
+    source: "T-202 Question 8, T-201 Questions 8 and 12"
+  - id: BR3.13
+    statement: "The compact emergency panel on the condition page names the configured ambulance and health-line numbers in its sentence, read with the threshold in the page's one configuration read."
+    category: calculation
+    applies_to: "topics/[publicId]/page.tsx, ConditionPage aside, EmergencyPanel compact (T-202)"
+    trigger: "Rendering a condition page"
+    logic: "config = await getConfig(); EmergencyPanel({config: config.emergency, locale, compact: true}) renders t('emergency.body', {ambulance: formatDigits(config.emergency.ambulance, locale), healthLine: formatDigits(config.emergency.healthLine, locale)}); no fixed digits in the copy"
+    violation: "A sentence that disagrees with the call lines after a configuration change (FR100, T-105 F2)"
+    source: "T-105 Question 5 A and finding F2, FR100, Question 13, finding F9"
 
   # 4. Accessibility and responsive behaviour
   - id: BR4.1
@@ -376,13 +386,13 @@ rules:
     violation: "Animated emergency guidance breaks AC2.4.4 and FD-091"
     source: "project.md Mandated (emergency guidance), FD-091, AC2.4.4, T-011 BR7.1–BR7.3, Question 13"
   - id: BR5.5
-    statement: "T-203's section of patient.css declares no transition, animation or keyframes; press feedback and entries come only from T-011."
+    statement: "T-203's section of patient.css declares no transition, animation, keyframes, press or hover transform; press feedback and entries come only from T-011, whose press list covers .browse-card, .mini-row, .doc-entry and .btn, and any other pressable T-203 renders carries data-press."
     category: constraint
-    applies_to: "apps/web/src/styles/patient.css (T-203 section)"
-    trigger: "pnpm check:motion"
-    logic: "IF a T-203 rule declares transition*, animation* or @keyframes THEN check:motion's file rule fails; a missing press selector is an ISSUES.md row for U45"
-    violation: "check:motion fails (FD-091 acceptance row)"
-    source: "T-011 BR4.7 and BR9.1, T-203 FD-091 amendment and acceptance row 'FD-091: motion check'"
+    applies_to: "apps/web/src/styles/patient.css (T-203 section), every pressable in the owned components"
+    trigger: "pnpm check:motion (a step of pnpm check)"
+    logic: "IF a T-203 rule declares transition*, animation*, @keyframes, @starting-style or a :hover or :active transform THEN check:motion fails; IF a pressable's class is not in T-011 BR6.5's list THEN it carries the data-press attribute; never inside a static group"
+    violation: "check:motion fails (FD-091 acceptance row), or a pressable without feedback (S3)"
+    source: "T-011 BR4.7, BR6.5, BR6.11 and BR9.1 (refreshed 2026-10-29), T-203 FD-091 amendment and acceptance row 'FD-091: motion check', finding F11"
   - id: BR5.6
     statement: "Under reduced motion (OS setting or data-motion=reduced) every step of the four pages completes with no slide, scale, stagger, route movement or reveal."
     category: constraint
@@ -398,7 +408,7 @@ rules:
     category: constraint
     applies_to: "All components and pages in the owned paths"
     trigger: "Code Generation"
-    logic: "new keys: facility.notVerified, facility.notVerifiedWhy, facility.posted, condition.countsLine, condition.countedFrom; T-202's sentiment.totalAccounts, sentiment.ofTotal, label.notProvidedCount, prov.updatedOn and label.limitedDataWhy {threshold} are reused; i18n:check stays green"
+    logic: "new keys: facility.notVerified, facility.notVerifiedWhy, facility.posted, condition.countsLine, condition.countedFrom; changed key: facility.parent gains {parent} in both dictionaries (Question 16; no other user); T-202's sentiment.totalAccounts, sentiment.ofTotal, label.notProvidedCount, prov.updatedOn and label.limitedDataWhy {threshold} and T-105's emergency.body {ambulance, healthLine} are reused; i18n:check stays green"
     violation: "A literal in a component or a key without its Bengali entry fails the build (project.md Mandated)"
     source: "project.md Mandated and Forbidden (i18n), ADR 0011, FD-024, FD-042, NFR7, T-203 owned paths ('report if found')"
   - id: BR6.2
@@ -420,21 +430,21 @@ rules:
 
   # 7. Styles
   - id: BR7.1
-    statement: "Pages use T-011's tokens and kept class names; T-203's own rules sit in its section of patient.css, each marked '/* added: T-203 <reason> */'; the only inline styles are the --w and --g custom properties."
+    statement: "Pages use T-011's tokens and kept class names; T-203's own rules sit in its section of patient.css, each marked '/* added: T-203 <reason> */', take every margin, padding and gap from T-011's spacing scale, and are Prettier-formatted; the only inline styles are the --w and --g custom properties."
     category: constraint
     applies_to: "All components; apps/web/src/styles/patient.css"
-    trigger: "Code Generation and review"
-    logic: "new selectors: .crit h3, .crit .limited-tag, .crit-tags, .callout.facility-sep, .index-grid, a.browse-card, .places-note, .freq-head; tokens only, no literal colour, size or time; a missing token is an ISSUES.md row for U45"
-    violation: "Literal values or edits to tokens.css or motion.css break FD-091's ownership split"
-    source: "FD-091, FD-032, project.md Code Style, T-203 FD-091 amendment, T-502 (style-src)"
+    trigger: "Code Generation, pnpm format:check and review"
+    logic: "new selectors: .crit h3, .crit .limited-tag, .crit-tags, .callout.facility-sep, .index-grid, a.browse-card, .places-note, .freq-head; spacing from --space-1 … --space-8 (or clamp() between two), grids from --grid-min, hit areas from --target, focus from --focus-ring; no literal colour, size or time; no edit to tokens.css, motion.css or T-011's token block at the top of patient.css; a missing step is an ISSUES.md row for U45; patient.css is in Prettier's scope with double quotes in CSS (T-011 Q9 A)"
+    violation: "Literal values, a format:check failure, or edits to T-011's files and token block break FD-091's ownership split or the gate"
+    source: "FD-091, FD-032, project.md Code Style, T-203 FD-091 amendment, T-011 BR3.6 and Question 9 (refreshed 2026-10-29), T-502 (style-src)"
   - id: BR7.2
-    statement: "The pages pass the impeccable detector, the contrast checks and the motion check with zero findings."
+    statement: "The pages pass the impeccable detector, both contrast checks and the motion check with zero findings."
     category: constraint
     applies_to: "The owned paths"
     trigger: "Build and Test"
-    logic: "npx impeccable detect apps/web/src --no-advisory; pnpm contrast; pnpm contrast:patient; pnpm check:motion"
+    logic: "npx impeccable detect apps/web/src --no-advisory; pnpm check, whose eleven steps include contrast (staff palette, output unchanged), contrast:patient (patient token block, fail-closed) and check:motion"
     violation: "Any finding blocks the Unit"
-    source: "team.md Testing Posture (UI units), T-203 acceptance rows"
+    source: "team.md Testing Posture (UI units), T-203 acceptance rows, T-011 WF8 and BR9.4 (refreshed 2026-10-29)"
 
   # 8. Components
   - id: BR8.1
@@ -450,7 +460,7 @@ rules:
     category: constraint
     applies_to: "components/patient/shared/{Badge,DistBlock,EmergencyPanel,FacilityLink}.tsx, the segment parser"
     trigger: "Code Generation"
-    logic: "Badge cls adds good | poor; DistBlock prefix adds 'crit.', uses title in the compact image sentence and takes an optional limitedNote 'full' | 'tag'; EmergencyPanel adds compact; parseSegment and facilityLabel exported; each one T-203 makes is listed in its hand-off"
+    logic: "Badge cls adds good | poor; DistBlock prefix adds 'crit.', uses title in the compact image sentence and takes an optional limitedNote 'full' | 'tag'; facilityLabel exported beside FacilityLink (T-202's refresh builds these four under its Question 14 A); EmergencyPanel adds compact (T-203's own, as its task allows); segment parsing is stripSlug from @rogikotha/contracts, not a shared web helper; each change T-203 has to make itself is listed in its hand-off"
     violation: "A second distribution component, or an unrecorded edit to another Unit's files"
     source: "T-203 'Read first' 3 and step 6.4, T-202 ENT-011, Question 11"
   - id: BR8.3
@@ -458,19 +468,19 @@ rules:
     category: constraint
     applies_to: "The Bolt's diff"
     trigger: "Review"
-    logic: "recorded additions: the two [id] -> [publicId] moves, container.ts taxonomy wiring, ConditionLink, the shared-primitive changes of BR8.2 when needed; nothing in packages/{domain,application,database,contracts,test-support}, apps/worker, tokens.css or motion.css"
+    logic: "recorded additions: the two [id] -> [publicId] moves and their page tests, app/pages.test.tsx (BR9.5), the web-local builders file, container.ts taxonomy wiring, ConditionLink, the facility.parent parameter, the shared-primitive changes of BR8.2 when needed, the FD entry; nothing in packages/{domain,application,database,adapters,contracts,test-support}, apps/worker, tokens.css, motion.css or T-011's token block"
     violation: "Files outside owned paths fail the reviewer's diff check (team.md step 4)"
     source: "T-203 owned paths and 'Not in scope', team.md Way of Working"
 
   # 9. Verification and records
   - id: BR9.1
-    statement: "Every T-203 component has tests that render it in en and bn with builder view models and the real dictionaries."
+    statement: "Every T-203 component has tests that render it in en and bn with web-local builder view models and the real dictionaries; no test in apps/web imports @rogikotha/test-support."
     category: constraint
-    applies_to: "components/patient/**/*.test.tsx (T-203's)"
+    applies_to: "components/patient/**/*.test.tsx (T-203's), the detail pages' page tests, components/patient/facilities-topics-test-support.ts"
     trigger: "Code Generation"
-    logic: "Vitest, Testing Library, jsdom, NextIntlClientProvider; @/i18n/routing mocked (ISS-053); names read as sentences; each test can fail"
-    violation: "A component without a bn test fails NFR7 and the task row 'Locales'"
-    source: "team.md Testing Posture, 01-conventions.md §10, T-203 'Tests to write'"
+    logic: "Vitest, Testing Library, jsdom, NextIntlClientProvider; @/i18n/routing mocked (ISS-053); builders in a *-test-support.ts file (lint test category, excluded from coverage; extend T-202's if it made one); names read as sentences; each test can fail"
+    violation: "A component without a bn test fails NFR7 and the task row 'Locales'; an import of test-support fails pnpm lint (FD-040)"
+    source: "team.md Testing Posture, 01-conventions.md §10, FD-040, FD-093 (5), eslint.boundaries.mjs TEST_FILE_PATTERNS, vitest.workspace.ts coverage exclusions, T-203 'Tests to write', finding F19"
   - id: BR9.2
     statement: "The Unit adds one smoke file to the cumulative suite."
     category: constraint
@@ -480,13 +490,13 @@ rules:
     violation: "No smoke assertion for the Unit (team.md step 2)"
     source: "team.md Testing Posture (cumulative smoke suite)"
   - id: BR9.3
-    statement: "Build and Test runs every gate and records the hard-rule evidence: T-201's query-level isolation tests are named and green."
+    statement: "Build and Test runs every gate and records the hard-rule evidence: T-201's query-level isolation tests are named and green, and CI is green on the pushed Bolt head before the squash merge."
     category: constraint
-    applies_to: "Build and Test"
+    applies_to: "Build and Test, the merge"
     trigger: "Build and Test"
-    logic: "pnpm check, pnpm smoke, pnpm check:motion, pnpm contrast, pnpm contrast:patient, impeccable; the hand-off names T-201's 'never enters doctor' and reverse-isolation integration tests as passing in the same pnpm check run"
-    violation: "A hard-rule claim without evidence fails G2/G4"
-    source: "team.md Way of Working steps 3–4, T-203 'Hard-rule evidence', unit-of-work.md U16"
+    logic: "pnpm check (eleven steps: typecheck, lint, lint:boundaries, format:check, check:identity, test:coverage, i18n:check, contrast, contrast:patient, check:motion, build) and pnpm smoke exit 0; impeccable; the check workflow green on bolt/<slug> before the merge; the hand-off names T-201's 'never enters doctor' and reverse-isolation integration tests as passing in the same pnpm check run"
+    violation: "A hard-rule claim without evidence fails G2/G4; a merge without green CI breaks T-010's rule"
+    source: "team.md Way of Working steps 3–4 and 6, T-203 'Hard-rule evidence', unit-of-work.md U16, T-010 (CI before merge), T-011 WF8"
   - id: BR9.4
     statement: "Every defect, workaround or assumption found becomes an ISS row linked to U16."
     category: policy
@@ -495,18 +505,34 @@ rules:
     logic: "Found in U16 T-203; the Build and Test record lists the ISS ids found and fixed"
     violation: "An unrecorded workaround (project.md Mandated)"
     source: "project.md Mandated (ISS rows), team.md Way of Working, ISS-268"
+  - id: BR9.5
+    statement: "The route-table test app/pages.test.tsx changes in the same commit as the four pages: its rows load the [publicId] pages, mark them as owning their heading, mock the container and getConfig() with web-local builders, and check the record's name and the data title instead of the raw id."
+    category: constraint
+    applies_to: "apps/web/src/app/pages.test.tsx (recorded addition)"
+    trigger: "The moves of facilities/[id] and topics/[id] and the real index pages"
+    logic: "rows /facilities, /facilities/[publicId], /topics, /topics/[publicId]: load paths updated; params {publicId: a valid 10-char Crockford id} on the detail rows; ownsHeading true on all four; the harness T-202 extends first (searchParams, mocks of @/server/container and @/server/auth) plus a mock of @/server/config returning DEFAULT_CONFIG_VALUES, with builder view models; generateMetadata called with the row's params, and the detail rows' expected title is facilityLabel(vm) or vm.name + ' — ' + brand.name; the 'tells the reader which record' check looks for the builder's name; robots stays undefined; ISS-296's warm-up stays"
+    violation: "pnpm check red on the first commit after the move (finding F18)"
+    source: "app/pages.test.tsx (T-010), team.md Way of Working (pnpm check green), finding F18"
+  - id: BR9.6
+    statement: "apps/web stays at or above 80% line coverage with every new file counted: each new component, page and helper of the Unit arrives with tests, the detail pages' loader branches included."
+    category: constraint
+    applies_to: "Every new file under apps/web/src in the owned paths and recorded additions"
+    trigger: "pnpm test:coverage (a step of pnpm check)"
+    logic: "page tests for facilities/[publicId] and topics/[publicId]: malformed segment -> notFound, not_found -> notFound, redirected -> permanentRedirect('/{locale}/…/{target}'), valid -> renders, generateMetadata uses the same loader; ConditionLink has its own component test although no T-203 page renders it; the floor is never lowered (D10)"
+    violation: "test:coverage exits 1 (a red pnpm check, S1)"
+    source: "team.md Testing Posture (80% floor), T-010 D10, vitest.workspace.ts (COVERAGE_ROOTS, thresholds), finding F20"
 ```
 
 ## Rule groups at a glance
 
 | Group | Rules | Theme |
 |---|---|---|
-| 1 | BR1.1–BR1.8 | Data through the container; public-id segments; facility and condition redirects; 404; per-request figures; metadata; one loader |
+| 1 | BR1.1–BR1.8 | Data through the container and `getConfig()`; FD-093 imports; public-id segments; facility and condition redirects; 404; per-request figures; metadata without a `robots` field; one loader |
 | 2 | BR2.1–BR2.14 | No quality number or percentage; facility and doctor feedback kept apart on the page; separation sentence; Not verified; Not provided; Limited data; neutral order; anonymous bylines; report reliability; wording as written; framing copy |
-| 3 | BR3.1–BR3.12 | Nine criteria; bars; places; specialties; denominators on counted lists; formatting; facility label; other branches; count phrases; zero cases; hidden feedback; avatars |
+| 3 | BR3.1–BR3.13 | Nine criteria; bars; places; specialties; denominators on counted lists; formatting; facility label and "Part of" badge; other branches; count phrases; zero cases; hidden feedback on profiles and cards; avatars; configured numbers in the compact panel |
 | 4 | BR4.1–BR4.7 | Headings; landmarks; hidden units; topic links; 360 px; Not verified explanation; prototype placement |
-| 5 | BR5.1–BR5.6 | Layout transition only; Reveal on five lists; static hard-rule blocks; no motion in T-203 CSS; reduced motion |
+| 5 | BR5.1–BR5.6 | Layout transition only; Reveal on five lists; static hard-rule blocks; no motion or press rule in T-203 CSS; reduced motion |
 | 6 | BR6.1–BR6.3 | Keys in both languages; no text transforms; original wording |
-| 7 | BR7.1–BR7.2 | T-011 tokens and classes; UI gates |
+| 7 | BR7.1–BR7.2 | T-011 tokens, spacing scale and classes; Prettier; UI gates |
 | 8 | BR8.1–BR8.3 | Server components and exports; primitive changes; owned paths |
-| 9 | BR9.1–BR9.4 | Tests in both languages; smoke; gates and hard-rule evidence; ISS rows |
+| 9 | BR9.1–BR9.6 | Tests in both languages with web-local builders; smoke; gates, CI and hard-rule evidence; ISS rows; route-table test; coverage floor |

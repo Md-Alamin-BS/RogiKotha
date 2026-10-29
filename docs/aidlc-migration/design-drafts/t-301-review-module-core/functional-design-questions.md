@@ -6,8 +6,8 @@ Context:
 - Unit U21 (kind `library`, size XL, not marked high risk) delivers T-301 (`docs/implementation/tasks/T-301-review-module-core.md`, with its FD-080 and FD-090 amendments) for stories US6.1, US6.2, US6.4, US3.3 and US4.3. Bolt 17 in `bolt-plan.md`, after U11 T-104 (Bolt 11), U12 T-105 (Bolt 12), U14 T-201 (Bolt 13) and U17 T-204 (Bolt 16); before U23 T-303 (Bolt 18), U22 T-302, U26 T-306 and U27 T-307. Evidence intake and publication (U23, U25) come later, so every evidence call goes through a port with a fake.
 - Inputs read: `unit-of-work.md` (U21, the open point "Evidence-to-draft link … the publish check in U21"), `unit-of-work-dependency.md`, `unit-of-work-story-map.md`, `requirements.md` (FR10, FR24–FR27, FR39–FR52, FR55, FR78), `stories.md` (AC3.3.1–AC3.3.6, AC4.3.1–AC4.3.5, AC6.1.1–AC6.1.6, AC6.2.1–AC6.2.5, AC6.4.1–AC6.4.5), `components.md` (Review, Identity and its accepted exceptions), `contract-summary.md` (C4, C6, C7, C8, C9, C15, the common rules and the task-file amendments), `delivery-planning-questions.md` Q6, `docs/status/decision-log.md` (FD-008, FD-009, FD-014, FD-015, FD-016, FD-022, FD-023, FD-049, FD-067, FD-080, FD-086, FD-089, FD-090, FD-092), `01-conventions.md` §2–§5 and §10, `02-data-model.md` §0, §3, §6, §7, §16, §17, `03-routes-and-contracts.md` §2–§5, the U14 T-201 and U8 T-101 design drafts, and `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md` (owner answers: doctor summaries show counts with denominators only, no percentages; facility pages use the nine-criteria model).
 - Code read as it is on `main` and on the T-010 branch (2026-10-28): `packages/database/src/schema/{review,identity,evidence,enums,audit}.ts`, migrations `0002`, `0004`, `0005`, `0008`, the repository stubs `repositories/{review,evidence,identity}.ts`, `validator-probes.int.test.ts` and `migrations.int.test.ts` (both pin the migration count), `packages/contracts/src/{view-models/experience.ts, view-models/composer.ts, schemas/review.ts, actor.ts, errors.ts, config-values.ts, enums.ts}`, `packages/i18n/messages/{en,bn}.json` (the `errors.review.*`, `label.*`, `claim.*`, `byline.*` and `compose.identity.*` keys), `packages/test-support/src/{corpus/reviews.ts, corpus/facility-reviews.ts, corpus/notifications.ts (USER_DRAFTS), seed/seed-content.ts, fakes/repositories.ts, fakes/repositories-superset.test.ts, builders/review.ts}`; the prototype selectors in `ui-design-prototype/shared/rogikotha-data.js` (`distribution`, `sentimentOf`, `outcomeOf`, `criteriaDist`, `relatedByCondition`, `accountsByAuthor`, `followUpsFor`, `laterCareFor`) and renderers in `concept-04b-quiet-clinic-minimal/app.js` (`byline` 582, `accountRow` 624, `renderAccount` 901, `relatedCard`, `renderCompose` 1449, `renderPreview` 1663, `renderExperienceIndex` 1927; the task's line numbers are from an earlier prototype).
-- Open `ISSUES.md` rows in this area: ISS-269 (seed drafts stored unencrypted, owner U21), ISS-147 (closed in substance by FD-049), ISS-161 (seed text Bengali only), ISS-222 and ISS-091 (U14), ISS-237, ISS-240 (worker reads `exact_date_enc`), ISS-262 (anonymous comments on non-anonymous threads), ISS-145 (no event-name list).
-- U3 T-010 is being built on its branch while this draft is written. Nothing here depends on it beyond the boundary lint and the coverage floor it turns on.
+- Open `ISSUES.md` rows in this area: ISS-269 (seed drafts stored unencrypted, owner U21), ISS-147 (closed in substance by FD-049), ISS-161 (seed text Bengali only), ISS-222 and ISS-091 (U14), ISS-237, ISS-240 (worker reads `exact_date_enc`), ISS-262 (anonymous comments on non-anonymous threads), ISS-145 (no event-name list), ISS-290 (the identity fake stores no mode), ISS-294 (`not-implemented.test.ts` pins every stub).
+- **Refreshed 2026-10-29** against U3 T-010 as merged on `main` (`14c21a9`: `eslint.boundaries.mjs`, `01-conventions.md` §2 with FD-093, the 80% line floor, `format:check`, `check:identity`, CI, `not-implemented.test.ts`, the migration-count pins, `foreign-keys.int.test.ts`), the refreshed U8 T-101 draft (`defineCommand` `requires` order, `onRefused`, the `recorded` error, the Actor, the asynchronous `ConfigProvider`, FD-094 to FD-097), the refreshed U14 T-201 draft (linked condition tag first, `ensureProvisionalTerm` with the publishing persona as actor, 11 doctors and 25 reviews, facility feedback visibility), the U11 T-104 draft (thread aliases on bylines, the deferrable link key, "Former member" for de-identified personas, the owner's answer of 2026-10-29) and the U12 T-105 draft (the owner's answer moving unbuilt settings to release 2). Questions 15 and 16 are answered; new Questions 17–21 and the raised points R1–R6 are decided under the owner's no-questions instruction of 2026-10-29. What changed is listed at the top of `functional-spec.md`.
 
 ## Settled before this stage
 
@@ -23,6 +23,11 @@ These are decided by FD entries, the contracts or U14's design and are not asked
 - **Family members and caregivers attest; there is no consent workflow (FD-014). The composer's pattern checks warn and never block; no classifier runs (FD-009).**
 - **Images only in Phase 1 (FD-036); an unconfirmed file is never public (FD-023).**
 - **No new dependency.** Grapheme handling uses `Intl.Segmenter`; encryption uses the existing `Crypto` port; no dependency-check entry is needed unless Code Generation finds otherwise.
+- **Import boundaries as merged by T-010 (FD-093, `eslint.boundaries.mjs`).** `domain` imports nothing, not even `contracts`; `application` imports only `domain` and `contracts` and no external package or Node built-in; `database` imports only `application` and `contracts`, never `domain`; seed code may also import `domain` and `database` (FD-040). The 80% line floor binds `domain` and `application` as soon as they hold code, and every Bolt merges only with CI green on its branch.
+- **The command frame of U8 T-101.** `defineCommand({name, input, requires, sendsMail?, onRefused?, handle})` checks `requires` in the order `authenticated → verifiedEmail → notRestricted → staffRole → capability → stepUp → owner`; a handler `err` rolls back unless it is marked `recorded`; the Actor carries no persona and no staff powers; `ConfigProvider.current()` returns a Promise; the `RateLimiter` port is `hit(key, limit, windowSec) → {allowed, retryAfter?}`.
+- **U14 T-201 (refreshed).** A review's condition is its first condition tag that has a term, else its first free-text condition tag (U14 BR3.9); related cards use the same choice. `ensureProvisionalTerm(tx, {kind, text, lang}, actor)` runs on the publish transaction with the publishing persona as its audit actor and never aborts it; the composer creates provisional terms only at publish (U14 F12). The seed holds 11 doctors and 25 reviews, each review with one condition term tag (r25 has no sentiment, outcome or documents). When facility feedback is turned off, no facility feedback is read or projected (U14 BR2.12).
+- **U11 T-104.** The persona-link foreign key becomes deferrable in T-104's migration (its Question 7 A); `personaFor` without a review id always creates a fresh anonymous persona (its BR2.4); bylines show the thread alias of an anonymous persona (its Question 6 A); a de-identified named or pseudonymous persona shows "Former member" with no username or profile link (the owner's answer to its Question 15, 2026-10-29).
+- **U12 T-105.** Settings no Unit builds, among them whether sentiment is optional (FR45) and the label-approval workflow (FR47), move to release 2 (the owner's answer to its R1, 2026-10-29); the limited-data threshold allows 2–50 (its R2).
 
 ## Settled in this design without a question
 
@@ -102,6 +107,8 @@ B. **Write the link without a review id and back-fill it after the review insert
 C. **Insert the review under the named persona and swap it afterwards.** Writes a false author for a moment inside the transaction; rejected.
 X. Other (please specify)
 
+Refresh 2026-10-29: the U11 T-104 draft answers its Question 7 with A and puts the change in its own migration (Bolt 11), so this Unit expects the key to be deferrable already and adds the migration only if T-104 merged without it.
+
 [Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
 
 ## Question 6
@@ -134,6 +141,8 @@ A. **A boolean-only Identity query, `identity.ownsAnyPersona({accountId, persona
 B. **Review reads the account's persona list through `identity.personasOf`.** Moves the private list into the review module: a change to the identity data boundary that needs an FD entry first (project rule).
 C. **Compare only the same persona.** No Identity call, but a repeat posted once named and once anonymously, the case most worth flagging, is missed.
 X. Other (please specify)
+
+Refresh 2026-10-29 (decided by the agent under the owner's no-questions instruction of 2026-10-29): the U11 T-104 draft still has no `ownsAnyPersona`, and its `currentPersonaOf` returns only the named persona, while `review.preview` needs the pseudonymous one without writing (WF4). Both are asked of T-104 when it is finalised, as internal operations over its private repository: `ownsAnyPersona({accountId, personaIds}) → boolean` and `currentPersonaOf({accountId}) → {namedPersonaId, pseudonymousPersonaId}`. That keeps this Unit out of the identity module. If T-104 merges without them, this Unit adds them as a recorded owned-path addition, and that part runs the high-risk steps of the team practice (collaborators on, adversarial tests by a separate agent, the owner's written sign-off), because it reads `persona_links`.
 
 [Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
 
@@ -203,9 +212,11 @@ B. **Leave the seed and make the code tolerate it** (treat undecryptable drafts 
 C. **Route the three fixes to a new change request.** The demo shows broken drafts and Bengali claim text in English until it lands.
 X. Other (please specify)
 
+Refresh 2026-10-29: "the real `Crypto` port" cannot be reached from the seed under T-010's boundary matrix, and the test fake's fixed key gives drafts the running demo cannot decrypt; Question 21 settles how the seed encrypts. The seed correction now also keeps U14 T-201's changes to the same file (one condition term tag per review, r25) and its counts (3 drafts, 25 reviews).
+
 [Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
 
-## Question 15 — for the owner
+## Question 15 — owner-class (answered under the no-questions instruction)
 
 **FR46 ("What went well" and "What could improve" checkboxes for listening, explanation, medicines/tests/risks, respect/empathy, consultation time, cost/value and recommendation) exists nowhere outside the requirements and AC6.2.3.** There is no column, no prototype screen, no i18n key and no task that builds it. AC6.2.3, mapped to this Unit, expects the ticked boxes "as selected text". FR46 is a PRD Must.
 
@@ -216,9 +227,9 @@ B. **Build them now**: a forward-only migration adds `went_well` and `could_impr
 C. **Store them inside `sections`** as structured text. No migration, but they would read as free text, could not be filtered, and mix the author's story with checkbox values.
 X. Other (please specify)
 
-[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29, recorded in OWNER-REVIEW-QUEUE.md; an FD entry defers the FR46 checkboxes from release 1 and narrows AC6.2.3 to its sentiment half; the dependent text in rules.md, functional-spec.md and traceability.json is updated when this draft is finalised)
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29, recorded in OWNER-REVIEW-QUEUE.md; an FD entry defers the FR46 checkboxes from release 1 and narrows AC6.2.3 to its sentiment half; the dependent text in rules.md (BR3.13), functional-spec.md and traceability.json (AC6.2.3) was updated in the 2026-10-29 refresh, and the FD text the build appends is entry (a) of functional-spec.md § 17)
 
-## Question 16 — for the owner
+## Question 16 — owner-class (answered under the no-questions instruction)
 
 **The prototype shows an anonymity caveat on the public experience page and in the composer**: `compose.identity.anonNote`, "Anonymous hides your name from readers. It is not absolute anonymity — your account and contact details remain private but known to us, and can be required by law." T-301 step 6 puts it in the page's margin (`anonNote`). FD-008 says the limits of anonymity against lawful disclosure are explained only in the Terms; FD-022 and AC3.3.6 say staff identity access is disclosed only in the Privacy Policy and Terms, and "no banner or warning about staff identity access appears" on the review page or in the writing flow.
 
@@ -229,15 +240,80 @@ B. **Keep the prototype's note on both screens**, with an FD entry amending FD-0
 C. **Keep it in the composer only**, where the author decides; still against FD-008 and AC3.3.6's "writing flow", so it also needs an FD entry.
 X. Other (please specify)
 
-[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29, recorded in OWNER-REVIEW-QUEUE.md; an FD entry records no anonymity caveat on the public page and a reworded composer note without the legal or staff-access sentence; dependent text is updated when this draft is finalised)
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29, recorded in OWNER-REVIEW-QUEUE.md; an FD entry records no anonymity caveat on the public page and a reworded composer note without the legal or staff-access sentence; the dependent text in rules.md (BR6.13) and functional-spec.md was updated in the 2026-10-29 refresh, and the FD text, with the reworded note in both languages, is entry (b) of functional-spec.md § 17)
 
-## Raised for the owner, not decided in this stage
 
-Each is proposed as an `ISS-` row (`functional-spec.md` § 9) so the owner can rule on it.
+## Question 17 — added in the 2026-10-29 refresh
 
-- **R1 — Nobody builds the screen for writing facility feedback.** `facilityReview.publish` is built here, but the prototype's "Describe your visit" button on a facility page (`facility.write`) opens the doctor composer, and U26 T-306 builds no facility section. AC4.3.4 ("fill in the facility section") has a backend and no UI. Suggested: a small follow-up in T-306 or a new task.
-- **R2 — U27 T-307 step 2 links a named byline to `/authors/{username}`.** A named persona's username is the account's pseudonymous name, so that link would put a real name next to the username the same person uses for pseudonymous reviews. The U11 T-104 draft, written in parallel, adds `profileUsername` to the byline for named personas for the same link, and its `publicByUsername` falls back from the pseudonymous to the named persona of a username, so the profile page would join both identities. This Unit's byline never carries a named persona's username (BR6.4); T-104, T-307 and U38 T-409's public profile need a link target that does not expose it. Severity S2 now, S1 if built as written.
-- **R3 — Custom Reviewer's labels (FR47) are not built**: only the three suggested labels are accepted, because FR47's label-approval workflow and configuration have no owner.
-- **R4 — Two gaps in the §17 transition table**: a moderator cannot `remove` a review that is `hidden_pending_review`, and an author cannot delete a `hidden` review that has no discussion. This Unit builds the table exactly as written; U22 T-302 and U33 T-404 decide whether to extend it.
-- **R5 — `label.limitedDataWhy` hard-codes "Fewer than 5"** while the threshold is a runtime setting; the copy is wrong as soon as the setting changes. Suggested owner: the page Units (U15 T-202) with a `{threshold}` parameter.
-- **R6 — `review_versions.actor_id` holds the author's account id** (T-005), the same kind of extra link Question 10 removes from the audit row. U22 T-302 writes the first version rows and should apply the same rule.
+**What does an anonymous review's byline show on its experience page?** The U11 T-104 draft (its Question 6 A) shows the thread's alias (`patient-xxxx`) as the name, keeps "Written anonymously" as the lede and the Anonymous chip, and U31 T-402 renders the discussion from that data. The refreshed U14 T-201 draft (its BR2.10) gives an anonymous byline only `personaKind`, and the first version of this draft followed U14. AC3.3.2 asks that "each thread shows its own stable alias for the author, the two aliases differ"; storyboard step 14 expects "alias `patient-xxxx`".
+
+A. **The page byline shows the thread alias** (recommended): `alias` (the anonymous persona's display name) with the "Written anonymously" lede and the Anonymous chip; no initials, no profile link, the constant hue. Cards on lists (U14's `ExperienceCardVM`) keep their nameless anonymous byline, so the alias is shown only inside its own thread, on the page and in its discussion. The preview shows no alias, because the persona is created at publish; the alias joins the allowed differences of "preview equals public" (BR6.12).
+B. **No alias anywhere** (U14's shape). AC3.3.2 and storyboard step 14 fail, and the page byline disagrees with the discussion's.
+C. **The alias on cards too.** The alias then appears on every list a review is on, which FD-015's "scoped to that one review thread" does not need.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29; follows the U11 T-104 draft's Question 6 and AC3.3.2)
+
+## Question 18 — added in the 2026-10-29 refresh (closes R2)
+
+**Do named and pseudonymous bylines carry the profile username?** The first version of this draft said a named byline must never carry the username, because U27 T-307's link to `/authors/{username}` would put a real name next to the username the same account uses for pseudonymous reviews (R2, S2, S1 if built). FR11 and AC10.2.1 say the opposite is intended: a public profile "shows their username and display name with those public contributions and reactions, each under the identity shown on the content itself"; only anonymous content stays off it (FD-015). The U11 T-104 draft settles the same point and gives named and pseudonymous bylines a `profileUsername`.
+
+A. **Named and pseudonymous bylines carry `profileUsername` for the profile link; anonymous and "Former member" bylines never do** (recommended). The byline text still shows only the chosen identity (AC3.3.1). The link reveals nothing the profile does not already show, so R2 is closed. U26 T-306's identity choice must not tell the author that a username hides their real name from their public profile (S3 row for U26).
+B. **Keep the first draft's rule: no username on a named byline.** The profile still lists the named contributions (AC10.2.1), so the rule hides nothing; readers lose the way from a named review to the profile, and T-307 step 2 changes.
+C. **Narrow FR11 so a profile shows only pseudonymous contributions.** A requirements change and an FD entry about a founder-level product rule, for a protection the product does not promise.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29; follows FR11, AC10.2.1 and the U11 T-104 draft)
+
+## Question 19 — added in the 2026-10-29 refresh
+
+**What does the page show for a review whose named or pseudonymous persona was de-identified?** The owner's answer to the U11 T-104 draft's Question 15 (2026-10-29): such a persona shows "Former member", with no username and no profile link. The page also lists "other experiences by this author" through the same persona (BR6.9).
+
+A. **"Former member" byline, no profile link, and no other accounts** (recommended): `otherAccounts` is `[]`, as for an anonymous review, so a deleted person's retained reviews are not grouped together under one label (FR13, AC10.3.3). Related and same-doctor cards still show the review.
+B. **"Former member" byline, other accounts still listed.** The retained history stays joined, which makes re-identification from the content easier.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29; applies the owner's answer to T-104 Question 15)
+
+## Question 20 — added in the 2026-10-29 refresh
+
+**Where is a free-text condition compared for `repeatEpisode`?** The first version left Code Generation to choose between an SQL expression equal to `normalizeAliasKey` and a comparison in code. Under T-010's matrix `database` may not import `domain`, and PostgreSQL has no expression that keeps exactly the Unicode letters, marks and digits (`\p{L}`, `\p{M}`, `\p{N}`) the domain function keeps on every Bengali sign.
+
+A. **Compare in the application** (recommended): `repeatCandidates` returns, for the same doctor, year and month, each eligible review's author persona, its effective condition term ids and its free-text condition tags as written (usually none, at most a handful); the application computes the keys with the domain's `normalizeAliasKey`, keeps the reviews that share a key with the new one, and asks `identity.ownsAnyPersona` about their personas. One definition of the key, tested once (U14 BR4.1).
+B. **An SQL expression.** A second definition of the key that can drift from the domain function on Bengali marks, with no test that could prove them equal for every input.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29)
+
+## Question 21 — added in the 2026-10-29 refresh
+
+**How does the seed encrypt its drafts (Question 14 A)?** The real `Crypto` adapter is `packages/adapters/src/crypto/` (U8 T-101). T-010's matrix lets seed code import `application`, `contracts`, `domain`, `test-support` and `database`, not `adapters`, and `@rogikotha/adapters` is not a dependency of `test-support`. The test fake `FakeCrypto` uses a fixed all-zero key, so drafts it encrypts cannot be decrypted by the running demo, which uses `APP_ENCRYPTION_KEY`. The seed's `original_filename_enc` (`TODO(T-304)` in `seed-evidence.ts`) has the same gap.
+
+A. **An FD entry amends FD-093: seed code may import the `Crypto` adapter through one subpath, `@rogikotha/adapters/crypto`, and nothing else from `adapters`** (recommended). The seed builds it from `APP_ENCRYPTION_KEY`, which it already loads from the repo-root `.env`. `eslint.boundaries.mjs` gains the edge, a `no-restricted-imports` rule that limits the seed to that subpath, and a lint fixture proving another `adapters` path is still refused. One implementation of the ciphertext format; U24 T-304 uses the same edge. Dev-only, like FD-040's seed exception; nothing in `apps/*` imports `test-support`.
+B. **The seed carries its own AES-256-GCM with the same key**, and a test in `packages/adapters` proves the adapter decrypts the seed's output. No boundary change, but two implementations of one format.
+C. **Store seed drafts in plaintext with a decrypt fallback.** Forbidden by T-301's threat note (Question 14 B).
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29; FD text in functional-spec.md § 17 (e))
+
+## Settled in the 2026-10-29 refresh without a question
+
+Each follows from a sibling draft, the merged T-010 code or a project rule (decided by the agent under the owner's no-questions instruction of 2026-10-29); explained in `functional-spec.md`.
+
+- **Domain results are structural.** `domain` cannot import `contracts`, so `parsePeriod`, `minimumFieldsSatisfied` and the state machine return plain unions (`{ok: true, value} | {ok: false, reason}`, lists of missing-field codes); the application maps them to `Result`, `ErrorCode` and the `errors.review.*` keys. Identity modes, relationships, claims and section keys are string unions declared in `domain`, kept equal to the `contracts` enum arrays by a type-level test in `application`.
+- **The owner check is a load, not `requires: owner`.** Draft operations declare `requires: ['authenticated']` (publish adds `verifiedEmail` and `notRestricted`) and load the draft with `account_id = actor.accountId`, so a foreign draft answers `not_found`, never `forbidden` (BR1.2). No command of this Unit declares `onRefused` or returns a `recorded` error: every refusal writes nothing.
+- **Every authorized publish attempt counts toward the 5-a-day limit**, refused ones included (BR1.4). The composer enables Publish only when the minimum is met (T-306), so an honest author meets the limit only by repeating a failing publish; a script probing other drafts' or files' ids is slowed by the same counter.
+- **A provisional term's `lang`** is the script of its own text (`bn` or `en`, else the actor's locale); `banglish` is never guessed (BR3.8).
+- **Facility feedback turned off** (`featureVisibility.facilityAccounts = false`, U14 BR2.12): `review.forBranch` returns an empty page and `facilityReview.publish` is refused with nothing written and the draft kept, so nothing is collected that the platform does not show (BR7.3, BR8.4).
+- **`review.publish` passes the publishing persona as the actor of `ensureProvisionalTerm`** (U14 WF11, BR5.5), the same `persona:<id>` its own audit row names (Question 10).
+
+## Raised points, decided under the owner's no-questions instruction of 2026-10-29
+
+Each is proposed as an `ISS-` row (`functional-spec.md` § 9) with the decision below; the owner can still change any of them.
+
+- **R1 — Nobody builds the screen for writing facility feedback.** `facilityReview.publish` is built here, but the prototype's "Describe your visit" button on a facility page (`facility.write`) opens the doctor composer, and U26 T-306 builds no facility section; AC4.3.4 ("fill in the facility section") has a backend and no UI. **Decided:** U26 T-306 adds the facility section to the composer (the target switch, the branch, the nine criteria, the story and the attestation), as a recorded owned-path addition of that Unit, calling `facilityReview.publish` (S3 row for U26).
+- **R2 — A named byline linking to `/authors/{username}`.** **Decided:** closed by Question 18 A; FR11 and AC10.2.1 make the profile show the username and display name with every non-anonymous contribution, so the link exposes nothing the profile does not (F11 becomes an S3 copy note for U26 T-306).
+- **R3 — Custom Reviewer's labels (FR47) are not built.** **Decided:** release 1 accepts the three suggested labels only, stored by code; custom labels move to release 2 with the label configuration and the label-approval workflow, which the owner's T-105 answer of 2026-10-29 already moves; an FD entry narrows FR47 for release 1 (`functional-spec.md` § 17 (c)). AC6.2.4 names only a suggested label and is met in full.
+- **R4 — Two gaps in the §17 transition table**: a moderator cannot `remove` a review that is `hidden_pending_review`, and an author cannot delete a `hidden` review that has no discussion. **Decided:** this Unit builds §17 exactly, so its cell-by-cell test pins today's table; U33 T-404 adds `hidden_pending_review --remove--> deleted_tombstone` and U22 T-302 adds `hidden --deleteWithoutDiscussion--> deleted`, each in the Unit that builds the command needing it, with a dated §17 note and the matching test cell.
+- **R5 — `label.limitedDataWhy` hard-codes "Fewer than 5"** while the threshold is a runtime setting (2–50 after T-105). **Decided:** U15 T-202 changes the key to take `{threshold}`, formatted in the active language's numerals, in both files in one commit.
+- **R6 — `review_versions.actor_id` holds the author's account id** (T-005), the same kind of extra link Question 10 removes from the audit row. **Decided:** U22 T-302 applies the persona rule of FD entry (d) to the version rows it writes first (no author account id in a version row); its own design chooses the column change.

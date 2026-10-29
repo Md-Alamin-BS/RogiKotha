@@ -2,28 +2,30 @@
 
 Draft written ahead of the stage. The lead finalises it when the workflow reaches this Unit; then it moves to `<record>/construction/t-105-runtime-configuration/functional-design/`.
 
-Source of truth for the Unit's decision logic. Built from `unit-of-work.md` (U12), `unit-of-work-story-map.md` (US11.1), `requirements.md` (FR100, FR101, FR102), `stories.md` (AC11.1.1–AC11.1.6, AC3.1.5), `contract-summary.md` (C1, C5, C15 and the ownership rules), T-105 with its amendments (FD-063, FD-068, FD-072, FD-082, FD-083, the C1 sign-in ranges), FD-016, FD-017, FD-018, FD-022, FD-065, FD-067, `01-conventions.md` §3–§6, `02-data-model.md` §10–§11, `03-routes-and-contracts.md` §2–§5, the prototype (`admin/app.js` `renderConfig`, `shared/rogikotha-data.js`), the U8 and U10 drafts, and the open `ISSUES.md` rows ISS-079, ISS-108 and ISS-171.
+Source of truth for the Unit's decision logic. Built from `unit-of-work.md` (U12), `unit-of-work-story-map.md` (US11.1), `requirements.md` (FR100, FR101, FR102), `stories.md` (AC11.1.1–AC11.1.6, AC3.1.5), `contract-summary.md` (C1, C5, C15 and the ownership rules), T-105 with its amendments (FD-063, FD-068, FD-072, FD-082, FD-083, the C1 sign-in ranges), FD-016, FD-017, FD-018, FD-022, FD-065, FD-067, FD-093, `01-conventions.md` §2–§6, `02-data-model.md` §10–§11, `03-routes-and-contracts.md` §2–§5, the prototype (`admin/app.js` `renderConfig`, `shared/rogikotha-data.js`), the U8, U10 and U13 drafts, and the open `ISSUES.md` rows ISS-079, ISS-171 and ISS-294 (ISS-108 is closed by U8).
 
-The rules that depend on a question follow the answers in `functional-design-questions.md`, chosen on the owner's standing instruction of 2026-10-27 and awaiting the owner's confirmation. `functional-spec.md` § 12 lists what changes if the owner reverses an answer. R1 and R2 are not decided: BR1.3 keeps the contract's range until R2 is answered, and no rule covers the AC11.1.1 settings of R1. "Candidate" always means the whole configuration a caller proposes, applies, imports or restores, before validation. "Current" means the configuration of the highest stored version (BR4.2).
+Refreshed 2026-10-29 against T-010 as merged (`14c21a9`), the refreshed U8 T-101 and U10 T-103 drafts, the T-106 draft (its F25) and the owner's answers. The rules that changed are BR1.1, BR1.3, BR2.2, BR2.3, BR3.3, BR3.4, BR4.1, BR6.1, BR6.3, BR7.1–BR7.3, BR8.1, BR8.3, BR8.4, BR9.1, BR9.2, BR9.4, BR11.1, BR11.3, BR12.1, BR12.3, BR12.5 and BR12.6. BR12.7 and BR12.8 are new.
+
+The rules that depend on a question follow the answers in `functional-design-questions.md`. Questions 1–10 were chosen on the owner's standing instruction of 2026-10-27; Questions 11–13 were decided by the agent under the owner's no-questions instruction of 2026-10-29; all await the owner's confirmation. R1 (narrow release-1 settings) and R2 (limited-data threshold 2–50) are the owner's answers of 2026-10-29, each recorded by an FD row of `functional-spec.md` § 8.1. `functional-spec.md` § 12 lists what changes if an answer is reversed. "Candidate" always means the whole configuration a caller proposes, applies, imports or restores, before validation. "Current" means the configuration of the highest stored version (BR4.2).
 
 **Authorization and records at a glance** (each line is a rule below):
 
 - Read (`config.current`, `config.history`): any staff role. Preview (`config.propose`): `config.write`. Change (`config.apply`, `config.rollback`): `config.write` and a step-up, in the order `authenticated` → `capability` → `stepUp` (U10 BR7.4). Only Super Admin holds `config.write`.
 - Every change writes, in one transaction: a `config_versions` row, one `config_changes` row per changed setting, one audit row on the `config` stream and one `config.applied` outbox row through `ConfigEventSink` (BR6.4, BR8.1, BR8.2).
-- A refusal after authorization and step-up writes one `config_rejected` audit row and nothing else; a refusal before writes nothing (BR8.3, BR8.4).
+- A refusal after authorization and step-up writes one `config_rejected` audit row and nothing else (the handler, `recorded`); a missing or stale step-up writes one `config_rejected` row with `step_up: false` (the command's `onRefused`); `forbidden` writes nothing (BR8.3, BR8.4).
 - Audit details hold setting paths, bounded values, versions and counts; never the reason text and never an unknown key name (BR8.1, BR8.3).
 
 ```yaml
 rules:
   # Group 1 — The configuration values (schema version 2)
   - id: BR1.1
-    statement: "ConfigValues at schema version 2 has exactly seven blocks: thresholds, limitedDataThreshold, reportReasons, capabilities, featureVisibility, emergency and signIn; every object is strict and every key is required; there is no retention block."
+    statement: "ConfigValues at schema version 2 has exactly seven blocks: thresholds, limitedDataThreshold, reportReasons, capabilities, featureVisibility, emergency and signIn; every object is strict and every key is required; there is no retention block, and release 1 adds no other setting."
     category: validation
     applies_to: "packages/contracts/src/config-values.ts ConfigValuesSchema, CONFIG_SCHEMA_VERSION"
     trigger: "A candidate or a stored value is parsed"
     logic: "CONFIG_SCHEMA_VERSION = 2; ConfigValuesSchema = strict object of the seven blocks; a retention key anywhere at the top level is an unknown key (config.invariant)"
     violation: "A retention block accepted again stores the periods twice (FD-068); a missing strict() lets any key through (threat 1)"
-    source: "T-105 step 1, FD-082, FD-068, C1 config_values_changes, 02-data-model.md §11"
+    source: "T-105 step 1, FD-082, FD-068, C1 config_values_changes, 02-data-model.md §11, R1 (the owner's answer, 2026-10-29; the release-1 settings FD row of functional-spec.md § 8.1)"
   - id: BR1.2
     statement: "The four moderation thresholds are integers within fixed ranges: fiveAccountHide 2-50, criticalHours 1-168, standardDays 1-30, appealDays 1-30."
     category: validation
@@ -33,13 +35,13 @@ rules:
     violation: "fiveAccountHide 1 lets one account hide content (threat 5); each boundary and each boundary +-1 is tested"
     source: "T-105 step 1 and acceptance row 'Ranges', 03 §4 config.apply, FD-017, FD-018"
   - id: BR1.3
-    statement: "limitedDataThreshold is an integer in 1-50; it only decides when the Limited data label shows and is never shown or used as a score."
+    statement: "limitedDataThreshold is an integer in 2-50, so Limited data can never be switched off from settings; it only decides when the Limited data label shows and is never shown or used as a score."
     category: validation
     applies_to: "ConfigValuesSchema.limitedDataThreshold"
     trigger: "A candidate is validated"
-    logic: "range 1-50 (the contract's range; becomes 2-50 if the owner answers R2 with A); out of range THEN config.out_of_range"
-    violation: "A threshold used as a quality figure breaks the no-score hard rule; a threshold of 1 makes Limited data unreachable (R2)"
-    source: "PRODUCT.md hard rules (Limited data, no number for quality), 03 §4, T-105 hard-rule checklist, R2"
+    logic: "z.number().int().min(2).max(50); 1 or 51 THEN config.out_of_range; Limited data shows when 0 < eligible accounts < threshold (U14), so a single account always reads as limited data; the default 5 is unchanged and no stored version holds 1"
+    violation: "A threshold used as a quality figure breaks the no-score hard rule; a threshold of 1 makes Limited data unreachable"
+    source: "PRODUCT.md hard rules (Limited data, no number for quality), 03 §4 (corrected from 1-50), T-105 hard-rule checklist, R2 (the owner's answer, 2026-10-29; the limited-data FD row of functional-spec.md § 8.1), T-201 draft (2-50)"
   - id: BR1.4
     statement: "reportReasons is a set of REPORT_REASONS values that always contains privacy, threat, unsafeFile, dangerous and other."
     category: validation
@@ -111,17 +113,17 @@ rules:
     category: validation
     applies_to: "application/modules/administration/config-validation.ts validateCandidate"
     trigger: "propose, apply, rollback or import"
-    logic: "1. upgrade the candidate if it carries schemaVersion 1 (BR3.3); 2. denylist over every key path (BR3.1); 3. ConfigValuesSchema.safeParse (BR1.1-BR1.7, BR1.9); 4. rules that need the current version (BR1.8); collect all issues; normalise reportReasons (BR1.4)"
+    logic: "1. upgrade the candidate if it carries schemaVersion 1 (BR3.3); 2. denylist over every key path (BR3.1); 3. parseConfigValues(raw) from contracts, the zod-free wrapper over ConfigValuesSchema (BR1.1-BR1.7, BR1.9; Question 11); 4. rules that need the current version (BR1.8); collect all findings; normalise reportReasons (BR1.4); validateCandidate imports nothing from zod"
     violation: "Stopping at the first issue hides the others from the editor; skipping the denylist relies on strict() alone (threat 1)"
     source: "T-105 steps 1, 2 and 4"
   - id: BR2.3
     statement: "Each finding maps to one error code, and the result carries the most serious one: config.invariant, then config.out_of_range, then validation."
     category: validation
-    applies_to: "validateCandidate"
+    applies_to: "contracts parseConfigValues (schema findings), application validateCandidate (policy findings and the result code)"
     trigger: "Validation found an issue"
-    logic: "unknown key, denylisted path, missing always-enabled reason, unchanged lastVerified (BR1.8) => config.invariant; too_small, too_big, signIn order, date in the future => config.out_of_range; wrong type, missing key, phone or date format => validation; AppError.messageKey from errorMessageKey(code); fieldErrors maps each known setting path to its message key; unknown key names are never put in fieldErrors, messages or logs"
+    logic: "parseConfigValues maps zod issues inside contracts and returns {path, code, messageKey} findings and unknownKeyCount, never a zod type (Question 11): unrecognized_keys => config.invariant (names counted, not kept); too_small, too_big, the two signIn order refinements => config.out_of_range; invalid_type (missing key included), invalid_format => validation; validateCandidate adds denylisted path, missing always-enabled reason, unchanged lastVerified (BR1.8) => config.invariant and date in the future => config.out_of_range; AppError.messageKey from errorMessageKey(code); fieldErrors maps each known setting path to its message key; unknown key names are never put in fieldErrors, messages or logs"
     violation: "A wrong code fails the 'Ranges', 'Unknown key' and C1 rows; echoing an unknown key name puts attacker-chosen text in the UI and the logs"
-    source: "T-105 acceptance rows, 03 §2 (config.invariant, config.out_of_range), errors.ts errorMessageKey, 01-conventions §11"
+    source: "T-105 acceptance rows, 03 §2 (config.invariant, config.out_of_range), errors.ts errorMessageKey, 01-conventions §11, FD-093 (application imports no external package), Question 11"
   - id: BR2.4
     statement: "The reason of an apply or rollback is 5-500 characters after trimming."
     category: validation
@@ -131,11 +133,11 @@ rules:
     violation: "A change without a meaningful reason fails threat 3 ('every apply needs reason')"
     source: "T-105 step 4 ('Reason >= 5 chars'), threat 3"
   - id: BR2.5
-    statement: "A change that changes nothing is refused and writes nothing."
+    statement: "A change that changes nothing is refused and writes no configuration."
     category: validation
     applies_to: "config.apply, config.rollback"
     trigger: "The validated candidate equals the current values"
-    logic: "IF diff(current, candidate) is empty THEN err validation with messageKey errors.config.noChange; no version, no change row, no outbox row"
+    logic: "IF diff(current, candidate) is empty THEN err validation with messageKey errors.config.noChange; no version, no change row, no outbox row; the refusal is recorded as config_rejected like every refusal after the step-up (BR8.3)"
     violation: "Empty versions clutter the history and the export/import round trip would create versions for nothing"
     source: "Design decision (functional-spec § 11), Question 10"
 
@@ -157,19 +159,19 @@ rules:
     violation: "A missed or invented change row fails the 'Apply' row (exactly one row thresholds.fiveAccountHide 5->3)"
     source: "T-105 step 2 ('diff on leaf values') and tests ('nested, arrays'), 02-data-model.md §11 config_changes.path"
   - id: BR3.3
-    statement: "upgradeConfigValues turns a schema-version-1 value into version 2 by removing its retention block; any other version is refused."
+    statement: "upgradeConfigValues turns a schema-version-1 value into version 2 by removing its retention block and filling a missing signIn block with FD-063's defaults; any other version is refused."
     category: calculation
-    applies_to: "config-policy.ts upgradeConfigValues"
+    applies_to: "config-policy.ts upgradeConfigValues(raw, fromVersion, fill)"
     trigger: "A stored value, a rollback target or an imported file carries schemaVersion 1"
-    logic: "IF schemaVersion = 2 THEN unchanged; IF 1 THEN copy without the top-level retention key, schemaVersion 2; ELSE invalid (a stored row is skipped by BR4.5, an import or rollback gets config.invariant)"
-    violation: "A rollback to version 1 that keeps retention fails the FD-082 rollback row"
-    source: "FD-082, T-105 step 4 (rollback strips retention), Question 7"
+    logic: "IF schemaVersion = 2 THEN unchanged; IF 1 THEN copy without the top-level retention key, add each block of fill that is absent (fill = {signIn: DEFAULT_CONFIG_VALUES.signIn}, passed by the application, so domain imports nothing), keep a present signIn, schemaVersion 2; ELSE invalid (a stored row is skipped by BR4.5, an import or rollback gets config.invariant)"
+    violation: "A rollback to version 1 that keeps retention fails the FD-082 rollback row; a version-1 row seeded before U8 without signIn fails the strict schema and makes the provider fall back every 5 s (F16)"
+    source: "FD-082, FD-063, T-105 step 4 (rollback strips retention), Questions 7 and 12"
   - id: BR3.4
     statement: "The policy functions take and return plain JSON and import nothing."
     category: constraint
     applies_to: "packages/domain/src/administration/**"
     trigger: "Lint (T-010 boundary rules)"
-    logic: "no import of contracts, zod or any package; types are local JSON types; the schema-specific rules (BR1.x, BR1.8) live in contracts and application"
+    logic: "no import of contracts, zod or any package; types are local JSON types; the signIn defaults arrive as the fill argument (BR3.3); the schema-specific rules (BR1.x, BR1.8) live in contracts and application"
     violation: "Fails the boundary lint (domain imports nothing, FD-093)"
     source: "01-conventions §2, team.md Code Style, FD-093"
 
@@ -179,7 +181,7 @@ rules:
     category: constraint
     applies_to: "packages/application/src/ports/config-provider.ts (U8 creates it), every implementation and fake"
     trigger: "Any module reads configuration"
-    logic: "interface ConfigProvider { current(): Promise<ConfigValues> }; StaticConfigProvider and U8's defaults-only provider resolve immediately; callers await"
+    logic: "interface ConfigProvider { current(): Promise<ConfigValues> }; U8 builds it asynchronous (its F31, closing this Unit's F5) and makes StaticConfigProvider and its defaults-only provider resolve immediately; callers await; this Unit only adds PgConfigProvider"
     violation: "A synchronous port forces a breaking change when the database provider arrives, or returns values that were never loaded"
     source: "Question 2, 03 §3"
   - id: BR4.2
@@ -255,7 +257,7 @@ rules:
     category: authorization
     applies_to: "commands/apply-config.ts"
     trigger: "Any call"
-    logic: "requires {capability: 'config.write', stepUp: true}; no capability => forbidden; no valid rk_stepup => auth.step_up_required (the client re-runs after account.stepUp with purpose config.apply); nothing is written in either case"
+    logic: "requires {capability: 'config.write', stepUp: true}; no capability => forbidden, nothing written; no valid rk_stepup => auth.step_up_required (the client re-runs after account.stepUp with purpose config.apply), no configuration written and the attempt recorded by onRefused (BR8.4)"
     violation: "Fails the 'Apply without step-up' and 'Admin cannot apply' rows and AC11.1.2, AC11.1.6"
     source: "C1 config.apply, T-105 step 4, U10 BR7.4, BR7.6 (purpose config.apply), AC11.1.2, AC11.1.6"
   - id: BR6.2
@@ -271,9 +273,9 @@ rules:
     category: validation
     applies_to: "config.apply"
     trigger: "A valid candidate"
-    logic: "inside the transaction: latest = max(version) (0 when empty); IF expectedVersion != latest THEN conflict; insert version latest + 1; a unique violation on config_versions.version THEN conflict; ApplyConfigInput.expectedVersion is an integer >= 0"
+    logic: "inside the transaction: latest = max(version) (0 when empty); IF expectedVersion != latest THEN conflict; insert version latest + 1 through ConfigRepository.insertVersion, which runs the insert in a savepoint of its own inside packages/database and maps a unique violation on config_versions_version_unique to err('conflict'), leaving the outer transaction usable for the config_rejected row (the application holds an opaque Tx, Question 13); ApplyConfigInput.expectedVersion is an integer >= 0"
     violation: "Two applies from version 1 both succeeding loses one change (threat 4, 'Concurrency' row)"
-    source: "T-105 step 4 and acceptance row 'Concurrency', threat 4, C1 errors"
+    source: "T-105 step 4 and acceptance row 'Concurrency', threat 4, C1 errors, Question 13 (F15)"
   - id: BR6.4
     statement: "An accepted apply writes the version, its change rows, its audit row and its outbox row in one transaction."
     category: constraint
@@ -289,7 +291,7 @@ rules:
     category: authorization
     applies_to: "commands/rollback-config.ts"
     trigger: "Any call"
-    logic: "requires {capability: 'config.write', stepUp: true} with step-up purpose config.rollback; forbidden or auth.step_up_required write nothing"
+    logic: "requires {capability: 'config.write', stepUp: true} with step-up purpose config.rollback; forbidden writes nothing; auth.step_up_required writes no configuration and is recorded by onRefused (BR8.4)"
     violation: "A rollback without step-up is a silent change (threat 3)"
     source: "C1 config.rollback, 03 §4, U10 BR7.6"
   - id: BR7.2
@@ -297,7 +299,7 @@ rules:
     category: validation
     applies_to: "config.rollback"
     trigger: "Input passed BR7.1"
-    logic: "RollbackConfigInput {toVersion >= 1, reason}; IF no stored version toVersion THEN not_found; candidate = upgradeConfigValues(stored.values, stored.schema_version); validateCandidate (BR2.2) with the current version for BR1.8; an issue => its code (config.invariant or config.out_of_range)"
+    logic: "RollbackConfigInput {toVersion >= 1, reason}; IF no stored version toVersion THEN not_found, recorded (BR8.3); candidate = upgradeConfigValues(stored.values, stored.schema_version, {signIn: DEFAULT_CONFIG_VALUES.signIn}); validateCandidate (BR2.2) with the current version for BR1.8; an issue => its code (config.invariant or config.out_of_range), recorded"
     violation: "Restoring a version that today's ranges refuse re-opens a closed setting (for example a severe threshold above 10)"
     source: "T-105 step 4, FD-082 rollback row, C1 errors (not_found)"
   - id: BR7.3
@@ -305,7 +307,7 @@ rules:
     category: constraint
     applies_to: "config.rollback"
     trigger: "The target validated"
-    logic: "IF diff(current, candidate) is empty THEN validation errors.config.noChange; ELSE insert version latest + 1 with rolled_back_from = toVersion, change rows = diff(current, candidate), audit config_rolled_back, ConfigEventSink.configApplied(tx, {version, rolledBackFrom: toVersion}); a unique violation => conflict; result ok({version})"
+    logic: "IF diff(current, candidate) is empty THEN validation errors.config.noChange, recorded; ELSE insert version latest + 1 with rolled_back_from = toVersion, change rows = diff(current, candidate), audit config_rolled_back, ConfigEventSink.configApplied(tx, {version, rolledBackFrom: toVersion}); the repository's savepoint maps a lost race to conflict, recorded; result ok({version})"
     violation: "Editing or deleting versions erases history (threat 6, 'Rollback' row)"
     source: "T-105 step 4 and acceptance rows 'Rollback' and FD-083, threat 6, AC11.1.4"
 
@@ -315,7 +317,7 @@ rules:
     category: constraint
     applies_to: "config.apply, config.rollback, AuditWriter"
     trigger: "BR6.4 or BR7.3 persists"
-    logic: "stream 'config', action config_applied or config_rolled_back, actor = the account, details {version, rolledBackFrom?, changes: [{path, before, after}], step_up: true}; paths are known setting paths only and values are the bounded settings themselves; the reason stays in config_versions.reason"
+    logic: "stream 'config', action config_applied or config_rolled_back, actor = the account, details {version, rolledBackFrom?, changes: [{path, before, after}], step_up: true}, built by the config stream's detail builder added to U8's allowlist (ISS-108 closed by U8); paths are known setting paths only and values are the bounded settings themselves; the reason stays in config_versions.reason"
     violation: "Free text in audit details breaks 01-conventions §5; a change without previous and new value fails FR102 and AC11.1.1"
     source: "T-105 step 4 (details {version, changes}), 01-conventions §5, FR102, AC11.1.1, U10 BR7.5, ISS-108"
   - id: BR8.2
@@ -327,21 +329,21 @@ rules:
     violation: "A direct outbox write from Administration breaks the FD-067 cycle rule; a job for it fails the FD-083 row"
     source: "FD-083, FD-065, FD-067, C1 ports_declared, C15 config.applied"
   - id: BR8.3
-    statement: "A Super Admin's apply or rollback that is refused after authorization and step-up writes one config_rejected audit row in its own transaction."
+    statement: "A Super Admin's apply or rollback that is refused after authorization and step-up writes one config_rejected audit row, written by the handler and committed through U8's recorded flag."
     category: policy
-    applies_to: "config.apply and config.rollback onRefused"
+    applies_to: "config.apply and config.rollback handlers"
     trigger: "Refusal with config.invariant, config.out_of_range, validation, conflict or not_found after requires passed"
-    logic: "audit stream 'config', action config_rejected, details {operation: apply | rollback, code, paths: known setting paths with an issue, unknownKeyCount, step_up: true}; no unknown key name, no value of an unknown key, no reason text"
-    violation: "An attempt to switch a security key on leaves no trace (FR102 'result', AC11.1.3)"
-    source: "Question 8, FR102, AC11.1.3, 01-conventions §3 (onRefused)"
+    logic: "audit stream 'config', action config_rejected, details {operation: apply | rollback, code, paths: known setting paths with an issue, unknownKeyCount, step_up: true}, in the command's own transaction; the handler returns err(code, {recorded: true}) and U8's UnitOfWork commits only that row (a version insert, if it ran, was rolled back to the repository's savepoint) and strips the flag; no unknown key name, no value of an unknown key, no reason text"
+    violation: "An attempt to switch a security key on leaves no trace (FR102 'result', AC11.1.3); a record written by onRefused instead would also fire for forbidden (F14)"
+    source: "Questions 8 and 13, FR102, AC11.1.3, U8 BR7.11 (recorded), 01-conventions §3"
   - id: BR8.4
-    statement: "A refusal before authorization or step-up writes nothing in this module."
-    category: constraint
-    applies_to: "config.propose, config.apply, config.rollback"
-    trigger: "forbidden or auth.step_up_required"
-    logic: "no config_versions, config_changes, audit or outbox row; a wrong step-up password is recorded by U10 as step_up_failed"
-    violation: "Fails 'Apply without step-up: nothing written' and AC11.1.6"
-    source: "T-105 acceptance rows, AC11.1.6, U10 BR7.6"
+    statement: "A forbidden refusal writes nothing; a missing or stale step-up on apply or rollback writes one config_rejected row with step_up false and nothing else."
+    category: policy
+    applies_to: "config.apply and config.rollback onRefused, config.propose"
+    trigger: "U8's defineCommand refuses with forbidden or auth.step_up_required and calls onRefused"
+    logic: "onRefused({actor, input, refusal}) in U8's own committed transaction: refusal.code = auth.step_up_required THEN audit stream 'config', action config_rejected, details {operation, code: 'auth.step_up_required', step_up: false} (no paths, no unknownKeyCount: the candidate was not validated); any other refusal (forbidden: Admin, Moderator, a staff account on an unapproved device) THEN nothing; never a config_versions, config_changes or outbox row; config.propose is a query and records nothing; the capability check runs before the step-up check (U10 BR7.4), so only a Super Admin on an approved device reaches the step-up row; a wrong step-up password is recorded by U10 as step_up_failed; a failed onRefused write returns internal and the attempt stays refused"
+    violation: "A missing password with no trace fails AC11.1.2 ('a wrong or missing password ... the failed attempt recorded') and T-106's M20 (F20); a row for forbidden fails AC11.1.6 ('nothing is written')"
+    source: "AC11.1.2, AC11.1.6, T-105 acceptance rows (the step-up row corrected, F21), U10 BR7.4 and BR7.6, U8 BR7.11, T-106 draft F25 and M20, Question 13"
 
   # Group 9 — Consumers and wiring
   - id: BR9.1
@@ -349,7 +351,7 @@ rules:
     category: constraint
     applies_to: "every module and page that uses a setting"
     trigger: "Code Generation of this and later Units"
-    logic: "U8 sign-in delay and severe notice, U10 resolveCapabilities, U14 limited data and facility feedback, U15/T-207 emergency numbers, U21 limited data, U32 thresholds and enabled reasons, U33 SLA and appeal days read await config.current(); this Unit replaces any constant it finds in merged code"
+    logic: "U8 sign-in delay and severe notice, U10 resolveCapabilities, U14 limited data (2-50) and facility feedback, U15/T-207 emergency numbers, U21 limited data, U32 thresholds and enabled reasons, U33 SLA and appeal days read await config.current(); this Unit replaces any constant it finds in merged code"
     violation: "A constant ignores the setting the Super Admin changed (AC11.1.1 'takes effect without a deployment')"
     source: "T-105 goal and step 6, FD-072, AC11.1.1"
   - id: BR9.2
@@ -357,7 +359,7 @@ rules:
     category: constraint
     applies_to: "apps/web/src/server/container.ts, apps/web/src/server/config.ts"
     trigger: "Code Generation"
-    logic: "container.config = new PgConfigProvider(appDb, logger); getConfig() => container.config.current(); pages and layouts call getConfig(); components receive values as props and never import server code (FD-093)"
+    logic: "container.config = new PgConfigProvider(appDb, logger), built only in apps/web/src/server/container.ts; getConfig() in apps/web/src/server/config.ts => container.config.current(); pages and layouts call getConfig(); components receive values as props and import only server actions under server/ (FD-093 (1)); app/ never imports database"
     violation: "Two providers in one process can disagree; a component importing container.ts fails the boundary lint"
     source: "T-105 step 6, FD-072, FD-093, U8 draft (defaults-only provider)"
   - id: BR9.3
@@ -373,7 +375,7 @@ rules:
     category: constraint
     applies_to: "apps/worker"
     trigger: "Code Generation"
-    logic: "no worker job reads configuration yet; the first one wires PgConfigProvider with the worker pool (rk_worker already holds SELECT on config_versions) and imports it through the application worker subpath (FD-093)"
+    logic: "no worker job reads configuration yet; the first one wires PgConfigProvider with the worker pool (rk_worker already holds SELECT on config_versions), importing it from @rogikotha/database, which the worker may import; only the ConfigProvider type comes from @rogikotha/application (type imports stay allowed, FD-093 (2))"
     violation: "Wiring an unused provider adds an import the boundary rules must then allow"
     source: "0001_grants_part1.sql, FD-093 (worker imports), design decision"
   - id: BR9.5
@@ -409,9 +411,9 @@ rules:
     category: constraint
     applies_to: "packages/database/src/migrations/<next free>_config_schema_v2.sql"
     trigger: "pnpm db:migrate"
-    logic: "UPDATE config_versions SET values = values - 'retention', schema_version = 2 WHERE schema_version = 1; CREATE TRIGGER ... BEFORE UPDATE OR DELETE ON config_versions and on config_changes EXECUTE FUNCTION fn_block_mutation(); no grant changes; migrations.int.test.ts count updated"
+    logic: "UPDATE config_versions SET values = (values - 'retention') || (FD-063's signIn defaults when values has no signIn key), schema_version = 2 WHERE schema_version = 1 (Question 12; an integration test pins the literal to DEFAULT_CONFIG_VALUES.signIn); then CREATE TRIGGER ... BEFORE UPDATE OR DELETE ON config_versions and on config_changes EXECUTE FUNCTION fn_block_mutation(); no grant changes; the next free number with a later journal timestamp (the CR-006 lesson); both migration-count pins updated (BR12.7)"
     violation: "Stored retention numbers keep a second copy (FD-068); an editable history breaks threat 6"
-    source: "Question 7, FD-082, T-105 threat 6, 02-data-model.md §10"
+    source: "Questions 7 and 12, FD-082, FD-063, T-105 threat 6, 02-data-model.md §10"
   - id: BR11.2
     statement: "The seed writes version 1 at schema version 2, without a retention block, from DEFAULT_CONFIG_VALUES and the corpus values, and stays idempotent."
     category: constraint
@@ -425,7 +427,7 @@ rules:
     category: constraint
     applies_to: "packages/test-support/src/builders/config.ts aConfig, fakes/config-provider.ts StaticConfigProvider"
     trigger: "Code Generation"
-    logic: "aConfig merges signIn and drops retention; StaticConfigProvider.current() returns Promise.resolve(values) (BR4.1); a fake ConfigRepository and ConfigEventSink record calls"
+    logic: "aConfig merges signIn and drops retention; StaticConfigProvider.current() already returns Promise.resolve(values) (U8, BR4.1); FakeConfigRepository implements the port, insertVersion included with a forced conflict, and a recording ConfigEventSink; repositories-superset.test.ts pairs the fake with the built repository (BR12.7)"
     violation: "A builder that still merges retention fails to parse; a synchronous fake does not match the port"
     source: "01-conventions §10 (builders and fakes), BR4.1"
 
@@ -435,7 +437,7 @@ rules:
     category: constraint
     applies_to: "U12 Code Generation and Build and Test"
     trigger: "Code Generation"
-    logic: "contracts: full range table with boundaries and +-1, strict refusals, always-enabled reasons, signIn defaults and order rules, emergency formats; domain: denylist paths, diff (nested, arrays, unchanged), upgrade; application (fakes): every query and command, each refusal code, audit details contain only known paths and bounded values, conflict, rollback chain, noChange, onRefused record; database (int): repository methods, provider cache expiry through invalidate(), empty table, invalid stored version, migration upgrade and trigger refusal; web: emergency page in en and bn with configured numbers"
+    logic: "contracts: full range table with boundaries and +-1 (limited data 2-50, 1 refused), strict refusals, always-enabled reasons, signIn defaults and order rules, emergency formats, parseConfigValues mapping each issue kind and never returning an unknown key name; domain: denylist paths, diff (nested, arrays, unchanged), upgrade (retention dropped, signIn filled or kept); application (fakes): every query and command, each refusal code, audit details contain only known paths and bounded values, conflict by expectedVersion and by the repository, rollback chain, noChange, the handler's recorded config_rejected, onRefused writing step_up false for a missing step-up and nothing for forbidden; database (int): repository methods, the savepoint conflict with a usable outer transaction, provider cache expiry through invalidate(), empty table, invalid stored version, version-1 rows with and without signIn, migration upgrade and trigger refusal; web: emergency page in en and bn with configured numbers"
     violation: "Fails team.md Testing Posture and 01-conventions §10"
     source: "T-105 'Tests to write', team.md Testing Posture, 01-conventions §10"
   - id: BR12.2
@@ -447,11 +449,11 @@ rules:
     violation: "Fails team.md (the cumulative smoke suite only grows)"
     source: "team.md Testing Posture"
   - id: BR12.3
-    statement: "pnpm check and pnpm smoke are green, with the 80% line floor met in every package this Unit touches."
+    statement: "pnpm check, pnpm smoke and pnpm test:int are green, with the 80% line floor met in every package this Unit touches, and CI is green on the pushed Bolt head before merge."
     category: constraint
     applies_to: "U12 Build and Test"
     trigger: "Before merge"
-    logic: "pnpm check (typecheck, lint with boundaries, unit and integration tests, i18n parity, format check, build) and pnpm smoke exit 0; coverage per package >= 80%, never lowered"
+    logic: "pnpm check is the eleven-step gate (typecheck, lint, lint:boundaries, format:check, check:identity, test:coverage, i18n:check, contrast, contrast:patient, check:motion, build after U45 T-011) and exits 0, as do pnpm smoke and pnpm test:int (the database, test-support-seed and web-int projects); coverage per package >= 80% lines with untested files counted, never lowered (D10); .github/workflows/check.yml green on the Bolt head"
     violation: "Fails the 'Checks' row and D10"
     source: "T-105 acceptance row 'Checks', team.md Way of Working and Testing Posture"
   - id: BR12.4
@@ -467,7 +469,7 @@ rules:
     category: constraint
     applies_to: "docs/implementation/02-data-model.md §10 and §11, 03-routes-and-contracts.md §3 and §4, contract-summary.md C1, tasks/T-408-staff-notifications-and-config.md"
     trigger: "Code Generation"
-    logic: "02 §11: no retention block, schema version 2, current = highest version, the always-enabled reasons, the signIn block; 02 §10: the two new append-only tables; 03 §3: current() returns a Promise; 03 §4: the signIn ranges and the noChange refusal; C1: the signIn range line (BR1.9); T-408: the always-enabled reasons (Q4), reuse of actions/config.ts, the export and import buttons (Q10)"
+    logic: "02 §11: no retention block, schema version 2, current = highest version, the always-enabled reasons, the signIn block; 02 §10: the two new append-only tables; 03 §3: current() returns a Promise; 03 §4: the signIn ranges, limitedDataThreshold 2-50 and the noChange refusal; C1: the signIn range line (BR1.9) and limitedDataThreshold 2-50; T-105's 'Apply without step-up' row (F21); T-408: the always-enabled reasons (Q4), reuse of actions/config.ts, the export and import buttons (Q10)"
     violation: "A stale reference document sends the next Unit back to the old rules (contract-summary ownership rule)"
     source: "contract-summary.md (the building Unit corrects 03), unit-of-work.md documentation follow-ups (02 §11), project.md Mandated"
   - id: BR12.6
@@ -475,18 +477,34 @@ rules:
     category: constraint
     applies_to: "docs/implementation/ISSUES.md"
     trigger: "Code Generation and Build and Test"
-    logic: "rows F1-F12 of functional-spec.md § 8 with Found in 'U12 T-105'; ISS-079 and ISS-171 move to fixed in U12; ISS-108 stays with its owner"
+    logic: "rows F1-F21 of functional-spec.md § 8.2 that are still open or record a decision, with Found in 'U12 T-105'; ISS-079 and ISS-171 move to fixed in U12; ISS-294 is noted (the stub test updated in the same commit); ISS-108 is already closed by U8"
     violation: "Fails project.md Mandated (every defect, workaround or assumption gets a row)"
     source: "project.md Mandated, team.md Way of Working"
+  - id: BR12.7
+    statement: "The tests T-010 pinned are updated in the same commit as the change they pin."
+    category: constraint
+    applies_to: "packages/database/src/repositories/not-implemented.test.ts, migrations.int.test.ts, validator-probes.int.test.ts, packages/test-support/src/fakes/repositories-superset.test.ts"
+    trigger: "Code Generation"
+    logic: "PgConfigRepository leaves STUB_REPOSITORIES (all three methods are built here, history included; ISS-294); both exact migration counts go up by one with a comment; the superset test pairs FakeConfigRepository with the built repository, or the fake implements the port with a comment; no assertion is removed or skipped"
+    violation: "A stale pin turns pnpm check red (S1)"
+    source: "ISS-294, ISS-242, team.md Testing Posture, F18"
+  - id: BR12.8
+    statement: "Every file this Unit creates or changes sits where the T-010 boundary matrix allows its imports, and pnpm lint and pnpm lint:boundaries prove it with no new suppression."
+    category: constraint
+    applies_to: "eslint.boundaries.mjs, 01-conventions.md §2, every file in functional-spec.md § 6.4"
+    trigger: "Code Generation"
+    logic: "domain imports nothing; contracts imports zod and uuid only and keeps every zod type (parseConfigValues, Question 11); application imports only domain and contracts, no zod even as a type, no Node built-in, no database API (the savepoint is the repository's); PgConfigProvider and PgConfigRepository live in database; only server/container.ts constructs them; app/ never imports database; the emergency page passes the numbers to Emergency as props"
+    violation: "A red pnpm lint is S1 (F13)"
+    source: "FD-093, 01-conventions.md §2 as built by T-010"
 ```
 
 ## Rules summary
 
 | ID | Rule | Category |
 |---|---|---|
-| BR1.1 | Seven strict blocks, schema version 2, no retention | validation |
+| BR1.1 | Seven strict blocks, schema version 2, no retention, nothing more in release 1 (R1) | validation |
 | BR1.2 | Moderation thresholds and their ranges | validation |
-| BR1.3 | Limited-data threshold 1–50, never a score (R2 open) | validation |
+| BR1.3 | Limited-data threshold 2–50, never a score (R2) | validation |
 | BR1.4 | Report reasons are a set; five always enabled | validation |
 | BR1.5 | Four capability toggles only; Super Admin fixed | authorization |
 | BR1.6 | Two feature-visibility flags | validation |
@@ -496,12 +514,12 @@ rules:
 | BR1.10 | Defaults: prototype plus owner's sign-in values | constraint |
 | BR2.1 | Whole candidate as a JSON object | validation |
 | BR2.2 | Fixed validation order, all findings collected | validation |
-| BR2.3 | One code per finding; most serious wins; no echo | validation |
+| BR2.3 | One code per finding, mapped in `contracts`; most serious wins; no echo | validation |
 | BR2.4 | Reason 5–500 characters | validation |
 | BR2.5 | No-change refused | validation |
 | BR3.1 | Structural-key denylist | authorization |
 | BR3.2 | Leaf diff, arrays as sets | calculation |
-| BR3.3 | Version-1 upgrade strips retention | calculation |
+| BR3.3 | Version-1 upgrade strips retention, fills a missing `signIn` | calculation |
 | BR3.4 | Policy functions import nothing | constraint |
 | BR4.1 | `current()` returns a Promise | constraint |
 | BR4.2 | Current = highest version | calculation |
@@ -521,8 +539,8 @@ rules:
 | BR7.3 | Rollback is a new version; history untouched | constraint |
 | BR8.1 | Audit row with changes and step-up flag, no reason text | constraint |
 | BR8.2 | `config.applied` through the sink, no job | constraint |
-| BR8.3 | Refusal after step-up audited as `config_rejected` | policy |
-| BR8.4 | Refusal before authorization writes nothing | constraint |
+| BR8.3 | Refusal after step-up audited as `config_rejected` by the handler | policy |
+| BR8.4 | `forbidden` writes nothing; a missing step-up is recorded with `step_up: false` | policy |
 | BR9.1 | Every reader goes through the port | constraint |
 | BR9.2 | Database provider wired; `getConfig()` helper | constraint |
 | BR9.3 | Emergency page live at request time, robust | policy |
@@ -539,3 +557,5 @@ rules:
 | BR12.4 | Owned-path additions recorded | constraint |
 | BR12.5 | Reference documents and T-408 corrected | constraint |
 | BR12.6 | Findings as ISS rows | constraint |
+| BR12.7 | T-010's pins updated with the change | constraint |
+| BR12.8 | Placement under the T-010 boundaries | constraint |

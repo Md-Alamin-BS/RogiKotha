@@ -2,7 +2,14 @@
 
 Source of truth for the Unit's decision logic. Built from `unit-of-work.md` (U15), `unit-of-work-story-map.md` (US4.1, US6.4, US4.2), `requirements.md` (FR15–FR23, FR48–FR52, FR95, NFR4, NFR6, NFR7, NFR13), `stories.md`, `contract-summary.md` (C7), T-202 with its FD-091 amendment, the hard rules in `project.md` and `PRODUCT.md`, `01-conventions.md` §3–§9 and §14, and the two upstream drafts (`t-201-directory-and-taxonomy-modules`, `t-011-patient-design-and-motion-system`). The workflows that apply these rules are in `functional-spec.md`, the component contracts in `frontend-components.md`, and the data shapes in `entities.md`.
 
-Rules that depend on an answer in `functional-design-questions.md` name the question in `source`. Questions 2–13 are answered A on the owner's standing instruction and await confirmation; **Question 1 needs the owner**, and BR3.3 is written for its recommended option A with the option-B form beside it. `functional-spec.md` § 14 lists what changes under each other option.
+Refreshed 2026-10-29. Question 1 is answered B by the owner (counts only), so BR3.3 now forbids percentages and BR2.1, BR4.3 and BR9.1 follow. The rules also take in:
+- T-010 as merged: the route table, the boundaries, coverage and CI (BR1.8, new BR1.10, BR9.1, BR9.3, new BR9.5);
+- the refreshed T-201 data: Crockford public ids, `docs: true`, the threshold 2–50 read with `await`, the branch names, d11 and r25 (BR1.2, BR1.5, BR2.4, BR2.5, new BR2.13);
+- the refreshed T-011: spacing tokens, press list, Prettier, no hover transforms, no morph (BR5.4, BR7.1);
+- T-203's primitive additions (new BR8.3);
+- the owner's "Former member" answer (BR2.12).
+
+Rules that depend on an answer in `functional-design-questions.md` name the question in `source`. Question 1 is answered B by the owner (2026-10-28). Questions 2–13 are answered A on the owner's standing instruction and await confirmation. Questions 14 and 15 are answered A, decided by the agent under the owner's no-questions instruction of 2026-10-29. `functional-spec.md` § 14 lists what changes under each other option.
 
 ```yaml
 rules:
@@ -12,25 +19,25 @@ rules:
     category: constraint
     applies_to: "doctors/page.tsx, doctors/[publicId]/page.tsx, every component in the owned paths"
     trigger: "Any data a page renders"
-    logic: "page -> container (server/container.ts) -> directory.listDoctors | directory.getDoctor | directory.resolvePublicId -> view model -> components; IF a component imports @rogikotha/database, @rogikotha/adapters, @rogikotha/test-support or node:* THEN the import is forbidden"
-    violation: "A boundary import fails lint once T-010's boundaries rule lands and fails the reviewer's diff check (team.md Code Style)"
-    source: "01-conventions.md §2 and §8, team.md Code Style (Boundaries), C7"
+    logic: "page (element web) -> getActor() (server/auth.ts) and container (server/container.ts) -> directory.listDoctors | directory.getDoctor | directory.resolvePublicId -> view model -> components; components (element web-components) import only contracts, i18n, server actions and web-shared (src/lib, src/i18n); IF a component imports anything else under server/ (container.ts, auth.ts), @rogikotha/database, @rogikotha/adapters, @rogikotha/test-support or node:* THEN pnpm lint fails"
+    violation: "A boundary import fails pnpm lint (eslint.boundaries.mjs, FD-093 (1)) and the reviewer's diff check (team.md Code Style)"
+    source: "01-conventions.md §2 and §8, team.md Code Style (Boundaries), C7, FD-093, eslint.boundaries.mjs (T-010 merged)"
   - id: BR1.2
     statement: "The profile segment holds a public id with an optional trailing slug; a malformed id is a 404, the slug is ignored, and every link the app writes has no slug."
     category: validation
     applies_to: "doctors/[publicId]/page.tsx, DoctorLink"
     trigger: "A request to /{locale}/doctors/{segment}"
-    logic: "match segment against ^([a-z2-7]{10})(?:-[^/]*)?$; no match -> notFound(); match -> publicId = group 1; links = /doctors/{publicId}"
-    violation: "A slug treated as part of the id makes every slugged URL a 404; a 500 on a malformed id is an S1 (red demo)"
-    source: "01-conventions.md §4 and §9, 03-routes-and-contracts.md §1"
+    logic: "publicId = stripSlug(decodeURIComponent(segment)) from @rogikotha/contracts, which applies the Crockford base32 pattern ^[0-9a-hjkmnp-tv-z]{10}(-.*)?$ (contracts/src/ids.ts PUBLIC_ID_RE); null -> notFound(); else links = /doctors/{publicId}; no page-local pattern"
+    violation: "A slug treated as part of the id makes every slugged URL a 404; a page-local RFC 4648 pattern ([a-z2-7]) rejects every id with 0, 1, 8 or 9, about three in four generated ids (S1, F16); a 500 on a malformed id is an S1 (red demo)"
+    source: "01-conventions.md §4 and §9, 03-routes-and-contracts.md §1, packages/contracts/src/ids.ts"
   - id: BR1.3
     statement: "Before loading a profile the page resolves the public id; a merged or old id answers a permanent redirect to its target under the same locale with the query string kept."
     category: constraint
     applies_to: "doctors/[publicId]/page.tsx"
     trigger: "Every profile request"
-    logic: "r = directory.resolvePublicId({kind: doctor, publicId}); IF r is not_found THEN notFound(); IF r.redirected THEN permanentRedirect('/{locale}/doctors/' + r.publicId + query) (308); ELSE load the profile"
-    violation: "An old URL that 404s fails AC4.2.5 and storyboard step 23"
-    source: "FR23, AC4.2.5, T-201 BR1.7, Question 10"
+    logic: "r = directory.resolvePublicId({kind: doctor, publicId}); IF r is not_found THEN notFound(); IF r.redirected THEN permanentRedirect('/{locale}/doctors/' + r.publicId + filterHref query) (308; T-201's '301' reads 308, F20); ELSE load the profile; the page body runs this before rendering, so the status is set before the first byte even when metadata streams (F21)"
+    violation: "An old URL that 404s fails AC4.2.5 and storyboard step 23; a redirect thrown only in streamed metadata reaches the browser as a late client redirect"
+    source: "FR23, AC4.2.5, T-201 BR1.7, Question 10, Next.js permanentRedirect and streaming metadata"
   - id: BR1.4
     statement: "A doctor that is missing, unpublished, hidden, rejected or merged without a resolvable target renders the 404 page; no part of the profile is shown."
     category: constraint
@@ -44,7 +51,7 @@ rules:
     category: validation
     applies_to: "doctors/[publicId]/page.tsx (searchParams), ProfileFilters"
     trigger: "A profile request with search parameters"
-    logic: "outcome in OUTCOMES else drop; relationship in RELATIONSHIPS else drop; docs = '1' else drop; condition matches the public-id pattern else drop; IF condition given AND vm.selectedCondition is absent THEN redirect to the URL without condition (307); a repeated parameter keeps its first value"
+    logic: "cleanFilters (lib/doctor-filters.ts): outcome in OUTCOMES else drop; relationship in RELATIONSHIPS else drop; docs = '1' -> docs: true (GetDoctorInput takes a boolean) else drop; condition kept only when isPublicId (contracts) accepts it; IF condition given AND vm.selectedCondition is absent THEN redirect to the URL without condition (307); a repeated parameter keeps its first value"
     violation: "A validation error surfacing as a 500, or an empty 'zero accounts' view for a mistyped condition, breaks the reading journey"
     source: "03-routes-and-contracts.md §1 (profile filters), T-201 WF2 (validation, BR3.5)"
   - id: BR1.6
@@ -52,7 +59,7 @@ rules:
     category: calculation
     applies_to: "ProfileFilters, the condition pill row, the filter pill row"
     trigger: "Building each pill's href"
-    logic: "next = current; condition pill c: next.condition = c (all: delete); outcome pill o: next.outcome = (current.outcome = o ? delete : o); relationship pill r: same; docs pill: next.docs = (current.docs ? delete : '1'); href = path + '?' + params in the fixed order condition, outcome, relationship, docs"
+    logic: "filterHref (lib/doctor-filters.ts, shared by the page and ProfileFilters): next = current; condition pill c: next.condition = c (all: delete); outcome pill o: next.outcome = (current.outcome = o ? delete : o); relationship pill r: same; docs pill: next.docs = (current.docs ? delete : '1'); href = path + '?' + params in the fixed order condition, outcome, relationship, docs"
     violation: "A pill that resets the other filters, or one that cannot be turned off, departs from the prototype's data-pcond / data-pfilter behaviour"
     source: "Prototype handlers data-pcond and data-pfilter, T-202 step 5, Question 6"
   - id: BR1.7
@@ -68,17 +75,25 @@ rules:
     category: policy
     applies_to: "generateMetadata of both pages"
     trigger: "Page render"
-    logic: "index: documentTitle('doctors', t); profile: '{name} — {brand.name}'; robots index; alternates.canonical = /{locale}/doctors[/{publicId}]; alternates.languages en and bn; a 404 gets the not-found metadata"
-    violation: "A generic title on a profile departs from titleForView ('profile' case); a filter URL as canonical splits search indexing"
-    source: "01-conventions.md §8 and §9, prototype titleForView, T-202 step 6"
+    logic: "index: generateMetadata() needs no argument and returns documentTitle('doctors', t); profile: generateMetadata({params, searchParams}) returns '{name} — {brand.name}' from the shared loader; neither sets a robots field (indexable by default; pages.test.tsx asserts robots is undefined on indexable rows); alternates.canonical = /{locale}/doctors[/{publicId}]; alternates.languages en and bn; a 404 gets the not-found metadata"
+    violation: "A generic title on a profile departs from titleForView ('profile' case); a filter URL as canonical splits search indexing; robots: {index: true} turns the route-table test red (F17)"
+    source: "01-conventions.md §8 and §9, prototype titleForView, T-202 step 6, apps/web/src/app/pages.test.tsx (T-010)"
   - id: BR1.9
     statement: "The profile is loaded once per request: generateMetadata and the page share one cached loader keyed by locale, public id and cleaned filters."
     category: constraint
     applies_to: "doctors/[publicId]/page.tsx"
     trigger: "Every profile request"
-    logic: "loadProfile = cache(async (locale, publicId, filters) => ...); both callers use it"
+    logic: "loadProfile = cache(async (locale, publicId, filters) => ...); both callers use it; the page body awaits it first"
     violation: "Two query runs per view double the database work counted by the Lighthouse check"
     source: "T-201 BR3.10 (batched reads), NFR13 performance check"
+  - id: BR1.10
+    statement: "When the placeholders go, the T-010 route-table test is updated in the same commit: its two doctor rows and its harness, with every assertion it makes kept."
+    category: validation
+    applies_to: "apps/web/src/app/pages.test.tsx"
+    trigger: "Code Generation"
+    logic: "harness: page.default and generateMetadata receive {params, searchParams: Promise.resolve({})}; vi.mock('@/server/container') returns directory fakes fed by doctor-test-support builders and an async config; vi.mock('@/server/auth') returns an anonymous Actor; the profile row's render is wrapped in T-102's AuthGateProvider with an anonymous viewer (useAuthGate throws outside it). /doctors row: unchanged assertions (one h1 = titleForView('doctors'), title documentTitle('doctors'), robots absent). /doctors/[id] row becomes /doctors/[publicId], loading the moved page, params {publicId: a valid Crockford id such as 'a1b2c3d4e5'}, ownsHeading true (the hero h1 is the doctor's name and not .display), its record assertion checks the builder doctor's name, and its title assertion expects '{name} — {brand.name}'; no assertion is removed or skipped"
+    violation: "A red route table breaks pnpm check; a dropped or weakened assertion breaks team.md Testing Posture"
+    source: "apps/web/src/app/pages.test.tsx (T-010: page Units update the table when they replace placeholders), team.md Testing Posture, T-102 F26, functional-spec.md D18 and § 9 F18"
 
   # 2. Hard rules in what the pages render
   - id: BR2.1
@@ -86,7 +101,7 @@ rules:
     category: policy
     applies_to: "Every component in the owned paths"
     trigger: "Code Generation and the reviewer's diff check"
-    logic: "IF markup, copy or a sort derives one quality figure from accounts THEN it is forbidden; percentages appear only under BR3.3"
+    logic: "IF markup, copy or a sort derives one quality figure from accounts THEN it is forbidden; no percentage appears anywhere (BR3.3, the owner's answer to Question 1)"
     violation: "Any such figure is an S1 against the hard rule"
     source: "project.md Forbidden (number for quality, highest-rated sort), FR48, FR52, AC6.4.1, AC6.4.5"
   - id: BR2.2
@@ -111,16 +126,16 @@ rules:
     applies_to: "DistBlock, OutcomeBlock, DoctorEntry (compact), DoctorProfile hero, breakdown rows"
     trigger: "dist.limitedData or vm.accountsLimitedData is true"
     logic: "full: p.limited 'label.limitedData — label.limitedDataWhy'; outcome: p.limited 'label.limitedData'; compact card and hero: badge 'label.limitedData' when accountsLimitedData; breakdown row: '⚠' (aria-hidden) plus visually hidden label.limitedData after the total"
-    violation: "Sparse figures without the mark break the hard rule (S1); on the seed nine of ten cards are below the threshold"
+    violation: "Sparse figures without the mark break the hard rule (S1); on the seed after T-201, ten of eleven cards are below the default threshold of 5 (d1 alone has 5 accounts; d11 has one)"
     source: "project.md Mandated (Limited data), FR51, AC6.4.2, T-201 BR2.4, Question 3"
   - id: BR2.5
     statement: "The limited-data explanation states the configured threshold, read once per request from ConfigProvider and formatted for the locale."
     category: calculation
     applies_to: "label.limitedDataWhy wherever it renders"
     trigger: "A page renders a full distribution or the breakdown"
-    logic: "threshold = ConfigProvider.current().limitedDataThreshold; t('label.limitedDataWhy', {threshold: formatNumber(threshold, locale)}); never a literal number in copy or code"
-    violation: "Copy that names 5 after the setting changed misinforms the reader (S3)"
-    source: "project.md Mandated (configured threshold), FR100, requirements Assumptions, Question 4"
+    logic: "threshold = (await container.config.current()).limitedDataThreshold (an integer from 2 to 50, default 5; the setting cannot switch the mark off, T-105 R2); t('label.limitedDataWhy', {threshold: formatNumber(threshold, locale)}); never a literal number in copy or code; the page never compares counts with the threshold itself (T-201's limitedData flags do)"
+    violation: "Copy that names 5 after the setting changed misinforms the reader (S3); a synchronous current() call returns a Promise and renders '[object Promise]' or NaN"
+    source: "project.md Mandated (configured threshold), FR100, requirements Assumptions, Question 4, T-105 Q2 (asynchronous ConfigProvider) and R2 (2-50, owner)"
   - id: BR2.6
     statement: "Every doctor card and the profile hero carry the 'Registration not verified' badge, unconditionally; the word verified is never applied to a registration anywhere else on these pages."
     category: policy
@@ -170,13 +185,21 @@ rules:
     violation: "A favourable-first order breaks the neutral-ordering hard rule (S1)"
     source: "project.md Mandated (neutral order) and Forbidden (highest rated), FR52, AC6.4.5, T-201 BR2.8"
   - id: BR2.12
-    statement: "An anonymous author is never a link and never accent-coloured; a real-name author renders as plain text; a pseudonymous author links to /authors/{username}."
+    statement: "An anonymous author is never a link and never accent-coloured; a real-name author renders as plain text; a pseudonymous author links to /authors/{username}; a former member renders 'Former member' as plain text."
     category: authorization
     applies_to: "Byline"
     trigger: "Rendering any author"
-    logic: "anonymous: avatar glyph '—', name byline.anonSentence, chip compose.identity.anon, no <a>; named: displayName as text, chip byline.identity.real; pseudonymous: <Link href=/authors/{username} aria-label=byline.otherBy>, chip byline.identity.pseudo; static=true renders every name as text"
-    violation: "A link inside an anonymous byline is an S1 privacy defect (ADR-0008); linking a real-name author by a username widens identity exposure"
-    source: "project.md Forbidden (identity in public projection), ADR-0008, prototype byline comment block, T-201 BR2.10, Question 7"
+    logic: "anonymous: avatar glyph '—', name byline.anonSentence, chip compose.identity.anon, no <a>; named: displayName as text, chip byline.identity.real; pseudonymous: <Link href=/authors/{username} aria-label=byline.otherBy>, chip byline.identity.pseudo; formerMember true (a deleted account's named or pseudonymous persona, from T-104's projection through T-201's mapper): avatar glyph '—', byline.formerMember as text, no username, no chip, no <a>, whatever displayName or username the VM still holds; static=true renders every name as text"
+    violation: "A link inside an anonymous byline is an S1 privacy defect (ADR-0008); linking a real-name author by a username widens identity exposure; a deleted member's name or profile link breaks the owner's T-104 Q15 answer"
+    source: "project.md Forbidden (identity in public projection), ADR-0008, prototype byline comment block, T-201 BR2.10, Question 7, the owner's answer to T-104 Q15 (B, 2026-10-29), T-104 BR6.3"
+  - id: BR2.13
+    statement: "A facility row names the branch: the hospital's own name, then its branch label when it has one; no facility figure appears on a doctor page."
+    category: calculation
+    applies_to: "DoctorProfile facilities panel (MiniRow title), facilityLabel beside FacilityLink"
+    trigger: "Rendering vm.facilities"
+    logic: "facilityLabel(row) = row.name + (row.branchName ? ' — ' + row.branchName : ''); row.name is the branch's own hospital name and row.branchName its label (T-201 Q9 C, BR3.11); sub = facility.type.{type}; avatar = Avatar(row.publicId, row.avatarHue, 38) with the stored hue (T-201 Q12); no account count, distribution or feedback on the row (FacilityCardVM.feedbackVisible is T-203's to apply)"
+    violation: "Two branches of one hospital read the same, as in the prototype, and the reader cannot tell which branch the doctor uses"
+    source: "T-201 BR3.11 and Questions 9 C and 12, T-203 Question 11 (shared facilityLabel), the owner's answer to T-203 F2, functional-design-questions.md Question 15"
 
   # 3. Calculations and presentation
   - id: BR3.1
@@ -196,13 +219,13 @@ rules:
     violation: "A bar without its count, or a bar that grows from 0, misstates the value"
     source: "Prototype outcomeBlock, T-011 BR6.10"
   - id: BR3.3
-    statement: "Under Question 1 A, the profile's full sentiment and outcome distributions show each value's percentage after its count, rounded to a whole number, only when the distribution is neither empty nor limited; cards and the breakdown never show percentages. Under Question 1 B no percentage renders anywhere."
-    category: calculation
-    applies_to: "DistBlock (full), OutcomeBlock, formatPercent"
-    trigger: "Rendering a full distribution with dist.empty false and dist.limitedData false"
-    logic: "pct(k) = Math.round(counts[k] / total * 100); text = formatPercent(pct, locale) ('60%' / '৬০%'); shown in a small element after the count; included in the aria sentence; IF compact OR limited OR empty THEN no percentage"
-    violation: "A percentage without its count, or a percentage for one or two accounts, reads as a quality figure (hard rule)"
-    source: "FR48, AC6.4.1, prototype distribution().pct, project.md Forbidden, Question 1 (needs the owner)"
+    statement: "No percentage renders anywhere on these pages or in the shared distribution components: every value is an exact count with its denominator."
+    category: constraint
+    applies_to: "DistBlock (full and compact), SentimentBlock, OutcomeBlock, the breakdown table, DoctorEntry, the aria sentences"
+    trigger: "Rendering any distribution"
+    logic: "No component renders a percentage: no '%' text, no percentage element and no showPercent prop (the outcome track's --w ratio is a bar width with its '{count}/{total}' beside it, not a figure, BR3.2); capsules show counts, outcome rows show '{count}/{total}', denominators show the total; FR48 and AC6.4.1 are narrowed by the FD entry of functional-spec.md § 17, appended before code"
+    violation: "A percentage beside a count from one or two accounts reads as a quality figure (hard rule); building it contradicts the owner's answer"
+    source: "FR48 and AC6.4.1 as narrowed (functional-spec.md § 17), prototype distBlock (counts only), project.md Forbidden and Mandated, Question 1 (B, the owner's answer of 2026-10-28)"
   - id: BR3.4
     statement: "An account excerpt shows the view model's grapheme-safe excerpt and adds an ellipsis only when it was truncated."
     category: calculation
@@ -216,7 +239,7 @@ rules:
     category: calculation
     applies_to: "Every component in the owned paths"
     trigger: "Rendering any number or date"
-    logic: "no String(n) or template number in markup; all counts, totals and percentages through @rogikotha/i18n/format"
+    logic: "no String(n) or template number in markup; all counts and totals through @rogikotha/i18n/format (formatNumber, countParams)"
     violation: "Latin digits on a bn page break the equal-language hard rule (index acceptance row)"
     source: "project.md Mandated (numerals follow language), FD-024, 01-conventions.md §6"
   - id: BR3.6
@@ -262,11 +285,11 @@ rules:
     violation: "h1 -> h3 on the index breaks heading navigation for screen-reader users"
     source: "FR95 (semantic headings), NFR6"
   - id: BR4.3
-    statement: "Each capsule group is one image with a plain-language sentence naming every count, label and the total, plus the not-provided count and, under BR3.3, the percentages."
+    statement: "Each capsule group is one image with a plain-language sentence naming every count, label and the total, plus the not-provided count; a compact group with a title names it first."
     category: constraint
     applies_to: "DistBlock"
     trigger: "Rendering a non-empty distribution"
-    logic: "div.capsules role=img aria-label = join(', ', counts and lowercased labels [with percentages]) + ' — ' + sentiment.ofTotal [+ notProvided phrase]; lowercasing uses toLocaleLowerCase(locale), a no-op in Bengali"
+    logic: "div.capsules role=img aria-label = [title + ': ' when compact and a title is given (T-203's 'Overall visit')] + join(', ', counts and lowercased labels) + ' — ' + sentiment.ofTotal [+ notProvided phrase]; no percentage (BR3.3); lowercasing uses toLocaleLowerCase(locale), a no-op in Bengali"
     violation: "A capsule group that reads as 'image' or as separate numbers fails FR95"
     source: "Prototype distBlock aria-label, T-202 step 1 and Tests, FR95"
   - id: BR4.4
@@ -348,9 +371,9 @@ rules:
     category: constraint
     applies_to: "T-202's section of patient.css"
     trigger: "pnpm check:motion"
-    logic: "IF the T-202 section holds any motion declaration THEN check:motion M6-file fails; a needed primitive is asked of U45 through an ISSUES.md row"
+    logic: "IF the T-202 section holds any motion declaration THEN check:motion M6-file fails; IF a :hover rule sets transform, translate, scale or rotate THEN M9-hover fails; press feedback comes from T-011's press list (.pillrow a, .doc-entry, .mini-row, .btn) and, for anything else, data-press; no view-transition name and no morph (T-011 BR6.12, M11); a needed primitive is asked of U45 through an ISSUES.md row"
     violation: "check:motion fails (red check, S1 for the Unit)"
-    source: "T-011 BR4.7 and BR9.1, T-202 FD-091 amendment, Question 12"
+    source: "T-011 BR4.7, BR6.5, BR6.11, BR6.12 and BR9.1, T-202 FD-091 amendment, Question 12 (settled by T-011 Q10 A)"
   - id: BR5.5
     statement: "EmergencyPanel carries the static group data-static='emergency', is never inside Reveal, and appears at most once per page."
     category: constraint
@@ -400,9 +423,9 @@ rules:
     category: constraint
     applies_to: "apps/web/src/styles/patient.css (T-202 section), every component"
     trigger: "Code Generation and review"
-    logic: "IF a rule uses a literal colour, an unlisted class, or edits tokens.css, motion.css or the shell styles THEN rejected; style attributes other than --g / --w are rejected"
-    violation: "A look outside FD-091 fails the visual row; a token edit outside the Unit breaks T-011's ownership"
-    source: "FD-091, FD-032, T-202 FD-091 amendment, project.md Code Style, T-502 step 1 (style-src)"
+    logic: "IF a rule uses a literal colour or a literal margin, padding or gap (spacing comes from --space-1…--space-8, a calc() or clamp() of them; widths from --measure or --grid-min, T-011 BR3.6), an unlisted class, or edits tokens.css, motion.css or the shell styles THEN rejected; no column-0 :root[data-theme=\"dark\"] { block (M10-tokens: the tokens switch; a component dark rule continues its selector); the section is Prettier-formatted with double-quoted attribute selectors (format:check, T-011 BR9.8); style attributes other than --g / --w (through cssVars) are rejected"
+    violation: "A look outside FD-091 fails the visual row; a token edit outside the Unit breaks T-011's ownership; a second dark block or an unformatted rule turns check:motion or format:check red"
+    source: "FD-091, FD-032, T-202 FD-091 amendment, project.md Code Style, T-502 step 1 (style-src), T-011 BR1.8, BR3.6 and BR9.8"
 
   # 8. Shared primitives and the claim entry
   - id: BR8.1
@@ -418,9 +441,17 @@ rules:
     category: authorization
     applies_to: "ClaimSheet, DoctorProfile hero"
     trigger: "Activating #claim"
-    logic: "onClick = useAuthGate().guard(() => open ClaimSheet); ClaimSheet = Sheet(title profile.claimThis) > p profile.claimNote; // TODO(T-204) marks the form slot"
+    logic: "onClick = useAuthGate().guard(() => open ClaimSheet); ClaimSheet = Sheet(title profile.claimThis) > p profile.claimNote; // TODO(T-204) marks the form slot; useAuthGate throws outside T-102's AuthGateProvider, which the patient layout renders and every test of this button wraps (BR1.10)"
     violation: "A claim control that skips the gate departs from STORY-AUTH-001; a dead form invents copy T-204 replaces"
-    source: "Prototype #claim handler, T-102 step 9, T-204 owned paths (ClaimSheet), FD-060, AC4.2.1, Question 9"
+    source: "Prototype #claim handler, T-102 step 9 and F26, T-204 owned paths (ClaimSheet), FD-060, AC4.2.1, Question 9"
+  - id: BR8.3
+    statement: "The shared primitives carry the additive changes T-203 asked for, so later pages use them without editing these files."
+    category: constraint
+    applies_to: "Badge, DistBlock, FacilityLink (facilityLabel)"
+    trigger: "Code Generation"
+    logic: "Badge cls adds 'good' | 'poor'; DistBlock prefix adds 'crit.' (keys from dist.keys, labels prefix + key, capsule class c-{key}), names its title in the compact image sentence (BR4.3) and takes an optional limitedNote: 'full' (default: 'Limited data — {why}') | 'tag' (the short 'Limited data' tag; the caller places the why line); facilityLabel is exported beside FacilityLink (BR2.13); each change has its test in en and bn; EmergencyPanel's compact prop is left to T-203, whose task owns it"
+    violation: "A later Unit editing these files in its own Bolt needs owned-path additions and a second review of the same components"
+    source: "T-203 functional-design-questions.md Question 11 (A), functional-design-questions.md Question 14 (A)"
 
   # 9. Verification and records
   - id: BR9.1
@@ -428,31 +459,39 @@ rules:
     category: constraint
     applies_to: "apps/web/src/components/patient/**/*.test.tsx"
     trigger: "Code Generation"
-    logic: "Vitest + Testing Library + jsdom; next-intl provider with both dictionaries; @/i18n/routing mocked (ISS-053); no snapshot; no class-name assertions except the task's '.cap > b' DOM check"
-    violation: "A missing locale or hard-rule test fails G2"
-    source: "01-conventions.md §10, team.md Testing Posture, T-202 Tests to write"
+    logic: "Vitest + Testing Library + jsdom; next-intl provider with both dictionaries; @/i18n/routing mocked (ISS-053); view models from builders in components/patient/doctor-test-support.ts (test category of eslint.boundaries.mjs, excluded from coverage), never from @rogikotha/test-support (FD-040); ClaimButton and the profile wrapped in T-102's AuthGateProvider; these tests render pages and components, not the locale layout, so they need nothing beyond T-011's next/font/local mock in vitest.setup.ts; no snapshot; no class-name assertions except the task's '.cap > b' DOM check"
+    violation: "A missing locale or hard-rule test fails G2; a test-support import in apps/web fails lint"
+    source: "01-conventions.md §10, team.md Testing Posture, T-202 Tests to write, FD-040, FD-093 (5)"
   - id: BR9.2
     statement: "The Unit adds at least one smoke assertion: the doctor index renders every card with the 'Registration not verified' badge, and a profile renders its sections in the prototype's order."
     category: constraint
     applies_to: "doctors.smoke.test.tsx"
     trigger: "pnpm smoke"
-    logic: "builder data for 10 doctors; assert 10 entries, 10 badges, alphabetical order; one profile: headings in order"
+    logic: "builder data for 11 doctors (the seed's count after T-201), one of them with an empty distribution; assert 11 entries, 11 badges, alphabetical order, 'Not provided' on the empty one; one profile: headings in order; run by pnpm smoke (Vitest)"
     violation: "No new smoke assertion breaks the cumulative-suite rule"
     source: "team.md Testing Posture (cumulative smoke)"
   - id: BR9.3
-    statement: "Before done: pnpm check, pnpm smoke, pnpm check:motion, pnpm contrast, pnpm contrast:patient and npx impeccable detect apps/web/src --no-advisory are clean, and the throttled Lighthouse run on the profile is recorded."
+    statement: "Before done: the eleven-step pnpm check, pnpm smoke and npx impeccable detect apps/web/src --no-advisory are clean, CI is green on the Bolt head, and the throttled Lighthouse run on the profile is recorded."
     category: constraint
     applies_to: "The Unit"
-    trigger: "Build and Test"
-    logic: "all exit 0; LCP and CLS of /en and /bn doctor profile recorded; a miss is an ISSUES.md row before the next UI Unit"
-    violation: "A red gate blocks the merge"
-    source: "team.md Way of Working steps 2-3 and Testing Posture, T-202 acceptance rows, NFR13"
+    trigger: "Build and Test and merge"
+    logic: "pnpm check after T-011 = typecheck, lint, lint:boundaries, format:check, check:identity, test:coverage, i18n:check, contrast, contrast:patient, check:motion, build; all exit 0, as do pnpm smoke and impeccable; the Bolt branch is pushed and the check workflow is green on its head before the squash merge (run URL in the Build and Test record); LCP and CLS of /en and /bn doctor profile recorded; a miss is an ISSUES.md row before the next UI Unit"
+    violation: "A red gate, or a merge without a green CI run, blocks the merge"
+    source: "team.md Way of Working steps 2-3 and Testing Posture, T-202 acceptance rows, NFR13, T-010 (CI before merge), T-011 WF8"
   - id: BR9.4
     statement: "Every finding, workaround, assumption and owned-path addition of this Unit is an ISSUES.md row linked to U15, and the Build and Test record lists them."
     category: constraint
     applies_to: "docs/implementation/ISSUES.md, the Unit's records"
     trigger: "Any finding"
-    logic: "rows proposed in functional-spec.md § 9 are added with Found in U15 T-202; ISS-268's rendering check is run and its status set"
+    logic: "rows proposed in functional-spec.md § 9 are added with Found in U15 T-202; ISS-268's rendering check is run on builder data and on the seed's d11 and its status set"
     violation: "An unrecorded deviation breaks the project rule on ISS rows"
     source: "project.md Mandated (ISS rows), team.md Way of Working, ISS-268"
+  - id: BR9.5
+    statement: "apps/web stays at or above 80% line coverage with every new file counted."
+    category: constraint
+    applies_to: "Every new file of this Unit in apps/web/src, and the container lines it adds"
+    trigger: "pnpm test:coverage (inside pnpm check) and CI"
+    logic: "each primitive, page component, client component and lib helper arrives with its tests; the pages are covered by their own tests and the route table; the container's directory wiring gets a test case; IF apps/web falls below 80% THEN tests are added, never an exclusion and never a lower floor (D10); the figure before and after goes into the hand-off"
+    violation: "test:coverage exits 1 (red check); a lowered floor breaks D10"
+    source: "team.md Testing Posture (80% floor, D10), vitest.workspace.ts (T-010: untested files counted)"
 ```

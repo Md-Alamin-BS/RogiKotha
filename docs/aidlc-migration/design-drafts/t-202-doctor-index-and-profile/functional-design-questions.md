@@ -2,10 +2,23 @@
 
 Draft written ahead of the stage while another Unit builds. The lead finalises it when the workflow reaches this Unit's Functional Design; then it moves to `<record>/construction/t-202-doctor-index-and-profile/functional-design/`.
 
+Refreshed 2026-10-29, against `main` at `14c21a9` (T-010 merged, CR-012 merged as `7cce9bd`), the refreshed T-011, T-201 and T-102 drafts and the owner queue:
+- Question 1 carries the owner's answer B, and the design files follow it.
+- Question 12 is also settled by T-011's Q10 A (no morph).
+- New Questions 14 and 15 are answered by the agent under the owner's no-questions instruction of 2026-10-29.
+- R1 and R2 below are resolved.
+- New findings are F16–F24 in `functional-spec.md` § 9.
+
 Context:
 - Unit U15 (kind `ui`, size L, not high risk) delivers T-202 (`docs/implementation/tasks/T-202-doctor-index-and-profile.md`, with its FD-091 amendment) for stories US4.1, US6.4 and US4.2 (claim entry point only). Bolt 14 in `bolt-plan.md`, after U14 T-201 (Bolt 13) and U45 T-011; U17 T-204 (claims) follows in Bolt 16. Depends on U14 T-201, U3 T-010 and U45 T-011 (`unit-of-work-dependency.md`).
 - Inputs read: `unit-of-work.md` (U15), `unit-of-work-story-map.md`, `requirements.md` (FR15–FR23, FR48–FR52, FR95, NFR4, NFR6, NFR7, NFR13), `stories.md` (AC4.1.1–AC4.1.5, AC4.2.1–AC4.2.5, AC6.4.1–AC6.4.5), `contract-summary.md` (C7 and the common rules; "FD-091 and U45: presentation only"), `docs/status/decision-log.md` (FD-024, FD-032, FD-042, FD-060, FD-067, FD-089, FD-091), `PRODUCT.md` hard rules, `01-conventions.md` §3–§9 and §14–§15, `03-routes-and-contracts.md` §1, §4 and §6, `05-demo-storyboard.md` Part 1, and `docs/status/dependency-check-log.md`.
 - Upstream drafts read as inputs: `design-drafts/t-201-directory-and-taxonomy-modules/` (the view models and queries these pages read; all its answers A) and `design-drafts/t-011-patient-design-and-motion-system/` (tokens, `RouteTransition`, `Reveal`, static groups, `check:motion`; all its answers A). Both await the owner's confirmation; § 14 of `functional-spec.md` says what changes here if either changes.
+- Read again for the 2026-10-29 refresh:
+  - **T-010 as merged:** `eslint.boundaries.mjs`, `vitest.workspace.ts`, the root scripts, `apps/web/src/app/pages.test.tsx`, FD-093.
+  - **Contracts on `main`:** `packages/contracts/src/ids.ts` (Crockford public ids, `isPublicId`, `stripSlug`) and `schemas/directory.ts` (`docs` is a boolean, `pageSize` at most 100).
+  - **Refreshed drafts:** T-201 (branch names, labels and hues; one condition term per review; d11 and r25; `feedbackVisible`; `await config.current()`; threshold 2–50; counts 11 / 14 / 25), T-011 (spacing tokens, press list and `data-press`, no morph, Prettier, `M9-hover`, `M10-tokens`) and T-102 (`AuthGateProvider`, its F26).
+  - **Other drafts:** T-203 Question 11 and T-104 Question 15 and BR6.3.
+  - **Owner queue:** the rows of 2026-10-28 and 2026-10-29.
 - Code read on the working tree (branch `bolt/cr-012-storyboard-seed-correction`, 2026-10-28): `apps/web/src/app/[locale]/(patient)/doctors/{page.tsx,[id]/page.tsx}` (T-008 placeholders), `(patient)/layout.tsx`, `components/patient/{ViewShell,Tabs,Emergency}.tsx`, `components/shared/{Sheet,DemoMarker}.tsx`, `lib/{titles,metadata,cookies}.ts`, `i18n/routing.ts`, `styles/patient.css`, `next.config.ts`, `packages/i18n/src/{format,index}.ts` and `messages/{en,bn}.json`, the corpus in `packages/test-support/src/corpus/{doctors,reviews}.ts` (CR-012's d1–d10 and r1–r24).
 - Prototype read: `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/app.js` (`badge`, `notVerified`, `docCount`, `distBlock`, `sentimentBlock`, `outcomeBlock`, `emergencyPanel`, `initials`, `byline` with its comment block, `doctorLink`, `facilityLink`, `accountRow`, `doctorEntry`, `profileAccounts`, `renderProfile`, `indexHead`, `byName`, `renderDoctorIndex`, the `data-pcond`/`data-pfilter`/`#claim` handlers, `titleForView`) and `ui-design-prototype/shared/rogikotha-data.js` (`distribution`, `avatar`). The line numbers in the task's "Read first" predate FD-089 and are stale (finding F12).
 - Open `ISSUES.md` rows in this area: ISS-268 (the "Not provided" rendering check deferred to T-202 and T-203), ISS-266 (d3's chamber has no branch link), ISS-168 (claimed doctors have no `claimed_by_account_id`), ISS-161 (seeded review text stored in Bengali only), ISS-137 (the whole dictionary is shipped to the client), ISS-053 (`@rogikotha/i18n`'s routing barrel fails to load in plain Vitest), ISS-120 (the root 404 is English-only, owner T-207), ISS-271 (a pre-FD-089 facility name matches a real hospital; accepted by the owner on 2026-10-28, and d1's chamber shows that name).
@@ -23,9 +36,13 @@ Context:
 9. **The byline view model has no username for real-name authors.** T-201's `BylineVM` carries `displayName` for named authors and `username` only for pseudonymous ones, so a real-name author cannot link to `/authors/{username}` as the prototype's name button does.
 10. **The avatar's seed is the English name.** The prototype calls `avatar(d.name.en, hue, size)`; the view models carry only active-locale strings (T-201 BR2.9).
 11. **Server components cannot take function props.** `DoctorEntry({card, pinned?, onPin?})` would force the index card to be a client component for T-206's pin button.
-12. **The seed cannot show "Not provided" on a doctor page.** All ten doctors have every rendered field (BMDC, specialty, qualifications, languages, fee, area, city, chamber hours), every doctor has at least one account, and every review has a sentiment and an outcome. The fields left empty under FD-089 (`about` on d7–d10) are not rendered on the profile (the prototype's fact list has no "about").
+12. **The seed cannot show "Not provided" on a doctor page.** All ten doctors have every rendered field (BMDC, specialty, qualifications, languages, fee, area, city, chamber hours), every doctor has at least one account, and every review has a sentiment and an outcome. The fields left empty under FD-089 (`about` on d7–d10) are not rendered on the profile (the prototype's fact list has no "about"). (Resolved upstream on 2026-10-29: U14 T-201 adds d11 without fee and languages and r25 without sentiment, outcome or documents, its Question 13 A.)
 13. **The claim sheet in the prototype shows one paragraph.** For a verified visitor, `#claim` opens a sheet with `profile.claimNote` only; there is no form. T-204 replaces `ClaimSheet`'s body with the real form and action (its owned paths).
 14. **`/write`, `/experiences/[id]`, `/authors/[username]` and `/facilities/[id]` exist as placeholders**, so every link the profile renders resolves today; their pages arrive in T-306, T-307, T-409 and T-203.
+15. **Public ids are Crockford base32** (added 2026-10-29). `contracts/src/ids.ts` generates them from `0123456789abcdefghjkmnpqrstvwxyz` and exports `PUBLIC_ID_RE`, `isPublicId` and `stripSlug`. The draft's `[a-z2-7]{10}` pattern would refuse every id with 0, 1, 8 or 9 (about three in four).
+16. **The route-table test pins the placeholders** (added 2026-10-29). `app/pages.test.tsx` loads `doctors/[id]` with `doc-synthetic-1`, calls pages with `params` only and `generateMetadata()` with no argument, expects `documentTitle(view)` as the title and `robots` absent on indexable rows.
+17. **T-203 asks for four additive primitive changes** (added 2026-10-29; its Question 11 A): `Badge` `good`/`poor`, `DistBlock` `crit.` with the compact title sentence and `limitedNote`, `EmergencyPanel` `compact`, and shared segment parsing and facility label helpers.
+18. **Branch names change meaning** (added 2026-10-29; T-201 Question 9 C, the owner's answer to T-203 F2): a facility row's `name` is the branch's own hospital name and `branchName` its label. The prototype lists d7 at two "Kashful Community Hospital" branches (f6, f7) and shows two identical rows.
 
 ## Settled before this stage
 
@@ -38,6 +55,11 @@ Decided by FD entries, the contracts or the upstream designs; not asked again.
 - **The claim command is T-204's** (U17, Bolt 16, after this Unit). The auth gate is T-102's `useAuthGate().guard()` with one `AuthGateSheet` in the patient layout (T-102 step 9), so no inline gate copy is needed here.
 - **No new dependency.** Everything uses Next 16.3.4, React 19.3.0, next-intl 4.14 (ICU plurals are built in), and the T-011 components. `permanentRedirect` returns 308 in a Server Component (Next.js docs, `permanentRedirect`, updated 2026-08-18). No dependency-check entry is needed unless Code Generation finds otherwise.
 - **CSP**: T-502 accepts `style-src 'unsafe-inline'` for the prototype's own `style=""` attributes, so the capsule weight `--g` and the outcome track `--w` may stay as inline custom properties.
+- **Counts only (the owner's answer to Question 1, 2026-10-28)**: no percentage anywhere; an FD entry written at this Unit's Functional Design narrows FR48 and AC6.4.1 (`functional-spec.md` § 17), with an `ISSUES.md` row for the gap.
+- **T-201 refresh (2026-10-29)**: each branch stores its own hospital name, label and hue (the owner's answer to T-203 F2); each review is linked to one condition term; d11 and r25 make "Not provided" visible on the seed; the configuration is read with `await config.current()`; the threshold lies in 2–50 (the owner's answer to T-105 R2); `FacilityCardVM.feedbackVisible` exists (T-203's cards apply it).
+- **T-011 refresh (2026-10-29)**: spacing tokens; a press list covering `.pillrow a`, `.doc-entry`, `.mini-row`, `.btn`, plus `data-press`; no shared-element morph (its Q10 A); `patient.css` in Prettier's scope with double quotes; `check:motion` with `M9-hover` and `M10-tokens`; an eleven-step `pnpm check`.
+- **T-010 merged (FD-093)**: components import server actions and `web-shared` only; nothing in `apps/*` imports `test-support`; 80% lines with untested files counted; page Units update `app/pages.test.tsx`; CI green on the Bolt head before a merge.
+- **"Former member" (the owner's answer to T-104 Q15, 2026-10-29)**: a deleted account's named and pseudonymous personas show "Former member", with no username and no link.
 
 ## Settled in this design without a question
 
@@ -74,6 +96,8 @@ C. **Percentages everywhere a distribution shows**, including limited samples an
 X. Other (please specify)
 
 [Answer]: B (the owner's answer, 2026-10-28: counts only; FR48 and AC6.4.1 are narrowed to counts and denominators by a new FD entry written at this Unit's Functional Design, with an ISSUES.md row for the gap)
+
+Applied in the refresh of 2026-10-29. The design files no longer carry percentages, and `packages/i18n/src/format.ts` is not touched. The FD entry's text is in `functional-spec.md` § 17. The gap row is § 9 F24.
 
 ## Question 2
 
@@ -190,6 +214,8 @@ X. Other (please specify)
 
 [Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
 
+Settled further on 2026-10-29. T-011's refreshed draft answers its own Question 10 with A: no shared-element morph in this release. A morph between boxes of different sizes animates the group's width and height, which falls outside "only `transform` and `opacity`". The `ISSUES.md` proposal for a T-202 morph is dropped (finding F9 closed); T-011 records the card-to-story move it defers.
+
 ## Question 13
 
 Below 1040 px the prototype's profile becomes one column and the side panel (where the information came from, practice locations, where they practise) comes **after every account**. On a phone, chamber hours sit at the bottom of a long page.
@@ -200,8 +226,28 @@ X. Other (please specify)
 
 [Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
 
+## Question 14 — T-203's primitive additions (added 2026-10-29)
+
+T-203's draft (its Question 11 A) asks U15 to include four small, additive changes in T-202's shared primitives (fact 17). These are `Badge` classes `good` and `poor`; `DistBlock` with the `crit.` prefix, its `title` named in the compact image sentence and an optional `limitedNote: 'full' | 'tag'`; `EmergencyPanel` `compact`; and shared segment parsing and facility-label helpers. If T-202 merges without them, T-203 makes them as owned-path additions in T-202's files. Does T-202 build them?
+
+A. **Build the additive ones here, leave `EmergencyPanel` `compact` to T-203, and use the contracts helpers for segments** (recommended). `Badge`, `DistBlock` and `facilityLabel` change in this Unit's own files, with their tests in both languages, so T-203 needs no addition in them. `EmergencyPanel`'s `compact` stays T-203's, because its task already owns that prop and only the condition page uses it. Segment parsing needs no new helper: `stripSlug` and `isPublicId` in `@rogikotha/contracts` are the one definition, and both Units import them.
+B. **Build nothing extra**; T-203 makes all four in its own Bolt as recorded owned-path additions in these files.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29; to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md when this draft is finalised)
+
+## Question 15 — how a facility row names a branch (added 2026-10-29)
+
+After T-201's refresh, a facility row on the profile carries `name` (the branch's own hospital name, as the prototype shows it) and `branchName` (its label, such as "Dhanmondi branch") (fact 18). The prototype's row shows `name` only, so the two "Kashful Community Hospital" branches it lists for d7 read the same. What does the row title show?
+
+A. **"{name} — {branchName}" when the branch has a label, `name` alone otherwise, through one shared `facilityLabel`** (recommended). Two branches of one hospital can be told apart, and T-203's cards and condition page use the same function. The difference from the prototype is recorded for the visual check.
+B. **`name` only, as the prototype does.** It matches the prototype exactly, but two rows can be identical.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29; to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md when this draft is finalised)
+
 ## Raised for the owner, not decided in this stage
 
-- **R1 — Question 1 (percentages)** needs the owner's answer before Code Generation builds the summaries; `functional-spec.md` § 14 gives both variants.
-- **R2 — The seed shows no "Not provided" on a doctor page** (fact 12; finding F1). FD-089 says some records keep missing fields so "Not provided" stays demonstrable, and ISS-268 defers the rendering check to this Unit, but nothing a doctor page renders is missing on the seed. Suggested: U6 CR-012 (being built now) leaves `fee` and `languages` empty on one new doctor (for example d9), and one new review without sentiment or outcome (for AC6.4.2). If CR-012 has merged without it, the check runs on builder data only and the demo cannot show it.
+- **R1 — Question 1 (percentages).** Answered by the owner on 2026-10-28: counts only (B). The FD entry is written before code (`functional-spec.md` § 17).
+- **R2 — The seed shows no "Not provided" on a doctor page** (fact 12; finding F1). Resolved on 2026-10-29 by U14 T-201's Question 13 A (d11 and r25 through the prototype and the corpus port, with T-201's FD entry (b)), decided by the agent under the owner's no-questions instruction of 2026-10-29. The rendering check now runs on the seed's d11 as well as on builder data.
 - **R3 — Real-name author links** (Question 7) wait for T-104 and T-409.

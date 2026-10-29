@@ -10,6 +10,13 @@ Context:
 - Open `ISSUES.md` rows in this area: ISS-090 (S4, `identity_reveals.target_kind` reuses the shared enum), ISS-108 (S2, audit details are a shallow denylist; owner T-104), ISS-111 item 1 (stubs embed arguments in errors; the identity stubs go), ISS-159 and ISS-264 (S4, synthetic `named_<slug>` usernames, some with hyphens; "decide when T-104 validates usernames"), ISS-262 (S3, anonymous comments on non-anonymous threads; "T-401 and T-104 confirm the product rule"), ISS-263 (S4, won't fix, naming rule of `anon_author_<review>`).
 - Owner answers read: U8 R1 (the worker holds a separate, mail-only key) does not touch this Unit, which sends no email; U9 Q4 (the holder's own email is shown masked on signed-in pages) is about a person's own address, not a staff reveal, and is offered as option C of Question 3.
 - Research (2026-10-28): no new library is needed. The property test of T-104 step 1 uses a seeded generator instead of adding `fast-check`, so the dependency-check rule is not triggered (BR7.6). The deferrable foreign key follows the `evidence_items.published_artifact_id` precedent in `0004_deferred_fks.sql`.
+- Refreshed 2026-10-29. Re-read:
+  - T-010 as merged on `main` (`14c21a9`): `eslint.boundaries.mjs`, `01-conventions.md` §2, FD-093, `vitest.workspace.ts`, `packages/database/src/repositories/{identity.ts, not-implemented.test.ts}`, `migrations.int.test.ts`, `validator-probes.int.test.ts`, `packages/test-support/src/{fakes/repositories-superset.test.ts, seed/seed-content.ts, corpus/personas.ts}`, ISS-290, ISS-294;
+  - the refreshed T-101 draft (`defineCommand` with `onRefused` and `recorded`, `getActor` without a persona, `insertDefaultPersonas`, the `Crypto` port, `findOwnEmail`, ISS-108 closed);
+  - the T-103 draft refreshed the same day (device gate, step-up audit flag; the owner approved its staff screens on 2026-10-29, so its R1 precondition is met);
+  - the refreshed T-201 draft and the T-202, T-207 and T-301 drafts (their bylines, T-202 Q7 A, T-207 Q1, and the refreshed T-301's Q8, Q16 A, Q18 A, F25 and F29);
+  - `OWNER-REVIEW-QUEUE.md`: the T-104 Q15 answer, the no-questions instruction of 2026-10-29 and the T-103 staff-screen approval.
+  - New Questions 16–18 follow from those. A second pass the same day changed the answer to Question 17 to match T-301 Q18 A and F25 (`profileUsername` on named and pseudonymous bylines; no alias on list surfaces) and added T-301's two internal operations to the settled points.
 
 ## Settled before this stage
 
@@ -24,7 +31,13 @@ These are decided by FD entries, the contracts or the requirements and are not a
 - **Deletion (FD-069, FD-077, FD-078, FD-079, FD-090, C4).** `identity.deidentify {accountId, keepPersonaIds}` runs in the web transaction of `dataRequest.delete`; held posts keep their persona link until the hold ends; T-309's `SECURITY DEFINER` function removes those links later; reporter ids become null when de-identified.
 - **No reporter id anywhere (FD-086).** Not in any payload, view model or log.
 - **Worker boundary (FD-092, FD-093, 02 §16).** `rk_worker` holds nothing on `persona_links` or `identity_reveals` (already revoked by `0001`; this Unit adds no grant); the worker may not value-import `modules/identity/`.
-- **Public profiles link named and pseudonymous content (AC10.2.1).** A profile shows the username and display name with the account's public contributions, so a named persona's projection carrying the username is intended; only anonymous content is kept apart.
+- **Public profiles link named and pseudonymous content (FR11, AC10.2.1).** A profile shows the username and display name with the account's public contributions, each under the identity shown on the content. U38 T-409 builds that header from the account; named and pseudonymous bylines carry `profileUsername` for the link (Question 17, T-301 Q18 A). Only anonymous and former-member content is kept apart.
+- **Two internal operations for Review (T-301 Q8 A, decided by the agent under the owner's no-questions instruction of 2026-10-29).** `identity.ownsAnyPersona({accountId, personaIds}) → boolean` for FD-080's repeat-episode flag, and `identity.currentPersonaOf` returning the pseudonymous id beside the named one for the write-free preview. Both are internal, built here over the private repository (BR3.7, BR3.5); C4 gains them additively.
+- **U10's staff screens are approved (the owner, 2026-10-29).** U10's R1 precondition is met, so this Unit does not wait on that review.
+- **The owner's answer to Question 15 (B, 2026-10-29).** "Former member" for named and pseudonymous personas whose link was removed; no username or profile link; C4, T-410 and the Units table corrected by an FD entry (FD-<next: Former member>, `functional-spec.md` § 9.1).
+- **The anonymity note (R1).** T-301's Q16 A (no public caveat, a reworded composer note) was decided by the agent under the no-questions instruction. The owner answered T-207's Q1: the lawful-access section sits on both the Terms and the Privacy Policy. The FD entries are those Units'.
+- **U8's foundations (refreshed T-101 draft).** `defineCommand` runs `onRefused` for every refusal after `authenticated` and commits a `recorded` handler error. ISS-108 is closed by U8's recursive allowlist. `getActor` reads no persona. `account.register` writes the personas through `AccountRepository.insertDefaultPersonas` until this Unit. The `Tx` is opaque in `application`.
+- **Import boundaries (FD-093, T-010).** `application` imports no external package and no Node built-in; the worker cannot value-import `modules/identity/`; adapters are built only in `server/container.ts`.
 
 ## Settled in this design without a question
 
@@ -36,13 +49,13 @@ These follow from the contracts, the requirements, the project rules or the code
 - **Aliases are unique among anonymous personas**, enforced by a partial unique index with up to 5 retries (BR2.2); 4 characters is an `ASSUMPTION(T-104)` for the demo (F22).
 - **Every anonymous persona has avatar hue 0**, so the avatar cannot correlate threads (BR1.6).
 - **No view model or byline carries a persona id** (UUIDv7 ids carry their creation time) (BR1.4, F23).
-- **Byline data carries i18n keys, not localised text**, and is batched (`bylinesFor({personaIds})`), so the task's `locale` argument is not needed (F21).
+- **Byline data carries no localised text**, and is batched (`bylinesFor({personaIds, surface})`), so the task's `locale` argument is not needed (F21); the lede, chip and link are chosen by the components from `personaKind` (Question 17).
 - **Username lookups prefer the pseudonymous persona and never return an anonymous one** (BR1.8).
 - **The current named persona is the newest linked named persona** (BR6.8; Question 14 confirms there is no flag column).
 - **Reveal may target content of any persona kind**, and the record notes the kind (BR4.10).
 - **Malformed input and signed-out callers are refused without a record** (there is no storable target or no requester) and logged (BR4.3, BR4.11).
 - **A reveal whose record cannot be written fails as `internal`**; an identity leaves the server only after its record commits (BR5.2, BR5.3).
-- **`onRefused` runs for every refusal after sign-in**, widening U10's step-up-only hook (F12, BR5.2).
+- **`onRefused` runs for every refusal after sign-in**, as U8's refreshed `defineCommand` already does; this Unit changes nothing in `command.ts` (F12 closed by U8, BR5.2).
 - **`Actor.personaId` is resolved through identity**, so the account repository never reads `persona_links` (F9, BR3.5).
 - **De-identification audits `account:<id>` `identity_deidentified {removedLinks, keptLinks}`** and leaves reveal history untouched (BR6.5, BR6.6).
 - **No new dependency** (BR7.6).
@@ -192,7 +205,7 @@ A. **At the start of Code Generation, check whether U8 fixed it; if not, make th
 B. **Write only flat, allowlisted details here and leave ISS-108 open for U8.** Less work now; every other Unit's audit rows stay exposed to the gap.
 X. Other (please specify)
 
-[Answer]: A (chosen by the agent on the owner's standing instruction of 2026-10-27; to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
+[Answer]: A (chosen by the agent on the owner's standing instruction of 2026-10-27; to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change). Refreshed 2026-10-29: U8's refreshed draft fixes and closes ISS-108 (its BR8.2), so this Unit only confirms the closure at baseline and adds the `identity` stream's detail builders; the fallback stays for the case U8 did not.
 
 ## Question 13
 
@@ -229,11 +242,59 @@ B. **Show "Former member" for named and pseudonymous personas whose link was rem
 C. **Replace only the named (real-name) personas; keep pseudonymous usernames.** Removes the real name; the username, chosen to be public, stays.
 X. Other (please specify)
 
-[Answer]: B (the owner's answer, 2026-10-29: "Former member" for named and pseudonymous personas, no username or profile link; C4, T-410 and the Units table are corrected)
+[Answer]: B (the owner's answer, 2026-10-29: "Former member" for named and pseudonymous personas, no username or profile link; C4, T-410 and the Units table are corrected). Recorded as FD-<next: Former member> (`functional-spec.md` § 9.1), appended before this Unit's code.
 
-## Raised for the owner, not decided in this stage
+## Question 16
 
-Neither point below is this Unit's to settle. Details are in `functional-spec.md` § 9.
+When a named or pseudonymous persona becomes a "Former member", is its stored snapshot scrubbed or only hidden?
 
-- **Q15** above (data boundary: what stays public after deletion).
-- **R1 — The anonymity note in the writing flow and on the review page.** `compose.identity.anonNote` ("It is not absolute anonymity — your account and contact details remain private but known to us, and can be required by law.") appears in the composer and in the margin of every anonymous review in the prototype. FD-008 keeps lawful-disclosure limits in the Terms only; FD-022 and AC3.3.6 forbid a warning about staff identity access on the review page and in the writing flow. The string belongs to U26 T-306 and U27 T-307, and changing it touches a founder decision. Suggested: keep only "Anonymous hides your name from readers." and move the rest to the Terms; confirm or choose another wording before those Units build.
+Why this is open: Question 15 B says what the public sees, not what stays in `personas`. `rk_worker` holds SELECT on `personas` ("live, not ratified", FD-092), and any later copy of a persona's name, a search index for example, would read the stored value. FR13 says retained contributions are "de-identified".
+
+A. **Scrub in the deletion transaction** (recommended): `deidentified_at = now`, `display_name = ''`, `username = null`, `avatar_hue = 0`. A check constraint makes a half-scrubbed row impossible, and anonymous personas are never scrubbed. FD-090's held-link function applies the same scrub when a hold ends. One-way; the name was the deleted person's own data.
+B. **Hide only**: set `deidentified_at` and leave the name and username stored; the projection omits them. Less to write, but the name stays in the database, readable by the worker and by every future reader of `personas`.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29, to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
+
+## Question 17
+
+The T-201 and T-202 drafts define their own `BylineVM`: nothing for anonymous authors, a display name for named and a username for pseudonymous authors, no username for named ones and no "Former member" form. The refreshed T-301 draft builds its `PageBylineVM` from identity's byline data with the thread alias, `profileUsername` for named and pseudonymous authors and `formerMember` (its Questions 17–19), keeps the alias off list cards, and asks T-104 and T-201 to agree on one shape (its F25). Which shape do all pages use?
+
+Why this is open: AC3.3.2 and storyboard step 14 need each thread's alias on screen, which the T-201 shape cannot show. FR11 and AC10.2.1 make a public profile show the username and display name with the account's named and pseudonymous contributions, so a profile link on a named byline reveals nothing the profile does not; T-202's Question 7 A (plain text for a real-name byline, "the narrower, reversible choice") was written before T-301 Q18 settled that. Question 15 B adds a "Former member" form that the T-201 shape lacks. Several shapes would drift, and the persona projection is identity's contract (C4).
+
+A. **One `BylineVM`, owned by identity and built only by `domain/identity/byline.ts`, with a thread and a list surface** (recommended). Fields:
+   - `personaKind` and `avatarHue`;
+   - named: `displayName`, `initials` and `profileUsername`;
+   - pseudonymous: `username`, `initials` and `profileUsername`;
+   - anonymous: `alias` (the persona's stored name, `patient-xxxx`) on the thread surface only, never `profileUsername`;
+   - former member: `formerMember` only.
+
+   `identity.bylinesFor({personaIds, surface})`: `thread` for the experience page, its preview, comments and the thread's reaction lists; `list` for cards, facility accounts, search results and profile lists, which leaves out `alias` and nothing else. `PersonaPublicVM` becomes its alias. U14 T-201's `ProviderExperience` (list) and every byline renderer take it from `identity.bylinesFor`; T-301's `PageBylineVM` maps the thread surface one to one. The T-201 shape is extended additively (`profileUsername`, `alias`, `formerMember`, `avatarHue`); the lede, chip and link choices stay in the components. T-202's `Byline` links a named author to the profile (F33). No FD entry is needed: FR11 and AC10.2.1 already require what the link shows.
+B. **The T-201 and T-202 shape** (no alias, no profile username on named bylines). AC3.3.2 and storyboard step 14 then need a requirements change; `formerMember` is still needed; T-301 Q18 changes.
+C. **No username on named bylines, otherwise as A** (this draft's first refresh). Keeps T-202 Q7 A; T-301 Q18 changes to its B and T-307 step 2 changes; readers lose the way from a named review to the profile the requirements describe.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29, to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change; the first refresh answered C's rule, and the second pass of the same day moved to A to match T-301 Q18 A and F25; the T-201, T-202 and T-301 drafts follow it when they are finalised)
+
+## Question 18
+
+How does `identity.personaFor` retry an alias or thread clash inside the caller's transaction?
+
+Why this is open: the first draft opened a nested savepoint (`tx.transaction(...)`) in the application. Since T-010 and U8, the application holds `Tx` as an opaque type and may import no database library, so it cannot open a savepoint. Without one, a unique violation aborts the caller's whole PostgreSQL transaction.
+
+A. **The private repository runs the savepoint**: `createAnonymousPersona(tx, …)` inserts the persona and link inside its own nested transaction and returns `created`, `alias_taken` or `thread_taken` as data. Identity retries or re-reads (recommended). No port of U8's changes.
+B. **U8's `UnitOfWork` gains `savepoint(tx, fn)`**, and identity keeps the retry loop around it. More general, but it widens U8's port, its fake and its implementation for one caller.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29, to be listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
+
+## The points raised for the owner, now settled
+
+Details are in `functional-spec.md` § 9.
+
+- **Q15** above: answered by the owner (B, "Former member"); FD-<next: Former member>.
+- **R1 — The anonymity note in the writing flow and on the review page.** Decided by the agent under the owner's no-questions instruction of 2026-10-29, consistently with the T-301 draft's Q16 A and the owner's T-207 Q1:
+  - the public experience page shows no anonymity caveat;
+  - U26 T-306 rewords `compose.identity.anonNote` without the legal or staff-access sentence. It keeps "Anonymous hides your name from readers." with a line such as "Your name and profile are not shown with this review";
+  - the full explanation lives in a section of both the Terms and the Privacy Policy.
+  - This Unit changes no copy and appends no row for it. The FD entries are U21 T-301's (page and composer) and U20 T-207's (policy pages); the key is U26 T-306's and U27 T-307's.

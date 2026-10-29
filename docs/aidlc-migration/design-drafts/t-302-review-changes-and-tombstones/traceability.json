@@ -1,0 +1,53 @@
+{
+  "stage": "functional-design",
+  "unit": "t-302-review-changes-and-tombstones",
+  "upstream_ids": [
+    "AC6.2.1", "AC6.2.2", "AC6.2.3", "AC6.2.4", "AC6.2.5",
+    "AC6.3.1", "AC6.3.2", "AC6.3.3", "AC6.3.4", "AC6.3.5"
+  ],
+  "coverage": [
+    { "id": "AC6.2.1", "status": "N/A", "target": "Detailed timeline sections at publish are U21 T-301 (its BR3.2, BR6.7); this Unit only keeps sections editable (BR4.3) and redactable (BR7.1)" },
+    { "id": "AC6.2.2", "status": "N/A", "target": "Month-and-year projection of the exact date is U21 T-301 (its BR4.5, BR6.3); correct cannot edit the period or exact date (BR4.2)" },
+    { "id": "AC6.2.3", "status": "N/A", "target": "Delivered and narrowed by U21 T-301 (its FD entry (a), FR46 checkboxes deferred); a correction may clear sentiment to Not provided (BR4.3) and never computes a score" },
+    { "id": "AC6.2.4", "status": "N/A", "target": "Reviewer's label rendering is U21 T-301 (its BR3.9, BR6.6); labels stay editable as codes and material (BR4.3)" },
+    { "id": "AC6.2.5", "status": "OK", "target": "BR3.4, BR3.5, BR3.6, BR9.2" },
+    { "id": "AC6.3.1", "status": "OK", "target": "BR4.1, BR4.3, BR4.7, BR9.2" },
+    { "id": "AC6.3.2", "status": "OK", "target": "BR4.1, BR4.3, BR4.4, BR4.5, BR10.1 (read per FD entry (c) of functional-spec.md section 17; retention of versions for the audit period is open for U29 T-309, finding F9)" },
+    { "id": "AC6.3.3", "status": "OK", "target": "BR3.1" },
+    { "id": "AC6.3.4", "status": "OK", "target": "BR5.2, BR5.3, BR9.1, BR9.4" },
+    { "id": "AC6.3.5", "status": "OK", "target": "BR6.1, BR9.4" }
+  ],
+  "reverse": [
+    { "id": "BR1.1", "status": "N/A", "target": "C9 requires and 01-conventions.md section 5; FR71 (authors may delete)" },
+    { "id": "BR1.2", "status": "N/A", "target": "T-302 step 5 owner checks and 01-conventions.md section 5" },
+    { "id": "BR1.3", "status": "N/A", "target": "03-routes-and-contracts.md section 2 (public ids in pages), C9 (setState internal), Question 12" },
+    { "id": "BR1.4", "status": "N/A", "target": "Abuse limit on review.changed events, Question 13" },
+    { "id": "BR2.1", "status": "N/A", "target": "T-302 acceptance row 'Hidden not editable'" },
+    { "id": "BR3.2", "status": "N/A", "target": "02-data-model.md section 6 (latest feeds reviews.latest_status)" },
+    { "id": "BR3.3", "status": "N/A", "target": "T-302 steps 1 and 5 (follow-up kinds, future-date refusal)" },
+    { "id": "BR4.2", "status": "N/A", "target": "T-302 step 5 correct input; FD-080 repeat-episode keys stay fixed" },
+    { "id": "BR4.6", "status": "N/A", "target": "01-conventions.md section 3 conflict code; concurrent edit safety" },
+    { "id": "BR4.8", "status": "N/A", "target": "U21 T-301 publish minimum and language detection (FR39)" },
+    { "id": "BR5.1", "status": "N/A", "target": "FR71 and Question 8 (FD entry (e))" },
+    { "id": "BR5.4", "status": "N/A", "target": "FD-087 and the T-302 acceptance rows 'FD-087'" },
+    { "id": "BR5.5", "status": "N/A", "target": "FD-073, FD-079 and the T-302 acceptance row 'FD-079'" },
+    { "id": "BR5.6", "status": "N/A", "target": "T-302 step 5 delete (evidence untouched; evidence.getPublic requires an eligible review, C8)" },
+    { "id": "BR5.7", "status": "N/A", "target": "T-302 Not in scope (facility mirrors delete and restore), Question 14" },
+    { "id": "BR7.1", "status": "N/A", "target": "T-302 step 5 redact and threat note 'Moderator rewrites narrative', Questions 5 and 6, FD entry (a)" },
+    { "id": "BR7.2", "status": "N/A", "target": "T-302 step 3 and acceptance row 'Grapheme safety'" },
+    { "id": "BR7.3", "status": "N/A", "target": "T-302 step 3 (token resolved at render time), Question 3" },
+    { "id": "BR7.4", "status": "N/A", "target": "T-302 step 5 redact (version row, audit on review and case)" },
+    { "id": "BR7.5", "status": "N/A", "target": "Finding F13 (token spoofing)" },
+    { "id": "BR8.1", "status": "N/A", "target": "C9 review.setState and its callers U32 T-403, U33 T-404" },
+    { "id": "BR8.2", "status": "N/A", "target": "C9 threshold callers (repeated hides)" },
+    { "id": "BR8.3", "status": "N/A", "target": "02-data-model.md sections 6 and 17, C15 events, T-302 threat note (keeps hidden_reason_code)" },
+    { "id": "BR8.4", "status": "N/A", "target": "FD-086 (no reporter link anywhere), finding F6" },
+    { "id": "BR8.5", "status": "N/A", "target": "FD-087 and the T-302 acceptance row 'review.setState sends nothing'" },
+    { "id": "BR9.3", "status": "N/A", "target": "T-302 step 6 (history not in the public VM), FR69 private versions" },
+    { "id": "BR9.5", "status": "N/A", "target": "01-conventions.md section 4 (time), developer view" },
+    { "id": "BR10.2", "status": "N/A", "target": "01-conventions.md section 5 (state-changing and sensitive reads audited)" },
+    { "id": "BR11.1", "status": "N/A", "target": "02-data-model.md section 17, U21 R4, FR71, Questions 8 and 11, FD entry (e)" },
+    { "id": "BR12.1", "status": "N/A", "target": "FR13, AC10.3.3 (US10.3, owned by U39 T-410), FD-077, Question 9, FD entry (b)" },
+    { "id": "BR13.1", "status": "N/A", "target": "FD-093 boundary matrix, ISS-294 pins, T-010 as merged" }
+  ]
+}

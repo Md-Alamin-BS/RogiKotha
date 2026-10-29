@@ -1,54 +1,251 @@
 {
   "stage": "functional-design",
   "unit": "t-104-identity-module",
-  "upstream_ids": ["AC3.3.1", "AC3.3.2", "AC3.3.3", "AC3.3.4", "AC3.3.5", "AC3.3.6"],
+  "upstream_ids": [
+    "AC3.3.1",
+    "AC3.3.2",
+    "AC3.3.3",
+    "AC3.3.4",
+    "AC3.3.5",
+    "AC3.3.6"
+  ],
   "coverage": [
-    { "id": "AC3.3.1", "status": "OK", "target": "BR2.3, BR2.7, BR2.9, BR1.7 (one persona per author per thread, the same persona for the review, the author's comments and reactions in that thread, one byline shape); rendering on the review, comments and reaction lists is U27 T-307, U30 T-401 and U31 T-402" },
-    { "id": "AC3.3.2", "status": "OK", "target": "BR2.1, BR2.2, BR2.3, BR2.6, BR1.4, BR1.6, BR1.7 (a stable random alias per thread, shown as the byline name under Question 6, unique, sharing no field or id with the author's other personas)" },
-    { "id": "AC3.3.3", "status": "OK", "target": "BR1.3, BR1.8, BR2.6, BR3.1, BR3.4 (no linkage in any projection, aliases unreachable by username, mention or profile, links readable only by the identity module); the profile and activity lists that must exclude anonymous threads are U38 T-409 and U30 T-401" },
-    { "id": "AC3.3.4", "status": "N/A", "target": "Reactions counting as engagement only (not summaries, ordering or moderation) is built by U30 T-401 and the summary queries of U14 T-201 and U22 T-302; identity stores no reaction data" },
-    { "id": "AC3.3.5", "status": "OK", "target": "BR4.1, BR4.2, BR4.3, BR4.4, BR5.1, BR5.2, BR5.3, BR5.4, BR5.5, BR5.7 (Super Admin reveals with a purpose and a reason, Admin and Moderator refused unless their toggle is on, every attempt recorded in an append-only row with an allowlisted audit event)" },
-    { "id": "AC3.3.6", "status": "OK", "target": "functional-spec.md section 8: this Unit adds no copy about staff identity access; the existing compose.identity.anonNote shown in the composer and on anonymous review pages is raised to the owner as R1 for U26 T-306 and U27 T-307" }
+    {
+      "id": "AC3.3.1",
+      "status": "OK",
+      "target": "BR2.3, BR2.7, BR2.9, BR1.7 (one persona per author per thread, the same persona for the review, the author's comments and reactions in that thread, one byline shape); rendering on the review, comments and reaction lists is U27 T-307, U30 T-401 and U31 T-402"
+    },
+    {
+      "id": "AC3.3.2",
+      "status": "OK",
+      "target": "BR2.1, BR2.2, BR2.3, BR2.6, BR1.3, BR1.4, BR1.6, BR1.7 (a stable random alias per thread, shown in the one BylineVM as the author's name on the thread surface under Questions 6 and 17, never on list cards, unique, sharing no field or id with the author's other personas, and never carrying a profile username)"
+    },
+    {
+      "id": "AC3.3.3",
+      "status": "OK",
+      "target": "BR1.3, BR1.8, BR2.6, BR3.1, BR3.4, BR3.7 (no linkage in any projection, aliases unreachable by username, mention, profile or list card, links readable only by the identity module, other modules learn at most one boolean through ownsAnyPersona); the profile and activity lists that must exclude anonymous threads are U38 T-409 and U30 T-401"
+    },
+    {
+      "id": "AC3.3.4",
+      "status": "N/A",
+      "target": "Reactions counting as engagement only (not summaries, ordering or moderation) is built by U30 T-401 and the summary queries of U14 T-201 and U22 T-302; identity stores no reaction data"
+    },
+    {
+      "id": "AC3.3.5",
+      "status": "OK",
+      "target": "BR4.1, BR4.2, BR4.3, BR4.4, BR5.1, BR5.2, BR5.3, BR5.4, BR5.5, BR5.7 (Super Admin reveals with a purpose and a reason, Admin and Moderator refused unless their toggle is on, every attempt recorded in an append-only row with an allowlisted audit event)"
+    },
+    {
+      "id": "AC3.3.6",
+      "status": "OK",
+      "target": "BR7.8 (R1 decided under the owner no-questions instruction of 2026-10-29: no anonymity caveat on the public page, the composer note reworded by U26 T-306 without the legal or staff-access sentence, the explanation on both Terms and Privacy per T-207 Q1); this Unit adds no copy about staff identity access"
+    }
   ],
   "reverse": [
-    { "id": "BR1.1", "status": "N/A", "target": "AD-3 and 02-data-model.md section 3 (public personas without account data); T-104 threat 1" },
-    { "id": "BR1.2", "status": "N/A", "target": "T-104 step 3 and acceptance row 'Register still works'; C4 createDefaultPersonas; U8 BR1.10" },
-    { "id": "BR1.5", "status": "N/A", "target": "AD-3 (immutable persona snapshot) and T-104 threat 6" },
-    { "id": "BR2.4", "status": "N/A", "target": "02-data-model.md section 6 (facility reviews have no thread) and the seed's unscoped facility personas; FD-015" },
-    { "id": "BR2.5", "status": "N/A", "target": "Question 10 and ISS-262 (the product rule stays with U30 T-401)" },
-    { "id": "BR2.8", "status": "N/A", "target": "AD-3 (retroactive deanonymization prevented); design constraint" },
-    { "id": "BR3.2", "status": "N/A", "target": "T-104 step 6 and threat 5; Question 8" },
-    { "id": "BR3.3", "status": "N/A", "target": "C4 (accountsOf and personasOf are internal, web tier only)" },
-    { "id": "BR3.5", "status": "N/A", "target": "Finding F9 (U8 draft getActor reads the named persona through the account repository); AD-3" },
-    { "id": "BR3.6", "status": "N/A", "target": "T-104 threat 8 and 01-conventions section 11 (allowlisted log fields)" },
-    { "id": "BR4.5", "status": "N/A", "target": "C4 RevealTarget and FD-067 (cycle-break port); Question 9" },
-    { "id": "BR4.6", "status": "N/A", "target": "FD-077 and FD-078 (links and reporter ids removed on deletion); T-104 step 4" },
-    { "id": "BR4.7", "status": "N/A", "target": "T-104 step 4 (email only for super_admin) and C4 RevealContact; Question 3" },
-    { "id": "BR4.8", "status": "N/A", "target": "03 section 2 (no account id in view models) and 01-conventions section 11; Question 3" },
-    { "id": "BR4.9", "status": "N/A", "target": "Question 13 (rate limit on reveal attempts); T-104 threat 4" },
-    { "id": "BR4.10", "status": "N/A", "target": "05-recommended-architecture.md (a target content id) and 02-data-model.md section 3 (every reveal attempt); design decision" },
-    { "id": "BR4.11", "status": "N/A", "target": "02-data-model.md section 3 (requester_account_id not null); Question 1" },
-    { "id": "BR5.6", "status": "N/A", "target": "C15 identity.revealed, FD-065, FD-086 and 02-data-model.md section 16 (f); Question 5" },
-    { "id": "BR5.8", "status": "N/A", "target": "T-104 acceptance row 'Reveal always recorded' (rows false, false, true); design constraint" },
-    { "id": "BR6.1", "status": "N/A", "target": "FR13 via AC10.3.3 (owned by US10.3); C4 deidentify, FD-077, FD-079; called by U39 T-410" },
-    { "id": "BR6.2", "status": "N/A", "target": "C4 deidentify keepPersonaIds; design validation" },
-    { "id": "BR6.3", "status": "N/A", "target": "FR13 via AC10.3.3 (owned by US10.3); T-104 step 3 versus C4 and T-410 step 3; Question 15, for the owner" },
-    { "id": "BR6.4", "status": "N/A", "target": "T-104 step 3 and threat 7; T-410 step 3" },
-    { "id": "BR6.5", "status": "N/A", "target": "02-data-model.md section 10 (append-only) and T-410 step 3" },
-    { "id": "BR6.6", "status": "N/A", "target": "01-conventions section 5 (every state change audited)" },
-    { "id": "BR6.7", "status": "N/A", "target": "T-104 step 3 and threat 6; 02-data-model.md section 3 rules (rename creates a new persona); the rename screen is U38 T-409" },
-    { "id": "BR6.8", "status": "N/A", "target": "Question 14 (current named persona); T-104 step 3" },
-    { "id": "BR7.1", "status": "N/A", "target": "contract-summary.md ownership rules (the provider Unit corrects its block and 03)" },
-    { "id": "BR7.2", "status": "N/A", "target": "02-data-model.md (forward-only migrations) and the CR-006 journal lesson" },
-    { "id": "BR7.3", "status": "N/A", "target": "project.md Mandated (Bengali and English in the same commit), ADR 0011" },
-    { "id": "BR7.4", "status": "N/A", "target": "project.md Mandated (ISS rows) and team.md Way of Working" },
-    { "id": "BR7.5", "status": "N/A", "target": "team.md Way of Working (files outside owned paths recorded)" },
-    { "id": "BR7.6", "status": "N/A", "target": "AGENTS.md and project.md Mandated dependency-check rule" },
-    { "id": "BR7.7", "status": "N/A", "target": "PRODUCT.md hard rule on reporter identity (project.md Forbidden), 01-conventions section 5, FD-086" },
-    { "id": "BR8.1", "status": "N/A", "target": "team.md Testing Posture and 01-conventions section 10" },
-    { "id": "BR8.2", "status": "N/A", "target": "team.md Testing Posture (cumulative smoke suite)" },
-    { "id": "BR8.3", "status": "N/A", "target": "T-104 acceptance row 'Checks' and team.md Way of Working" },
-    { "id": "BR8.4", "status": "N/A", "target": "team.md Way of Working step 5 (high-risk adversarial tests and sign-off)" },
-    { "id": "BR8.5", "status": "N/A", "target": "team.md Testing Posture (80 percent floor)" }
+    {
+      "id": "BR1.1",
+      "status": "N/A",
+      "target": "AD-3 and 02-data-model.md section 3 (public personas without account data); T-104 threat 1"
+    },
+    {
+      "id": "BR1.2",
+      "status": "N/A",
+      "target": "T-104 step 3 and acceptance row 'Register still works'; C4 createDefaultPersonas; U8 BR1.10"
+    },
+    {
+      "id": "BR1.5",
+      "status": "N/A",
+      "target": "AD-3 (immutable persona snapshot) and T-104 threat 6"
+    },
+    {
+      "id": "BR2.4",
+      "status": "N/A",
+      "target": "02-data-model.md section 6 (facility reviews have no thread) and the seed's unscoped facility personas; FD-015"
+    },
+    {
+      "id": "BR2.5",
+      "status": "N/A",
+      "target": "Question 10 and ISS-262 (the product rule stays with U30 T-401)"
+    },
+    {
+      "id": "BR2.8",
+      "status": "N/A",
+      "target": "AD-3 (retroactive deanonymization prevented); design constraint"
+    },
+    {
+      "id": "BR3.2",
+      "status": "N/A",
+      "target": "T-104 step 6 and threat 5; Question 8"
+    },
+    {
+      "id": "BR3.3",
+      "status": "N/A",
+      "target": "C4 (accountsOf and personasOf are internal, web tier only)"
+    },
+    {
+      "id": "BR3.5",
+      "status": "N/A",
+      "target": "Finding F9 (U8 draft getActor reads the named persona through the account repository); AD-3"
+    },
+    {
+      "id": "BR3.6",
+      "status": "N/A",
+      "target": "T-104 threat 8 and 01-conventions section 11 (allowlisted log fields)"
+    },
+    {
+      "id": "BR4.5",
+      "status": "N/A",
+      "target": "C4 RevealTarget and FD-067 (cycle-break port); Question 9"
+    },
+    {
+      "id": "BR4.6",
+      "status": "N/A",
+      "target": "FD-077 and FD-078 (links and reporter ids removed on deletion); T-104 step 4"
+    },
+    {
+      "id": "BR4.7",
+      "status": "N/A",
+      "target": "T-104 step 4 (email only for super_admin) and C4 RevealContact; Question 3"
+    },
+    {
+      "id": "BR4.8",
+      "status": "N/A",
+      "target": "03 section 2 (no account id in view models) and 01-conventions section 11; Question 3"
+    },
+    {
+      "id": "BR4.9",
+      "status": "N/A",
+      "target": "Question 13 (rate limit on reveal attempts); T-104 threat 4"
+    },
+    {
+      "id": "BR4.10",
+      "status": "N/A",
+      "target": "05-recommended-architecture.md (a target content id) and 02-data-model.md section 3 (every reveal attempt); design decision"
+    },
+    {
+      "id": "BR4.11",
+      "status": "N/A",
+      "target": "02-data-model.md section 3 (requester_account_id not null); Question 1"
+    },
+    {
+      "id": "BR5.6",
+      "status": "N/A",
+      "target": "C15 identity.revealed, FD-065, FD-086 and 02-data-model.md section 16 (f); Question 5"
+    },
+    {
+      "id": "BR5.8",
+      "status": "N/A",
+      "target": "T-104 acceptance row 'Reveal always recorded' (rows false, false, true); design constraint"
+    },
+    {
+      "id": "BR6.1",
+      "status": "N/A",
+      "target": "FR13 via AC10.3.3 (owned by US10.3); C4 deidentify, FD-077, FD-079; called by U39 T-410"
+    },
+    {
+      "id": "BR6.2",
+      "status": "N/A",
+      "target": "C4 deidentify keepPersonaIds; design validation"
+    },
+    {
+      "id": "BR6.3",
+      "status": "N/A",
+      "target": "FR13 via AC10.3.3 (owned by US10.3); the owner answer to Question 15 (B, Former member, 2026-10-29) and Question 16 (scrub); FD-<next: Former member> amends C4, T-410 step 3 and the Units table"
+    },
+    {
+      "id": "BR6.4",
+      "status": "N/A",
+      "target": "T-104 step 3 and threat 7; T-410 step 3"
+    },
+    {
+      "id": "BR6.5",
+      "status": "N/A",
+      "target": "02-data-model.md section 10 (append-only) and T-410 step 3"
+    },
+    {
+      "id": "BR6.6",
+      "status": "N/A",
+      "target": "01-conventions section 5 (every state change audited)"
+    },
+    {
+      "id": "BR6.7",
+      "status": "N/A",
+      "target": "T-104 step 3 and threat 6; 02-data-model.md section 3 rules (rename creates a new persona); the rename screen is U38 T-409"
+    },
+    {
+      "id": "BR6.8",
+      "status": "N/A",
+      "target": "Question 14 (current named persona); T-104 step 3"
+    },
+    {
+      "id": "BR7.1",
+      "status": "N/A",
+      "target": "contract-summary.md ownership rules (the provider Unit corrects its block and 03)"
+    },
+    {
+      "id": "BR7.2",
+      "status": "N/A",
+      "target": "02-data-model.md (forward-only migrations) and the CR-006 journal lesson"
+    },
+    {
+      "id": "BR7.3",
+      "status": "N/A",
+      "target": "project.md Mandated (Bengali and English in the same commit), ADR 0011"
+    },
+    {
+      "id": "BR7.4",
+      "status": "N/A",
+      "target": "project.md Mandated (ISS rows) and team.md Way of Working"
+    },
+    {
+      "id": "BR7.5",
+      "status": "N/A",
+      "target": "team.md Way of Working (files outside owned paths recorded)"
+    },
+    {
+      "id": "BR7.6",
+      "status": "N/A",
+      "target": "AGENTS.md and project.md Mandated dependency-check rule"
+    },
+    {
+      "id": "BR7.7",
+      "status": "N/A",
+      "target": "PRODUCT.md hard rule on reporter identity (project.md Forbidden), 01-conventions section 5, FD-086"
+    },
+    {
+      "id": "BR8.1",
+      "status": "N/A",
+      "target": "team.md Testing Posture and 01-conventions section 10"
+    },
+    {
+      "id": "BR8.2",
+      "status": "N/A",
+      "target": "team.md Testing Posture (cumulative smoke suite)"
+    },
+    {
+      "id": "BR8.3",
+      "status": "N/A",
+      "target": "T-104 acceptance row 'Checks' and team.md Way of Working"
+    },
+    {
+      "id": "BR8.4",
+      "status": "N/A",
+      "target": "team.md Way of Working step 5 (high-risk adversarial tests and sign-off)"
+    },
+    {
+      "id": "BR8.5",
+      "status": "N/A",
+      "target": "team.md Testing Posture (80 percent floor)"
+    },
+    {
+      "id": "BR8.6",
+      "status": "N/A",
+      "target": "FD-093 and 01-conventions section 2 as built by T-010 (import boundaries); U8 BR7.12"
+    },
+    {
+      "id": "BR8.7",
+      "status": "N/A",
+      "target": "ISS-294, ISS-242, ISS-223 and ISS-290 (the stub, migration-count and fake tests T-010 pinned); team.md Testing Posture"
+    }
   ]
 }

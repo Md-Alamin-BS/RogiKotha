@@ -4,12 +4,14 @@ Draft written ahead of the stage. The lead finalises it when the workflow reache
 
 Source of truth for the Unit's decision logic. Built from `unit-of-work.md` (U10), `unit-of-work-story-map.md` (US3.2, US11.1), `requirements.md` (FR6, FR7, FR100, FR102), `stories.md` (AC3.2.4, AC3.2.5, AC11.1.2, AC11.1.6, AC7.3.3, AC7.3.4), `contract-summary.md` (C2, C5, C15 and the ownership rules), T-103 with its amendments (FD-051, FD-053), FD-016, FD-018, FD-022, FD-034, FD-035, FD-065, FD-071, FD-088, `auth-screens-spec.md` §4 and §5, the D-001 prototype (`ui-design-prototype/admin/`), U8's draft (`design-drafts/t-101-better-auth-adapter/`) and the open `ISSUES.md` rows ISS-021, ISS-023, ISS-025, ISS-034, ISS-054, ISS-100 and ISS-108.
 
-The rules that depend on a question follow the answers in `functional-design-questions.md`, chosen on the owner's standing instruction of 2026-10-27 and awaiting the owner's confirmation. `functional-spec.md` § 14 lists what changes if the owner reverses an answer. "Approved device" always means: the request carries `rk_staff_device`, and the open `staff_devices` row for (the actor's account, `sha256` of that secret) has `approved_at` set and `revoked_at` null. "Staff powers" means a `staffRole` and a non-empty `capabilities` list in the `Actor`.
+Refreshed 2026-10-29 against T-010 as merged (`14c21a9`), the refreshed U8 T-101 and U9 T-102 drafts, U45 T-011's recorded design and the owner's answers. The rules that changed are BR2.1, BR2.3, BR3.1, BR4.3, BR4.5, BR5.1–BR5.3, BR5.9, BR7.1–BR7.6, BR9.1, BR9.2, BR9.4, BR10.1, BR10.2, BR11.3, BR11.5, BR12.1 and BR12.5. BR12.6 and BR12.7 are new. A second pass the same day recorded the owner's approval of the staff screens (BR12.5) and refers to T-101's proposed FD rows by content (BR9.1).
+
+The rules that depend on a question follow the answers in `functional-design-questions.md`. Questions 1–10 were chosen on the owner's standing instruction of 2026-10-27, and Questions 11–13 were decided by the agent under the owner's no-questions instruction of 2026-10-29. All await the owner's confirmation. `functional-spec.md` § 14 lists what changes if the owner reverses an answer. "Approved device" always means: the request carries `rk_staff_device`, and the open `staff_devices` row for (the actor's account, `sha256` of that secret) has `approved_at` set and `revoked_at` null. "Staff powers" means a `staffRole` and a non-empty `capabilities` list in the `Actor`.
 
 **Authorization and audit at a glance** (each line is a rule below):
 
 - Staff powers need all three: a `staff_role`, status `active`, an approved device for that account (BR3.1).
-- `requires` order in every command: `authenticated` → `staffRole` / `capability` → `stepUp` → owner (BR7.4).
+- `requires` order in every command (U8's `defineCommand`): `authenticated` → `verifiedEmail` → `notRestricted` → `staffRole` → `capability` → `stepUp` → owner (BR7.4).
 - Super Admin: all eight capabilities, fixed in code. Admin: `reports.read`, `content.act`, `providers.decide`, `holds.manage` (+ `identity.reveal` / `evidence.original` only by toggle). Moderator: `reports.read`, `content.act` (+ the same two toggles). Nobody but Super Admin holds `retention.bulk` or `config.write` (BR1.1–BR1.4).
 - Audit actions on `account:<id>`: `staff_signed_in`, `staff_device_requested`, `staff_device_approval_failed`, `staff_device_approved`, `staff_device_revoked`, `step_up`, `step_up_failed`, `staff_role_changed`; details are ids, enums and counts only (BR10.2).
 
@@ -63,7 +65,7 @@ rules:
     category: constraint
     applies_to: "apps/web/src/server/actions/staff.ts, StaffRepository"
     trigger: "A device secret is minted or read"
-    logic: "secret = Crypto.randomToken(32); staff_devices.device_hash = hex(sha256(secret)); the cookie is set only on a staff sign-in response after the right password (BR4.6); the secret is never logged, audited or returned"
+    logic: "secret = Crypto.randomToken() (32 bytes, base64url); staff_devices.device_hash = Crypto.tokenHash(secret) (SHA-256 of the UTF-8 secret, lowercase hex, computed in the adapter); the cookie is set only on a staff sign-in response after the right password (BR4.6); the command hands the new secret to its server action only, which sets the cookie and drops it from what it returns; the secret is never logged, audited or returned to the browser"
     violation: "A stored or logged secret lets anyone with database or log access impersonate the device"
     source: "T-103 step 2, 02-data-model.md §2, threat notes"
   - id: BR2.2
@@ -77,9 +79,9 @@ rules:
   - id: BR2.3
     statement: "Device trust is per account: a device is looked up by the actor's account id and the cookie hash together, so the same cookie on another account is unknown."
     category: authorization
-    applies_to: "getStaffContext, getActor, StaffRepository.findOpenDevice"
+    applies_to: "application/modules/account/staff-access.ts staffAccessFor, getStaffContext, getActor, StaffRepository.findOpenDevice"
     trigger: "Any request of a staff account"
-    logic: "state = approved IF an open row (account_id, device_hash) has approved_at set; pending IF an open row has no approved_at; revoked IF the newest row for the pair is revoked; unknown otherwise"
+    logic: "staffAccessFor(accountId, deviceSecret?): no secret THEN unknown; ELSE hash = Crypto.tokenHash(secret); state = approved IF an open row (account_id, hash) has approved_at set; pending IF an open row has no approved_at; revoked IF the newest row for the pair is revoked; unknown otherwise; the one function behind getActor, getStaffContext, staff.signIn and staff.listDevices"
     violation: "A cookie copied to another staff account that grants trust fails the 'Cookie per account' row (threat T4)"
     source: "T-103 step 2 and threat 3, acceptance row 'Cookie per account'"
   - id: BR2.4
@@ -95,11 +97,11 @@ rules:
   - id: BR3.1
     statement: "getActor puts staffRole and capabilities into the Actor only when the account has a staff_role, its status is active and the request carries an approved device for that account; otherwise staffRole is undefined and capabilities is empty."
     category: authorization
-    applies_to: "apps/web/src/server/auth.ts getActor"
+    applies_to: "apps/web/src/server/auth.ts getActor (gathers the inputs), U8's pure resolveActor, application/modules/account/staff-access.ts"
     trigger: "Every request that resolves an Actor"
-    logic: "IF profile.staff_role AND profile.status = active AND getStaffDevice(accountId, cookie) = approved THEN Actor.staffRole = role, Actor.capabilities = resolveCapabilities(role, ConfigProvider.current()) ELSE Actor.staffRole = undefined, Actor.capabilities = []; the device state and the role are read on every request, never cached across requests"
+    logic: "IF profile.staff_role AND profile.status = active AND staffAccessFor(accountId, rk_staff_device).state = approved THEN Actor.staffRole = role, Actor.capabilities = resolveCapabilities(role, (await ConfigProvider.current()).capabilities) ELSE Actor.staffRole = undefined, Actor.capabilities = [] (U8's stub value, kept for everyone else); the device state and the role are read on every request (cached per request only, never across requests)"
     violation: "Staff powers from a role alone let a stolen password act as staff through the patient route or direct server-action calls (S1 if built, threat T5)"
-    source: "Question 3, FR7, AC3.2.5, T-103 threat 5, F2"
+    source: "Question 3, FR7, AC3.2.5, T-103 threat 5, F2, U8 BR4.3 and F23"
   - id: BR3.2
     statement: "Every console page, staff query, staff command and staff route handler checks the Actor itself; the layout guard only redirects."
     category: authorization
@@ -163,9 +165,9 @@ rules:
     category: constraint
     applies_to: "staff.signIn"
     trigger: "An attempt that passed BR4.1"
-    logic: "Read credential and profile through the account repository by normalised email; verify(NFC(password), phc or DUMMY_PHC); unknown, deleted or wrong THEN record a failure on both keys and return auth.invalid_credentials"
+    logic: "AccountRepository.findCredentialByEmail(normalised email) → {accountId, authUserId, passwordHash, status} or nothing; PasswordHasher.verify(NFC(password), phc or U8's dummy PHC) exactly once; unknown, deleted or wrong THEN record a failure on both keys and return auth.invalid_credentials; the same credential path as U8's account.signIn (U8 Question 14)"
     violation: "Calling the library sign-in first would create a session row for non-staff and unknown devices (Question 1)"
-    source: "Question 1, T-103 step 4, AC3.2.5, acceptance row 'Non-staff refused'"
+    source: "Question 1, T-103 step 4, AC3.2.5, acceptance row 'Non-staff refused', U8 Question 14 and BR3.5"
   - id: BR4.4
     statement: "A correct password on an account without a staff role, or whose status is not active, returns forbidden with messageKey staff.notStaff and creates no session, no device cookie and no row; a wrong password never reveals whether the account is staff."
     category: authorization
@@ -177,11 +179,11 @@ rules:
   - id: BR4.5
     statement: "Only the staff.signIn and staff.approveDevice commands may create a session from the staff screens, and only after they have decided to."
     category: authorization
-    applies_to: "U8's Better Auth databaseHooks.session.create.before, CommandContext"
-    trigger: "The library is about to create a session inside a staff command"
-    logic: "IF CommandContext.command is staff.signIn or staff.approveDevice AND ctx.staffSessionAllowed is true THEN allow (U8's status check still applies) ELSE IF the command is one of these two THEN refuse; other commands keep U8's rules"
+    applies_to: "U8's AuthGateway.createSession, apps/web/src/server/better-auth/library-scope.ts, U8's Better Auth databaseHooks.session.create.before"
+    trigger: "A staff command has decided to sign the holder in"
+    logic: "staff.signIn (approved device) calls AuthGateway.createSession({email, password, purpose: 'staffSignIn'}) and staff.approveDevice calls it with purpose 'approveDevice', each as the last step after its own decision; the library-call scope purposes gain staffSignIn and approveDevice; createSession is the only gateway method that sets sessionAllowed, so U8's session.create.before hook allows exactly these calls (its status check still applies); no other staff path calls createSession; the application holds no command-context flag"
     violation: "A library call that creates a session before the device decision bypasses AC3.2.5"
-    source: "Question 2, U8 BR1.7 and BR3.6 pattern, AD-4"
+    source: "Question 2, U8 BR7.9 and § 10.2 (library-call scope; 'T-103 adds staffSignIn and approveDevice'), U8 Question 12, AD-4"
   - id: BR4.6
     statement: "A staff account on a device that is not approved gets no session from staff sign-in: only a device cookie and a pending approval."
     category: authorization
@@ -197,7 +199,7 @@ rules:
     category: constraint
     applies_to: "staff.beginDeviceApproval"
     trigger: "BR4.6"
-    logic: "One transaction: device row (label from the user agent, first_seen_at, last_seen_at); staff_device_approvals {device_id, token_hash = sha256(token), expires_at = now + 30 min, failed_attempts 0}; queueEmail(device_approval, email.staff.deviceApproval, {link: APP_URL/<locale>/admin/approve-device?token=<token>}, dedupeKey device-approval:<approvalId>); audit staff_device_requested {deviceId}"
+    logic: "In staff.signIn's transaction (the command is declared sendsMail, so the mail.send queue is ensured first): device row (label from the user agent, first_seen_at, last_seen_at); staff_device_approvals {device_id, token_hash = Crypto.tokenHash(token), expires_at = now + 30 min, failed_attempts 0} with token = Crypto.randomToken(); queueEmail(device_approval, email.staff.deviceApproval, {link: APP_URL/<locale>/admin/approve-device?token=<token>}, dedupeKey device-approval:<approvalId>); audit staff_device_requested {deviceId}"
     violation: "A longer lifetime, a stored token or a missing email fails the 'Unknown device' and 'Approve' rows"
     source: "T-103 step 5, 02-data-model.md §2, auth-screens-spec.md §4.2"
   - id: BR5.2
@@ -205,15 +207,15 @@ rules:
     category: validation
     applies_to: "staff.approveDevice"
     trigger: "A token is presented"
-    logic: "IF no row for sha256(token) OR used_at set OR failed_attempts >= 3 THEN auth.token_invalid; IF expires_at <= now THEN auth.token_expired; after BR5.3 passes, a wrong password THEN failed_attempts + 1 and audit staff_device_approval_failed {deviceId, attempt}; IF the new count = 3 THEN auth.token_invalid ELSE auth.invalid_credentials"
-    violation: "A fourth password guess or a reused link that is accepted fails the 'Approve' row (threat T3)"
-    source: "T-103 step 6 and threat 2, auth-screens-spec.md §4.2, Question 5"
+    logic: "IF no row for Crypto.tokenHash(token) OR used_at set OR failed_attempts >= 3 THEN auth.token_invalid; IF expires_at <= now THEN auth.token_expired; after BR5.3 passes, a wrong password (PasswordHasher.verify against the account's stored credential) THEN, in the command's transaction, failed_attempts + 1 and audit staff_device_approval_failed {deviceId, attempt}, and the handler returns the refusal with recorded: true so U8's UnitOfWork commits both; IF the new count = 3 THEN auth.token_invalid ELSE auth.invalid_credentials"
+    violation: "A fourth password guess or a reused link that is accepted fails the 'Approve' row (threat T3); a strike that rolls back with the refusal leaves the token open to unlimited guesses (F19, threat T17)"
+    source: "T-103 step 6 and threat 2, auth-screens-spec.md §4.2, Questions 5, 12 and 13, U8 BR7.11 (recorded)"
   - id: BR5.3
     statement: "The approval succeeds only in the browser that holds the device cookie the token was issued for; another browser gets auth.device_mismatch before any password check, and the token is unchanged."
     category: authorization
     applies_to: "staff.approveDevice"
     trigger: "A token passed BR5.2's lookup"
-    logic: "IF sha256(rk_staff_device) != device.device_hash THEN auth.device_mismatch, no strike, no hasher call, nothing written"
+    logic: "IF Crypto.tokenHash(rk_staff_device) != device.device_hash (the secret reaches the command through the server action, never the form) THEN auth.device_mismatch, no strike, no hasher call, nothing written"
     violation: "Without it, a staff member who opens the link on their own browser approves the attacker's device (S1 if built, threat T2, F1)"
     source: "Question 4, email.staff.deviceApproval copy ('open this link on that device'), staff.device.body ('Open it on this device')"
   - id: BR5.4
@@ -257,13 +259,13 @@ rules:
     violation: "Unbounded attempts make the endpoint a password-guessing oracle beside the 3 strikes"
     source: "Design decision, 03 §3 RateLimiter keys"
   - id: BR5.9
-    statement: "A right password on the matching device approves the device, uses the token, writes the audit row and the securityEvent in one transaction, and signs the holder in; if that transaction fails, the new session is revoked."
+    statement: "A right password on the matching device approves the device, uses the token, writes the audit row and the securityEvent in one transaction, and signs the holder in as the last step; the session cookie reaches the browser only when the command succeeded."
     category: constraint
     applies_to: "staff.approveDevice"
-    trigger: "BR5.2–BR5.4 passed and the library sign-in accepted the password"
-    logic: "One transaction: staff_devices.approved_at = now, last_seen_at = now; approval.used_at = now; audit staff_device_approved {deviceId}; outbox account.securityEvent {accountId, kind: deviceApproved}; IF it fails THEN revoke the session the library returned and return internal; redirect /<locale>/admin/queue"
-    violation: "An approved device without its audit row, or a session without an approved device, breaks the 'Approve' row"
-    source: "T-103 step 6, Question 2, Question 6, C15"
+    trigger: "BR5.2–BR5.4 passed and PasswordHasher accepted the password"
+    logic: "In the command's transaction: staff_devices.approved_at = now, last_seen_at = now; approval.used_at = now; audit staff_device_approved {deviceId}; outbox account.securityEvent {accountId, kind: deviceApproved}; then AuthGateway.createSession({email, password, purpose: 'approveDevice'}); IF createSession fails THEN err internal and nothing commits (token and device unchanged); IF the commit fails after the session was created THEN the action gets internal and never forwards the cookie, so the session token reaches no browser (ASSUMPTION(T-103), F24); ok THEN the action sets the cookie and redirects /<locale>/admin/queue"
+    violation: "An approved device without its audit row, or a usable session without an approved device, breaks the 'Approve' row"
+    source: "T-103 step 6, Questions 2, 6 and 13, C15, U8 § 10.1"
   - id: BR5.10
     statement: "Approving signs out any other account's session already open in that browser."
     category: policy
@@ -287,7 +289,7 @@ rules:
     category: constraint
     applies_to: "staff.listDevices, TrustedDeviceVM"
     trigger: "/admin/security renders"
-    logic: "requires staffRole; rows of the actor's account where revoked_at IS NULL; current = (device_hash = sha256(request cookie)); TrustedDeviceVM {id, label, firstSeen, lastSeen, approvedAt?, current}"
+    logic: "requires staffRole; rows of the actor's account where revoked_at IS NULL; current = (device_hash = Crypto.tokenHash(request cookie)); TrustedDeviceVM {id, label, firstSeen, lastSeen, approvedAt?, current}"
     violation: "A hash or an account id in the view model breaks 03 §2's view-model rule"
     source: "auth-screens-spec.md §4.3, prototype renderSecurity, view-models/security.ts"
   - id: BR6.2
@@ -321,47 +323,47 @@ rules:
     category: constraint
     applies_to: "account.stepUp, apps/web/src/server/actions/step-up.ts"
     trigger: "The step-up password verifies"
-    logic: "value = base64url(JSON {a, s, u}) + '.' + base64url(HMAC-SHA256(key, payloadBytes)); size under 4 KB; the cookie is not stored server-side"
+    logic: "value = Crypto.signClaims('rk_stepup', {a: accountId, s: sessionId, u: until}) = base64url(JSON {a, s, u}) + '.' + base64url(HMAC-SHA256); the signing runs in adapters/crypto, never in application (FD-093); size under 4 KB; the command hands the value to its server action only; the cookie is not stored server-side"
     violation: "An unsigned, unbound or longer-lived cookie fails the 'Step-up' and 'Cookie flags' rows (threat T8)"
-    source: "T-103 step 8 and threat 4, acceptance rows 'Step-up' and 'Cookie flags'"
+    source: "T-103 step 8 and threat 4, acceptance rows 'Step-up' and 'Cookie flags', Question 11"
   - id: BR7.2
-    statement: "The step-up key is derived from BETTER_AUTH_SECRET with HKDF under its own label and is used for nothing else."
+    statement: "The step-up key is derived from BETTER_AUTH_SECRET with HKDF under its own purpose, inside the Crypto adapter, and is used for nothing else."
     category: constraint
-    applies_to: "packages/application/src/authorization/step-up.ts, web container"
-    trigger: "Process start"
-    logic: "key = HKDF-SHA256(BETTER_AUTH_SECRET, salt 'rogikotha', info 'rk_stepup', 32 bytes); the web tier refuses to start without a valid BETTER_AUTH_SECRET (U8 BR7.2)"
-    violation: "Reusing the raw secret couples two mechanisms; a hard-coded key breaks the construction Security rule"
-    source: "T-103 threat 4 ('BETTER_AUTH_SECRET-derived key'), construction.md Security"
+    applies_to: "packages/adapters/src/crypto, apps/web/src/server/container.ts"
+    trigger: "First use of the purpose rk_stepup"
+    logic: "The adapter derives the per-purpose key with U8's HKDF-SHA256 scheme from BETTER_AUTH_SECRET (purpose 'rk_stepup', 32 bytes), once per process, and never returns it; the web tier refuses to start without a valid BETTER_AUTH_SECRET (U8 BR7.2); application and domain never see key material"
+    violation: "Reusing the raw secret couples two mechanisms; a hard-coded key breaks the construction Security rule; key material in application breaks FD-093"
+    source: "T-103 threat 4 ('BETTER_AUTH_SECRET-derived key'), construction.md Security, U8 § 6.2 (Crypto.hmac per-purpose keys), Question 11"
   - id: BR7.3
     statement: "getActor sets Actor.stepUp only when the signature verifies in constant time, the account and the session match the request, and until is still in the future by the Clock port."
     category: authorization
-    applies_to: "apps/web/src/server/auth.ts getActor, verifyStepUp"
+    applies_to: "apps/web/src/server/auth.ts getActor (passes the cookie value), Crypto.verifyClaims, application/authorization/step-up.ts stepUpFrom"
     trigger: "A request carries rk_stepup"
-    logic: "Split into exactly two base64url parts; timingSafeEqual on the MAC before parsing; IF a = actor.accountId AND s = current session id AND u > now THEN Actor.stepUp = {rechecked_at: u - 300 s} ELSE no stepUp; any error THEN no stepUp"
+    logic: "claims = Crypto.verifyClaims('rk_stepup', value): exactly two base64url parts, at most 256 characters, MAC compared in constant time before parsing, else null; stepUpFrom(claims, {accountId, sessionId, now}): IF a = actor.accountId AND s = current session id (from AuthGateway.getSession) AND u > now THEN Actor.stepUp = {rechecked_at: u - 300 s} ELSE no stepUp; any error THEN no stepUp"
     violation: "Accepting a tampered, foreign, replayed or expired cookie fails the 'Step-up' row (refused at 5:01)"
-    source: "T-103 step 8, acceptance row 'Step-up', threat 4"
+    source: "T-103 step 8, acceptance row 'Step-up', threat 4, Question 11"
   - id: BR7.4
     statement: "requires.stepUp is checked after authenticated, staffRole, capability and before owner checks; a missing or stale step-up returns auth.step_up_required and runs the command's onRefused hook if it has one."
     category: authorization
-    applies_to: "packages/application/src/command.ts defineCommand"
+    applies_to: "U8's packages/application/src/command.ts defineCommand (built by U8, not changed here)"
     trigger: "A command declares requires.stepUp"
-    logic: "authorize order: authenticated → verifiedEmail → notRestricted → staffRole → capability → stepUp → owner; IF actor.stepUp absent THEN onRefused(ctx) if declared, then err auth.step_up_required, nothing else written"
+    logic: "U8's order: authenticated → verifiedEmail → notRestricted → staffRole → capability → stepUp → owner; IF actor.stepUp absent THEN err auth.step_up_required; U8 runs onRefused({actor, input, refusal}) in its own committed transaction for every refusal after authenticated (this one included) when the command declares it; this Unit only fills Actor.stepUp (BR7.3)"
     violation: "Prompting for a password before the capability check tells an unauthorised actor what exists; skipping onRefused breaks T-104's 'every reveal attempt recorded'"
-    source: "01-conventions §3 (onRefused) and §5, T-305 acceptance row 'Original route', T-104 acceptance row 'Reveal always recorded'"
+    source: "01-conventions §3 (onRefused) and §5, U8 BR7.11, T-305 acceptance row 'Original route', T-104 acceptance row 'Reveal always recorded'"
   - id: BR7.5
     statement: "A command that ran under requires.stepUp writes step_up: true into its own audit details."
     category: constraint
-    applies_to: "defineCommand, AuditWriter calls"
+    applies_to: "every command declared with requires.stepUp, its audit detail builder in application/audit/"
     trigger: "A step-up-gated command writes its audit row"
-    logic: "defineCommand passes stepUp: true to the command's audit helper, which adds step_up: true to details"
+    logic: "The command's audit builder (U8's allowlist, ISS-108 closed) adds step_up: true; a registry test lists every command declared with requires.stepUp and asserts its audit row carries it; defineCommand is not changed"
     violation: "Fails auth-screens-spec.md §4.4 ('The audit row for the action carries step_up: true')"
-    source: "auth-screens-spec.md §4.4, prototype auditPreview, F15"
+    source: "auth-screens-spec.md §4.4, prototype auditPreview, F15, U8 BR8.2"
   - id: BR7.6
     statement: "Every step-up attempt is audited with its purpose: step_up on success, step_up_failed on a wrong password."
     category: policy
     applies_to: "account.stepUp"
     trigger: "account.stepUp finishes"
-    logic: "input {password, purpose} with purpose in STEP_UP_PURPOSES = [config.apply, config.rollback, identity.reveal, evidence.original, moderation.enforce, staff.setRole, retention.bulk, account.delete]; success THEN audit step_up {purpose}; wrong password THEN record a failure and audit step_up_failed {purpose}, return auth.invalid_credentials"
+    logic: "input {password, purpose} with purpose in STEP_UP_PURPOSES = [config.apply, config.rollback, identity.reveal, evidence.original, moderation.enforce, staff.setRole, retention.bulk, account.delete]; success THEN audit step_up {purpose}; wrong password THEN record a failure on the limiter and audit step_up_failed {purpose} in the command's transaction, and return auth.invalid_credentials with recorded: true so the row commits (Question 12)"
     violation: "A failed recheck that is not recorded fails AC11.1.2"
     source: "AC11.1.2, FR102, T-103 step 8 (details {purpose}), Question 7"
   - id: BR7.7
@@ -413,17 +415,17 @@ rules:
     category: constraint
     applies_to: "packages/application/src/modules/notification/internal/queue-email.ts, RecipientDirectory"
     trigger: "BR5.1 queues the email"
-    logic: "device_approval joins verification, reset and security as always-allowed categories; RecipientDirectory encrypts the address with the mail-only recipient key the owner chose for U8 R1; the mail.send payload is {deliveryId}"
-    violation: "An address in a payload or a key the worker should not hold breaks FD-071, FD-041 and the owner's R1 answer"
-    source: "C2 (U10 device_approval), FD-071, OWNER-REVIEW-QUEUE.md U8 R1 answer"
+    logic: "device_approval joins verification, reset and security as always-allowed categories; U8's RecipientDirectory encrypts the address with mailCrypto (MAIL_RECIPIENT_KEY, the mail-only key FD T-101 proposes); the mail.send payload is {deliveryId}; staff.signIn is declared sendsMail so the queue is ensured before its transaction (U8 § 10.1); the worker renders the email from the message files (the worker-reads-message-files FD T-101 proposes)"
+    violation: "An address in a payload or a key the worker should not hold breaks FD-071, FD-041 and the mail-only key FD"
+    source: "C2 (U10 device_approval), FD-071, T-101's proposed mail-only key FD and worker-reads-message-files FD (referred to by content; numbered when appended), OWNER-REVIEW-QUEUE.md U8 R1 answer"
   - id: BR9.2
     statement: "email.staff.deviceApproval carries exactly one param, an absolute link under APP_URL, on the queue side and the worker side."
     category: validation
-    applies_to: "queue-email.ts allowlist, apps/worker/src/handlers/mail-send.ts"
+    applies_to: "the one params allowlist in packages/application/src/modules/notification/ (read by queueEmail and by sendEmailDelivery, which the worker takes from @rogikotha/application/worker)"
     trigger: "The approval email is queued or rendered"
-    logic: "Allowlist entry email.staff.deviceApproval: [link]; any other key refused (InternalError when queueing, failed params_invalid when sending)"
-    violation: "Content in params fails AC10.1.4's content-free rule"
-    source: "U8 BR6.2, AC10.1.4"
+    logic: "Allowlist entry email.staff.deviceApproval: [link]; any other key refused (err internal when queueing, failed params_invalid when sending); the allowlist module imports nothing from modules/account, so U8's worker import-graph test stays green"
+    violation: "Content in params fails AC10.1.4's content-free rule; an allowlist that pulls account code into the worker breaks AD-6"
+    source: "U8 BR6.2 and § 10.6, AC10.1.4, FD-093 (2)"
   - id: BR9.3
     statement: "An approved device is announced by appending account.securityEvent {accountId, kind: deviceApproved}; this Unit writes no notifications or staff_notifications rows."
     category: constraint
@@ -433,21 +435,21 @@ rules:
     violation: "Writing Notification's tables here breaks FD-065's ownership and duplicates U34's notice"
     source: "Question 6, C15 (deviceApproved), FD-065, F12"
   - id: BR9.4
-    statement: "The relay map gains no entry: account.securityEvent already routes to notification.deliver."
+    statement: "The worker changes nothing: account.securityEvent already routes to notification.deliver, and no worker file is touched."
     category: constraint
-    applies_to: "apps/worker/src/handlers/outbox-relay.ts"
+    applies_to: "apps/worker/**"
     trigger: "Code Generation"
-    logic: "No change to RELAY; the worker never imports Better Auth or any staff command"
+    logic: "No change to RELAY (after U8, no account event routes to mail.send); no worker file changes; the worker never imports Better Auth, modules/account or any staff command (FD-093 lint, U8's import-graph test of @rogikotha/application/worker)"
     violation: "A new route or import breaks C15 or AD-6"
-    source: "C15, U8 BR6.4, AD-6"
+    source: "C15, U8 BR6.4 and § 10.6, AD-6, FD-093 (2)"
 
   # Group 10 — Privacy, audit, logging, i18n, UI
   - id: BR10.1
-    statement: "No device secret, approval token, step-up cookie value, password or email appears in a log line, audit detail, outbox payload, job payload or result."
+    statement: "No device secret, approval token, step-up cookie value, password or email appears in a log line, audit detail, outbox payload, job payload or anything returned to the browser."
     category: constraint
     applies_to: "Every T-103 command, action and page"
     trigger: "Any log, audit, outbox or result write"
-    logic: "Logs carry event, correlationId, opaque ids (accountId, deviceId, approvalId), enums and counts; an integration test captures logs over the full cycle and finds none of the forbidden values"
+    logic: "Logs carry event, correlationId, opaque ids (accountId, deviceId, approvalId), enums and counts; a new device secret, the signed step-up value and the session cookie headers travel only from the command to its server action, which sets the cookie and strips them from the value it returns; an integration test captures logs and action results over the full cycle and finds none of the forbidden values"
     violation: "A secret in a log or audit row lets anyone with read access impersonate a staff device (S1)"
     source: "01-conventions §5 and §11, T-103 hard-rule checklist"
   - id: BR10.2
@@ -456,8 +458,8 @@ rules:
     applies_to: "AuditWriter calls in modules/account"
     trigger: "Any T-103 audit row"
     logic: "staff_signed_in {deviceId}; staff_device_requested {deviceId}; staff_device_approval_failed {deviceId, attempt}; staff_device_approved {deviceId}; staff_device_revoked {deviceId, current}; step_up {purpose}; step_up_failed {purpose}; staff_role_changed {from, to, step_up}; actor account:<id> (anonymous for the approval failures, account:<id of the token's account> as target stream)"
-    violation: "Fails the hard-rule checklist 'every device/step-up event audited with allowlisted details' and ISS-108's intent"
-    source: "01-conventions §5, T-103 hard-rule checklist, ISS-108"
+    violation: "Fails the hard-rule checklist 'every device/step-up event audited with allowlisted details'; an action without a builder is refused by U8's recursive allowlist check"
+    source: "01-conventions §5, T-103 hard-rule checklist, ISS-108 (closed by U8 T-101; this Unit adds the eight detail builders)"
   - id: BR10.3
     statement: "Every staff screen is noindex, shows no patient chrome and loads admin.css only."
     category: constraint
@@ -517,11 +519,11 @@ rules:
     violation: "Breaks the cumulative smoke rule"
     source: "team.md Testing Posture"
   - id: BR11.3
-    statement: "pnpm check, pnpm smoke and pnpm test:int exit 0 with the compose stack running, and the UI checks are clean."
+    statement: "pnpm check, pnpm smoke and pnpm test:int exit 0 with the compose stack running, the UI checks are clean, and CI is green on the pushed Bolt head before merge."
     category: validation
     applies_to: "repository"
     trigger: "End of Code Generation and Build and Test"
-    logic: "All exit 0; npx impeccable detect apps/web/src --no-advisory and pnpm contrast clean; every T-103 acceptance row executed and recorded as expected against observed"
+    logic: "pnpm check is T-010's nine steps plus U45's contrast:patient and check:motion (eleven, fail fast: typecheck, lint, lint:boundaries, format:check, check:identity, test:coverage, i18n:check, contrast, contrast:patient, check:motion, build); pnpm test:int covers U8's database, web-int and worker-int projects; npx impeccable detect apps/web/src --no-advisory and pnpm contrast clean; .github/workflows/check.yml green on the Bolt head; every T-103 acceptance row executed and recorded as expected against observed"
     violation: "A red check blocks the merge"
     source: "team.md Way of Working, project.md Mandated, 01-conventions §7.8"
   - id: BR11.4
@@ -535,9 +537,9 @@ rules:
   - id: BR11.5
     statement: "The packages that gain code keep the 80 % line-coverage floor."
     category: validation
-    applies_to: "packages/application, packages/contracts, packages/database"
+    applies_to: "packages/application, packages/adapters, packages/contracts, packages/database, packages/test-support, apps/web"
     trigger: "Build and Test"
-    logic: "Measured with @vitest/coverage-v8 from T-010's thresholds; never lowered to pass"
+    logic: "Measured by pnpm test:coverage with T-010's thresholds (80% lines per package, every source file counted, an untested file at 0%); every new source file carries its tests; the web integration tests count through U8's web-int project; never lowered to pass (D10)"
     violation: "Below the floor blocks the merge (D10)"
     source: "team.md Testing Posture"
 
@@ -547,7 +549,7 @@ rules:
     category: policy
     applies_to: "Owned paths"
     trigger: "Code Generation"
-    logic: "The additions in functional-spec.md § 15 (contracts, command.ts, queue-email.ts, schema and migration, admin route groups, container, test-support fake, reference docs)"
+    logic: "The additions in functional-spec.md § 15 (contracts, U8's ports, audit builders and resolveActor, the notification allowlist, the crypto adapter, schema and migration, the account stub file and the T-010 test pins, admin route groups, the web server files, test-support fakes, reference docs); command.ts is not among them"
     violation: "An unrecorded file fails the reviewer's diff review (G4)"
     source: "team.md Way of Working"
   - id: BR12.2
@@ -575,13 +577,29 @@ rules:
     violation: "Breaks the project's Mandated dependency rule"
     source: "AGENTS.md, project.md Mandated"
   - id: BR12.5
-    statement: "Code Generation does not start before the owner's approval of the D-001 auth-screen review is recorded in this Unit's record."
+    statement: "The owner's approval of the staff sign-in and device-approval screens is copied into this Unit's record before the Bolt branch is created, and the built screens are the prototype screens it approved."
     category: policy
-    applies_to: "U10 Code Generation"
-    trigger: "Before Code Generation"
-    logic: "The record holds the approval date and that it covers en, bn, both themes and 360 px; ELSE the Unit waits (R1)"
-    violation: "Fails the FD-053 'D-001 gate recorded' row"
-    source: "FD-053, T-103 acceptance row"
+    applies_to: "U10 Code Generation and every later stage that changes code"
+    trigger: "Before the Bolt branch is created"
+    logic: "Precondition met: the owner approved the screens as they are in ui-design-prototype/admin/ (staff console look, Chart Tray, FD-091) on 2026-10-29; the record gets the owner's words, the date and the queue row; frontend-components.md follows those screens, and the copy it adds for states the prototype does not show (functional-spec.md § 8) changes no layout"
+    violation: "Fails the FD-053 'D-001 gate recorded' row; screens that differ from the approved prototype screens fail BR10.6"
+    source: "FD-053, T-103 acceptance row, OWNER-REVIEW-QUEUE.md (T-103 R1: review later, not built until approved, 2026-10-28; the staff screens approved as they are in the prototype, 2026-10-29)"
+  - id: BR12.6
+    statement: "Every file this Unit creates or changes sits where the T-010 boundary matrix allows its imports, and pnpm lint and pnpm lint:boundaries prove it with no new suppression."
+    category: constraint
+    applies_to: "eslint.boundaries.mjs, 01-conventions.md §2, every file in functional-spec.md § 6.5"
+    trigger: "Code Generation"
+    logic: "application imports only domain and contracts, and no external package or Node built-in (no node:crypto, Buffer, btoa or TextEncoder; crypto through the Crypto port, Question 11); adapters are built only in apps/web/src/server/container.ts; app/ reads the database only through server/; components import contracts, i18n, web-shared and server actions only, and receive data by props; better-auth stays under server/better-auth/; the worker changes nothing; the boundary fixture needs no new case"
+    violation: "A red pnpm lint is S1 (F18)"
+    source: "FD-093, 01-conventions.md §2 as built by T-010, U8 BR7.12"
+  - id: BR12.7
+    statement: "The tests T-010 pinned are updated in the same commit as the change they pin."
+    category: constraint
+    applies_to: "packages/database/src/repositories/not-implemented.test.ts, migrations.int.test.ts, validator-probes.int.test.ts, packages/test-support/src/fakes/repositories-superset.test.ts"
+    trigger: "Code Generation"
+    logic: "The four T-103 stubs leave PgAccountRepository and its entry in not-implemented.test.ts (ISS-294); PgStaffRepository is never in STUB_REPOSITORIES; both exact migration counts go up by one with a comment (ISS-242 precedent); the superset test checks the account fake against the smaller stub and the staff fake against the new port; no assertion is removed or skipped"
+    violation: "A stale pin turns pnpm check red (S1), or a skipped assertion breaks the cumulative-suite rule"
+    source: "ISS-294, ISS-242, ISS-223, team.md Testing Posture"
 ```
 
 ## Rules summary
@@ -617,7 +635,7 @@ rules:
 | BR5.6 | 3 approval emails per hour per account | policy |
 | BR5.7 | Pending screen without identity data | constraint |
 | BR5.8 | 10 approval attempts per 15 min per network | policy |
-| BR5.9 | Approve, audit, event in one transaction; compensation | constraint |
+| BR5.9 | Approve, audit, event in one transaction; session last; cookie only on success | constraint |
 | BR5.10 | One account per browser after approval | policy |
 | BR5.11 | No-referrer, no token in logs | constraint |
 | BR6.1 | Device list without hashes | constraint |
@@ -655,4 +673,6 @@ rules:
 | BR12.2 | Reference documents corrected | policy |
 | BR12.3 | ISS rows closed and added | policy |
 | BR12.4 | Dependency check | policy |
-| BR12.5 | D-001 gate before Code Generation | policy |
+| BR12.5 | The owner's staff-screen approval (2026-10-29) recorded before the Bolt | policy |
+| BR12.6 | Placement under the T-010 boundaries | constraint |
+| BR12.7 | T-010's pins updated with the change | constraint |

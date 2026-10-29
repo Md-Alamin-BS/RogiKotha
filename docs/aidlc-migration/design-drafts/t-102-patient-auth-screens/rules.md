@@ -4,9 +4,11 @@ Draft written ahead of the stage. The lead finalises it when the workflow reache
 
 Source of truth for the Unit's decision logic. Built from `unit-of-work.md` (U9), `unit-of-work-story-map.md` (US3.1, US3.2), `requirements.md` (FR1–FR9, FR91, FR95, NFR4, NFR6, NFR7, NFR13), `stories.md` (AC3.1.1–AC3.1.6, AC3.2.1–AC3.2.5; AC2.3.1–AC2.3.4, AC2.4.3–AC2.4.5 and AC12.1.6 for reference), T-102 with its FD-091, FD-053 and FD-057 amendments, `auth-screens-spec.md` §1–§3, §5, §6, the D-001 prototype, the T-101 draft (actions, Actor, codes) and the T-011 draft (tokens, motion, static set), FD-024, FD-042, FD-057, FD-058, FD-059, FD-063, FD-088, FD-091 and the hard rules in `project.md`. The entities these rules govern are in `entities.md`, the components in `frontend-components.md`, and the workflows and state transitions in `functional-spec.md`.
 
-Rules that depend on a question name it in `source`. Questions 1–3 and 5–13 are answered A on the owner's standing instruction of 2026-10-27, awaiting confirmation. **Question 4 is open for the owner**; rules that depend on it (BR5.7, BR9.2, BR13.2) follow option C until it is answered. `functional-spec.md` § 10 lists what changes under every other option.
+Refreshed 2026-10-29: Question 4 is answered B by the owner (masked own email, FD-095), so BR5.2, BR5.7, BR9.2 and BR13.2 follow B. Questions 14 and 15 were decided by the agent under the owner's no-questions instruction of 2026-10-29. The T-010 boundaries and tests (FD-093, `pages.test.tsx`, `layouts.test.tsx`, coverage, CI) and the refreshed T-011 and T-101 drafts are applied. Changed rules: BR1.6, BR1.10, BR1.11, BR3.8, BR4.1, BR5.1, BR5.2, BR5.4, BR5.5, BR5.7, BR6.1, BR8.3, BR8.5, BR8.7, BR9.2, BR9.3, BR11.1, BR11.5, BR12.1, BR13.2, BR14.1, BR14.2 and BR14.3. New rules: BR1.14, BR4.8, BR14.8 and BR14.9.
 
-Terms: "the wrapper" is the form-facing server action this Unit adds in `apps/web/src/server/actions/account.ts` around T-101's action (`FormData → input → T-101 action → FormState`). "Locale-free path" is a path without the `/en` or `/bn` prefix, as `@/i18n/routing` `usePathname()` returns it.
+Rules that depend on a question name it in `source`. Questions 1–3 and 5–13 are answered A on the owner's standing instruction of 2026-10-27, awaiting confirmation; Question 4 is answered B by the owner (2026-10-28); Questions 14 and 15 are answered A, decided by the agent under the owner's no-questions instruction of 2026-10-29. `functional-spec.md` § 10 lists what changes under every other option.
+
+Terms: "the wrapper" is the form-facing server action this Unit adds in `apps/web/src/server/actions/account.ts` around T-101's action (`FormData → input → T-101 action → FormState`). "Locale-free path" is a path without the `/en` or `/bn` prefix, as `@/i18n/routing` `usePathname()` returns it. "Announced" means spoken once through the existing `useAnnounce()` live region (CR-004 BR4.3), never through a second live region.
 
 ```yaml
 rules:
@@ -56,7 +58,7 @@ rules:
     category: constraint
     applies_to: "All auth forms"
     trigger: "Rendering"
-    logic: "Each route renders one form with these ids (the security page's change-password form uses the three password ids; nothing else on that page reuses them); summary links point at these ids"
+    logic: "Each route renders one form with these ids (the security page's change-password form uses the three password ids; nothing else on that page reuses them; the pending banner's own resend has no field); summary links point at these ids"
     violation: "A duplicated id breaks the summary links and label association"
     source: "T-102 step 1 (prototype ids), auth-screens-spec.md §2"
   - id: BR1.7
@@ -80,25 +82,25 @@ rules:
     category: constraint
     applies_to: "AuthHead (h1 tabIndex=-1), ErrorSummary"
     trigger: "Mount after navigation; render of an error state"
-    logic: "IF the state carries errors THEN focus the summary ELSE IF the page was reached by client navigation (not the first document load) THEN focus h1 ELSE do nothing (the skip link stays the first stop)"
+    logic: "IF the state carries errors THEN focus the summary ELSE IF the page was reached by client navigation (not the first document load) THEN focus its arrival callout when it has one (BR4.1), else its h1 ELSE do nothing (the skip link stays the first stop)"
     violation: "Focus left on a link that no longer exists, or stolen on first load, fails the 'Focus' acceptance row"
     source: "auth-screens-spec.md §2, T-102 acceptance 'Focus'"
   - id: BR1.10
-    statement: "When a page renders with errors, its document title is prefixed with 'Error:' in the active language."
+    statement: "When a form renders with errors, the document title is prefixed with 'Error:' in the active language; generateMetadata always returns the plain title."
     category: constraint
-    applies_to: "generateMetadata of the five auth pages; client title update after an action"
+    applies_to: "ErrorSummary (renders the title); generateMetadata of the five auth pages (plain title)"
     trigger: "FormState.status is 'error'"
-    logic: "title = t('auth.errorTitle', {title: documentTitle(view)}); restored to the plain title on the next success or navigation"
-    violation: "A screen-reader user loading the re-rendered page without JavaScript hears nothing about the failure"
-    source: "AC2.3.4 (announced to screen readers), GOV.UK error-message pattern"
+    logic: "generateMetadata returns documentTitle(view) and takes no argument it needs (pages.test.tsx calls it with none and asserts the plain title); ErrorSummary renders <title>{t('auth.errorTitle', {title: documentTitle(view)})}</title> while the state has errors, which React 19 hoists into the head on the server render (no JavaScript) and on the client; the plain title returns when the summary unmounts; IF the WF0 spike shows the metadata title winning THEN the summary sets document.title in an effect only, and the no-JavaScript gap is an ISS row"
+    violation: "A screen-reader user loading the re-rendered page without JavaScript hears nothing about the failure; a prefix in generateMetadata cannot see the action's state and turns pages.test.tsx red"
+    source: "AC2.3.4 (announced to screen readers), GOV.UK error-message pattern, apps/web/src/app/pages.test.tsx (T-010), functional-spec.md D15"
   - id: BR1.11
     statement: "Every auth page and every /me/* page is noindex and keeps the shell's demo marker, disclaimer and emergency link."
     category: constraint
     applies_to: "/register, /sign-in, /verify-email, /reset-password, /me/security"
     trigger: "Rendering"
-    logic: "generateMetadata spreads noindex(); the patient layout's DemoMarker and Colophon (with disclaimer.short) render unchanged"
-    violation: "An indexable auth page fails the 'noindex' row; a missing disclaimer breaks a hard rule"
-    source: "01-conventions.md §8, project.md Mandated (disclaimer, demo marker), T-102 hard-rule checklist"
+    logic: "generateMetadata spreads noindex() so robots equals {index: false} exactly (pages.test.tsx); /verify-email and /reset-password also set referrer 'no-referrer' always, so their metadata reads no searchParams (BR5.6); /write keeps no robots field (indexable, Q14); the patient layout's DemoMarker and Colophon (with disclaimer.short) render unchanged"
+    violation: "An indexable auth page fails the 'noindex' row; a robots value other than {index: false} fails the route-table test; a missing disclaimer breaks a hard rule"
+    source: "01-conventions.md §8, project.md Mandated (disclaimer, demo marker), T-102 hard-rule checklist, apps/web/src/app/pages.test.tsx (T-010)"
   - id: BR1.12
     statement: "An error code is shown through its message key, never as raw text, and an unexpected error gets the common message."
     category: constraint
@@ -112,9 +114,17 @@ rules:
     category: constraint
     applies_to: "The five auth pages"
     trigger: "Rendering"
-    logic: "<ViewShell view=… title=''> then <AuthHead kicker=auth.kicker title=… lede=…>, as Policy and Emergency do"
-    violation: "Two h1 elements, or none, is an axe failure (ISS-121 precedent)"
-    source: "auth-screens-spec.md §2 layout, ViewShell ASSUMPTION(T-207a), AC12.1.6"
+    logic: "<ViewShell view=… title=''> then <AuthHead kicker=auth.kicker title=titleForView(view, t) lede=…>, so the one h1 reads auth.register.title, auth.signIn.title, auth.verify.title, auth.reset.title or auth.security.title (the security page's signed-out panel too), which the route-table test asserts for these rows"
+    violation: "Two h1 elements, or none, is an axe failure (ISS-121 precedent); an h1 with other text fails pages.test.tsx"
+    source: "auth-screens-spec.md §2 layout, ViewShell ASSUMPTION(T-207a), AC12.1.6, apps/web/src/app/pages.test.tsx (T-010)"
+  - id: BR1.14
+    statement: "Every file sits where the T-010 boundaries allow: components import server actions and nothing else under server/; a 'use server' module exports only async functions; the synchronous helpers live in apps/web/src/lib/; the viewer is built in an app/ module."
+    category: constraint
+    applies_to: "server/actions/account.ts, lib/{next-path,auth-form-state,initials,cookies}.ts, app/[locale]/(patient)/viewer.ts, every component in the owned paths"
+    trigger: "Code Generation and pnpm lint"
+    logic: "server/actions/account.ts ('use server', element web-actions): the ten wrappers as async exports, plus non-exported helpers; type exports are allowed. lib/next-path.ts: sanitiseNext. lib/auth-form-state.ts: the AuthFormState type, INITIAL_AUTH_FORM_STATE and toFormState. lib/initials.ts: initials(). lib/cookies.ts: PENDING_EMAIL_COOKIE and readPendingEmail(). These lib files are element web-shared, which imports contracts and i18n only and carries the component limits. app/[locale]/(patient)/viewer.ts (element web): loadViewer() and loadOwnAccount(), cache()-wrapped, which may import server/auth.ts and the actions. Components receive the viewer, the view models and the cookie value as props and never import server/auth.ts, container.ts, database, adapters or test-support. Builders sit in *-test-support.ts files beside the tests"
+    violation: "A non-async export from a 'use server' file fails next build; a component importing server/auth.ts fails pnpm lint (FD-093 (1)); an import of @rogikotha/test-support in apps/web fails lint (FD-040)"
+    source: "FD-093 (1), (5), (6), eslint.boundaries.mjs, Next.js server-action module rule, functional-spec.md D13"
 
   # 2. Password field
   - id: BR2.1
@@ -212,19 +222,19 @@ rules:
     category: validation
     applies_to: "registerFormAction, T-101 BR1.1 fieldErrors"
     trigger: "T-101 returns a field error"
-    logic: "The wrapper renders the messageKey T-101 sends; T-101's validation field errors name exactly these keys (ENT-004); the three new keys are added to both dictionaries by this Unit"
+    logic: "The wrapper renders the messageKey T-101 sends; T-101's validation field errors name exactly these keys (ENT-004, T-101 BR1.1); T-101 adds errors.auth.emailInvalid, passwordTooLong, passwordEqualsEmail and displayNameRequired to both dictionaries with this Unit's proposed copy, so this Unit adds none of them and checks they are present (WF0 step 3)"
     violation: "A field error without a key falls back to native validation (ISS-020) or to a generic message"
-    source: "AC3.1.3, ISS-020, T-101 BR1.1 and Q7"
+    source: "AC3.1.3, ISS-020, T-101 BR1.1 and Q7, T-101 functional-design-questions.md (field-error keys)"
 
   # 4. Sign-in
   - id: BR4.1
-    statement: "The sign-in page has email and password, the links 'Forgot your password?' and 'New here? Create an account', and shows one status callout when it arrives from a reset or a sign-out everywhere."
+    statement: "The sign-in page has email and password, the links 'Forgot your password?' and 'New here? Create an account', and shows one confirmation callout when it arrives from a reset or a sign-out everywhere. Confirmation callouts on every auth screen are plain callouts: one that greets an arrival takes focus, one that replaces a form after an action is announced, and none carries a live-region role."
     category: constraint
-    applies_to: "SignInForm, /sign-in page"
-    trigger: "Rendering /sign-in"
-    logic: "IF searchParams.reset = done THEN callout role=status auth.reset.done (with the confirmation tick, BR11.5); IF searchParams.signedOut = all THEN callout role=status auth.security.signedOutAll; links to /reset-password and /register (register carries next)"
-    violation: "A missing confirmation leaves the person unsure the reset worked"
-    source: "auth-screens-spec.md §3.3 and §3.4, T-102 step 5, Q7 (A)"
+    applies_to: "SignInForm, /sign-in page, StatusCallout everywhere (reset done, signed out everywhere, welcome, resent, reset sent, password changed)"
+    trigger: "Rendering /sign-in; a confirmation renders"
+    logic: "IF searchParams.reset = done THEN StatusCallout auth.reset.done (with the confirmation tick, BR11.5); IF searchParams.signedOut = all THEN StatusCallout auth.security.signedOutAll; links to /reset-password and /register (register carries next). StatusCallout = div.callout without role; arrival mode (reset done, signed out everywhere, welcome on /me): tabIndex=-1 and focused on mount instead of the h1 (BR1.9); in-place mode (resent, reset sent, password changed, the sign-out on a public page): useAnnounce()(text) once when the done state appears; without JavaScript the re-rendered page shows the callout as the first content after the heading"
+    violation: "A missing confirmation leaves the person unsure the reset worked; role=status adds a second live region beside CR-004's (T-011 BR6.4)"
+    source: "auth-screens-spec.md §3.3 and §3.4, T-102 step 5, Q7 (A), CR-004 BR4.3, T-011 BR6.4 and WF6, functional-spec.md D14"
   - id: BR4.2
     statement: "Wrong email or wrong password gets one generic message, shown in the summary and under the password field; the email stays filled."
     category: policy
@@ -273,24 +283,32 @@ rules:
     logic: "The wrappers add no branch on account existence; they render what T-101 returns; delays and limits come from T-101 unchanged"
     violation: "Enumeration through the UI layer (S1)"
     source: "FD-013, AC3.1.5, AC3.2.1, T-101 BR3.11"
+  - id: BR4.8
+    statement: "When the request's Actor carries a refusal (a session of an account that was suspended or banned after it signed in), /sign-in shows the suspended message above the form; nothing else changes."
+    category: policy
+    applies_to: "/sign-in page"
+    trigger: "getActor() returns an anonymous Actor with refusal set"
+    logic: "IF actor.kind = anonymous AND actor.refusal is set THEN render div.callout.warn errors.auth.accountSuspended (the Q6 A copy, no appeal route, no link) above SignInForm; the masthead shows the signed-out entry; no account detail, name or date is shown; the form works as usual"
+    violation: "A person whose session silently ended does not know why; naming an appeal route breaks FD-088"
+    source: "T-101 entities Actor.refusal and BR4.3, FD-088, functional-design-questions.md Q15 (A), functional-spec.md D16"
 
   # 5. Verify email
   - id: BR5.1
-    statement: "Without a token, /verify-email shows the pending panel: the address (from the pending cookie) or the no-address text, the 24-hour note, the Resend form and, outside production, a link to the local inbox."
+    statement: "Without a token, /verify-email shows the pending panel: the typed address (from the pending cookie, anonymous visitors only) or the no-address text, the 24-hour note, the Resend form and, outside production, a link to the local inbox."
     category: constraint
     applies_to: "VerifyEmail (pending state)"
     trigger: "No token in the URL"
-    logic: "body = rk.pending ? auth.verify.body {email in b} : auth.verify.bodyNoEmail; callout auth.verify.expires; ResendForm; IF process.env.APP_MODE !== 'production' THEN a[href=http://localhost:8025]{auth.verify.devInbox} rendered on the server"
-    violation: "A dev inbox link in production, or an address taken from the URL"
-    source: "auth-screens-spec.md §3.2, T-102 step 3, Q3 (A), T-102 test 'VerifyEmail shows the dev inbox link only when APP_MODE !== production'"
+    logic: "body = (viewer anonymous AND readPendingEmail()) ? auth.verify.body {email in b} : auth.verify.bodyNoEmail; a signed-in holder's masked address is not shown here (FD-095 allows it only in SecurityVM and the /me banner); callout auth.verify.expires; ResendForm in the mode of BR5.2; IF process.env.APP_MODE !== 'production' THEN a[href=http://localhost:8025]{auth.verify.devInbox} rendered on the server"
+    violation: "A dev inbox link in production, an address taken from the URL, or a masked address outside the two FD-095 places"
+    source: "auth-screens-spec.md §3.2, T-102 step 3, Q3 (A), Q4 (B, owner), FD-095, T-102 test 'VerifyEmail shows the dev inbox link only when APP_MODE !== production'"
   - id: BR5.2
-    statement: "Resend always answers 'A new link is on its way' or the rate-limit message, never anything about the account; when the address is unknown to the page, the form shows an email field."
+    statement: "Resend always answers 'A new link is on its way' or the rate-limit message, never anything about the account; an anonymous visitor resends to the cookie's or a typed address, a signed-in holder to the account's own address without typing it."
     category: policy
-    applies_to: "ResendForm, resendVerificationFormAction"
+    applies_to: "ResendForm, resendVerificationFormAction, resendOwnVerificationFormAction"
     trigger: "Submit"
-    logic: "IF rk.pending (or Q4 ownEmail) is known THEN hidden email input ELSE visible f-email input; ok -> p role=status auth.verify.resent; rate limited -> BR4.6; the pending cookie's lifetime is renewed"
-    violation: "A different answer for an unknown or already-confirmed address is enumeration"
-    source: "auth-screens-spec.md §3.2, AC3.1.4 (rate-limited resend), T-101 WF3"
+    logic: "mode pending (anonymous, rk.pending known): hidden email input, resendVerificationFormAction; mode typed (anonymous, no cookie): visible f-email input, same wrapper; mode own (account Actor): no address field and no hidden address, resendOwnVerificationFormAction -> account.resendOwnVerification {} (T-101 WF15, 3 per hour per account); ok -> the auth.verify.resent callout, announced (BR4.1); rate limited -> BR4.6; the pending cookie's lifetime is renewed in the two anonymous modes only"
+    violation: "A different answer for an unknown or already-confirmed address is enumeration; posting the masked address to the anonymous resend would get the neutral ok and send nothing (T-101 F24, S2)"
+    source: "auth-screens-spec.md §3.2, AC3.1.4 (rate-limited resend), T-101 WF3, WF15 and BR2.7, Q4 (B, owner), FD-095"
   - id: BR5.3
     statement: "With a token, /verify-email shows a confirm panel with one button; nothing is confirmed by opening the link."
     category: constraint
@@ -304,7 +322,7 @@ rules:
     category: policy
     applies_to: "verifyEmailFormAction"
     trigger: "Submit of the confirm form"
-    logic: "ok -> delete rk.pending; redirect /<locale>/me?welcome=1 (T-101 sets the session); auth.token_expired or auth.token_invalid -> state error with auth.verify.expired and the pending panel's ResendForm"
+    logic: "ok -> delete rk.pending; redirect /<locale>/me?welcome=1 (T-101's verify action sets the session cookie); auth.token_expired or auth.token_invalid -> state error with auth.verify.expired and a ResendForm in the mode BR5.2 picks for the viewer"
     violation: "A failed confirmation with no way to ask for a new link fails AC3.1.4"
     source: "AC3.1.4, auth-screens-spec.md §3.2, T-101 WF2"
   - id: BR5.5
@@ -312,7 +330,7 @@ rules:
     category: validation
     applies_to: "VerifyWelcome on /me"
     trigger: "Rendering /me"
-    logic: "IF searchParams.welcome = '1' AND actor.kind = account AND actor.emailVerified THEN callout role=status auth.verify.done with the confirmation tick ELSE nothing"
+    logic: "IF searchParams.welcome = '1' AND actor.kind = account AND actor.emailVerified THEN StatusCallout auth.verify.done in arrival mode (focused, BR4.1) with the confirmation tick ELSE nothing"
     violation: "Typing ?welcome=1 would show a false confirmation (finding F10)"
     source: "auth-screens-spec.md §3.2, design decision"
   - id: BR5.6
@@ -324,13 +342,13 @@ rules:
     violation: "A token leaked through Referer or left in history and screenshots"
     source: "Design decision; 01-conventions.md §11 (no secrets exposed)"
   - id: BR5.7
-    statement: "A signed-in, unverified holder sees the pending banner on /me and /write; until Question 4 is answered it shows no address."
+    statement: "A signed-in, unverified holder sees the pending banner on /me and /write; on /me it shows the holder's own address masked, on /write no address, and in both a Resend button that needs no address."
     category: constraint
     applies_to: "PendingVerificationBanner"
     trigger: "actor.kind = account AND NOT actor.emailVerified"
-    logic: "callout.warn with auth.verify.bodyNoEmail (Q4 C; with Q4 A: auth.verify.body {email}) and the Resend form (email field shown, BR5.2); static, never animated"
-    violation: "An email in a view model before Q4 is decided breaks 03 §2"
-    source: "auth-screens-spec.md §3.2 and §3.7, functional-design-questions.md Q4 (open; C applies)"
+    logic: "/me: PendingBannerVM.ownEmailMasked = loadOwnAccount().emailMasked; callout.warn with auth.verify.body {email: ownEmailMasked} (plain text, no b, never a link). /write: ownEmailMasked absent; auth.verify.bodyNoEmail (Q14 A: /write is indexable and FD-095 allows the mask only on noindex pages). Both: ResendForm in own mode (BR5.2); static, never animated (BR11.3); IF loadOwnAccount fails THEN the /me banner falls back to the /write form"
+    violation: "A full address, or a masked address on an indexable page, breaks 03 §2 as amended by FD-095 (S1, private data); a banner whose Resend needs a typed address cannot use the mask it shows"
+    source: "auth-screens-spec.md §3.2 and §3.7, functional-design-questions.md Q4 (B, owner, 2026-10-28) and Q14 (A), FD-095, T-101 BR2.7 and BR4.10"
 
   # 6. Reset password
   - id: BR6.1
@@ -338,7 +356,7 @@ rules:
     category: policy
     applies_to: "ResetRequestForm"
     trigger: "Submit"
-    logic: "ok -> replace the form with callout role=status auth.reset.sent; rate limited -> BR4.6 with the form kept; no other branch"
+    logic: "ok -> replace the form with StatusCallout auth.reset.sent, announced (BR4.1); rate limited -> BR4.6 with the form kept; no other branch"
     violation: "A different panel for an unknown address fails AC3.2.1"
     source: "AC3.2.1, auth-screens-spec.md §3.4, T-101 WF7"
   - id: BR6.2
@@ -406,7 +424,7 @@ rules:
     category: constraint
     applies_to: "AccountEntry, AccountMenu"
     trigger: "viewer.kind = account"
-    logic: "button#account.ctl.account aria-haspopup=dialog aria-expanded data-verified; Sheet title = viewer.displayName; ul of Links: /verify-email auth.verifyPending, /me nav.mine, /saved mine.bookmarks, /notifications mine.notifications, /me/security auth.security.nav, /admin nav.admin; SignOutForm button auth.signOut. A list of links, not role=menu"
+    logic: "button#account.ctl.account aria-haspopup=dialog aria-expanded data-verified; Sheet title = viewer.displayName (auth.kicker when absent, BR8.5); ul of Links, each with data-press (T-011 BR6.11): /verify-email auth.verifyPending, /me nav.mine, /saved mine.bookmarks, /notifications mine.notifications, /me/security auth.security.nav, /admin nav.admin (only when viewer.staff, which stays false until T-103 sets staffRole behind its device gate); SignOutForm button auth.signOut. A list of links, not role=menu"
     violation: "A missing Security link or an ARIA menu without arrow keys"
     source: "auth-screens-spec.md §1, D-001 #account handler, Q9 (A)"
   - id: BR8.4
@@ -418,13 +436,13 @@ rules:
     violation: "A dot with no text is a colour-and-shape-only signal for screen readers"
     source: "auth-screens-spec.md §1, BR1.4 of T-011 (colour never the only signal), ISS-022"
   - id: BR8.5
-    statement: "Initials are the first grapheme of the first and last words of the display name, so Bengali names never split a cluster."
+    statement: "Initials are the first grapheme of the first and last words of the holder's display name, so Bengali names never split a cluster; without a display name the entry shows the person glyph."
     category: constraint
-    applies_to: "initials() in the layout's viewer builder"
+    applies_to: "initials() in lib/initials.ts, used by toViewer() in viewer.ts"
     trigger: "Building the viewer"
-    logic: "Drop a leading 'Dr.' or 'ডা.'; split on whitespace; take the first grapheme (Intl.Segmenter granularity grapheme) of the first word and of the last word when there are two or more; no case transform"
-    violation: "charAt(0) shows a lone vowel sign or half a conjunct in Bengali"
-    source: "D-001 initials(), FD-024, project.md Mandated (no capital-letter transform in Bengali)"
+    logic: "displayName = OwnAccountVM.displayName (AccountProfile.display_name; the Actor carries no persona, T-101 BR4.3 and BR4.10); drop a leading 'Dr.' or 'ডা.'; split on whitespace; take the first grapheme (Intl.Segmenter granularity grapheme) of the first word and of the last word when there are two or more; no case transform. IF account.getOwnAccount returned err THEN displayName and initials are absent: the button shows Icon person, its name is auth.accountMenu {name: t('auth.kicker')} (auth.accountMenuUnverified when unverified) and the sheet title is auth.kicker"
+    violation: "charAt(0) shows a lone vowel sign or half a conjunct in Bengali; a failed own-account read must not break every patient page"
+    source: "D-001 initials(), FD-024, project.md Mandated (no capital-letter transform in Bengali), T-101 BR4.10, T-104 F9"
   - id: BR8.6
     statement: "The menu shows an unread count only for a number above zero supplied by T-405; before T-405 nothing shows."
     category: constraint
@@ -434,13 +452,13 @@ rules:
     violation: "Showing 0 for a value nobody computed breaks the hard rule"
     source: "project.md Forbidden (missing value never 0), T-405 owned 'unread count hunk'"
   - id: BR8.7
-    statement: "The viewer is built once per request in the patient layout from getActor() and carries no account id and no email."
+    statement: "The viewer is built once per request from getActor() and the holder's own account view, and carries no account id and no email in any form, masked included."
     category: constraint
-    applies_to: "Viewer (ENT-001), patient layout"
+    applies_to: "Viewer (ENT-001), viewer.ts loadViewer(), patient layout"
     trigger: "Every patient request"
-    logic: "viewer = {kind, displayName, initials, verified, staff: actor.staffRole !== undefined, unreadCount?: undefined}; passed as a prop; never serialised with accountId, personaId, status or capabilities"
-    violation: "An account id or email in the client payload breaks 03 §2"
-    source: "T-102 step 7, 03 §2, 01-conventions.md §5"
+    logic: "loadViewer = cache(async () => {actor = await getActor(); own = actor.kind === 'account' ? await getOwnAccountAction() : null; return toViewer(actor, own)}); toViewer -> {kind, displayName: own?.displayName, initials, verified: actor.emailVerified === true, staff: actor.staffRole !== undefined, unreadCount?: undefined}; own.emailMasked and own.username are dropped here; loadOwnAccount() returns the same cached own view to /me and /me/security; the viewer is passed as a prop and never serialised with accountId, personaId, status, capabilities, refusal or an address"
+    violation: "An account id or any form of the email in the client payload of every page breaks 03 §2 and FD-095"
+    source: "T-102 step 7, 03 §2, FD-095, 01-conventions.md §5, T-101 BR4.3 and BR4.10"
 
   # 9. Security page
   - id: BR9.1
@@ -452,19 +470,19 @@ rules:
     violation: "A blank or erroring page for a signed-out visitor"
     source: "auth-screens-spec.md §3.6, D-001 renderSecurity"
   - id: BR9.2
-    statement: "The email section shows the confirmed state and the note that changing the email is not available; it shows the address only if Question 4 allows it."
+    statement: "The email section shows the holder's own address masked, the confirmed state and the note that changing the email is not available."
     category: constraint
     applies_to: "SecuritySettings email section"
     trigger: "Rendering"
-    logic: "h4 auth.security.email; p with auth.security.verified or auth.security.unverified (as a badge with text); p.note auth.security.emailNote; Q4 C (current): no address; Q4 A: the address before the state"
-    violation: "An address in SecurityVM before the owner's FD entry"
-    source: "auth-screens-spec.md §3.6, 03 §2, functional-design-questions.md Q4 (open; C applies)"
+    logic: "h4 auth.security.email; p.own-email with SecurityVM.ownEmailMasked as plain text (for example s****@example.test: first grapheme of the local part, ****, @, the domain; made by T-101's account.getOwnAccount, never by this Unit); then auth.security.verified or auth.security.unverified (as a badge with text) from SecurityVM.emailVerified; p.note auth.security.emailNote. The full address never reaches the page, its props or its payload; the response is rendered per request, noindex, never cached"
+    violation: "A full address, or another account's address, in SecurityVM breaks 03 §2 as amended by FD-095 (S1)"
+    source: "auth-screens-spec.md §3.6, 03 §2, FD-095, functional-design-questions.md Q4 (B, owner, 2026-10-28), T-101 BR4.10"
   - id: BR9.3
     statement: "Changing the password needs the current password and a new one entered twice; success says other devices were signed out."
     category: policy
     applies_to: "ChangePasswordForm, changePasswordFormAction"
     trigger: "Submit"
-    logic: "BR2.4 first; T-101 auth.invalid_credentials -> fieldErrors.currentPassword errors.auth.invalidCredentials; password codes per BR3.8; rate limited per BR4.6; ok -> p role=status auth.security.passwordChanged with the confirmation tick, fields cleared"
+    logic: "BR2.4 first; T-101 auth.invalid_credentials -> fieldErrors.currentPassword errors.auth.invalidCredentials; password codes per BR3.8; rate limited per BR4.6; ok -> StatusCallout auth.security.passwordChanged with the confirmation tick, announced (BR4.1), fields cleared"
     violation: "A change without the current password fails 03 §4"
     source: "auth-screens-spec.md §3.6, T-101 WF9, storyboard step 10"
   - id: BR9.4
@@ -560,13 +578,13 @@ rules:
 
   # 11. Look and motion (FD-091, T-011)
   - id: BR11.1
-    statement: "Auth screens use only T-011 tokens and classes; page styles live in T-102's own section of patient.css, each rule marked; a missing token is requested through an ISS row."
+    statement: "Auth screens use only T-011 tokens and classes; page styles live in T-102's own section of patient.css, each rule marked; a missing token is requested through an ISS row; pressable rows get press feedback through data-press, never a rule of their own."
     category: constraint
-    applies_to: "apps/web/src/styles/patient.css (T-102 section)"
+    applies_to: "apps/web/src/styles/patient.css (T-102 section); AccountMenu rows, WorkspaceNav links"
     trigger: "Any style this Unit needs"
-    logic: "Append-only section headed for T-102; every rule carries /* added: T-102 <reason> */; values are var(--…) tokens; no edits to tokens or motion rules"
-    violation: "A literal colour, an edit in T-011's token block or motion file"
-    source: "T-102 FD-091 amendment, project.md Code Style, T-011 BR1.1"
+    logic: "Append-only section headed for T-102; every rule carries /* added: T-102 <reason> */; colours, radii, targets and the focus ring are var(--…) tokens; every margin, padding and gap uses --space-1…--space-8 (a calc() or clamp() of them), reading widths --measure (T-011 BR3.6); no edits to tokens or motion rules; no transition, animation, keyframes or view-transition rule (check:motion M6-file); no :hover rule with transform, translate, scale or rotate (M9-hover); no column-0 :root[data-theme=\"dark\"] { block: a dark variant continues its selector (:root[data-theme=\"dark\"] .x {) or, better, needs none because the tokens switch (M10-tokens); the section is Prettier-formatted with double-quoted attribute selectors (T-011 BR9.8, pnpm format:check); the account-menu rows and the WorkspaceNav links carry data-press (T-011 BR6.11); .btn, .ctl and .opt already get the press primitive"
+    violation: "A literal colour or spacing, an edit in T-011's token block or motion file, a hover lift, a second dark token block or an unformatted rule turns check:motion, contrast:patient or format:check red"
+    source: "T-102 FD-091 amendment, project.md Code Style, T-011 BR1.1, BR1.8, BR3.6, BR4.7, BR6.5, BR6.11 and BR9.8"
   - id: BR11.2
     statement: "Route transitions between auth pages come from T-011's RouteTransition in the patient layout; auth pages add no wrapper of their own."
     category: constraint
@@ -596,9 +614,9 @@ rules:
     category: constraint
     applies_to: "VerifyWelcome, ChangePasswordForm status, /sign-in?reset=done callout"
     trigger: "The confirmation renders"
-    logic: "<PublishTick>{t(key)}</PublishTick> inside a role=status callout; reduced motion shows the complete tick; no confetti, badge, points or countdown"
-    violation: "Gamified confirmation breaks AC2.4.5"
-    source: "functional-design-questions.md Q11 (A), T-011 BR6.4 and BR8.1, AC2.4.5"
+    logic: "<PublishTick>{t(key)}</PublishTick> inside StatusCallout (no live-region role); PublishTick does not announce, so the callout speaks or takes focus as BR4.1 says (password changed: announced; email confirmed and reset done: focused on arrival); reduced motion shows the complete tick; no confetti, badge, points or countdown"
+    violation: "Gamified confirmation breaks AC2.4.5; a second live region breaks T-011 BR6.4 and CR-004 BR4.3"
+    source: "functional-design-questions.md Q11 (A), T-011 BR6.4, WF6 and BR8.1, AC2.4.5"
   - id: BR11.6
     statement: "With reduced motion (system setting or the in-app switch) nothing on these screens moves and every flow completes."
     category: constraint
@@ -630,7 +648,7 @@ rules:
     category: constraint
     applies_to: "packages/i18n/messages/{en,bn}.json"
     trigger: "Any new or changed string"
-    logic: "The keys in frontend-components.md § 6 are added; changed keys (errors.auth.rateLimited en plural, errors.auth.accountSuspended en and bn) are listed in the hand-off"
+    logic: "The keys in frontend-components.md § 6 are added, with both files formatted by Prettier; changed keys (errors.auth.rateLimited en plural, errors.auth.accountSuspended en and bn) are listed in the hand-off; the four field-error keys of ENT-004 that are missing on main are T-101's (BR3.8)"
     violation: "A key without Bengali is a build failure (pnpm i18n:check)"
     source: "project.md Mandated (both languages, same commit), FD-042, NFR7"
   - id: BR12.2
@@ -668,13 +686,13 @@ rules:
     violation: "Private data in logs or URLs (S1)"
     source: "01-conventions.md §11, 03 §2, Q3 (A)"
   - id: BR13.2
-    statement: "View models on these screens carry no account id and no email; the holder's own email is shown only if the owner adopts Question 4 A or B through an FD entry."
+    statement: "View models on these screens carry no account id and no full email; the holder's own address appears only masked, only in SecurityVM on /me/security and in PendingBannerVM on /me, as FD-095 allows."
     category: constraint
-    applies_to: "Viewer, SecurityVM, PendingBannerVM"
+    applies_to: "Viewer, SecurityVM, PendingBannerVM, every other view model and prop of this Unit"
     trigger: "Building a view model"
-    logic: "Q4 C (current): no address field exists; Q4 A: ownEmail only in SecurityVM and PendingBannerVM, only for the signed-in holder, only on noindex /me/* and /write, response not cached"
-    violation: "An address in a view model without the FD entry breaks 03 §2"
-    source: "03 §2, functional-design-questions.md Q4 (open)"
+    logic: "ownEmailMasked comes only from T-101's account.getOwnAccount (OwnAccountVM.emailMasked), for the signed-in holder's own account, on noindex pages rendered per request and never cached (/me/security and /me); the Viewer, the masthead, /write, /verify-email and every public page carry no form of the address; this Unit never masks, slices or logs an address itself; FD-095 (T-101's masked-own-email row, under whatever number it is appended with) must be in docs/status/decision-log.md before this Unit's code (WF0 step 1)"
+    violation: "A full address, a masked address outside the two places, or another account's address in a view model breaks 03 §2 as amended by FD-095 (S1, private data)"
+    source: "03 §2, FD-095 (proposed by T-101, appended before its code), functional-design-questions.md Q4 (B, owner, 2026-10-28) and Q14 (A)"
   - id: BR13.3
     statement: "Register, resend, reset and sign-in copy never confirms whether an email is registered."
     category: policy
@@ -688,7 +706,7 @@ rules:
     category: constraint
     applies_to: "registerFormAction, resendVerificationFormAction, signInFormAction, verifyEmailFormAction, signOutFormAction"
     trigger: "Set or clear"
-    logic: "Set on register ok and renewed on resend ok; read only by the /verify-email page on the server; deleted on the three clearing actions"
+    logic: "Name PENDING_EMAIL_COOKIE and reader readPendingEmail() in lib/cookies.ts (BR1.14); set on register ok and renewed on an anonymous resend ok; read only by the /verify-email page on the server; deleted on the three clearing actions"
     violation: "A readable or long-lived cookie with an address"
     source: "functional-design-questions.md Q3 (A)"
   - id: BR13.5
@@ -714,25 +732,25 @@ rules:
     category: validation
     applies_to: "apps/web/src/components/patient/auth/*.test.tsx, server/actions/account.*.test.ts"
     trigger: "Code Generation"
-    logic: "The tests listed in frontend-components.md § 8, using builders and synthetic data; names read as sentences"
-    violation: "A missing test level fails the definition of done"
-    source: "team.md Testing Posture, 01-conventions.md §10, T-102 'Tests to write'"
+    logic: "The tests listed in frontend-components.md § 8, using builders and synthetic data; names read as sentences; builders live in *-test-support.ts files beside the tests (test category, excluded from coverage), never in @rogikotha/test-support (FD-040); a component test that renders a form mocks @/server/actions/account, so no T-101 server module loads under jsdom; the T-011 next/font/local mock in vitest.setup.ts covers any test that renders the locale layout"
+    violation: "A missing test level fails the definition of done; a test-support import in apps/web fails lint"
+    source: "team.md Testing Posture, 01-conventions.md §10, T-102 'Tests to write', FD-040, FD-093 (5), T-011 BR9.9"
   - id: BR14.2
     statement: "The Unit adds at least one smoke assertion and the Playwright register-to-welcome spec; pnpm smoke keeps every earlier assertion."
     category: validation
     applies_to: "auth.smoke.test.tsx, apps/web/e2e/smoke/auth.spec.ts"
     trigger: "Code Generation and Build and Test"
-    logic: "Vitest smoke: the five auth pages render their h1 in en and bn and the account entry renders signed out; Playwright (T-011's config): register -> Mailpit API -> confirm button -> /me welcome"
-    violation: "Removing or skipping a smoke assertion without a recorded reason"
-    source: "team.md Testing Posture (cumulative smoke), T-102 'Smoke e2e'"
+    logic: "Vitest smoke (run by pnpm smoke, which stays Vitest-only): the five auth pages render their h1 in en and bn and the account entry renders signed out; Playwright (T-011's apps/web/playwright.config.ts, linted with apps/web/e2e/tsconfig.json, excluded from the Vitest web project, formatted by Prettier): register -> Mailpit API -> confirm button -> /me welcome, run with pnpm --filter @rogikotha/web smoke:e2e at Build and Test (not in CI until T-503)"
+    violation: "Removing or skipping a smoke assertion without a recorded reason; a spec Vitest collects turns test:coverage red"
+    source: "team.md Testing Posture (cumulative smoke), T-102 'Smoke e2e', T-011 WF8 step 3 and BR9.9"
   - id: BR14.3
-    statement: "The UI gates pass before the Unit is done: pnpm check, pnpm smoke, check:motion, impeccable detect and both contrast runs."
+    statement: "The UI gates pass before the Unit is done: the eleven-step pnpm check, pnpm smoke, smoke:e2e, impeccable detect, and CI green on the Bolt head."
     category: validation
     applies_to: "The Unit"
-    trigger: "Build and Test"
-    logic: "All exit 0 with zero findings; the coverage floor applies to apps/web once T-010 enforces it"
-    violation: "Any red gate blocks the merge"
-    source: "team.md Way of Working steps 2-3, T-102 acceptance rows, 01-conventions.md §7.8"
+    trigger: "Build and Test and merge"
+    logic: "pnpm check after T-011 = typecheck (with tsc -p e2e), lint, lint:boundaries, format:check, check:identity, test:coverage, i18n:check, contrast, contrast:patient, check:motion, build; all exit 0 with zero findings, as do pnpm smoke, smoke:e2e and npx impeccable detect apps/web/src --no-advisory; the Bolt branch is pushed and the check workflow is green on its head before the squash merge, with the run URL in the Build and Test record"
+    violation: "Any red gate, or a merge without a green CI run, blocks the merge"
+    source: "team.md Way of Working steps 2-3, T-102 acceptance rows, 01-conventions.md §7.8, T-010 (CI before merge), T-011 WF8 and BR9.4"
   - id: BR14.4
     statement: "Before building, the dependency-check log gets a dated entry for next, react and next-intl covering useActionState forms and progressive enhancement."
     category: policy
@@ -762,9 +780,25 @@ rules:
     category: policy
     applies_to: "docs/implementation/ISSUES.md, hand-off"
     trigger: "Code Generation and Build and Test"
-    logic: "Owned-path additions of functional-spec.md § 11; findings F1-F16 of functional-design-questions.md; ASSUMPTION(T-102) markers in code"
+    logic: "Owned-path additions of functional-spec.md § 11; findings F1-F16 of functional-design-questions.md and F17-F26 of functional-spec.md § 14; ASSUMPTION(T-102) markers in code"
     violation: "An unrecorded change outside owned paths"
     source: "project.md Mandated (ISS rows), team.md Way of Working, Q1 (A)"
+  - id: BR14.8
+    statement: "When the placeholders go, the T-010 route-table and layout tests are updated in the same commit, so they keep proving what they proved without reaching T-101's server code."
+    category: validation
+    applies_to: "apps/web/src/app/pages.test.tsx, apps/web/src/app/layouts.test.tsx, Masthead.test.tsx, shell.smoke.test.tsx"
+    trigger: "Code Generation"
+    logic: "pages.test.tsx: vi.mock('@/server/auth') with an anonymous Actor builder (an account case per page test, not here), vi.mock('@/server/actions/account') with resolved fakes, vi.mock('next/headers') with empty cookies and headers; renderRoute passes params and searchParams (Promise.resolve({})) to page.default and generateMetadata; the rows /register, /sign-in, /verify-email, /reset-password, /me/security, /me and /write keep their view, noindex and heading assertions, which the pages meet by BR1.10, BR1.11 and BR1.13. layouts.test.tsx: the same two server mocks and an account-viewer case. Masthead tests pass a viewer. No existing assertion is removed or weakened; a page that cannot meet one is a design defect to fix, not a row to drop"
+    violation: "A red route-table or layout test, or a weakened assertion, breaks pnpm check and team.md Testing Posture"
+    source: "apps/web/src/app/pages.test.tsx and layouts.test.tsx (T-010), team.md Testing Posture, functional-spec.md D17 and § 14 F18, F19"
+  - id: BR14.9
+    statement: "apps/web stays at or above 80% line coverage with every new file counted."
+    category: validation
+    applies_to: "Every new file of this Unit in apps/web/src"
+    trigger: "pnpm test:coverage (inside pnpm check) and CI"
+    logic: "Each new component, wrapper, lib helper and viewer.ts arrives with its test; pages are covered by their own tests and the route table; IF apps/web falls below 80% THEN tests are added, never an exclusion and never a lower floor (D10); the figure before and after goes into the hand-off"
+    violation: "test:coverage exits 1 (red check); a lowered floor breaks D10"
+    source: "team.md Testing Posture (80% floor, D10), vitest.workspace.ts (T-010), T-011 BR9.9"
 ```
 
 ## Rules summary
@@ -780,10 +814,11 @@ rules:
 | BR1.7 | `type` and `autocomplete` hints |
 | BR1.8 | No double submit |
 | BR1.9 | Focus: summary after failure, `h1` after client arrival |
-| BR1.10 | "Error:" title prefix |
+| BR1.10 | "Error:" title prefix from `ErrorSummary`; metadata keeps the plain title |
 | BR1.11 | `noindex`; shell marker and disclaimer kept |
 | BR1.12 | Errors shown through message keys |
-| BR1.13 | Own `a-head`, one `h1` |
+| BR1.13 | Own `a-head`, one `h1` with the view's title |
+| BR1.14 | Helpers in `lib/`, viewer in `app/`, async-only `'use server'` exports (FD-093) |
 | BR2.1 | Show/Hide text, named, announced, no `aria-pressed` |
 | BR2.2 | Toggle after hydration; hidden again on submit |
 | BR2.3 | Password hint; no meter; no `maxlength` |
@@ -796,20 +831,21 @@ rules:
 | BR3.6 | Username taken is the only real conflict |
 | BR3.7 | Signed-in visitors leave register and sign-in |
 | BR3.8 | Field error key catalogue |
-| BR4.1 | Sign-in page and its status callouts |
+| BR4.1 | Sign-in page and its confirmation callouts; no second live region |
 | BR4.2 | One generic credentials error |
 | BR4.3 | `next` sanitiser |
 | BR4.4 | Success clears the pending cookie, goes to `next` or `/me` |
 | BR4.5 | Suspended copy without appeal route |
 | BR4.6 | Rate-limit copy in seconds or minutes |
 | BR4.7 | No outcome differs by account existence |
+| BR4.8 | Suspended-session callout on `/sign-in` |
 | BR5.1 | Pending panel |
-| BR5.2 | Neutral resend |
+| BR5.2 | Neutral resend in three modes; signed-in holders resend without an address |
 | BR5.3 | Confirm button; nothing on opening the link |
 | BR5.4 | Success to `/me?welcome=1`; expired offers resend |
 | BR5.5 | Welcome only for a verified Actor |
 | BR5.6 | Token pages: no referrer, token removed from the address bar |
-| BR5.7 | Pending banner for signed-in unverified (no address until Q4) |
+| BR5.7 | Pending banner for signed-in unverified: masked address on `/me`, none on `/write` |
 | BR6.1 | Neutral reset request |
 | BR6.2 | Set form with hidden token |
 | BR6.3 | Success to sign-in; expired offers a new request |
@@ -820,11 +856,11 @@ rules:
 | BR8.2 | Signed out: link with `next` |
 | BR8.3 | Signed in: sheet with the menu |
 | BR8.4 | Unverified dot plus text |
-| BR8.5 | Grapheme initials |
+| BR8.5 | Grapheme initials from the own display name; glyph fallback |
 | BR8.6 | Unread count only when real |
-| BR8.7 | Viewer without id or email |
+| BR8.7 | Viewer without id or any form of the email |
 | BR9.1 | Security page structure; gate panel when signed out |
-| BR9.2 | Email section (no address until Q4) |
+| BR9.2 | Email section with the masked own address |
 | BR9.3 | Change password |
 | BR9.4 | Active sessions only (FD-057) |
 | BR9.5 | Sign out everywhere with confirmation |
@@ -837,7 +873,7 @@ rules:
 | BR10.5 | One gate sheet from the layout |
 | BR10.6 | Server stays the authority |
 | BR10.7 | Reading never gated |
-| BR11.1 | T-011 tokens only; own CSS section |
+| BR11.1 | T-011 tokens and spacing only; own CSS section; `data-press`; Prettier |
 | BR11.2 | Route transition from the layout |
 | BR11.3 | Errors and hard-rule callouts never move |
 | BR11.4 | Sheet entry from T-011 |
@@ -850,15 +886,17 @@ rules:
 | BR12.3 | No Bengali uppercase |
 | BR12.4 | Error copy names the field |
 | BR13.1 | No private data in URLs, logs or view models |
-| BR13.2 | No id or email in view models (Q4 open) |
+| BR13.2 | No id or full email in view models; masked own address in two places (FD-095) |
 | BR13.3 | Anti-enumeration copy |
 | BR13.4 | `rk.pending` cookie |
 | BR13.5 | No state change on GET |
 | BR13.6 | Synthetic data only |
 | BR14.1 | Component and action tests |
-| BR14.2 | Smoke and Playwright spec |
-| BR14.3 | UI gates |
+| BR14.2 | Smoke and Playwright spec (`smoke:e2e`, separate from `pnpm smoke`) |
+| BR14.3 | Eleven-step gate, smoke, detector; CI green on the Bolt head |
 | BR14.4 | Dependency re-check |
 | BR14.5 | High-risk extras |
 | BR14.6 | Two owner gates |
 | BR14.7 | Records and ISS rows |
+| BR14.8 | Route-table and layout tests updated with the pages |
+| BR14.9 | `apps/web` at 80% lines or more |
