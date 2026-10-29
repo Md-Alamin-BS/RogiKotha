@@ -12,15 +12,9 @@ Read this first when the session restarts. It lists exactly where the run stoppe
 
 ## Progress
 
-- **Done and merged on `main`, 7 of 45 Units:** CR-004, CR-009, CR-006, CR-007, CR-011, CR-012, T-010 (`14c21a9`). `main` was last pushed at `9cf860a`.
-- **In progress:** U45 **T-011**, the patient design and motion system, on branch `bolt/t-011-patient-design-and-motion-system`.
-  - AI-DLC stage: `code-generation`; the plan is approved (approval skipped by the owner's setting).
-  - Phase A, plan Steps 1–6, is **done, green and committed** as `1401e06` on the bolt branch: tokens, Hind Siliguri 600 Bengali font, `motion.css`, `RouteTransition`, `Reveal`, `PublishTick` and the layout wiring.
-    - `pnpm check` was green in 692 s; `pnpm smoke` was green on a re-run (the first run hit the known cold-start timeouts).
-    - `ViewTransition` works on the pinned Next and React versions, so no fallback is needed.
-    - The developer's full report and the design departures are in the T-011 record's `code-generation/code-summary.md`.
-  - Phase B (Steps 7–9) and Phase C (Steps 10–12) are **not started**.
-- **Remaining after T-011:** 37 Units.
+- **Done and merged on `main`, 8 of 45 Units:** CR-004, CR-009, CR-006, CR-007, CR-011, CR-012, T-010, T-011 (`f46e116`, review READY, CI green, `pnpm check` green on main in 142 s). `main` pushed at `0e72d4d`.
+- **In progress:** U8 **T-101** Functional Design. The draft was copied into the record with its FD rows renumbered FD-095..098 (added to the decision log). The reviewer was dispatched; next: record the verdict, `unit complete`, then Code Generation.
+- Construction is still `unit-major`/`serial` (the engine's Bolt order). Parallel swarm needs every Unit's Functional Design first, including the deferred ones, so it is not switched on yet.
 
 ## In flight when the session closed (cut off by the close; resume as below)
 
