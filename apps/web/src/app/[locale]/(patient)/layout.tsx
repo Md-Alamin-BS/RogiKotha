@@ -2,10 +2,12 @@ import type { ReactNode } from 'react';
 import { headers } from 'next/headers';
 import '@/styles/globals.css';
 import '@/styles/patient.css';
+import '@/styles/motion.css';
 import { SkipLink } from '@/components/shared/SkipLink';
 import { DemoMarker } from '@/components/shared/DemoMarker';
 import { Masthead } from '@/components/patient/Masthead';
 import { Colophon } from '@/components/patient/Colophon';
+import { RouteTransition } from '@/components/patient/motion/RouteTransition';
 import { readTheme, readMotion, activePatientTab } from '@/lib/cookies';
 import type { Locale } from '@/i18n/routing';
 
@@ -38,7 +40,9 @@ export default async function PatientLayout({
       <div className="progress" aria-hidden="true">
         <i />
       </div>
-      <main id="main">{children}</main>
+      <main id="main">
+        <RouteTransition>{children}</RouteTransition>
+      </main>
       <Colophon />
     </>
   );
