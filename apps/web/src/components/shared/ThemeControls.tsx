@@ -7,6 +7,7 @@ import { Link, usePathname } from '@/i18n/routing';
 import { setLang, setTheme, setMotion } from '@/server/actions/preferences';
 import type { Theme, Motion } from '@/lib/cookies';
 import { useAnnounce } from '@/lib/announce';
+import { LANGUAGE_SWITCH_TRANSITION } from '../patient/motion/RouteTransition';
 
 // The language toggle navigates to a page in the other locale, so it cannot
 // speak the change itself: it leaves this per-tab note and the arriving
@@ -122,6 +123,8 @@ export function ThemeControls({
         id="lang"
         href={pathname}
         locale={otherLocale}
+        // A language switch swaps the page at once instead of running the route fade (BR6.1).
+        transitionTypes={[LANGUAGE_SWITCH_TRANSITION]}
         className="ctl"
         title={t('a11y.lang')}
         aria-pressed={locale === 'bn'}

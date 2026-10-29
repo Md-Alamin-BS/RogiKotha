@@ -1,0 +1,403 @@
+/* ==========================================================================
+   Patient motion system (FD-091, T-011; frontend-components.md § 4–6)
+
+   Every motion declaration of the patient side lives in this file (BR4.7).
+   Later Units use the hooks below and add no motion rule:
+   - `RouteTransition` (route fade-rise), `Reveal` (`[data-reveal-list]`),
+     `PublishTick` (`.publish-tick`);
+   - `[data-step-dir="forward" | "back"]` (composer step slide, T-306);
+   - `.reveal` (home scroll reveal, T-207; never on the first section);
+   - `[data-press]` (press feedback for a pressable outside the list below);
+   - `data-static="emergency" | "disclaimer"` (never-animated static group).
+
+   Only `transform` and `opacity` animate (BR4.2). Every movement sits inside
+   `@media (prefers-reduced-motion: no-preference)` and a selector starting
+   `:root:not([data-motion="reduced"])` (BR5.3). Entry motion also needs
+   `[data-motion-ready]`, which `RouteTransition` sets after the first paint,
+   so nothing animates on first paint (BR4.5). The staff console does not
+   load this file (BR1.6).
+   ========================================================================== */
+
+/* ---------- 1. Tokens (BR4.1) ---------- */
+
+:root {
+  --dur-instant: 100ms;
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 360ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --rise: 12px;
+  --slide-step: 24px;
+  --press-scale: 0.98;
+  --stagger: 40ms;
+}
+
+/* Reduced values: a second line of defence behind the guards (BR5.4). */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 100ms;
+    --dur-base: 100ms;
+    --dur-slow: 100ms;
+    --rise: 0px;
+    --slide-step: 0px;
+    --press-scale: 1;
+    --stagger: 0ms;
+  }
+}
+
+:root[data-motion="reduced"] {
+  --dur-fast: 100ms;
+  --dur-base: 100ms;
+  --dur-slow: 100ms;
+  --rise: 0px;
+  --slide-step: 0px;
+  --press-scale: 1;
+  --stagger: 0ms;
+}
+
+/* ---------- 2. Static set (BR7.1) ----------
+   The demo marker, the medical-advice disclaimer and the emergency guidance
+   never move. The only `!important` block besides the reduced view-transition
+   rule, so it wins over every primitive. */
+
+.demo,
+.demo *,
+.colophon,
+.colophon *,
+#view-emergency,
+#view-emergency *,
+.emergency-lines,
+.emergency-lines *,
+[data-static],
+[data-static] * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ---------- 3. View transitions (BR6.1, BR7.2, BR6.12) ---------- */
+
+/* Input reaches the new page during a transition (BR4.6). */
+::view-transition {
+  pointer-events: none;
+}
+
+/* The root never animates: everything outside the named groups swaps at once. */
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* Static groups: captured apart from `page`, shown at once in their new state,
+   painted above the moving page (BR7.2). One element per name per page; a
+   duplicate makes the browser skip the transition (BR7.3). */
+.masthead {
+  view-transition-name: masthead;
+}
+
+.demo {
+  view-transition-name: demo;
+}
+
+.colophon {
+  view-transition-name: colophon;
+}
+
+#view-emergency,
+[data-static="emergency"] {
+  view-transition-name: emergency;
+}
+
+[data-static="disclaimer"] {
+  view-transition-name: disclaimer;
+}
+
+::view-transition-group(masthead),
+::view-transition-group(demo),
+::view-transition-group(colophon),
+::view-transition-group(emergency),
+::view-transition-group(disclaimer) {
+  animation: none;
+  z-index: 2;
+}
+
+::view-transition-old(masthead),
+::view-transition-old(demo),
+::view-transition-old(colophon),
+::view-transition-old(emergency),
+::view-transition-old(disclaimer) {
+  animation: none;
+  opacity: 0;
+}
+
+::view-transition-new(masthead),
+::view-transition-new(demo),
+::view-transition-new(colophon),
+::view-transition-new(emergency),
+::view-transition-new(disclaimer) {
+  animation: none;
+}
+
+/* The page group never morphs size or position (BR6.1, Q10 A). */
+::view-transition-group(page) {
+  animation: none;
+}
+
+/* Selected by the group name rather than the `rk-page` class React also sets,
+   so a browser without `view-transition-class` still runs this, not the
+   browser's own cross-fade. */
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-motion="reduced"])::view-transition-old(page) {
+    animation: rk-page-out var(--dur-fast) var(--ease-in) both;
+  }
+
+  :root:not([data-motion="reduced"])::view-transition-new(page) {
+    animation: rk-page-in var(--dur-base) var(--ease-out) both;
+  }
+
+  @keyframes rk-page-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes rk-page-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--rise));
+    }
+  }
+}
+
+/* Reduced mode: an instant swap. The universal selector does not reach
+   view-transition pseudo-elements, so they are named here (BR5.4). */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+:root[data-motion="reduced"]::view-transition-group(*),
+:root[data-motion="reduced"]::view-transition-old(*),
+:root[data-motion="reduced"]::view-transition-new(*) {
+  animation: none !important;
+}
+
+/* ---------- 4. Primitives ---------- */
+
+/* Opacity-only and at --dur-instant, so the scrim may fade in reduced mode too
+   (BR5.3, BR6.7). Closing is instant: `hidden` removes it at once. */
+:root[data-motion-ready] .overlay {
+  transition: opacity var(--dur-instant) var(--ease-out);
+}
+
+@starting-style {
+  :root[data-motion-ready] .overlay {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* List reveal (BR6.2): children 1–6 of a list inserted after motion-ready
+     fade in and rise, 40 ms apart; the 7th on appear at once. */
+  :root:not([data-motion="reduced"])[data-motion-ready] [data-reveal-list] > :nth-child(-n + 6) {
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out);
+  }
+
+  :root:not([data-motion="reduced"])[data-motion-ready] [data-reveal-list] > :nth-child(2) {
+    transition-delay: var(--stagger);
+  }
+
+  :root:not([data-motion="reduced"])[data-motion-ready] [data-reveal-list] > :nth-child(3) {
+    transition-delay: calc(var(--stagger) * 2);
+  }
+
+  :root:not([data-motion="reduced"])[data-motion-ready] [data-reveal-list] > :nth-child(4) {
+    transition-delay: calc(var(--stagger) * 3);
+  }
+
+  :root:not([data-motion="reduced"])[data-motion-ready] [data-reveal-list] > :nth-child(5) {
+    transition-delay: calc(var(--stagger) * 4);
+  }
+
+  :root:not([data-motion="reduced"])[data-motion-ready] [data-reveal-list] > :nth-child(6) {
+    transition-delay: calc(var(--stagger) * 5);
+  }
+
+  /* Composer step slide (BR6.3, T-306): the incoming panel enters 24 px from
+     the direction of travel; the outgoing panel leaves at once. */
+  :root:not([data-motion="reduced"])[data-motion-ready] [data-step-dir] {
+    transition:
+      opacity var(--dur-base) var(--ease-standard),
+      transform var(--dur-base) var(--ease-standard);
+  }
+
+  /* Sheet entry (BR6.7): a fade and a 12 px rise; closing is instant. */
+  :root:not([data-motion="reduced"])[data-motion-ready] :is(.sheet, .tray) {
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out);
+  }
+
+  /* Publish tick (BR6.4): the short arm draws over the first 40% of
+     --dur-slow, the long arm over the rest. Each arm slides out of its own
+     clipped window, so the tick is drawn by transform alone, with no scale. */
+  :root:not([data-motion="reduced"])[data-motion-ready] .publish-tick-arm {
+    transition: transform calc(var(--dur-slow) * 0.4) var(--ease-out);
+  }
+
+  :root:not([data-motion="reduced"])[data-motion-ready] .publish-tick-arm-long {
+    transition: transform calc(var(--dur-slow) * 0.6) var(--ease-out) calc(var(--dur-slow) * 0.4);
+  }
+
+  @starting-style {
+    :root:not([data-motion="reduced"])[data-motion-ready] [data-reveal-list] > :nth-child(-n + 6) {
+      opacity: 0;
+      transform: translateY(var(--rise));
+    }
+
+    :root:not([data-motion="reduced"])[data-motion-ready] [data-step-dir="forward"] {
+      opacity: 0;
+      transform: translateX(var(--slide-step));
+    }
+
+    :root:not([data-motion="reduced"])[data-motion-ready] [data-step-dir="back"] {
+      opacity: 0;
+      transform: translateX(calc(var(--slide-step) * -1));
+    }
+
+    :root:not([data-motion="reduced"])[data-motion-ready] :is(.sheet, .tray) {
+      opacity: 0;
+      transform: translateY(var(--rise));
+    }
+
+    :root:not([data-motion="reduced"])[data-motion-ready] .publish-tick-arm {
+      transform: translateX(-100%);
+    }
+  }
+
+  /* Press (BR6.5, BR6.11): a 0.98 squeeze on the listed pressables and on any
+     `[data-press]`; nothing in the static set scales (BR7.1). `:where()` keeps
+     the exclusion's id from outweighing the reveal transition on a pressable
+     list item. */
+  :root:not([data-motion="reduced"])
+    :where(
+      .btn,
+      .ctl,
+      .chip,
+      .seg button,
+      .opt,
+      .tabs a,
+      .pillrow a,
+      .pillrow button,
+      .browse-card,
+      .doc-entry,
+      .related-card,
+      .react,
+      .mini-row,
+      .c-mode,
+      .case,
+      [data-press]
+    ):where(
+      :not(
+        .demo *,
+        .colophon *,
+        #view-emergency *,
+        [data-static] *,
+        .emerg-card,
+        .emergency-lines a
+      )
+    ) {
+    transition: transform var(--dur-instant) var(--ease-standard);
+  }
+
+  :root:not([data-motion="reduced"])
+    :where(
+      .btn,
+      .ctl,
+      .chip,
+      .seg button,
+      .opt,
+      .tabs a,
+      .pillrow a,
+      .pillrow button,
+      .browse-card,
+      .doc-entry,
+      .related-card,
+      .react,
+      .mini-row,
+      .c-mode,
+      .case,
+      [data-press]
+    ):where(
+      :not(
+        .demo *,
+        .colophon *,
+        #view-emergency *,
+        [data-static] *,
+        .emerg-card,
+        .emergency-lines a
+      )
+    ):active {
+    transform: scale(var(--press-scale));
+  }
+}
+
+/* Home scroll reveal (BR6.6, T-207): sections after the first fade and rise
+   as they enter the viewport; static without view timelines. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduced"]) .reveal {
+      animation: rk-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+
+    @keyframes rk-reveal {
+      from {
+        opacity: 0;
+        transform: translateY(var(--rise));
+      }
+    }
+  }
+}
+
+/* Reading-progress bar (BR6.9): follows page scroll; hidden in reduced mode
+   and without scroll timelines (its width stays 0 in patient.css). */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduced"]) .progress i {
+      width: 100%;
+      /* A page too short to scroll leaves the timeline inactive; rest empty, not full. */
+      transform: translateX(-100%);
+      animation: rk-progress linear both;
+      animation-timeline: scroll(root block);
+    }
+
+    @keyframes rk-progress {
+      from {
+        transform: translateX(-100%);
+      }
+
+      to {
+        transform: none;
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress {
+    display: none;
+  }
+}
+
+:root[data-motion="reduced"] .progress {
+  display: none;
+}

@@ -6,19 +6,24 @@ Vitest 4 through `vitest.workspace.ts`: the `web` project for components and lay
 
 ## Run this Unit's tests
 
-Every long command carries an outer `timeout`. Step 2 replaces this block with the commands verified on the Bolt branch.
+Every long command carries an outer `timeout`. Verified on `bolt/t-011-patient-design-and-motion-system` at Step 2 (2026-10-29, Git Bash on Windows, Node 24.18, pnpm 11.20):
 
 ```bash
 pnpm infra:up
+# web project with coverage: 29 files, 496 tests, 418/420 lines, 31-35 s
 timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web --coverage --coverage.reportsDirectory "$TMPDIR/cov-web"
+# tooling project (scripts/**/*.test.mjs): 5 files, 24 tests
 timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project tooling
 timeout 120 pnpm contrast
-timeout 120 pnpm contrast:patient
-timeout 120 pnpm check:motion
 timeout 600 pnpm smoke
 timeout 1200 pnpm check
-timeout 900 pnpm --filter @rogikotha/web smoke:e2e
 ```
+
+`--coverage.include 'apps/web/src/**/*.{ts,tsx}'` may be added to the web run; it gives the same figure. Read the web figure from `coverage-summary.json` by summing the `apps/web/src/` entries.
+
+Added by Phase B, verified when they land: `timeout 120 pnpm contrast:patient` and `timeout 120 pnpm check:motion` (Step 7), and `timeout 900 pnpm --filter @rogikotha/web smoke:e2e` (Step 9; needs `npx playwright install chromium` once).
+
+Baseline before any change (Step 1, commit `9cf860a`): `pnpm check` green in 445 s (93 test files, 1002 passed, 2 expected fail; all packages above 80% lines, `apps/web` 418/420); `pnpm smoke` green in 26 s (12 files, 20 tests).
 
 Only one database-touching run at a time (`pnpm check`, `pnpm test`, `pnpm test:coverage`, `pnpm smoke`). Parallel developers in Phase B run only their own project and pass their own `--coverage.reportsDirectory`.
 

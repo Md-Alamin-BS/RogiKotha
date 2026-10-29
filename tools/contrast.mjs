@@ -20,6 +20,10 @@
  * With --tokens it reads that stylesheet instead and fails closed (T-010):
  * an unreadable file, a missing light or dark block, or any pair skipped for
  * a missing token exits non-zero, so a wrong path cannot print OK.
+ *
+ * With --tokens X --pairs patient it also checks the pairs only the patient palette has (T-011,
+ * D14): the focus ring on the page, a card and an inset, and text on the primary wash. Without
+ * --pairs the pair list and the output are unchanged.
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -31,6 +35,10 @@ const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 const flagAt = process.argv.indexOf('--tokens');
 const tokensPath = flagAt === -1 ? null : process.argv[flagAt + 1];
 if (flagAt !== -1 && !tokensPath) { console.error('FAIL: --tokens needs a stylesheet path.'); process.exit(1); }
+const pairsAt = process.argv.indexOf('--pairs');
+const pairsName = pairsAt === -1 ? null : process.argv[pairsAt + 1];
+if (pairsAt !== -1 && pairsName !== 'patient') { console.error('FAIL: --pairs accepts only "patient".'); process.exit(1); }
+if (pairsName !== null && tokensPath === null) { console.error('FAIL: --pairs patient needs --tokens <stylesheet>.'); process.exit(1); }
 let css;
 try {
   css = tokensPath === null
@@ -97,6 +105,13 @@ const PAIRS=[
  ['--ink','--callout-bg','text on callout',4.5],['--warn-ink','--callout-bg','warn text on callout',4.5],
  ['--rule','--aside-bg','divider on aside',1.5],
 ];
+// Pairs only the patient palette defines. A missing token skips the pair, which fails --tokens mode.
+const PATIENT_PAIRS=[
+ ['--focus','--paper','focus ring on page',3,true],['--focus','--surface','focus ring on card',3,true],
+ ['--focus','--surface-2','focus ring on inset',3,true],
+ ['--primary','--primary-soft','current tab text',4.5],['--ink','--primary-soft','text on primary wash',4.5],
+];
+if(pairsName==='patient') PAIRS.push(...PATIENT_PAIRS);
 let failures = 0;
 const skipped = [];
 // every light-mode scheme is evaluated as its overrides merged over the light base

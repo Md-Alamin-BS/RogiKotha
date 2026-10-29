@@ -16,3 +16,5 @@
 *.jpg binary
 *.jpeg binary
 *.png binary
+# Web fonts (T-011, design F9): the self-hosted Hind Siliguri subset is a binary payload.
+*.woff2 binary

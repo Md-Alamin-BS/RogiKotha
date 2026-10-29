@@ -27,6 +27,90 @@ Rules:
 
 ## Entries
 
+### 2026-10-29 (U45 T-011 — patient design and motion system)
+
+- Scope: T-011 adds the first web font (Hind Siliguri 600 through `next/font/local`), the first use of
+  React's `<ViewTransition>` in this app, a Playwright smoke (installed in plan Step 9), and re-runs
+  impeccable as a UI gate. No entry under 3 days old covers any of them. The Prettier 3.9.6 entry of
+  2026-10-28 (T-010) is reused: it is one day old and this Unit changes no Prettier version.
+- Checked:
+  - `next` 16.3.4 (installed; npm `latest` 16.4.3, 2026-10-23) and its bundled React: the App Router
+    runs `next/dist/compiled/react` `19.3.0-canary-cbb046ab-20260731`, which exports
+    `ViewTransition` and `addTransitionType`; installed `react`/`react-dom` 19.3.0 (npm `latest`
+    19.3.1, 2026-10-14). Next's view-transitions guide (nextjs.org/docs/app/guides/view-transitions,
+    updated 2026-10-15) and the React reference (react.dev/reference/react/ViewTransition).
+    `next/dist/lib/needs-experimental-react.js` on 16.3.4 lists no view-transition flag, and
+    `<Link transitionTypes>` is in `dist/client/app-dir/link.d.ts`.
+  - `next/font/local` on 16.3.4 (`dist/compiled/@next/font/dist/local/index.d.ts`): options `src`,
+    `display`, `weight`, `style`, `adjustFontFallback` (`'Arial' | 'Times New Roman' | false`),
+    `fallback`, `preload`, `variable`, `declarations` (used for `unicode-range`).
+  - Hind Siliguri: google/fonts `ofl/hindsiliguri` (`METADATA.pb`: Indian Type Foundry, licence OFL,
+    five static weights) and its `OFL.txt` (`https://raw.githubusercontent.com/google/fonts/main/ofl/hindsiliguri/OFL.txt`, sha256
+    `4b255eb44f613a8e426e195f0d0b7e10fcba1af7eb6047d9a7f4f3c449940e19`, 4,371 B; "Copyright (c)
+    2015 Indian Type Foundry", SIL OFL 1.1, no Reserved Font Name). The weight-600 Bengali subset
+    served by the Google Fonts CSS2 API
+    (`https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@600&display=swap`, file
+    `https://fonts.gstatic.com/s/hindsiliguri/v14/ijwOs5juQtsyLLR5jN4cxBEoREP-0vQVKxGv.woff2`):
+    74,784 B, sha256 `b92b5da6d4f4f6de315f093f26a4e20d7ce7876a7db3ae7dda6a92fc5c3cc7c4`; its name
+    table reads "Hind Siliguri SemiBold", version 1.001, `usWeightClass` 600, licence URL
+    `http://scripts.sil.org/OFL`, 492 glyphs; its CSS `unicode-range` is `U+0951-0952, U+0964-0965,
+    U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7,
+    U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1`.
+  - `@playwright/test` (npm `latest` 1.64.1, 2026-10-14; 1.64.0, 2026-10-07; 1.63.0, 2026-09-04)
+    with the GitHub release notes; `npm view` of `@playwright/test`, `playwright` and
+    `playwright-core` 1.64.1 (no install scripts, `node >=20`).
+  - impeccable (npm `latest` 4.8.0, 2026-10-26; 4.7.0, 2026-10-19; 4.6.0, 2026-10-15) with the
+    GitHub release notes.
+- Findings:
+  - React `<ViewTransition>` ships in React 19.3.0 (release notes 2026-09-09) and works in the App
+    Router with no configuration on Next 16.3.4; the React reference page still shows a canary
+    version string. React applies `view-transition-name` and `view-transition-class` through the
+    element's style property (CSP note for T-502, not a style attribute). A keyed boundary whose
+    key changes in a Transition becomes an exit and enter pair, a shared pair when both sides carry
+    the same `name`, and the deleted side's `share` prop picks the class; `update="none"` stops
+    update animations; `default="none"` keeps a named boundary still during unrelated transitions;
+    React skips animations on popstate (back and forward); React does not apply reduced motion
+    itself. 19.3.1 lists no view-transition change; Next 16.4.0–16.4.3 list no `next/font` or
+    view-transition fix that touches this Unit (16.4.3's font fix is for Google font URLs). The
+    plan Step 4 spike confirms the behaviour on the pins (below).
+  - Hind Siliguri may be self-hosted and subset under OFL 1.1 (no Reserved Font Name, so the subset
+    keeps the family name). The Google Fonts subset is that OFL font, already cut to the Bengali
+    `unicode-range`, below the 80,000 B budget of `entities.md` ENT-010. `next/font/local`'s
+    automatic fallback metrics target Arial or Times, which hold no Bengali glyphs, so they would
+    add a fallback face that never matches the Bengali system stack.
+  - Playwright 1.64.1 is a patch release that fixes two 1.64.0 regressions (Electron packaged-app
+    windows; Chromium 155+ cross-origin redirects with routes), bundles Chromium 156, and is 15 days
+    old, so pnpm 11's `minimumReleaseAge` (one day by default; no override in this repository)
+    accepts it. 1.64.0's breaking changes (device `screen` forwarding, JSX in tests following
+    `tsconfig.json`, `--update-snapshots=missing`, hidden-iframe elements) do not touch a new
+    Chromium-only smoke. The packages have no install script, so `pnpm install` downloads no browser
+    (CI runs no Playwright until T-503).
+  - impeccable 4.6.0–4.8.0 add `--github`, `--list-rules`, `--cdp` and new detection rules
+    (`straggler`, `unbalanced-heading`, hard-offset shadows as advisory); none changes `detect`'s
+    exit codes, `--no-advisory` or the `.impeccable/config.json` format.
+- Decision:
+  - Keep `next` 16.3.4 and `react`/`react-dom` 19.3.0 (a bump is its own task, as the 2026-10-27
+    research advised); use `ViewTransition` from `react`.
+  - Commit the Google Fonts Bengali subset at weight 600 as
+    `apps/web/src/app/fonts/HindSiliguri-SemiBold-bengali.woff2` (74,784 B, sha256 above) with the
+    google/fonts `OFL.txt` beside it, loaded by `next/font/local` with `display: 'swap'`,
+    `preload: false`, the Bengali `unicode-range` above through `declarations`,
+    `adjustFontFallback: false` and the system Bengali stack as `fallback`. `*.woff2 binary` is
+    added to `.gitattributes` first (ISS-178).
+  - Plan Step 9 adds `@playwright/test` 1.64.1 as an exact devDependency of `apps/web`; Chromium
+    comes from `npx playwright install chromium`.
+  - Run impeccable as `npx impeccable detect apps/web/src --no-advisory`, which resolves 4.8.0 today
+    (no devDependency, as on 2026-09-10).
+- Spike confirmation (plan Step 4, 2026-10-29, `next start` of the Bolt branch in headless Chrome
+  157.0.8103.27): a `<ViewTransition key={path} name="page" default="none" update="none">` in the
+  patient layout, with enter, exit and share mapped to `rk-page`, runs one view transition per path
+  change (`::view-transition-old(page)` 160 ms, `::view-transition-new(page)` 240 ms) and none for a
+  theme toggle, a search-parameter change or back and forward. A language switch is a same-document
+  navigation that remounts the `[locale]` subtree, so it pairs the `page` boundaries and animates
+  unless the navigation carries a transition type mapped to `none` (`rk-language`; next-intl 4.14.4's
+  `Link` forwards `transitionTypes` to `next/link`). Record:
+  `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-011-patient-design-and-motion-system/code-generation/code-summary.md`.
+
 ### 2026-10-29 (U3 T-010 review fixes — CI service image digest)
 
 - Scope: the T-010 review (R-05) asked to pin the CI `postgres:18` service image by digest, as the
