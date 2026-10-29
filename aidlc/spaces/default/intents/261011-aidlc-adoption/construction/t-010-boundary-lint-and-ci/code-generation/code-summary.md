@@ -5,7 +5,7 @@ Built from the approved plan (`code-generation-plan.md`) on branch
 Methodology test-after, per the Testing Contract. Commits: `0871b13` (Phase A, Steps 1–10),
 `17a347f` (Phase B, Step 11), `651603d` (Step 12, thresholds on), `abc63cd` (Step 13, Prettier
 scope), `4be7878` (Step 13, formatting only), and the Steps 14–18 commit "T-010: gate, CI workflow,
-records". Nothing is pushed; the coordinator pushes and watches the CI run (BR10.4).
+records", then the review fixes commit (section "Review fixes"). Nothing is pushed; the coordinator pushes and watches the CI run (BR10.4).
 
 ## Coverage before the raise
 
@@ -158,7 +158,7 @@ Totals differ slightly from Phase B's figures because the formatting commit re-w
 ## Gate (Step 17)
 
 `timeout 900 pnpm check`: exit 0 in 189 s. Typecheck 9 of 9; lint 0 errors and 1 warning that
-predates T-010 (`ISS-299`); "10 expected violations found"; Prettier clean; "No attribution
+predates T-010 (`ISS-299`); "10 expected violations found" (15 after the review fixes, below); Prettier clean; "No attribution
 markers (commits f91c9de..HEAD, tracked files)"; `test:coverage` 92 files, 999 passed, 2 expected
 fail; i18n parity 781 keys; contrast all pass; both builds done. `timeout 600 pnpm smoke`: exit 0
 in 19 s, 12 files, 20 tests.
@@ -166,25 +166,108 @@ in 19 s, 12 files, 20 tests.
 Mutation check (BR5.4): the worker's `no-restricted-imports` block set to `off` →
 `pnpm lint:boundaries` exit 1, "missing: FX8 … FX9 … FX10 … expected
 @typescript-eslint/no-restricted-imports"; the file restored from a copy → "10 expected violations
-found", exit 0.
+found", exit 0. The review fixes repeat this for their rules (below).
 
 ## Acceptance rows (functional-spec.md § 15), expected against observed
 
 | Check | Expected | Observed |
 |---|---|---|
 | `pnpm lint` | exit 0 | exit 0; 0 errors, 1 warning that predates T-010 (`ISS-299`) |
-| `pnpm lint:boundaries` | "10 expected violations found" | "10 expected violations found", exit 0 |
+| `pnpm lint:boundaries` | "15 expected violations found" (10 before the review fixes) | "15 expected violations found", exit 0 (2026-10-29) |
 | domain → application (temporary `import '@rogikotha/application'` in `packages/domain/src/index.ts`) | boundary error | `boundaries/dependencies`: no policy allowing "domain" to "application"; reverted |
 | component imports `node:fs` (temporary, `components/shared/DemoMarker.tsx`) | error | `@typescript-eslint/no-restricted-imports`: "Components may not import Node built-ins"; reverted |
 | worker imports `better-auth` (temporary, `apps/worker/src/main.ts`) | error | `@typescript-eslint/no-restricted-imports`: "The worker never holds an application session (AD-6)"; reverted |
-| `pnpm check` | exit 0, all nine steps | exit 0, nine steps |
+| `pnpm check` | exit 0, all nine steps | exit 0, nine steps (2026-10-28; again after the review fixes, 2026-10-29) |
 | `pnpm contrast` against `pnpm tools:contrast` | same pass output | identical apart from the echoed command; all pairs pass |
-| CI on the pushed branch | green, run URL in the hand-off | not run yet: the coordinator pushes the branch and records the URL (BR10.4) |
-| `pnpm check` wall clock | under 5 min, recorded | 189 s on the gate run; 304 s on the first run (`ISS-298`) |
+| CI on the pushed branch | green, run URL in the hand-off | not run yet: the coordinator pushes the branch and records the URL (BR10.4); the workflow now pins `postgres:18` by digest and does not cancel runs on `main` |
+| `pnpm check` wall clock | under 5 min, recorded | 189 s on the gate run; 304 s on the first run; 402 s after the review fixes (`ISS-298`) |
 | 80% line floor per package (AC1.1.3) | every package ≥ 80% or zero lines | table above; a package below the floor exits 1 (negative proof) |
 | `format:check` in `pnpm check` and CI | present | step 4 of `pnpm check`; CI runs `pnpm check` |
-| The worker cannot reach identity, linkage or originals by import | refused | FX8, FX9, FX10 refused; FX11 type-only allowed; grep test kept |
+| The worker cannot reach identity, linkage or originals by import | refused | FX8, FX9, FX10, FX16, FX17, FX18 refused; FX11 and FX21 type-only allowed; grep test kept |
 | No attribution in any file, commit or workflow | guard passes | `check:identity` passes; the workflow has no write step and a read-only token |
+
+## Review fixes (2026-10-29)
+
+From `reviews/review-01.md` (verdict READY, iteration 1), findings R-01 to R-05, all applied on
+`bolt/t-010-boundary-lint-and-ci` in one commit.
+
+- **R-01 (Major), worker application imports by any path.** `eslint.boundaries.mjs`: the policy
+  list `dynamicBans` is renamed `boundaryBans` (it now holds a static ban too) and its worker entry
+  gains `STATIC_VALUE_OUTSIDE_APPLICATION_SPECIFIERS`: a static value import or re-export
+  (`nodeKind` `import`/`export`, `kind: 'value'`) that resolves to the `application` element is
+  refused unless its source is `@rogikotha/application` or one of its subpaths. Those specifiers
+  stay with `no-restricted-imports` (only `/worker` passes), so each edge is still reported once,
+  and `import()`/`require()` keep their `!@rogikotha/application/worker` ban. Together: any value
+  dependency on application code whose source is not `@rogikotha/application/worker` is refused.
+  Type-only imports and `export type` stay allowed; `import { type X }` counts as a value import,
+  because under `verbatimModuleSyntax` it still loads the module. Fixture FX16 (violation,
+  `apps/worker/src/worker-relative.ts`, relative value import of
+  `packages/application/src/index`) and FX21 (control, `worker-relative-types.ts`, the same path
+  type-only). The root form `import { type X } from '@rogikotha/application'` still passes
+  `allowTypeImports` (`ISS-300`).
+- **R-02, dynamic-import fixtures.** FX17 `worker-late-auth.ts` (`await import('better-auth')`),
+  FX18 `worker-require.ts` (`require('pg')` through `createRequire`, the only `require` an ESM file
+  has; a bare `require` also trips `@typescript-eslint/no-require-imports`, a second problem the
+  manifest would not expect), FX19 `components/ComponentLate.tsx` (`await import('node:fs')`). All
+  three are refused by `boundaries/dependencies`.
+- **R-03, web-shared limits.** `WEB_SHARED_FILES` (`apps/web/src/lib/**`, `apps/web/src/i18n/**`)
+  join the component `no-restricted-imports` block (Node built-ins, bare and `node:`, and the
+  component-banned server libraries; test files ignored), and `web-shared` joins the component
+  entry of `boundaryBans` (the same limits for `import()`/`require()`; `testAllowance` still gives
+  tests Node). No real file needed an exception: they import `react`, `next/headers`, `next`
+  types and `@rogikotha/i18n`. Messages now name "components and the shared helpers they import".
+  FX20 `apps/web/src/lib/shared-node.ts` (violation, static `node:fs`). FD-093 (6) and (2) and
+  `01-conventions.md` §2 updated. FD-093 still awaits the owner.
+- **R-04, generated-file pin.** `vitest.workspace.ts` exports `generatedFiles(rootDir, roots)`
+  (defaults unchanged). New `scripts/coverage-exclusions.test.mjs` (tooling project, three tests):
+  today's 16 files (`packages/i18n/src/keys.ts` and 15 `packages/test-support/src/corpus/*.ts`) are
+  exactly the ones left out; in a temporary tree a one-line and a wrapped header are left out, and a
+  hand-written file, a "Generated by" without the do-not-edit line and one whose do-not-edit line
+  sits past the first 400 characters are kept. Negative proof: a scratch generated file in
+  `packages/i18n/src` made the pin test fail; deleted, never committed. FD-093 (7) still awaits the
+  owner.
+- **R-05, CI.** `cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}`, so overlapping pushes
+  to `main` each finish and each push's range passes `check:identity`. The service image is
+  `postgres:18@sha256:979bccfde35445db618c65107d27d08c6c21339d8dc3ad4c830c6633947be0e4`, the OCI
+  index digest from `docker buildx imagetools inspect postgres:18` (18.6; dependency-check log
+  2026-10-29). PyYAML parses the file; the pinned reference resolves to the same index. The local
+  compose file keeps the floating tag (`ISS-301`). The CI run URL is still to record before merge
+  (BR10.4).
+
+Fixture now: 15 violations (FX1 to FX10, FX16 to FX20) and 6 controls (FX11 to FX15, FX21);
+"15 expected violations found". `scripts/check-boundaries-fixture.test.mjs` expects 15. Two probes
+of that file's "imports the fixture does not plant" block are now planted, so they went: the
+worker's `import('better-auth')` (FX17) and the component-source half of the `import('node:fs')`
+probe (FX19). The component-test half stays, and a new probe shows that a shared-helper test may
+import `node:fs` while shared-helper source may not. Tooling project: 5 files, 24 tests (was 4 and
+21).
+
+Mutation check (BR5.4), each on a copy of `eslint.boundaries.mjs` restored afterwards (`cmp`
+equal): the static application ban removed, `pnpm lint:boundaries` exit 1, "missing: FX16"; all of
+`boundaryBans` removed, exit 1, FX16 to FX19 missing; web-shared left out of the component block,
+exit 1, FX20 missing; `kind: 'value'` dropped from the static ban, exit 1, "control FX21 reported".
+Restored: "15 expected violations found", exit 0.
+
+Gate, compose PostgreSQL up, nothing else using the database:
+
+| Command | Result |
+|---|---|
+| `timeout 300 pnpm lint` | exit 0; 0 errors, 1 warning that predates T-010 (`ISS-299`) |
+| `timeout 300 pnpm lint:boundaries` | exit 0, "15 expected violations found" |
+| `timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project tooling` | exit 0, 5 files, 24 tests |
+| `timeout 300 pnpm format:check` | exit 0, all files in Prettier style |
+| `timeout 900 pnpm check`, first run | exit 1 in 345 s: `packages/contracts/src/workspace.smoke.test.ts` timed out at 5 s while Docker Desktop was starting and a lint probe ran beside it (`ISS-302`); every other step up to it green |
+| `timeout 900 pnpm check`, second run | exit 0 in 402 s: typecheck 9 of 9; lint 0 errors, 1 warning; "15 expected violations found"; Prettier clean; "No attribution markers (commits f91c9de..HEAD, tracked files)"; `test:coverage` 93 files, 1002 passed, 2 expected fail (coverage 165 s); i18n parity 781 keys; contrast all pass; both builds done |
+| `timeout 600 pnpm smoke` | exit 0 in 32 s, 12 files, 20 tests |
+
+Coverage per package from that run's `coverage-summary.json` equals the "Coverage after" table
+above (contracts 317 / 317, database 565 / 582, i18n 54 / 54, test-support 890 / 922, web
+418 / 420, worker 151 / 151; domain, application and adapters have no lines).
+
+Not changed here: the design drafts under `docs/aidlc-migration/design-drafts/t-010-boundary-lint-and-ci/`
+(the § 6 fixture table with 15 cases, WF6 "cancel in progress", § 7 "no generated header today")
+stay outside this commit. The code, this record, `01-conventions.md` §2, FD-093 and the hand-off
+state the rules as built.
 
 ## Files outside the manifest's path list
 
@@ -202,4 +285,5 @@ square brackets: `apps/web/src/app/{locale}/(patient)/doctors/{id}/page.tsx`,
 Found and fixed in U3 T-010: ISS-060, ISS-205, ISS-226, ISS-272, ISS-273, ISS-274, ISS-275,
 ISS-277, ISS-280, ISS-281, ISS-282, ISS-284, ISS-288, ISS-295, ISS-296. Recorded, open or for
 others: ISS-127 (note), ISS-276, ISS-278, ISS-279, ISS-283, ISS-285, ISS-286, ISS-287, ISS-289 to
-ISS-294, ISS-297, ISS-298, ISS-299. No open S1 or S2.
+ISS-294, ISS-297, ISS-298, ISS-299. From the review fixes: ISS-300, ISS-301, ISS-302 (open, S4);
+ISS-280 and ISS-298 updated. No open S1 or S2.

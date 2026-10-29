@@ -29,7 +29,7 @@ describe('the boundary fixture proof', () => {
 
     expect(failures).toEqual([]);
     expect(ok).toBe(true);
-    expect(expected).toBe(10);
+    expect(expected).toBe(15);
   });
 
   it('fails when the element rule is switched off', async () => {
@@ -66,19 +66,19 @@ describe('the boundary rules on imports the fixture does not plant', () => {
     return result.messages.map((message) => message.ruleId);
   };
 
-  it('refuse a dynamic import of Better Auth in the worker', async () => {
-    expect(
-      await rulesFor('apps/worker/src/late.ts', "export const m = import('better-auth');"),
-    ).toEqual(['boundaries/dependencies']);
-  });
-
-  it('refuse a dynamic import of a Node built-in in component source but not in a component test', async () => {
+  it('allow a dynamic import of a Node built-in in a component test', async () => {
     const code = "export const m = import('node:fs');";
 
-    expect(await rulesFor('apps/web/src/components/Late.tsx', code)).toEqual([
-      'boundaries/dependencies',
-    ]);
     expect(await rulesFor('apps/web/src/components/Late.test.tsx', code)).toEqual([]);
+  });
+
+  it('allow a Node built-in in a shared-helper test but not in shared-helper source', async () => {
+    const code = "import { readFileSync } from 'node:fs';\nexport const read = readFileSync;";
+
+    expect(await rulesFor('apps/web/src/i18n/late.test.ts', code)).toEqual([]);
+    expect(await rulesFor('apps/web/src/i18n/late.ts', code)).toEqual([
+      '@typescript-eslint/no-restricted-imports',
+    ]);
   });
 
   it('refuse an external package outside the contracts allowlist', async () => {

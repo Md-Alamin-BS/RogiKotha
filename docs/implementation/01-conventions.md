@@ -96,13 +96,13 @@ Lint-enforced by `eslint-plugin-boundaries` in `eslint.boundaries.mjs` (T-010), 
 | web-actions | `apps/web/src/server/actions` | application, contracts, i18n, web-server, web-shared | any |
 | web-server | `apps/web/src/server` (the rest) | application, contracts, database, i18n; **adapters only from `server/container.ts`** | any |
 | web-components | `apps/web/src/components` | contracts, i18n, web-actions (server actions only, FD-093 (1)), web-shared | no Node built-ins, `pg`, `pg-boss`, `drizzle-orm`, `better-auth`, `sharp`, `pdfjs-dist`, `dotenv`, `@node-rs/argon2` |
-| web-shared | `apps/web/src/lib`, `apps/web/src/i18n` | contracts, i18n (FD-093 (6)) | any |
+| web-shared | `apps/web/src/lib`, `apps/web/src/i18n` | contracts, i18n (FD-093 (6)) | as web-components: components import it (FD-093 (6)) |
 | web | `apps/web/src` (the rest: `app/`, `proxy.ts`) | application, contracts, i18n, web-components, web-actions, web-server, web-shared | any (next, react, next-intl) |
-| worker | `apps/worker/src` | application (only through a future `@rogikotha/application/worker` subpath; type-only imports of the root allowed), contracts, database, adapters | not `better-auth`, `drizzle-orm`, `pg` (AD-6, FD-093 (2), (3)) |
+| worker | `apps/worker/src` | application (only through a future `@rogikotha/application/worker` subpath, by no other specifier, a relative path included; type-only imports allowed), contracts, database, adapters | not `better-auth`, `drizzle-orm`, `pg` (AD-6, FD-093 (2), (3)) |
 
 Test files (`*.test.ts(x)`, including smoke and int tests, `test-setup.ts`, `global-setup.ts`, `*-test-support.ts`) keep their element's row and may also import Node built-ins, `vitest`, `@vitest/*` and `@testing-library/*`; test files in `packages/*` may also import `test-support`. Nothing in `apps/*` imports `test-support`, in source or tests (FD-040).
 
-The worker bans also cover `import()` and `require()`, and match the specifier text, so they hold before Better Auth is installed; the worker's container-grep test stays as a second net (AD-6). `pnpm lint:boundaries` proves the rules on the fixture in `lint-fixtures/boundary-violation/`: ten violations, each refused once, and five allowed controls.
+The worker and component bans also cover `import()` and `require()`. The worker bans match the specifier text, so they hold before Better Auth is installed, and a value import that reaches application code by any other specifier is refused after resolution; the worker's container-grep test stays as a second net (AD-6). `pnpm lint:boundaries` proves the rules on the fixture in `lint-fixtures/boundary-violation/`: fifteen violations, each refused once, and six allowed controls.
 
 ## 3. Commands, queries, results
 

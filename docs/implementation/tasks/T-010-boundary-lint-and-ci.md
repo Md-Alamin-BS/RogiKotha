@@ -83,7 +83,7 @@ Modify: `eslint.config.mjs`, `package.json` (root: `lint:boundaries`, `check`, `
 
 ## Hard-rule checklist
 
-- [x] Reporter identity / private linkage / original evidence cannot reach the worker (lint rule forbids the imports; grants already block the data). Evidence: `eslint.boundaries.mjs` `workerRestrictions` and the worker `dynamicBans`; fixture FX8 (`better-auth`), FX9 (value import of the application root), FX10 (`drizzle-orm`) refused, FX11 (type-only) allowed; `apps/worker/src/container.test.ts` grep test kept.
+- [x] Reporter identity / private linkage / original evidence cannot reach the worker (lint rule forbids the imports; grants already block the data). Evidence: `eslint.boundaries.mjs` `workerRestrictions` and the worker `dynamicBans`; fixture FX8 (`better-auth`), FX9 (value import of the application root), FX10 (`drizzle-orm`), FX16 (value import of application code by a relative path), FX17 (`import('better-auth')`) and FX18 (`require('pg')`) refused, FX11 and FX21 (type-only, by the root and by a relative path) allowed; `apps/worker/src/container.test.ts` grep test kept.
 - [x] No agent/tool attribution in any file, commit, or workflow (no bot commit steps). Evidence: `pnpm check:identity` (step 5 of `pnpm check`, also in CI with the pushed range); `.github/workflows/check.yml` has no step that commits, comments or uploads, and `permissions: contents: read`.
 
 ## Hand-off (implementer fills in)
@@ -92,7 +92,7 @@ Full hand-off: [`docs/implementation/handoffs/T-010.md`](../handoffs/T-010.md) (
 
 ### What changed
 
-`eslint-plugin-boundaries` 7.3.0 rules in `eslint.boundaries.mjs` (the matrix of `01-conventions.md` §2 with FD-040 and FD-093); `pnpm lint:boundaries` fixture proof (10 violations, 5 controls); `pnpm check:identity`; `pnpm format:check` after one formatting-only commit; `pnpm test:coverage` with an 80% line floor per package, after tests raised six packages above it; `pnpm contrast --tokens`; `pnpm check` as nine steps; `.github/workflows/check.yml`; `PgOutbox.countPending` (ISS-205). ESLint 10 flat config is supported by the plugin, so the `dependency-cruiser` fallback was not needed.
+`eslint-plugin-boundaries` 7.3.0 rules in `eslint.boundaries.mjs` (the matrix of `01-conventions.md` §2 with FD-040 and FD-093); `pnpm lint:boundaries` fixture proof (15 violations, 6 controls, after the review fixes of 2026-10-29); `pnpm check:identity`; `pnpm format:check` after one formatting-only commit; `pnpm test:coverage` with an 80% line floor per package, after tests raised six packages above it; `pnpm contrast --tokens`; `pnpm check` as nine steps; `.github/workflows/check.yml`; `PgOutbox.countPending` (ISS-205). ESLint 10 flat config is supported by the plugin, so the `dependency-cruiser` fallback was not needed.
 
 ### Not done and why
 
@@ -106,11 +106,11 @@ Full hand-off: [`docs/implementation/handoffs/T-010.md`](../handoffs/T-010.md) (
 
 ### Follow-ups
 
-ISS-127 (local smoke message, T-505), ISS-278, ISS-279, ISS-285, ISS-287, ISS-289 to ISS-294, ISS-297, ISS-298, ISS-299.
+ISS-127 (local smoke message, T-505), ISS-278, ISS-279, ISS-285, ISS-287, ISS-289 to ISS-294, ISS-297, ISS-298, ISS-299, ISS-300, ISS-301, ISS-302.
 
 ### `pnpm check` output summary
 
-Exit 0 in 189 s locally (nine steps; an earlier run took 304 s, ISS-298): typecheck 9/9, lint 0 errors (1 warning that predates T-010, ISS-299), "10 expected violations found", Prettier clean, no attribution markers, 92 test files with 999 passed and 2 expected fail, every package at or above 80% lines, i18n parity 781 keys, contrast all pass, both builds done. `pnpm smoke`: 12 files, 20 tests, 19 s.
+After the review fixes (2026-10-29): exit 0 in 402 s locally (nine steps; a first run went red on a contracts smoke timeout under load, ISS-302; the 2026-10-28 gate took 189 s, an earlier run 304 s, ISS-298): typecheck 9/9, lint 0 errors (1 warning that predates T-010, ISS-299), "15 expected violations found", Prettier clean, no attribution markers, 93 test files with 1002 passed and 2 expected fail, every package at or above 80% lines, i18n parity 781 keys, contrast all pass, both builds done. `pnpm smoke`: 12 files, 20 tests, 32 s.
 
 ### Hard-rule evidence
 

@@ -178,6 +178,12 @@
       "path": "lint-fixtures/boundary-violation/apps/web/src/components/ComponentForm.tsx"
     },
     {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/components/ComponentLate.tsx"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/lib/shared-node.ts"
+    },
+    {
       "path": "lint-fixtures/boundary-violation/apps/web/src/lib/web-bad.test.ts"
     },
     {
@@ -194,6 +200,18 @@
     },
     {
       "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-bad.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-late-auth.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-relative.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-relative-types.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-require.ts"
     },
     {
       "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-sql.ts"
@@ -506,6 +524,9 @@
     },
     {
       "path": "scripts/contrast.test.mjs"
+    },
+    {
+      "path": "scripts/coverage-exclusions.test.mjs"
     },
     {
       "path": "scripts/vitest.config.ts"

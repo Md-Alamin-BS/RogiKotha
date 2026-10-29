@@ -13,6 +13,11 @@ const CODE = '{ts,tsx,mts,cts,js,jsx,mjs,cjs}';
 const SOURCE_FILES = [`${ROOT}packages/*/src/**/*.${CODE}`, `${ROOT}apps/*/src/**/*.${CODE}`];
 const WORKER_FILES = [`${ROOT}apps/worker/src/**/*.${CODE}`];
 const COMPONENT_FILES = [`${ROOT}apps/web/src/components/**/*.${CODE}`];
+// Components import the shared helpers, so the helpers carry the component limits (FD-093 (6)).
+const WEB_SHARED_FILES = [
+  `${ROOT}apps/web/src/lib/**/*.${CODE}`,
+  `${ROOT}apps/web/src/i18n/**/*.${CODE}`,
+];
 
 export const TEST_FILE_PATTERNS = [
   '**/*.test.ts',
@@ -140,6 +145,14 @@ const testAllowance = {
 // The AD-6 and FD-093 bans also cover `import()` and `require()`, which `no-restricted-imports`
 // does not see (BR1.4); static imports are left to that rule so each edge is reported once.
 const NOT_STATIC = { nodeKind: ['dynamic-import', 'require'] };
+// That rule matches only the `@rogikotha/application` specifiers (`/worker` alone passes), so a
+// static value import that reaches the element by any other path, a relative one for example,
+// is refused here. `import { type X }` counts as a value import: it still loads the module.
+const STATIC_VALUE_OUTSIDE_APPLICATION_SPECIFIERS = {
+  nodeKind: ['import', 'export'],
+  kind: 'value',
+  source: '!@rogikotha/application{,/**}',
+};
 const WORKER_BANNED = ['better-auth', 'drizzle-orm', 'pg'];
 const COMPONENT_BANNED = [
   'pg',
@@ -151,7 +164,7 @@ const COMPONENT_BANNED = [
   'dotenv',
   '@node-rs/argon2',
 ];
-const dynamicBans = [
+const boundaryBans = [
   {
     from: fromType('worker'),
     disallow: [
@@ -160,16 +173,21 @@ const dynamicBans = [
         to: { element: { type: 'application' } },
         dependency: { ...NOT_STATIC, source: '!@rogikotha/application/worker' },
       },
+      {
+        to: { element: { type: 'application' } },
+        dependency: STATIC_VALUE_OUTSIDE_APPLICATION_SPECIFIERS,
+      },
     ],
     message: 'The worker may not load this module (AD-6, FD-093).',
   },
   {
-    from: fromType('web-components'),
+    from: { element: { type: ['web-components', 'web-shared'] } },
     disallow: [
       { to: { module: { source: COMPONENT_BANNED } }, dependency: NOT_STATIC },
       { to: { module: { origin: 'core' } }, dependency: NOT_STATIC },
     ],
-    message: 'Components may not load server-only modules (01-conventions.md §2).',
+    message:
+      'Components and the shared helpers they import may not load server-only modules (01-conventions.md §2).',
   },
 ];
 
@@ -220,19 +238,16 @@ const workerRestrictions = {
   ],
 };
 
+const NO_NODE_MESSAGE =
+  'Components and the shared helpers they import may not import Node built-ins (01-conventions.md §2).';
 const componentRestrictions = {
-  paths: nodeBuiltins.map((name) => ({
-    name,
-    message: 'Components may not import Node built-ins (01-conventions.md §2).',
-  })),
+  paths: nodeBuiltins.map((name) => ({ name, message: NO_NODE_MESSAGE })),
   patterns: [
-    {
-      group: ['node:*'],
-      message: 'Components may not import Node built-ins (01-conventions.md §2).',
-    },
+    { group: ['node:*'], message: NO_NODE_MESSAGE },
     {
       group: COMPONENT_BANNED.flatMap((name) => [name, `${name}/*`]),
-      message: 'Components may not import server-only libraries (01-conventions.md §2).',
+      message:
+        'Components and the shared helpers they import may not import server-only libraries (01-conventions.md §2).',
     },
   ],
 };
@@ -270,7 +285,7 @@ export const boundaryConfigs = [
         {
           default: 'disallow',
           checkAllOrigins: true,
-          policies: [...matrix, ...externals, ...dynamicBans, testAllowance, unresolvedInternal],
+          policies: [...matrix, ...externals, ...boundaryBans, testAllowance, unresolvedInternal],
         },
       ],
     },
@@ -280,7 +295,7 @@ export const boundaryConfigs = [
     rules: { '@typescript-eslint/no-restricted-imports': ['error', workerRestrictions] },
   },
   {
-    files: COMPONENT_FILES,
+    files: [...COMPONENT_FILES, ...WEB_SHARED_FILES],
     ignores: TEST_FILE_PATTERNS,
     rules: { '@typescript-eslint/no-restricted-imports': ['error', componentRestrictions] },
   },

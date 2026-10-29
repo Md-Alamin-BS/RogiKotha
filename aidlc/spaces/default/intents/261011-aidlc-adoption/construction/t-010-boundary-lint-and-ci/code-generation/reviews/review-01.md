@@ -1,0 +1,31 @@
+## Review
+
+**Verdict:** READY
+**Reviewer:** aidlc-architecture-reviewer-agent
+**Date:** 2026-10-28T14:58:26Z
+**Iteration:** 1
+
+### Findings
+
+| ID | Severity | Location | Finding | Required action | Status |
+|---|---|---|---|---|---|
+| R-01 | Major | eslint.boundaries.mjs > `workerRestrictions` (lines 189-221) and `dynamicBans` worker entry (lines 155-163) | The worker's ban on value imports of the application root (and of `modules/identity`, `modules/account`, `modules/data-requests/commands`) works only by import name. A relative path gets past it. I linted `import * as t from '../../../../../packages/application/src/index'` from a worker file with the ESLint API, and it reported nothing: the boundary matrix allows worker to application (line 97), and the element-level disallow only covers `import()` and `require()`. The worker's grep test (`apps/worker/src/container.test.ts:14`, `better-auth\|identity.reveal\|dataRequest.delete`) would not catch a `modules/identity/` path either. Nothing is exposed today because `packages/application` has no code yet, but this is the AD-6 guarantee that FD-093 (2) says the lint enforces. | Make the worker's element-level application ban cover static value imports too: refuse any worker value dependency on the `application` element whose source is not `@rogikotha/application/worker`, and keep type-only imports allowed. Add a fixture violation, a relative value import of the application root, to `lint-fixtures/boundary-violation/manifest.json`. | New |
+| R-02 | Minor | lint-fixtures/boundary-violation/manifest.json > cases FX1-FX15; rules.md BR1.4, BR5.4 | No fixture case uses `import()`, `require()` or a re-export, so deleting `dynamicBans` (eslint.boundaries.mjs:154-174) would leave `pnpm lint:boundaries` green. The mutation check only switched off the worker's `no-restricted-imports`. I probed by hand and the rules do work today: dynamic `better-auth`, `pg` and application root, `require('drizzle-orm')`, a component's dynamic `node:fs`, and re-exports of `better-auth`, the application root and `database` are all refused. But BR5.4's claim that removing any rule fails the proof does not hold for these policies. | Add fixture violations for a worker `await import('better-auth')`, a worker `require('pg')` and a component `await import('node:fs')`, and update the expected count in the hand-off and the acceptance rows. | New |
+| R-03 | Minor | eslint.boundaries.mjs > `web-shared` element (lines 39-43) and `externals` (lines 110-129) | `web-shared` (`apps/web/src/lib`, `apps/web/src/i18n`) may import any external and any Node built-in, and components may import `web-shared`. So a component can reach `node:*`, `pg`, `drizzle-orm` or `better-auth` through a helper in `@/lib`, while FD-093 (1) and § 3 E12 ban them for components. `web-shared` is also still an agent-made addition (FD-093 (6)) waiting for the owner's confirmation. | Apply the component restrictions (Node built-ins and `COMPONENT_BANNED`) to `web-shared` source too, or record why `lib/` must stay server-capable. Put FD-093 (6) to the owner at this gate. | New |
+| R-04 | Minor | vitest.workspace.ts > `generatedFiles()` (lines 29-42); functional-spec.md § 7 | The coverage run leaves out 16 files with a generated header, 15 of them corpus data files, but § 7 says "corpus data count". This does not lower the floor: imported data modules run in full, so leaving them out lowers the package figure rather than raising it. Still, it goes beyond the approved design, and FD-093 (7) is waiting for the owner. The header match (first 400 characters) is also an opt-out that any hand-written file could use. | Get the owner to confirm FD-093 (7) at the gate. Add a tooling test that pins today's list of excluded generated files, so a new opt-out shows up in review. | New |
+| R-05 | Minor | .github/workflows/check.yml > `concurrency` (lines 16-18) and the "Commit range for the identity guard" step (lines 93-110) | `cancel-in-progress: true` also applies to `main`. If two pushes to `main` overlap, the first run is cancelled and the second checks only `before2..after2`, so the first push's commits never pass `check:identity`. Separately, the `postgres:18` service image is pinned by tag only, while the actions are pinned by hash. The "CI green" acceptance row is still unobserved (BR10.4). | Use `cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}`. Pin the service image by digest, or record why the tag is enough. Record the CI run URL for the pushed branch head before merge. | New |
+
+### Validation Tool Results
+
+| Tool | Result | Interpretation |
+|---|---|---|
+| `pnpm lint:boundaries` | PASS: "10 expected violations found" | The fixture matches its manifest and the § 6 table exactly (10 violations, 5 controls). |
+| `pnpm check:identity` | PASS: no markers (f91c9de..HEAD, tracked files) | All 6 commits carry only the human's git identity. Excluded trees match BR11.1. |
+| `vitest --project tooling` | PASS: 4 files, 21 tests | The boundary checker, identity guard, contrast and smoke tooling tests are green. |
+| ESLint probe (`lintText` on virtual fixture paths, 18 cases) | 17 refused as designed, 1 gap | The relative-path worker to application value import passes (Major above). `pg-boss` in the worker is allowed, as § 3 intends. |
+| Formatting commit `4be7878` | Formatting only | Outside `4be7878`, the only non-test source files touched are `apps/worker/src/health.ts`, `packages/database/src/repositories/outbox.ts` and the two `package.json` files, all in the plan's table. A `-w` spot-check of `ConsoleNav.tsx` and `enums.ts` shows layout changes only. |
+| `ISSUES.md` | ISS-272..ISS-299 present | Every new row has `Found in` = `U3 T-010`. |
+
+### Summary
+
+The boundary matrix matches § 3 plus FD-093 and is not over-wide, with one exception: the worker's AD-6 ban on application value imports keys on the import name, so a relative path gets through (Major, not exposed while `packages/application` is empty). The other findings are hardening and owner confirmations. Coverage includes untested files and excludes only what Q8 allows. The `not-implemented.test.ts` stub contract is a real test that can fail. The spot-checked new tests check behaviour. The CI workflow has hash-pinned actions, a read-only token, no secrets and no write steps.

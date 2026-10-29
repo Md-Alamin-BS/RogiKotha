@@ -1,6 +1,7 @@
 # The local gate on a clean machine (T-010, functional-spec.md WF6, BR10.1-BR10.5): a Bolt merges
-# only after this run is green on its branch head. Every action is pinned to a commit; the hashes
-# are recorded in docs/status/dependency-check-log.md (2026-10-28).
+# only after this run is green on its branch head. Every action is pinned to a commit and the
+# service image to a digest; both are recorded in docs/status/dependency-check-log.md
+# (2026-10-28, 2026-10-29).
 name: check
 
 on:
@@ -15,7 +16,8 @@ permissions:
 
 concurrency:
   group: check-${{ github.ref }}
-  cancel-in-progress: true
+  # Never on main: a cancelled run would leave its push's commits unchecked by the identity guard.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   check:
@@ -23,7 +25,8 @@ jobs:
     timeout-minutes: 20
     services:
       postgres:
-        image: postgres:18
+        # postgres:18 = 18.6, the multi-platform index digest (2026-10-29).
+        image: postgres:18@sha256:979bccfde35445db618c65107d27d08c6c21339d8dc3ad4c830c6633947be0e4
         env:
           POSTGRES_USER: postgres
           # A throwaway database on an ephemeral runner; the value differs per run and is no secret.

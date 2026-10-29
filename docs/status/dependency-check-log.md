@@ -27,6 +27,28 @@ Rules:
 
 ## Entries
 
+### 2026-10-29 (U3 T-010 review fixes — CI service image digest)
+
+- Scope: the T-010 review (R-05) asked to pin the CI `postgres:18` service image by digest, as the
+  actions are pinned by commit.
+- Checked: Docker Hub `postgres:18` with `docker buildx imagetools inspect postgres:18`
+  (2026-10-29): an OCI image index, digest
+  `sha256:979bccfde35445db618c65107d27d08c6c21339d8dc3ad4c830c6633947be0e4`, whose `linux/amd64`
+  manifest is `sha256:f4b419e350fd98d4a8429603295208976dea4c8fb8326d818d346d3e29f1db6f`,
+  `org.opencontainers.image.version` 18.6, created 2026-10-28 on `debian:trixie-slim`. PostgreSQL
+  18.6 release notes (postgresql.org/docs/release/18.6/).
+- Findings: 18.6 (2026-08-13) is a regular minor and security release and still the newest 18.x
+  (18.5 was skipped for a regression); no dump or restore from 18.x. Its upgrade notes (GIN
+  `reltuples`, `btree_gist` and `ltree` reindex, `COPY ... FROM STDIN` terminators in test
+  scripts, `output_plugin_libraries`, pgcrypto `ignore-cipher-failure`) do not touch this
+  project's empty-database CI run. The image built 2026-10-28 is a base-image rebuild of the same
+  18.6; the local compose image is also 18.6 (`PG_VERSION=18.6-1.pgdg13+2`), from an earlier build.
+- Decision: `.github/workflows/check.yml` uses
+  `postgres:18@sha256:979bccfde35445db618c65107d27d08c6c21339d8dc3ad4c830c6633947be0e4`, the
+  multi-platform index digest (the tag is kept for readers; the digest decides). The compose file
+  keeps the floating `postgres:18` tag for local work (the 2026-09-13 T-002 decision); bumping the
+  CI digest is a deliberate edit with a new entry here.
+
 ### 2026-10-28 (U3 T-010 — boundary lint, coverage floor, format check, CI)
 
 - Scope: T-010 adds the first import-boundary plugin and a TypeScript import resolver for it,
