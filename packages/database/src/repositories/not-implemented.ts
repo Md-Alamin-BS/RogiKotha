@@ -8,7 +8,9 @@ export class NotImplemented extends Error {
   // declared for documentation — satisfies `no-unused-vars` honestly
   // instead of prefixing every one with `_`.
   constructor(owningTask: string, context?: Record<string, unknown>) {
-    super(`not implemented — owned by ${owningTask}${context ? ` ${JSON.stringify(context)}` : ''}`);
+    super(
+      `not implemented — owned by ${owningTask}${context ? ` ${JSON.stringify(context)}` : ''}`,
+    );
     this.name = 'NotImplemented';
   }
 }

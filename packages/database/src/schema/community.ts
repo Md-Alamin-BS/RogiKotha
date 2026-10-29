@@ -1,7 +1,16 @@
 // Community (02-data-model.md §8).
 import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import { boolean, check, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  check,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 import { accountProfiles } from './account';
 import { createdAt, id, publicId } from './_common';
@@ -62,7 +71,9 @@ export const reactions = pgTable(
     // union plus a CHECK constraint avoids both widening the shared enum
     // (outside this task's owned `schema/enums.ts`) and the TS-only-enum gap
     // `ISS-110` found.
-    targetKind: text('target_kind', { enum: ['review', 'facility_review', 'comment'] as const }).notNull(),
+    targetKind: text('target_kind', {
+      enum: ['review', 'facility_review', 'comment'] as const,
+    }).notNull(),
     targetId: uuid('target_id').notNull(),
     // Private.
     accountId: uuid('account_id')
@@ -76,6 +87,9 @@ export const reactions = pgTable(
   },
   (t) => [
     uniqueIndex('reactions_target_account_unique').on(t.targetKind, t.targetId, t.accountId),
-    check('reactions_target_kind_check', sql`${t.targetKind} in ('review', 'facility_review', 'comment')`),
+    check(
+      'reactions_target_kind_check',
+      sql`${t.targetKind} in ('review', 'facility_review', 'comment')`,
+    ),
   ],
 );

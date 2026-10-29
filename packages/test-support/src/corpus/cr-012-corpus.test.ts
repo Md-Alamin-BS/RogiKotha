@@ -60,7 +60,16 @@ interface Prototype {
 /** Evaluates the prototype data file read-only, the way `scripts/port-corpus.mjs` does. */
 function loadPrototype(): Prototype {
   const here = path.dirname(fileURLToPath(import.meta.url));
-  const file = path.resolve(here, '..', '..', '..', '..', 'ui-design-prototype', 'shared', 'rogikotha-data.js');
+  const file = path.resolve(
+    here,
+    '..',
+    '..',
+    '..',
+    '..',
+    'ui-design-prototype',
+    'shared',
+    'rogikotha-data.js',
+  );
   const context: { window: { RK?: Prototype }; document: { querySelectorAll: () => [] } } = {
     window: {},
     document: { querySelectorAll: () => [] },
@@ -80,7 +89,9 @@ function prototypeFollowUpCount(): number {
 
 describe('CR-012 corpus against the prototype', () => {
   it('holds exactly as many records per collection as the prototype', () => {
-    const organisations = new Set(RK.facilities.map((f) => (f.parent ? `parent:${f.parent.en}` : f.id)));
+    const organisations = new Set(
+      RK.facilities.map((f) => (f.parent ? `parent:${f.parent.en}` : f.id)),
+    );
     const followUps = FOLLOW_UPS.filter((f) => f.kind === 'follow_up');
     const laterCare = FOLLOW_UPS.filter((f) => f.kind === 'later_care');
     expect({
@@ -153,7 +164,9 @@ describe('CR-012 corpus against the prototype', () => {
   });
 
   it('keeps the hue of every persona that existed before FD-089', () => {
-    const hues = Object.fromEntries(PERSONAS.filter((p) => p.kind !== 'anonymous').map((p) => [p.key, p.avatarHue]));
+    const hues = Object.fromEntries(
+      PERSONAS.filter((p) => p.kind !== 'anonymous').map((p) => [p.key, p.avatarHue]),
+    );
     expect(hues).toMatchObject({
       'pseudonymous:shirin_88': 77,
       'named:Kamrul Islam': 114,
@@ -189,16 +202,24 @@ describe('CR-012 corpus against the prototype', () => {
   it("lets r15's anonymous comment k31 reuse r15's own persona and account", () => {
     const r15Personas = PERSONAS.filter((p) => p.key === 'anon:r15');
     expect(r15Personas).toHaveLength(1);
-    expect(r15Personas[0]).toMatchObject({ reviewSeedRef: 'r15', accountUsername: 'anon_author_r15' });
+    expect(r15Personas[0]).toMatchObject({
+      reviewSeedRef: 'r15',
+      accountUsername: 'anon_author_r15',
+    });
     expect(REVIEWS.find((r) => r.seedRef === 'r15')?.identity).toBe('anon');
-    expect(COMMENTS.find((c) => c.seedRef === 'k31')).toMatchObject({ reviewSeedRef: 'r15', identity: 'anon' });
+    expect(COMMENTS.find((c) => c.seedRef === 'k31')).toMatchObject({
+      reviewSeedRef: 'r15',
+      identity: 'anon',
+    });
   });
 
   it("does not make anon_author_r4 the author of r4, which is r_ahmed's pseudonymous review", () => {
     const r4 = REVIEWS.find((r) => r.seedRef === 'r4');
     expect(r4).toMatchObject({ identity: 'pseudo', author: { en: 'r_ahmed' } });
     expect(PERSONAS.find((p) => p.key === 'pseudonymous:r_ahmed')?.accountUsername).toBe('r_ahmed');
-    const anonR4Content = COMMENTS.filter((c) => c.identity === 'anon' && c.reviewSeedRef === 'r4').map((c) => c.seedRef);
+    const anonR4Content = COMMENTS.filter(
+      (c) => c.identity === 'anon' && c.reviewSeedRef === 'r4',
+    ).map((c) => c.seedRef);
     expect(anonR4Content).toEqual(['k16']);
   });
 

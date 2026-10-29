@@ -20,7 +20,10 @@ export function aFacilityReview(overrides: Partial<FacilityReviewBuild> = {}): F
     posted: { en: 'Posted March 2026', bn: 'প্রকাশ মার্চ ২০২৬' },
     likes: 0,
     dislikes: 0,
-    body: { en: 'Synthetic facility feedback for tests.', bn: 'পরীক্ষার জন্য কাল্পনিক প্রতিক্রিয়া।' },
+    body: {
+      en: 'Synthetic facility feedback for tests.',
+      bn: 'পরীক্ষার জন্য কাল্পনিক প্রতিক্রিয়া।',
+    },
     criteria: { overall: 'good' },
     ...overrides,
   };

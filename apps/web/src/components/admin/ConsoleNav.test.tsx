@@ -49,15 +49,26 @@ function renderNav(active: 'queue' | 'evidence' | 'providers' | 'notifications' 
 describe('ConsoleNav', () => {
   it('renders the Casework and Oversight groups', () => {
     renderNav('queue');
-    for (const label of ['Report queue', 'Evidence quarantine', 'Providers & claims', 'Notifications', 'Configuration']) {
+    for (const label of [
+      'Report queue',
+      'Evidence quarantine',
+      'Providers & claims',
+      'Notifications',
+      'Configuration',
+    ]) {
       expect(screen.getByRole('link', { name: new RegExp(label) })).toBeInTheDocument();
     }
   });
 
   it('sets aria-current on the active item only', () => {
     renderNav('evidence');
-    expect(screen.getByRole('link', { name: /Evidence quarantine/ })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: /Evidence quarantine/ })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
     expect(screen.getByRole('link', { name: /Report queue/ })).not.toHaveAttribute('aria-current');
-    expect(screen.getByRole('link', { name: /Providers & claims/ })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: /Providers & claims/ })).not.toHaveAttribute(
+      'aria-current',
+    );
   });
 });

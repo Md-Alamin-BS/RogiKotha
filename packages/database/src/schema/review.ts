@@ -136,34 +136,43 @@ export const reviewTags = pgTable(
   ],
 );
 
-export const reviewVersions = pgTable('review_versions', {
-  id: id(),
-  reviewId: uuid('review_id')
-    .notNull()
-    .references(() => reviews.id, { onDelete: 'cascade' }),
-  version: integer('version').notNull(),
-  snapshot: jsonb('snapshot').notNull(),
-  // ASSUMPTION(T-005): local literal unions (no top-level enum defined for
-  // either in 02-data-model.md §0); CHECK constraints enforce them at the DB
-  // level rather than repeating the TS-only-enum gap `ISS-110` found.
-  changeKind: text('change_kind', {
-    enum: ['publish', 'correction', 'moderation_redaction', 'restore'] as const,
-  }).notNull(),
-  reason: text('reason'),
-  actorKind: text('actor_kind', { enum: ['author', 'moderator', 'system'] as const }).notNull(),
-  // ASSUMPTION(T-005): 02-data-model.md §6 names `actor_id` with no FK
-  // target. Opaque: an account id for `author`/`moderator`, null for
-  // `system` — the meaning depends on `actorKind`, matching the
-  // `audit_events.actor` opaque-string convention used elsewhere in this
-  // data model, kept as a plain `uuid` rather than an FK to `accountProfiles`
-  // since a `system` row has no account at all.
-  actorId: uuid('actor_id'),
-  createdAt: createdAt(),
-},
-(t) => [
-  check('review_versions_change_kind_check', sql`${t.changeKind} in ('publish', 'correction', 'moderation_redaction', 'restore')`),
-  check('review_versions_actor_kind_check', sql`${t.actorKind} in ('author', 'moderator', 'system')`),
-]);
+export const reviewVersions = pgTable(
+  'review_versions',
+  {
+    id: id(),
+    reviewId: uuid('review_id')
+      .notNull()
+      .references(() => reviews.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull(),
+    snapshot: jsonb('snapshot').notNull(),
+    // ASSUMPTION(T-005): local literal unions (no top-level enum defined for
+    // either in 02-data-model.md §0); CHECK constraints enforce them at the DB
+    // level rather than repeating the TS-only-enum gap `ISS-110` found.
+    changeKind: text('change_kind', {
+      enum: ['publish', 'correction', 'moderation_redaction', 'restore'] as const,
+    }).notNull(),
+    reason: text('reason'),
+    actorKind: text('actor_kind', { enum: ['author', 'moderator', 'system'] as const }).notNull(),
+    // ASSUMPTION(T-005): 02-data-model.md §6 names `actor_id` with no FK
+    // target. Opaque: an account id for `author`/`moderator`, null for
+    // `system` — the meaning depends on `actorKind`, matching the
+    // `audit_events.actor` opaque-string convention used elsewhere in this
+    // data model, kept as a plain `uuid` rather than an FK to `accountProfiles`
+    // since a `system` row has no account at all.
+    actorId: uuid('actor_id'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    check(
+      'review_versions_change_kind_check',
+      sql`${t.changeKind} in ('publish', 'correction', 'moderation_redaction', 'restore')`,
+    ),
+    check(
+      'review_versions_actor_kind_check',
+      sql`${t.actorKind} in ('author', 'moderator', 'system')`,
+    ),
+  ],
+);
 
 export const reviewFollowUps = pgTable(
   'review_follow_ups',
@@ -184,7 +193,13 @@ export const reviewFollowUps = pgTable(
     state: publicationStateEnum('state').notNull().default('published'),
     createdAt: createdAt(),
   },
-  (t) => [index('review_follow_ups_review_id_dated_idx').on(t.reviewId, t.datedYear.desc(), t.datedMonth.desc())],
+  (t) => [
+    index('review_follow_ups_review_id_dated_idx').on(
+      t.reviewId,
+      t.datedYear.desc(),
+      t.datedMonth.desc(),
+    ),
+  ],
 );
 
 export const reviewDrafts = pgTable(
@@ -227,7 +242,10 @@ export const facilityReviews = pgTable(
     body: text('body').notNull(),
     // `{staff: 'good', …, reportTime: null}` — never joins to a doctor's
     // aggregates (02-data-model.md §6 note; hard-rule checklist).
-    criteria: jsonb('criteria').$type<Partial<Record<Criterion, CriterionValue | null>>>().notNull().default({}),
+    criteria: jsonb('criteria')
+      .$type<Partial<Record<Criterion, CriterionValue | null>>>()
+      .notNull()
+      .default({}),
     state: publicationStateEnum('state').notNull(),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     version: integer('version').notNull().default(1),

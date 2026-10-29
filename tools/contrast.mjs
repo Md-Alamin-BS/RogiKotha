@@ -3,6 +3,7 @@
  * tools/contrast.mjs
  *
  *   node tools/contrast.mjs      # or: pnpm tools:contrast
+ *   node tools/contrast.mjs --tokens apps/web/src/styles/tokens.css   # or: pnpm contrast
  *
  * Computes WCAG contrast ratios directly from the Concept 04b tokens as they
  * ship in styles.css - no browser, no dependencies. Reads the LAST definition
@@ -15,15 +16,31 @@
  * apply - see docs/planning/ux/DESIGN.md.
  *
  * This caught --ink-faint shipping at 4.05:1 while the docs claimed AA.
+ *
+ * With --tokens it reads that stylesheet instead and fails closed (T-010):
+ * an unreadable file, a missing light or dark block, or any pair skipped for
+ * a missing token exits non-zero, so a wrong path cannot print OK.
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 // STORY-NFR-AA-HOVER-001: static base-state contrast guard (complementary to
 // tools/hover-probe.mjs which exercises the live :hover state in a browser).
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
-const css = readFileSync(join(REPO, 'ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/styles.css'), 'utf8');
+const flagAt = process.argv.indexOf('--tokens');
+const tokensPath = flagAt === -1 ? null : process.argv[flagAt + 1];
+if (flagAt !== -1 && !tokensPath) { console.error('FAIL: --tokens needs a stylesheet path.'); process.exit(1); }
+let css;
+try {
+  css = tokensPath === null
+    ? readFileSync(join(REPO, 'ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/styles.css'), 'utf8')
+    : readFileSync(resolve(tokensPath), 'utf8');
+} catch (err) {
+  if (tokensPath === null) throw err;
+  console.error(`FAIL: cannot read --tokens ${tokensPath}: ${err.message}`);
+  process.exit(1);
+}
 
 // take the LAST definition of each token inside a given block range (cascade)
 function blockAt(startIdx){ const s=css.indexOf('{',startIdx); let d=0,i=s;
@@ -37,9 +54,15 @@ const bare=[...css.matchAll(/^:root \{/gm)].map(m=>m.index);
 // semantic-hook block are separate rules, and the cascade merges them.
 const light = bare.reduce((acc,i)=>({...acc,...tokens(blockAt(i))}),{});
 const darkIdxs=[...css.matchAll(/^:root\[data-theme="dark"\] \{/gm)].map(m=>m.index);
+if (tokensPath !== null && (!bare.length || !darkIdxs.length)) {
+  console.error(`FAIL: ${tokensPath} has no ${bare.length ? 'dark ":root[data-theme=\"dark\"] {"' : 'bare ":root {"'} block.`);
+  process.exit(1);
+}
 const dark = { ...light, ...tokens(blockAt(darkIdxs[darkIdxs.length-1])) };
 
 function parseHsl(v, map, seen=0){
+  // A missing token is a skip in --tokens mode; without the flag it still throws, as before.
+  if(v===undefined && tokensPath!==null) return null;
   v=v.trim();
   const varm=v.match(/^var\((--[\w-]+)\)$/); if(varm && seen<5) return parseHsl(map[varm[1]],map,seen+1);
   const m=v.match(/hsl\(\s*([\d.]+)\s+([\d.]+)%\s+([\d.]+)%\s*(?:\/\s*([\d.]+))?\s*\)/);
@@ -75,6 +98,7 @@ const PAIRS=[
  ['--rule','--aside-bg','divider on aside',1.5],
 ];
 let failures = 0;
+const skipped = [];
 // every light-mode scheme is evaluated as its overrides merged over the light base
 const schemeBlocks=[...css.matchAll(/^:root\[data-scheme="([a-z]+)"\]\s*\{/gm)];
 const variants=[['LIGHT',light],['DARK',dark]];
@@ -84,13 +108,19 @@ for(const [name,map] of variants){
   let fails=0;
   for(const [f,b,label,min,hard] of PAIRS){
     const F=parseHsl(map[f],map),B=parseHsl(map[b],map);
-    if(!F||!B){ console.log(`  SKIP ${label} (${f}/${b})`); continue; }
+    if(!F||!B){ console.log(`  SKIP ${label} (${f}/${b})`); skipped.push(`${name}: ${label} - missing ${[!F&&f,!B&&b].filter(Boolean).join(', ')}`); continue; }
     const r=ratio(F,B); const ok=r>=min; if(!ok){fails++; if(min>=4.5||hard) failures++;}
     console.log(`  ${ok?'PASS':'FAIL'} ${r.toFixed(2)}:1 (need ${min}) ${label}  [${f} on ${b}]`);
   }
   console.log('  -> '+(fails?fails+' below threshold':'all pass'));
 }
 
+if (tokensPath !== null && skipped.length) {
+  console.log('');
+  console.log('FAIL: ' + skipped.length + ' pair(s) skipped, so ' + tokensPath + ' was not checked in full:');
+  for (const line of skipped) console.log('  ' + line);
+  process.exit(1);
+}
 if (failures) {
   console.log('');
   console.log('FAIL: ' + failures + ' pair(s) below threshold (text AA, or a 1.4.11 boundary).');

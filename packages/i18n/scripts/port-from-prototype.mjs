@@ -273,7 +273,7 @@ const AUTH_SPEC_KEYS = {
     bn: 'পাসওয়ার্ড: কমপক্ষে ১০ অক্ষর দিন।',
   },
   'errors.auth.usernameTaken': {
-    en: "Username: that one is taken.",
+    en: 'Username: that one is taken.',
     bn: 'ইউজারনেম: এটি আগেই নেওয়া হয়েছে।',
   },
   'errors.auth.usernameInvalid': {

@@ -6,7 +6,10 @@ import { CRITERIA, CRITERION_VALUES, FOLLOW_UP_KINDS, IDENTITY_MODES } from '../
 import { PUBLIC_ID_RE } from '../ids';
 
 const publicId = z.string().regex(PUBLIC_ID_RE);
-const PageParams = { page: z.number().int().min(1).optional(), pageSize: z.number().int().min(1).max(100).optional() };
+const PageParams = {
+  page: z.number().int().min(1).optional(),
+  pageSize: z.number().int().min(1).max(100).optional(),
+};
 
 // TODO(T-301/T-306): the composer draft payload shape is owned by those
 // tasks; kept unknown here so this task does not guess the field list.
@@ -58,7 +61,9 @@ export const RestoreReviewInput = z.object({ reviewId: z.string().min(1) }).stri
 export const GetExperienceInput = z.object({ publicId }).strict();
 
 // TODO(T-301): filter shape owned by that task.
-export const ListExperiencesInput = z.object({ ...PageParams, filters: z.unknown().optional() }).strict();
+export const ListExperiencesInput = z
+  .object({ ...PageParams, filters: z.unknown().optional() })
+  .strict();
 
 export const ForDoctorInput = z.object({ doctorPublicId: publicId, ...PageParams }).strict();
 

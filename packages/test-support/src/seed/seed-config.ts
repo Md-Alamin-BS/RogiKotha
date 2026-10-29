@@ -14,10 +14,16 @@ export async function seedConfig(db: Db, ctx: SeedContext): Promise<number> {
   let inserted = 0;
   const actorAccountId = ctx.accountIdByUsername.get('sa_founder');
   if (!actorAccountId) {
-    throw new Error('seed-config: sa_founder account must be seeded first (see seed.ts step order)');
+    throw new Error(
+      'seed-config: sa_founder account must be seeded first (see seed.ts step order)',
+    );
   }
 
-  const [existingConfig] = await db.select().from(configVersions).where(eq(configVersions.version, 1)).limit(1);
+  const [existingConfig] = await db
+    .select()
+    .from(configVersions)
+    .where(eq(configVersions.version, 1))
+    .limit(1);
   if (!existingConfig) {
     const values: ConfigValues = {
       ...DEFAULT_CONFIG_VALUES,
@@ -43,7 +49,11 @@ export async function seedConfig(db: Db, ctx: SeedContext): Promise<number> {
     inserted += 1;
   }
 
-  const [existingPolicy] = await db.select().from(retentionPolicies).where(eq(retentionPolicies.version, 1)).limit(1);
+  const [existingPolicy] = await db
+    .select()
+    .from(retentionPolicies)
+    .where(eq(retentionPolicies.version, 1))
+    .limit(1);
   if (!existingPolicy) {
     await db.insert(retentionPolicies).values({
       id: newId(),

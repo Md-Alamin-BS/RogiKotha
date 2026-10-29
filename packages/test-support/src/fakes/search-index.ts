@@ -29,13 +29,20 @@ export class NaiveSearchIndex {
     return Promise.resolve();
   }
 
-  search(query: string, filters?: { kind?: string }, page?: { page?: number; pageSize?: number }): Promise<{ results: SearchDoc[]; total: number }> {
+  search(
+    query: string,
+    filters?: { kind?: string },
+    page?: { page?: number; pageSize?: number },
+  ): Promise<{ results: SearchDoc[]; total: number }> {
     const q = query.trim().toLowerCase();
     const all = [...this.docs.values()].filter((d) => {
       if (!d.published) return false;
       if (filters?.kind && d.kind !== filters.kind) return false;
       if (!q) return true;
-      const haystack = [d.titleEn, d.titleBn, d.bodyEn, d.bodyBn].filter(Boolean).join(' ').toLowerCase();
+      const haystack = [d.titleEn, d.titleBn, d.bodyEn, d.bodyBn]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
       return haystack.includes(q);
     });
     const pageSize = page?.pageSize ?? 20;
@@ -47,7 +54,10 @@ export class NaiveSearchIndex {
     const query = q.trim().toLowerCase();
     return Promise.resolve(
       [...this.docs.values()]
-        .filter((d) => d.published && (d.titleEn?.toLowerCase().includes(query) || d.titleBn?.includes(query)))
+        .filter(
+          (d) =>
+            d.published && (d.titleEn?.toLowerCase().includes(query) || d.titleBn?.includes(query)),
+        )
         .slice(0, 8)
         .map((d) => ({ kind: d.kind, publicId: d.publicId, title: d.titleEn ?? d.titleBn ?? '' })),
     );

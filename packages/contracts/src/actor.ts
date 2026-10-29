@@ -71,7 +71,12 @@ export function capabilitiesForRole(
     return [...ALL_CAPABILITIES];
   }
   if (role === 'admin') {
-    const capabilities: Capability[] = ['reports.read', 'content.act', 'providers.decide', 'holds.manage'];
+    const capabilities: Capability[] = [
+      'reports.read',
+      'content.act',
+      'providers.decide',
+      'holds.manage',
+    ];
     if (config.admin.revealIdentity) capabilities.push('identity.reveal');
     if (config.admin.originalEvidence) capabilities.push('evidence.original');
     return capabilities;

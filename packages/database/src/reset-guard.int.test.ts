@@ -97,52 +97,44 @@ describe('terminateStaleTestBackends', () => {
 });
 
 describe('runReset under lock contention', () => {
-  it(
-    'rejects within 15 s with a lock-timeout error naming the backend that holds the lock',
-    async () => {
-      // rk_worker's backend is one the rk_app reset could not end even with the sweep on.
-      const blocker = await openClient(workerUrlForTestDb());
-      try {
-        await blocker.client.query('BEGIN');
-        await blocker.client.query('select 1 from outbox_events limit 1');
-        const started = performance.now();
-        await expect(runReset(testUrl)).rejects.toThrow(
-          new RegExp(`lock_timeout 10s; blocked by backend pid ${blocker.pid} \\(role rk_worker`),
-        );
-        expect(performance.now() - started).toBeLessThan(15_000);
-      } finally {
-        await blocker.client.query('ROLLBACK').catch(() => undefined);
-        await blocker.client.end();
-      }
-      // The failed DROP rolled back: the schema this file started with is still there.
-      expect(await publicSchemaOid()).toBe(oidBeforeFileSetup);
-    },
-    30_000,
-  );
+  it('rejects within 15 s with a lock-timeout error naming the backend that holds the lock', async () => {
+    // rk_worker's backend is one the rk_app reset could not end even with the sweep on.
+    const blocker = await openClient(workerUrlForTestDb());
+    try {
+      await blocker.client.query('BEGIN');
+      await blocker.client.query('select 1 from outbox_events limit 1');
+      const started = performance.now();
+      await expect(runReset(testUrl)).rejects.toThrow(
+        new RegExp(`lock_timeout 10s; blocked by backend pid ${blocker.pid} \\(role rk_worker`),
+      );
+      expect(performance.now() - started).toBeLessThan(15_000);
+    } finally {
+      await blocker.client.query('ROLLBACK').catch(() => undefined);
+      await blocker.client.end();
+    }
+    // The failed DROP rolled back: the schema this file started with is still there.
+    expect(await publicSchemaOid()).toBe(oidBeforeFileSetup);
+  }, 30_000);
 
   // CR-011 T14 (BR4.1–BR4.3): the reset now drops `pgboss` with `public`, so a
   // worker holding a lock in `pgboss` blocks it too, and both schemas survive.
-  it(
-    'T14: a reset blocked by a rk_worker lock on pgboss.job rejects within 15 s naming that backend, and leaves both schemas as they were',
-    async () => {
-      const pgbossBefore = await schemaOid('pgboss');
-      const blocker = await openClient(workerUrlForTestDb());
-      try {
-        await blocker.client.query('BEGIN');
-        await blocker.client.query('select 1 from pgboss.job limit 1');
-        const started = performance.now();
-        await expect(runReset(testUrl)).rejects.toThrow(
-          new RegExp(`lock_timeout 10s; blocked by backend pid ${blocker.pid} \\(role rk_worker`),
-        );
-        expect(performance.now() - started).toBeLessThan(15_000);
-      } finally {
-        await blocker.client.query('ROLLBACK').catch(() => undefined);
-        await blocker.client.end();
-      }
-      expect(await publicSchemaOid()).toBe(oidBeforeFileSetup);
-      expect(await schemaOid('pgboss')).toBe(pgbossBefore);
-      expect(pgbossBefore).toBeGreaterThan(0);
-    },
-    30_000,
-  );
+  it('T14: a reset blocked by a rk_worker lock on pgboss.job rejects within 15 s naming that backend, and leaves both schemas as they were', async () => {
+    const pgbossBefore = await schemaOid('pgboss');
+    const blocker = await openClient(workerUrlForTestDb());
+    try {
+      await blocker.client.query('BEGIN');
+      await blocker.client.query('select 1 from pgboss.job limit 1');
+      const started = performance.now();
+      await expect(runReset(testUrl)).rejects.toThrow(
+        new RegExp(`lock_timeout 10s; blocked by backend pid ${blocker.pid} \\(role rk_worker`),
+      );
+      expect(performance.now() - started).toBeLessThan(15_000);
+    } finally {
+      await blocker.client.query('ROLLBACK').catch(() => undefined);
+      await blocker.client.end();
+    }
+    expect(await publicSchemaOid()).toBe(oidBeforeFileSetup);
+    expect(await schemaOid('pgboss')).toBe(pgbossBefore);
+    expect(pgbossBefore).toBeGreaterThan(0);
+  }, 30_000);
 });

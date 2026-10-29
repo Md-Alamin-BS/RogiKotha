@@ -9,7 +9,11 @@ export class PgDataRequestRepository {
     throw new NotImplemented('T-410', { accountId, idempotencyKey });
   }
 
-  createDeletionRequest(accountId: string, idempotencyKey: string, plan: unknown): Promise<unknown> {
+  createDeletionRequest(
+    accountId: string,
+    idempotencyKey: string,
+    plan: unknown,
+  ): Promise<unknown> {
     throw new NotImplemented('T-410', { accountId, idempotencyKey, plan });
   }
 
@@ -17,7 +21,12 @@ export class PgDataRequestRepository {
     throw new NotImplemented('T-410', { requestId });
   }
 
-  updatePlanStep(requestId: string, module: string, status: string, errorCode?: string): Promise<unknown> {
+  updatePlanStep(
+    requestId: string,
+    module: string,
+    status: string,
+    errorCode?: string,
+  ): Promise<unknown> {
     throw new NotImplemented('T-410', { requestId, module, status, errorCode });
   }
 }

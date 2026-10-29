@@ -50,8 +50,7 @@ export type EnqueueOutcome = 'enqueued' | 'deduplicated';
  * the queue: `job_not_enqueued` is an internal failure, not an `ErrorCode`
  * of 03-routes-and-contracts.md §2. */
 export type EnqueueResult =
-  | { ok: true; data: EnqueueOutcome }
-  | { ok: false; error: { code: 'job_not_enqueued' } };
+  { ok: true; data: EnqueueOutcome } | { ok: false; error: { code: 'job_not_enqueued' } };
 
 /** A stored queue whose policy differs from its declaration (BR3.5). */
 export class QueuePolicyMismatchError extends Error {
@@ -131,7 +130,9 @@ export class PgBossQueue {
       reindex: options.reindex ?? false,
     });
     this.boss.on('error', (err: unknown) => {
-      this.logger.error('queue.error', { message: err instanceof Error ? err.message : String(err) });
+      this.logger.error('queue.error', {
+        message: err instanceof Error ? err.message : String(err),
+      });
     });
   }
 
@@ -145,7 +146,10 @@ export class PgBossQueue {
     if (!this.started) {
       return;
     }
-    await this.boss.stop({ graceful: options.graceful ?? true, timeout: options.timeout ?? 10_000 });
+    await this.boss.stop({
+      graceful: options.graceful ?? true,
+      timeout: options.timeout ?? 10_000,
+    });
     this.started = false;
   }
 
@@ -213,7 +217,11 @@ export class PgBossQueue {
     return { ok: false, error: { code: 'job_not_enqueued' } };
   }
 
-  private async hasInFlightJob(name: string, key: string | undefined, executor?: SqlExecutor): Promise<boolean> {
+  private async hasInFlightJob(
+    name: string,
+    key: string | undefined,
+    executor?: SqlExecutor,
+  ): Promise<boolean> {
     const db = executor ?? this.boss.getDb();
     const { rows } = await db.executeSql(IN_FLIGHT_JOB_SQL, [name, key ?? null]);
     return rows.length > 0;
@@ -221,7 +229,11 @@ export class PgBossQueue {
 
   /** Wraps `handler` so a thrown error is logged as `job.failed` and rethrown
    * for pg-boss's own retry/backoff to take over (task step 2). */
-  async work<T = unknown>(name: string, handler: JobHandler<T>, opts: WorkOptions = {}): Promise<void> {
+  async work<T = unknown>(
+    name: string,
+    handler: JobHandler<T>,
+    opts: WorkOptions = {},
+  ): Promise<void> {
     await this.ensureQueue(name);
     await this.boss.work<T>(
       name,
@@ -255,7 +267,13 @@ export class PgBossQueue {
  * its own `PgBossQueue` always passes `migrate: false`.
  */
 export async function installPgBoss(connectionString: string): Promise<void> {
-  const boss = new PgBoss({ connectionString, migrate: true, createSchema: true, supervise: false, schedule: false });
+  const boss = new PgBoss({
+    connectionString,
+    migrate: true,
+    createSchema: true,
+    supervise: false,
+    schedule: false,
+  });
   await boss.start();
   await boss.stop({ graceful: false });
 }

@@ -264,7 +264,14 @@ export interface CorpusFieldChange {
 
 export interface CorpusStaffNotification {
   seedRef: string;
-  kind: 'newReport' | 'newProfile' | 'evidence' | 'claim' | 'protectedChange' | 'identityReveal' | 'security';
+  kind:
+    | 'newReport'
+    | 'newProfile'
+    | 'evidence'
+    | 'claim'
+    | 'protectedChange'
+    | 'identityReveal'
+    | 'security';
   when: Bilingual;
   target: Bilingual;
   text: Bilingual;

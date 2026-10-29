@@ -11,9 +11,15 @@ export function aConfig(overrides: Partial<ConfigValues> = {}): ConfigValues {
     retention: { ...DEFAULT_CONFIG_VALUES.retention, ...overrides.retention },
     capabilities: {
       admin: { ...DEFAULT_CONFIG_VALUES.capabilities.admin, ...overrides.capabilities?.admin },
-      moderator: { ...DEFAULT_CONFIG_VALUES.capabilities.moderator, ...overrides.capabilities?.moderator },
+      moderator: {
+        ...DEFAULT_CONFIG_VALUES.capabilities.moderator,
+        ...overrides.capabilities?.moderator,
+      },
     },
-    featureVisibility: { ...DEFAULT_CONFIG_VALUES.featureVisibility, ...overrides.featureVisibility },
+    featureVisibility: {
+      ...DEFAULT_CONFIG_VALUES.featureVisibility,
+      ...overrides.featureVisibility,
+    },
     emergency: { ...DEFAULT_CONFIG_VALUES.emergency, ...overrides.emergency },
   };
   // Fail loudly in a test if an override produced something invalid, rather

@@ -29,7 +29,9 @@ function listSourceFiles(dir: string): string[] {
 describe('worker source never imports auth, identity reveal or deletion commands', () => {
   it('contains no match for better-auth, identity.reveal or dataRequest.delete', () => {
     const srcDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
-    const offenders = listSourceFiles(srcDir).filter((file) => FORBIDDEN.test(readFileSync(file, 'utf8')));
+    const offenders = listSourceFiles(srcDir).filter((file) =>
+      FORBIDDEN.test(readFileSync(file, 'utf8')),
+    );
     expect(offenders).toEqual([]);
   });
 });

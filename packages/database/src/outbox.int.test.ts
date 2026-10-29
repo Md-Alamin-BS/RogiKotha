@@ -8,6 +8,7 @@
 import { Pool } from 'pg';
 import { describe, expect, it } from 'vitest';
 
+import { createDb } from './client';
 import { clientExecutor } from './queue/sql-executor';
 import { PgOutbox } from './repositories/outbox';
 import type { OutboxRow } from './repositories/outbox';
@@ -43,12 +44,16 @@ describe('PgOutbox', () => {
 
       // While the first transaction holds them, a second claim skips them.
       await other.query('BEGIN');
-      expect(named(await outbox.claimUnprocessed(clientExecutor(other), CLAIM_ALL), name)).toHaveLength(0);
+      expect(
+        named(await outbox.claimUnprocessed(clientExecutor(other), CLAIM_ALL), name),
+      ).toHaveLength(0);
       await other.query('ROLLBACK');
 
       await holder.query('ROLLBACK');
       await other.query('BEGIN');
-      expect(named(await outbox.claimUnprocessed(clientExecutor(other), CLAIM_ALL), name)).toHaveLength(2);
+      expect(
+        named(await outbox.claimUnprocessed(clientExecutor(other), CLAIM_ALL), name),
+      ).toHaveLength(2);
       await other.query('ROLLBACK');
     } finally {
       holder.release();
@@ -77,6 +82,36 @@ describe('PgOutbox', () => {
     }
   });
 
+  it('ISS-205: counts unprocessed rows, and a row marked processed or dead stops counting', async () => {
+    const outbox = new PgOutbox();
+    const name = `probe.${crypto.randomUUID()}`;
+    const before = await outbox.countPending(testDb);
+    await appendTwo(outbox, name);
+    expect(await outbox.countPending(testDb)).toBe(before + 2);
+
+    const client = await testPool.connect();
+    const executor = clientExecutor(client);
+    try {
+      const [first, second] = named(await outbox.claimUnprocessed(executor, CLAIM_ALL), name);
+      await outbox.markProcessed(executor, first!.id);
+      expect(await outbox.countPending(testDb)).toBe(before + 1);
+      await outbox.markDead(executor, second!.id);
+      expect(await outbox.countPending(testDb)).toBe(before);
+    } finally {
+      client.release();
+    }
+  });
+
+  it('ISS-205: counts pending rows as the worker role, which the heartbeat runs as', async () => {
+    const outbox = new PgOutbox();
+    const { db, pool } = createDb(workerUrlForTestDb());
+    try {
+      expect(await outbox.countPending(db)).toBe(await outbox.countPending(testDb));
+    } finally {
+      await pool.end();
+    }
+  });
+
   describe('rk_worker role', () => {
     it('can insert outbox rows but cannot read reports.reporter_account_id', async () => {
       const pool = new Pool({ connectionString: workerUrlForTestDb() });
@@ -84,7 +119,9 @@ describe('PgOutbox', () => {
         await expect(
           pool.query("insert into outbox_events (name, payload) values ('worker.probe', '{}')"),
         ).resolves.toBeDefined();
-        await expect(pool.query('select reporter_account_id from reports')).rejects.toThrow(/permission denied/i);
+        await expect(pool.query('select reporter_account_id from reports')).rejects.toThrow(
+          /permission denied/i,
+        );
       } finally {
         await pool.end();
       }

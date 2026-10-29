@@ -27,6 +27,74 @@ Rules:
 
 ## Entries
 
+### 2026-10-29 (U3 T-010 review fixes — CI service image digest)
+
+- Scope: the T-010 review (R-05) asked to pin the CI `postgres:18` service image by digest, as the
+  actions are pinned by commit.
+- Checked: Docker Hub `postgres:18` with `docker buildx imagetools inspect postgres:18`
+  (2026-10-29): an OCI image index, digest
+  `sha256:979bccfde35445db618c65107d27d08c6c21339d8dc3ad4c830c6633947be0e4`, whose `linux/amd64`
+  manifest is `sha256:f4b419e350fd98d4a8429603295208976dea4c8fb8326d818d346d3e29f1db6f`,
+  `org.opencontainers.image.version` 18.6, created 2026-10-28 on `debian:trixie-slim`. PostgreSQL
+  18.6 release notes (postgresql.org/docs/release/18.6/).
+- Findings: 18.6 (2026-08-13) is a regular minor and security release and still the newest 18.x
+  (18.5 was skipped for a regression); no dump or restore from 18.x. Its upgrade notes (GIN
+  `reltuples`, `btree_gist` and `ltree` reindex, `COPY ... FROM STDIN` terminators in test
+  scripts, `output_plugin_libraries`, pgcrypto `ignore-cipher-failure`) do not touch this
+  project's empty-database CI run. The image built 2026-10-28 is a base-image rebuild of the same
+  18.6; the local compose image is also 18.6 (`PG_VERSION=18.6-1.pgdg13+2`), from an earlier build.
+- Decision: `.github/workflows/check.yml` uses
+  `postgres:18@sha256:979bccfde35445db618c65107d27d08c6c21339d8dc3ad4c830c6633947be0e4`, the
+  multi-platform index digest (the tag is kept for readers; the digest decides). The compose file
+  keeps the floating `postgres:18` tag for local work (the 2026-09-13 T-002 decision); bumping the
+  CI digest is a deliberate edit with a new entry here.
+
+### 2026-10-28 (U3 T-010 — boundary lint, coverage floor, format check, CI)
+
+- Scope: T-010 adds the first import-boundary plugin and a TypeScript import resolver for it,
+  switches on `@vitest/coverage-v8` (installed, never configured), makes Prettier part of the gate
+  and writes the first GitHub Actions workflow. No earlier entry covers any of these.
+- Checked: `eslint-plugin-boundaries` (npm `latest` 7.4.0, 2026-10-27; 7.3.0, 2026-10-23; 7.2.1,
+  2026-10-21; 6.0.0, 2026-03-15) with its `packages/eslint-plugin/CHANGELOG.md`, release list and
+  open issues; `eslint-import-resolver-typescript` (npm `latest` 4.4.5, 2026-06-01); the installed
+  `eslint` 10.10.0 (npm `latest` 10.13.0), `typescript-eslint` 8.70.0 (`latest` 8.72.1, peer
+  `eslint ^8.57 || ^9 || ^10`); `@vitest/coverage-v8` and `vitest` 4.1.11 (`latest` 5.0.5; 4.1.12
+  released 2026-10-15) with the 4.1.11 `docs/config/coverage.md`; `prettier` 3.9.6 (`latest`
+  3.9.10); `dependency-cruiser` 18.7.0 (fallback only); `actions/checkout` v7.0.1
+  (`3d3c42e5aac5ba805825da76410c181273ba90b1`, 2026-07-20), `actions/setup-node` v7.1.0
+  (`949feb2413d6458794dcd2491c4babbbce0c15c1`, 2026-10-08), `pnpm/action-setup` v6.1.0
+  (`ea17c68df8912ef543352723c149a84f56e3d413`, 2026-09-05); Docker Hub `postgres:18`.
+- Findings: `eslint-plugin-boundaries` declares peer `eslint >=6.0.0`; 6.0.1 fixed its config
+  helper types for ESLint 10, and v7 documents flat config throughout, so ESLint 10 flat config is
+  supported and the `dependency-cruiser` fallback is not needed. Current rules are
+  `boundaries/dependencies` (with `policies`, `checkAllOrigins` for externals and `to.module.*`
+  selectors), `boundaries/no-unknown-files` and `boundaries/no-unknown-dependencies`;
+  `element-types` and `external` are deprecated aliases. 7.3.0 replaced `micromatch` with
+  `picomatch` (removes the unpatched `braces` advisory) and fixed `basePattern`; 7.4.0 fixes the
+  `node:`-only built-ins' origin, extglob matching and a cache bug that could change errors from
+  one run to the next (#568). 7.4.0 is a non-prerelease release, one day old, with no open bug
+  issue against it. TypeScript sources need `eslint-import-resolver-typescript` (the plugin's
+  default node resolver does not read `paths` or map `.js` specifiers to `.ts`); 4.4.5 is five
+  months old and declares `eslint-plugin-import` as an optional peer. Vitest 4.1.11: uncovered
+  files appear only through `coverage.include`; glob thresholds are per pattern and not inherited;
+  `perFile` defaults off, so a glob threshold is an aggregate. Vitest 5 is a new major and stays
+  out of this Unit. The action hashes above are the release tags' commits and are re-read when the
+  workflow is written (plan Step 15).
+- Decision: add `eslint-plugin-boundaries` 7.3.0 and `eslint-import-resolver-typescript` 4.4.5 as
+  exact root devDependencies. 7.4.0 was refused by pnpm 11's `minimumReleaseAge` policy (it and its
+  `@boundaries/elements` 3.3.0 were under a day old), and adopting it would mean adding them to
+  `minimumReleaseAgeExclude`; 7.3.0 is five days old and its #568 cache bug only touches dot files
+  inside element folders, of which the source roots hold none (checked with `find`). Move to 7.4.x
+  in a later Unit once it has aged. `unrs-resolver`'s postinstall (a `napi-postinstall` check that
+  re-fetches the native binding) is denied in `pnpm-workspace.yaml` `allowBuilds`; the binding
+  arrives as a platform optionalDependency. Keep `eslint` 10.10.0, `typescript-eslint` 8.70.0,
+  `vitest` and `@vitest/coverage-v8` 4.1.11 (they move in lockstep) and `prettier` 3.9.6, because
+  this Unit changes no installed version.
+- Re-check at plan Step 15 (2026-10-28, `git ls-remote` and the GitHub releases API): the three
+  tags still point at the commits above (`pnpm/action-setup` v6.1.0 is an annotated tag whose
+  commit is `ea17c68…`), and each is still its repository's latest release. The workflow pins
+  these commits.
+
 ### 2026-10-28 (U4 CR-011 — transactional outbox relay, queue policy, quiet dotenv)
 
 - Scope: CR-011 relies on three behaviours of the pinned libraries: pg-boss `send(..., { db })` on

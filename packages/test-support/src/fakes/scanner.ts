@@ -14,6 +14,8 @@ export class ScriptedScanner {
     // Falls back to 'unavailable' once the script runs out — matches the
     // real scanner's fail-closed behaviour when it cannot be reached.
     const status = this.nextResults.shift() ?? 'unavailable';
-    return Promise.resolve(status === 'detected' ? { status, signatureVersion: 'test-1' } : { status });
+    return Promise.resolve(
+      status === 'detected' ? { status, signatureVersion: 'test-1' } : { status },
+    );
   }
 }

@@ -27,7 +27,13 @@ function escapeXml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function pageSvg(labelEn: string, pageNo: number, width: number, height: number, scale: number): Buffer {
+function pageSvg(
+  labelEn: string,
+  pageNo: number,
+  width: number,
+  height: number,
+  scale: number,
+): Buffer {
   const fontSize = Math.round(22 * scale);
   const markerSize = Math.round(16 * scale);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
@@ -63,7 +69,9 @@ export async function generateDerivatives(
   await fs.mkdir(baseDir, { recursive: true });
 
   for (let pageNo = 1; pageNo <= pageCount; pageNo += 1) {
-    const pagePng = await sharp(pageSvg(labelEn, pageNo, PAGE_WIDTH, PAGE_HEIGHT, 1)).png().toBuffer();
+    const pagePng = await sharp(pageSvg(labelEn, pageNo, PAGE_WIDTH, PAGE_HEIGHT, 1))
+      .png()
+      .toBuffer();
     const pageKey = pageCount === 1 ? 'page-1.png' : `page-${pageNo}.png`;
     await fs.writeFile(path.join(baseDir, pageKey), pagePng);
     artifacts.push({
@@ -77,7 +85,9 @@ export async function generateDerivatives(
     });
 
     if (pageNo === 1) {
-      const thumbPng = await sharp(pageSvg(labelEn, pageNo, THUMB_WIDTH, THUMB_HEIGHT, THUMB_WIDTH / PAGE_WIDTH))
+      const thumbPng = await sharp(
+        pageSvg(labelEn, pageNo, THUMB_WIDTH, THUMB_HEIGHT, THUMB_WIDTH / PAGE_WIDTH),
+      )
         .png()
         .toBuffer();
       await fs.writeFile(path.join(baseDir, 'thumb.png'), thumbPng);
@@ -97,7 +107,10 @@ export async function generateDerivatives(
 }
 
 /** A deterministic stand-in "original" file's bytes and sha256, for `evidence_items.original_*`. */
-export function generateOriginal(itemPublicId: string, labelEn: string): { bytes: Buffer; sha256: string } {
+export function generateOriginal(
+  itemPublicId: string,
+  labelEn: string,
+): { bytes: Buffer; sha256: string } {
   const bytes = Buffer.from(`synthetic-original:${itemPublicId}:${labelEn}`);
   return { bytes, sha256: createHash('sha256').update(bytes).digest('hex') };
 }

@@ -58,7 +58,12 @@ export function Emergency({ config, locale }: { config: EmergencyConfig; locale:
         {/* verify.bmdc.org.bd is the registration-lookup portal. The general
             site (www.bmdc.org.bd) does not let you check a number, and the
             copy here promises exactly that. Source: 03-research-report.md. */}
-        <a className="panel emerg-card bmdc" href="https://verify.bmdc.org.bd/" target="_blank" rel="noopener">
+        <a
+          className="panel emerg-card bmdc"
+          href="https://verify.bmdc.org.bd/"
+          target="_blank"
+          rel="noopener"
+        >
           <span className="k">{t('emergview.bmdc')}</span>
           <span className="num">BMDC</span>
           <span className="cta">{t('emergview.bmdcBody')}</span>

@@ -69,16 +69,19 @@ const REPOSITORY_PAIRS: { file: string; FakeClass: new () => unknown }[] = [
 ];
 
 describe('every repository fake is a method-name superset of its Pg*Repository stub', () => {
-  it.each(REPOSITORY_PAIRS)('$FakeClass.name covers every method declared in $file', ({ file, FakeClass }) => {
-    const stubMethods = stubMethodNames(path.join(repositoriesDir, file));
-    // Guards the guard: if the regex ever stops matching (e.g. a stub file's
-    // shape changes), fail loudly instead of vacuously passing on an empty list.
-    expect(stubMethods.length).toBeGreaterThan(0);
+  it.each(REPOSITORY_PAIRS)(
+    '$FakeClass.name covers every method declared in $file',
+    ({ file, FakeClass }) => {
+      const stubMethods = stubMethodNames(path.join(repositoriesDir, file));
+      // Guards the guard: if the regex ever stops matching (e.g. a stub file's
+      // shape changes), fail loudly instead of vacuously passing on an empty list.
+      expect(stubMethods.length).toBeGreaterThan(0);
 
-    const fakeMethods = new Set(fakeMethodNames(FakeClass));
-    const missing = stubMethods.filter((name) => !fakeMethods.has(name));
-    expect(missing).toEqual([]);
-  });
+      const fakeMethods = new Set(fakeMethodNames(FakeClass));
+      const missing = stubMethods.filter((name) => !fakeMethods.has(name));
+      expect(missing).toEqual([]);
+    },
+  );
 
   it('covers all 13 repository fakes', () => {
     expect(REPOSITORY_PAIRS).toHaveLength(13);

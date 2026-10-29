@@ -25,9 +25,9 @@ describe('T-005 validator probes', () => {
   it.fails('ISS-139: rk_worker cannot read evidence_items.original_filename_enc', async () => {
     const pool = new Pool({ connectionString: workerUrlForTestDb() });
     try {
-      await expect(pool.query('select original_filename_enc from evidence_items limit 1')).rejects.toThrow(
-        /permission denied/i,
-      );
+      await expect(
+        pool.query('select original_filename_enc from evidence_items limit 1'),
+      ).rejects.toThrow(/permission denied/i);
     } finally {
       await pool.end();
     }
@@ -40,17 +40,20 @@ describe('T-005 validator probes', () => {
   // `set_config` call away from being bypassed by the web tier — contrary to
   // `0003_triggers.sql`'s own comment ("every other UPDATE/DELETE ... from
   // every role including the table owner, is still blocked unconditionally").
-  it.fails('ISS-141: setting rk.audit_expiry does not let rk_app delete audit_events rows', async () => {
-    await testDb.execute(
-      sql`insert into audit_events (stream, action, actor, details) values ('validator:iss-141', 'probe', 'system:validator', '{}')`,
-    );
-    await expect(
-      testDb.transaction(async (tx) => {
-        await tx.execute(sql`select set_config('rk.audit_expiry', 'on', true)`);
-        await tx.execute(sql`delete from audit_events where stream = 'validator:iss-141'`);
-      }),
-    ).rejects.toThrow(/append_only_violation/i);
-  });
+  it.fails(
+    'ISS-141: setting rk.audit_expiry does not let rk_app delete audit_events rows',
+    async () => {
+      await testDb.execute(
+        sql`insert into audit_events (stream, action, actor, details) values ('validator:iss-141', 'probe', 'system:validator', '{}')`,
+      );
+      await expect(
+        testDb.transaction(async (tx) => {
+          await tx.execute(sql`select set_config('rk.audit_expiry', 'on', true)`);
+          await tx.execute(sql`delete from audit_events where stream = 'validator:iss-141'`);
+        }),
+      ).rejects.toThrow(/append_only_violation/i);
+    },
+  );
 });
 
 // CR-006 (FD-041, FD-092): plain probes, not tripwires. Each runs one zero-row
@@ -73,13 +76,17 @@ describe('CR-006: rk_worker privilege boundary', () => {
   describe('auth_users and the recipient path (FD-041, FD-071)', () => {
     it('P1: rk_worker cannot read id and email from auth_users', async () => {
       await asWorker(async (pool) => {
-        await expect(pool.query('select id, email from auth_users limit 1')).rejects.toThrow(PERMISSION_DENIED);
+        await expect(pool.query('select id, email from auth_users limit 1')).rejects.toThrow(
+          PERMISSION_DENIED,
+        );
       });
     });
 
     it('P2: rk_worker cannot read even the id column of auth_users', async () => {
       await asWorker(async (pool) => {
-        await expect(pool.query('select id from auth_users limit 1')).rejects.toThrow(PERMISSION_DENIED);
+        await expect(pool.query('select id from auth_users limit 1')).rejects.toThrow(
+          PERMISSION_DENIED,
+        );
       });
     });
 
@@ -93,7 +100,15 @@ describe('CR-006: rk_worker privilege boundary', () => {
       expect(columnNames).toEqual(expect.arrayContaining(['id', 'email']));
 
       await asWorker(async (pool) => {
-        for (const privilege of ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER']) {
+        for (const privilege of [
+          'SELECT',
+          'INSERT',
+          'UPDATE',
+          'DELETE',
+          'TRUNCATE',
+          'REFERENCES',
+          'TRIGGER',
+        ]) {
           const { rows } = await pool.query<{ granted: boolean }>(
             `select has_table_privilege('rk_worker', 'public.auth_users', $1) as granted`,
             [privilege],
@@ -120,20 +135,28 @@ describe('CR-006: rk_worker privilege boundary', () => {
     it('P4: rk_worker still cannot read auth_sessions, auth_accounts or auth_verifications', async () => {
       await asWorker(async (pool) => {
         for (const table of ['auth_sessions', 'auth_accounts', 'auth_verifications']) {
-          await expect(pool.query(`select 1 from ${table} limit 1`), table).rejects.toThrow(PERMISSION_DENIED);
+          await expect(pool.query(`select 1 from ${table} limit 1`), table).rejects.toThrow(
+            PERMISSION_DENIED,
+          );
         }
       });
     });
 
     it('P5: rk_worker can read a delivery id and its encrypted recipient from email_deliveries', async () => {
       await asWorker(async (pool) => {
-        await expect(pool.query('select id, to_email_enc from email_deliveries limit 1')).resolves.toBeDefined();
+        await expect(
+          pool.query('select id, to_email_enc from email_deliveries limit 1'),
+        ).resolves.toBeDefined();
       });
     });
 
     it('P6: rk_worker is a member of no other role and cannot switch to rk_app', async () => {
       await asWorker(async (pool) => {
-        const { rows } = await pool.query<{ app: boolean; maintenance: boolean; memberships: number }>(
+        const { rows } = await pool.query<{
+          app: boolean;
+          maintenance: boolean;
+          memberships: number;
+        }>(
           `select pg_has_role('rk_worker', 'rk_app', 'MEMBER') as app,
                   pg_has_role('rk_worker', 'rk_maintenance', 'MEMBER') as maintenance,
                   (select count(*)::int from pg_auth_members where member = 'rk_worker'::regrole) as memberships`,
@@ -190,7 +213,9 @@ describe('CR-006: rk_worker privilege boundary', () => {
 
     it('P11: rk_worker cannot update any other review column, such as the title', async () => {
       await asWorker(async (pool) => {
-        await expect(pool.query('update reviews set title = title where false')).rejects.toThrow(PERMISSION_DENIED);
+        await expect(pool.query('update reviews set title = title where false')).rejects.toThrow(
+          PERMISSION_DENIED,
+        );
       });
     });
 
@@ -206,36 +231,46 @@ describe('CR-006: rk_worker privilege boundary', () => {
     it('P13: rk_worker can read and update comments', async () => {
       await asWorker(async (pool) => {
         await expect(pool.query('select id from comments limit 1')).resolves.toBeDefined();
-        await expect(pool.query('update comments set state = state where false')).resolves.toBeDefined();
+        await expect(
+          pool.query('update comments set state = state where false'),
+        ).resolves.toBeDefined();
       });
     });
 
     it('P14: rk_worker cannot delete a comment', async () => {
       await asWorker(async (pool) => {
-        await expect(pool.query('delete from comments where false')).rejects.toThrow(PERMISSION_DENIED);
+        await expect(pool.query('delete from comments where false')).rejects.toThrow(
+          PERMISSION_DENIED,
+        );
       });
     });
 
     it('P15: rk_worker cannot read any reports column, reporter_account_id included', async () => {
       await asWorker(async (pool) => {
-        await expect(pool.query('select id, reason from reports limit 1')).rejects.toThrow(PERMISSION_DENIED);
-        await expect(pool.query('select reporter_account_id from reports limit 1')).rejects.toThrow(PERMISSION_DENIED);
+        await expect(pool.query('select id, reason from reports limit 1')).rejects.toThrow(
+          PERMISSION_DENIED,
+        );
+        await expect(pool.query('select reporter_account_id from reports limit 1')).rejects.toThrow(
+          PERMISSION_DENIED,
+        );
       });
     });
 
     it('P16: rk_worker can read the five granted account_profiles columns', async () => {
       await asWorker(async (pool) => {
         await expect(
-          pool.query('select id, username, display_name, locale, status from account_profiles limit 1'),
+          pool.query(
+            'select id, username, display_name, locale, status from account_profiles limit 1',
+          ),
         ).resolves.toBeDefined();
       });
     });
 
     it('P17: rk_worker cannot read account_profiles.auth_user_id', async () => {
       await asWorker(async (pool) => {
-        await expect(pool.query('select auth_user_id from account_profiles limit 1')).rejects.toThrow(
-          PERMISSION_DENIED,
-        );
+        await expect(
+          pool.query('select auth_user_id from account_profiles limit 1'),
+        ).rejects.toThrow(PERMISSION_DENIED);
       });
     });
 
@@ -247,16 +282,18 @@ describe('CR-006: rk_worker privilege boundary', () => {
 
     it('P19: rk_worker cannot write a legal hold', async () => {
       await asWorker(async (pool) => {
-        await expect(pool.query('update legal_holds set released_at = released_at where false')).rejects.toThrow(
-          PERMISSION_DENIED,
-        );
+        await expect(
+          pool.query('update legal_holds set released_at = released_at where false'),
+        ).rejects.toThrow(PERMISSION_DENIED);
       });
     });
 
     it('P20: rk_worker can read an account locale and email preference from account_preferences', async () => {
       await asWorker(async (pool) => {
         await expect(
-          pool.query('select account_id, interface_locale, email_moderation from account_preferences limit 1'),
+          pool.query(
+            'select account_id, interface_locale, email_moderation from account_preferences limit 1',
+          ),
         ).resolves.toBeDefined();
       });
     });

@@ -35,7 +35,9 @@ describe('CR-008 corpus invariants', () => {
     const seeded = USER_NOTIFICATIONS.filter((n) => n.seedRef !== 'n8');
     expect(USER_NOTIFICATIONS).toHaveLength(10);
     expect(seeded).toHaveLength(9);
-    expect(new Set(USER_NOTIFICATIONS.map((n) => n.accountUsername))).toEqual(new Set(['shirin_88']));
+    expect(new Set(USER_NOTIFICATIONS.map((n) => n.accountUsername))).toEqual(
+      new Set(['shirin_88']),
+    );
     expect(new Set(seeded.map((n) => n.kind))).toEqual(new Set(NOTIFICATION_KINDS));
   });
 

@@ -10,7 +10,14 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 import { newId, newPublicId } from '@rogikotha/contracts';
-import { evidenceArtifacts, evidenceCustodyEvents, evidenceItems, personaLinks, reviews, type Db } from '@rogikotha/database';
+import {
+  evidenceArtifacts,
+  evidenceCustodyEvents,
+  evidenceItems,
+  personaLinks,
+  reviews,
+  type Db,
+} from '@rogikotha/database';
 import { eq } from 'drizzle-orm';
 
 import { EVIDENCE_ITEMS } from '../corpus/index.js';
@@ -24,7 +31,13 @@ import type { SeedContext } from './seed.js';
 // otherwise land at `packages/test-support/.data/storage` instead of the
 // repo-root `.data/storage` every other tool expects). Absolute values in
 // `STORAGE_ROOT` are used as-is.
-const repoRootForStorage = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
+const repoRootForStorage = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  '..',
+  '..',
+);
 const STORAGE_ROOT = path.isAbsolute(process.env.STORAGE_ROOT ?? '')
   ? process.env.STORAGE_ROOT!
   : path.resolve(repoRootForStorage, process.env.STORAGE_ROOT ?? './.data/storage');
@@ -34,21 +47,35 @@ export async function seedEvidence(db: Db, ctx: SeedContext): Promise<number> {
   let inserted = 0;
 
   for (const item of EVIDENCE_ITEMS) {
-    const [existing] = await db.select().from(evidenceItems).where(eq(evidenceItems.seedRef, item.seedRef)).limit(1);
+    const [existing] = await db
+      .select()
+      .from(evidenceItems)
+      .where(eq(evidenceItems.seedRef, item.seedRef))
+      .limit(1);
     if (existing) {
       ctx.evidenceItemIdBySeedRef.set(item.seedRef, existing.id);
       ctx.evidenceItemPublicIdBySeedRef.set(item.seedRef, existing.publicId);
       continue;
     }
     const reviewId = ctx.reviewIdBySeedRef.get(item.reviewSeedRef);
-    if (!reviewId) throw new Error(`seed-evidence: item ${item.seedRef} references unseeded review ${item.reviewSeedRef}`);
+    if (!reviewId)
+      throw new Error(
+        `seed-evidence: item ${item.seedRef} references unseeded review ${item.reviewSeedRef}`,
+      );
     const [review] = await db.select().from(reviews).where(eq(reviews.id, reviewId)).limit(1);
     if (!review) throw new Error(`seed-evidence: review ${item.reviewSeedRef} not found`);
     // The uploader is whichever account the review's persona is linked to
     // (an anonymous persona is still linked to a real account, privately).
-    const [link] = await db.select().from(personaLinks).where(eq(personaLinks.personaId, review.authorPersonaId)).limit(1);
+    const [link] = await db
+      .select()
+      .from(personaLinks)
+      .where(eq(personaLinks.personaId, review.authorPersonaId))
+      .limit(1);
     const uploadedByAccountId = link?.accountId;
-    if (!uploadedByAccountId) throw new Error(`seed-evidence: no account linked to persona of review ${item.reviewSeedRef}`);
+    if (!uploadedByAccountId)
+      throw new Error(
+        `seed-evidence: no account linked to persona of review ${item.reviewSeedRef}`,
+      );
 
     // Scope change (CR-001/FD-036): images only, one page, no PDFs; e5 fails
     // `malformed` (the prototype's "password protected" has no Phase 1
@@ -84,19 +111,34 @@ export async function seedEvidence(db: Db, ctx: SeedContext): Promise<number> {
     ctx.evidenceItemPublicIdBySeedRef.set(item.seedRef, publicId);
     inserted += 1;
 
-    await db.insert(evidenceCustodyEvents).values({ id: newId(), itemId: row!.id, event: 'received', actor: 'worker' });
+    await db
+      .insert(evidenceCustodyEvents)
+      .values({ id: newId(), itemId: row!.id, event: 'received', actor: 'worker' });
     inserted += 1;
 
     if (failed) {
-      await db
-        .insert(evidenceCustodyEvents)
-        .values({ id: newId(), itemId: row!.id, event: 'validation_failed', actor: 'worker', details: { reason: 'malformed' } });
+      await db.insert(evidenceCustodyEvents).values({
+        id: newId(),
+        itemId: row!.id,
+        event: 'validation_failed',
+        actor: 'worker',
+        details: { reason: 'malformed' },
+      });
       inserted += 1;
       continue;
     }
 
-    for (const event of ['validated', 'scan_clean', 'sanitised', 'preview_ready', 'privacy_confirmed', 'published'] as const) {
-      await db.insert(evidenceCustodyEvents).values({ id: newId(), itemId: row!.id, event, actor: 'worker' });
+    for (const event of [
+      'validated',
+      'scan_clean',
+      'sanitised',
+      'preview_ready',
+      'privacy_confirmed',
+      'published',
+    ] as const) {
+      await db
+        .insert(evidenceCustodyEvents)
+        .values({ id: newId(), itemId: row!.id, event, actor: 'worker' });
       inserted += 1;
     }
 
@@ -125,7 +167,10 @@ export async function seedEvidence(db: Db, ctx: SeedContext): Promise<number> {
       inserted += 1;
     }
     if (publishedArtifactId) {
-      await db.update(evidenceItems).set({ publishedArtifactId }).where(eq(evidenceItems.id, row!.id));
+      await db
+        .update(evidenceItems)
+        .set({ publishedArtifactId })
+        .where(eq(evidenceItems.id, row!.id));
     }
   }
 

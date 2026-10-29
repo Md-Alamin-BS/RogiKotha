@@ -5,7 +5,14 @@ import { describe, expect, it } from 'vitest';
 // (packages/contracts/package.json `exports`), so the smoke assertion is:
 // the whole public surface (Result, errors, actor, config, a command
 // schema) loads through that one entry point and works together.
-import { ANONYMOUS_ACTOR, DEFAULT_CONFIG_VALUES, RegisterInput, capabilitiesForRole, err, ok } from './index';
+import {
+  ANONYMOUS_ACTOR,
+  DEFAULT_CONFIG_VALUES,
+  RegisterInput,
+  capabilitiesForRole,
+  err,
+  ok,
+} from './index';
 
 describe('contracts package surface', () => {
   it('validates a command input, builds Results and resolves capabilities through the single entry point', () => {
@@ -29,6 +36,8 @@ describe('contracts package surface', () => {
     const anon = ANONYMOUS_ACTOR('en', 'c1');
     expect(anon.capabilities).toEqual([]);
 
-    expect(capabilitiesForRole('super_admin', DEFAULT_CONFIG_VALUES.capabilities)).toContain('config.write');
+    expect(capabilitiesForRole('super_admin', DEFAULT_CONFIG_VALUES.capabilities)).toContain(
+      'config.write',
+    );
   });
 });

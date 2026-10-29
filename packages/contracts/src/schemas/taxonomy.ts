@@ -11,7 +11,10 @@ const ALIAS_LANGS = ['en', 'bn', 'banglish'] as const;
 export const GetConditionInput = z.object({ publicId }).strict();
 
 export const ListConditionsInput = z
-  .object({ page: z.number().int().min(1).optional(), pageSize: z.number().int().min(1).max(100).optional() })
+  .object({
+    page: z.number().int().min(1).optional(),
+    pageSize: z.number().int().min(1).max(100).optional(),
+  })
   .strict();
 
 export const ResolveInput = z.object({ text: z.string().min(1) }).strict();

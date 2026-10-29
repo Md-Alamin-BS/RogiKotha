@@ -14,3 +14,7 @@ allowBuilds:
   # gated the same way. Same reasoning as the two above: it is a native
   # build step from a pinned build tool, not third-party postinstall code.
   esbuild: true
+  # T-010: unrs-resolver (under eslint-import-resolver-typescript) ships its
+  # native binding as a platform optionalDependency; its postinstall only
+  # re-checks or downloads that binding, so it is denied rather than approved.
+  unrs-resolver: false

@@ -57,10 +57,19 @@ async function insertAccount() {
 }
 
 async function insertReview() {
-  const [persona] = await testDb.insert(personas).values({ kind: 'named', displayName: 'Test' }).returning();
+  const [persona] = await testDb
+    .insert(personas)
+    .values({ kind: 'named', displayName: 'Test' })
+    .returning();
   const [doctor] = await testDb
     .insert(doctors)
-    .values({ publicId: `d${crypto.randomUUID().slice(0, 8)}`, nameEn: 'A', nameBn: 'B', state: 'published', nameKey: 'a' })
+    .values({
+      publicId: `d${crypto.randomUUID().slice(0, 8)}`,
+      nameEn: 'A',
+      nameBn: 'B',
+      state: 'published',
+      nameKey: 'a',
+    })
     .returning();
   const [review] = await testDb
     .insert(reviews)
@@ -229,7 +238,9 @@ describe('database-level constraints and triggers', () => {
 
     // Two of the three set (free_text and not_sure both).
     await expectPgError(
-      testDb.insert(reviewTags).values({ reviewId: review.id, group: 'symptom', freeText: 'fever', notSure: true }),
+      testDb
+        .insert(reviewTags)
+        .values({ reviewId: review.id, group: 'symptom', freeText: 'fever', notSure: true }),
       /review_tags_one_of_term_free_text_not_sure/i,
     );
 
@@ -247,7 +258,9 @@ describe('database-level constraints and triggers', () => {
       try {
         // review_tags carries no rk_worker grant in 0005_grants_part2.sql —
         // proves the flipped default, not just a specific hand-picked table.
-        await expect(pool.query('select * from review_tags limit 1')).rejects.toThrow(/permission denied/i);
+        await expect(pool.query('select * from review_tags limit 1')).rejects.toThrow(
+          /permission denied/i,
+        );
       } finally {
         await pool.end();
       }
@@ -256,10 +269,14 @@ describe('database-level constraints and triggers', () => {
     it('is denied on every reports column, reporter_account_id included', async () => {
       const pool = new Pool({ connectionString: workerUrlForTestDb() });
       try {
-        await expect(pool.query('select reporter_account_id from reports')).rejects.toThrow(/permission denied/i);
+        await expect(pool.query('select reporter_account_id from reports')).rejects.toThrow(
+          /permission denied/i,
+        );
         // FD-092 revoked the column allowlist on reports (0008_worker_grant_review.sql);
         // the column-allowlist mechanism stays proven on account_profiles (CR-006 P16, P17).
-        await expect(pool.query('select id, reason from reports')).rejects.toThrow(/permission denied/i);
+        await expect(pool.query('select id, reason from reports')).rejects.toThrow(
+          /permission denied/i,
+        );
       } finally {
         await pool.end();
       }
@@ -268,7 +285,9 @@ describe('database-level constraints and triggers', () => {
     it('is denied on appeals entirely, including appellant_account_id', async () => {
       const pool = new Pool({ connectionString: workerUrlForTestDb() });
       try {
-        await expect(pool.query('select appellant_account_id from appeals')).rejects.toThrow(/permission denied/i);
+        await expect(pool.query('select appellant_account_id from appeals')).rejects.toThrow(
+          /permission denied/i,
+        );
         await expect(pool.query('select id from appeals')).rejects.toThrow(/permission denied/i);
       } finally {
         await pool.end();
@@ -278,17 +297,23 @@ describe('database-level constraints and triggers', () => {
     it('is denied on moderation_cases (no allowlist entry) even though it references target content', async () => {
       const pool = new Pool({ connectionString: workerUrlForTestDb() });
       try {
-        await expect(pool.query('select code from moderation_cases limit 1')).rejects.toThrow(/permission denied/i);
+        await expect(pool.query('select code from moderation_cases limit 1')).rejects.toThrow(
+          /permission denied/i,
+        );
       } finally {
         await pool.end();
       }
     });
 
     it('is denied on a table rk_app creates after this migration (the flipped default itself, not a leftover grant)', async () => {
-      await testDb.execute(sql`create table if not exists fd037_future_probe (id uuid primary key default uuidv7())`);
+      await testDb.execute(
+        sql`create table if not exists fd037_future_probe (id uuid primary key default uuidv7())`,
+      );
       const pool = new Pool({ connectionString: workerUrlForTestDb() });
       try {
-        await expect(pool.query('select * from fd037_future_probe limit 1')).rejects.toThrow(/permission denied/i);
+        await expect(pool.query('select * from fd037_future_probe limit 1')).rejects.toThrow(
+          /permission denied/i,
+        );
       } finally {
         await pool.end();
         await testDb.execute(sql`drop table if exists fd037_future_probe`);

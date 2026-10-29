@@ -2,6 +2,8 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
+import globals from 'globals';
+import { boundaryConfigs } from './eslint.boundaries.mjs';
 
 export default tseslint.config(
   {
@@ -25,6 +27,8 @@ export default tseslint.config(
       '.codex/**',
       '.github/**',
       '.impeccable/**',
+      // T-010: planted boundary violations, linted only by `pnpm lint:boundaries`.
+      'lint-fixtures/**',
     ],
   },
   js.configs.recommended,
@@ -48,9 +52,14 @@ export default tseslint.config(
     // a project for them. ASSUMPTION(T-001): exclude them from type-aware
     // rules rather than inventing a root tsconfig just to cover config files
     // (see ISS-002).
-    files: ['**/*.mjs', '**/*.cjs', '**/*.config.ts', 'vitest.workspace.ts'],
+    files: ['**/*.mjs', '**/*.cjs', '**/*.config.ts', 'vitest.workspace.ts', 'lint-fixtures/**'],
     extends: [tseslint.configs.disableTypeChecked],
   },
-  // T-010 adds boundaries here
+  {
+    // T-010: the root scripts run under Node.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+  },
+  ...boundaryConfigs,
   eslintConfigPrettier,
 );

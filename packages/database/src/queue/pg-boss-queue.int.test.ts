@@ -54,49 +54,41 @@ describe('pg-boss PgBossQueue (rk_worker, migrate: false)', () => {
     await Promise.all(queues.splice(0).map((q) => q.stop({ graceful: false })));
   });
 
-  it(
-    'enqueue then work runs the handler once',
-    async () => {
-      const logger = new CollectingLogger();
-      const queue = new PgBossQueue(workerUrlForTestDb(), logger);
-      queues.push(queue);
-      await queue.start();
+  it('enqueue then work runs the handler once', async () => {
+    const logger = new CollectingLogger();
+    const queue = new PgBossQueue(workerUrlForTestDb(), logger);
+    queues.push(queue);
+    await queue.start();
 
-      const name = `t009.basic.${randomUUID()}`;
-      const received: unknown[] = [];
-      await queue.work<{ n: number }>(name, (payload) => {
-        received.push(payload);
-      });
-      await queue.enqueue(name, { n: 1 });
+    const name = `t009.basic.${randomUUID()}`;
+    const received: unknown[] = [];
+    await queue.work<{ n: number }>(name, (payload) => {
+      received.push(payload);
+    });
+    await queue.enqueue(name, { n: 1 });
 
-      await waitFor(() => received.length === 1);
-      expect(received).toEqual([{ n: 1 }]);
-    },
-    20_000,
-  );
+    await waitFor(() => received.length === 1);
+    expect(received).toEqual([{ n: 1 }]);
+  }, 20_000);
 
-  it(
-    'a thrown handler error is retried (retryLimit 1, two invocations)',
-    async () => {
-      const logger = new CollectingLogger();
-      const queue = new PgBossQueue(workerUrlForTestDb(), logger);
-      queues.push(queue);
-      await queue.start();
+  it('a thrown handler error is retried (retryLimit 1, two invocations)', async () => {
+    const logger = new CollectingLogger();
+    const queue = new PgBossQueue(workerUrlForTestDb(), logger);
+    queues.push(queue);
+    await queue.start();
 
-      const name = `t009.retry.${randomUUID()}`;
-      let invocations = 0;
-      await queue.work(name, () => {
-        invocations += 1;
-        throw new Error('always fails');
-      });
-      await queue.enqueue(name, {}, { retryLimit: 1, retryDelay: 1, retryBackoff: false });
+    const name = `t009.retry.${randomUUID()}`;
+    let invocations = 0;
+    await queue.work(name, () => {
+      invocations += 1;
+      throw new Error('always fails');
+    });
+    await queue.enqueue(name, {}, { retryLimit: 1, retryDelay: 1, retryBackoff: false });
 
-      await waitFor(() => invocations >= 2, 20_000);
-      expect(invocations).toBe(2);
-      expect(logger.entries.some((e) => e.event === 'job.failed')).toBe(true);
-    },
-    25_000,
-  );
+    await waitFor(() => invocations >= 2, 20_000);
+    expect(invocations).toBe(2);
+    expect(logger.entries.some((e) => e.event === 'job.failed')).toBe(true);
+  }, 25_000);
 
   it('stop is graceful', async () => {
     const logger = new CollectingLogger();
@@ -142,7 +134,9 @@ describe('CR-011 queue declaration and enqueue (rk_worker)', () => {
     await queue.enqueue('evidence.process', {}, { key: evidenceKey });
 
     expect((await jobsIn(undeclared))[0]?.retry_limit).toBe(5);
-    const evidenceJob = (await jobsIn('evidence.process')).find((job) => job.singleton_key === evidenceKey);
+    const evidenceJob = (await jobsIn('evidence.process')).find(
+      (job) => job.singleton_key === evidenceKey,
+    );
     expect(evidenceJob?.retry_limit).toBe(3);
   });
 
@@ -153,7 +147,9 @@ describe('CR-011 queue declaration and enqueue (rk_worker)', () => {
     const attempt = queue.ensureQueue(name);
     await expect(attempt).rejects.toBeInstanceOf(QueuePolicyMismatchError);
     await expect(attempt).rejects.toThrow(
-      new RegExp(`queue ${name.replace(/\./g, '\\.')} exists with policy standard, but its declaration says exclusive; run pnpm db:reset`),
+      new RegExp(
+        `queue ${name.replace(/\./g, '\\.')} exists with policy standard, but its declaration says exclusive; run pnpm db:reset`,
+      ),
     );
     // Not marked ensured: a second call checks again instead of passing.
     await expect(queue.ensureQueue(name)).rejects.toBeInstanceOf(QueuePolicyMismatchError);
@@ -176,7 +172,10 @@ describe('CR-011 queue declaration and enqueue (rk_worker)', () => {
     const name = uniqueName('cr011.t4');
     await removeQueueBehindCache(queue, name);
 
-    expect(await queue.enqueue(name, {}, { key: 'k' })).toEqual({ ok: false, error: { code: 'job_not_enqueued' } });
+    expect(await queue.enqueue(name, {}, { key: 'k' })).toEqual({
+      ok: false,
+      error: { code: 'job_not_enqueued' },
+    });
     expect(await storedPolicy(name)).toBeNull();
 
     await queue.ensureQueue(name);
@@ -195,8 +194,16 @@ describe('CR-011 queue declaration and enqueue (rk_worker)', () => {
       expect(await jobsIn(name)).toHaveLength(0);
 
       await client.query('BEGIN');
-      const sent = await queue.enqueue(name, { n: 2 }, { key: 'committed', executor: clientExecutor(client) });
-      const again = await queue.enqueue(name, { n: 3 }, { key: 'committed', executor: clientExecutor(client) });
+      const sent = await queue.enqueue(
+        name,
+        { n: 2 },
+        { key: 'committed', executor: clientExecutor(client) },
+      );
+      const again = await queue.enqueue(
+        name,
+        { n: 3 },
+        { key: 'committed', executor: clientExecutor(client) },
+      );
       await client.query('COMMIT');
 
       expect(sent).toEqual({ ok: true, data: 'enqueued' });
@@ -209,26 +216,22 @@ describe('CR-011 queue declaration and enqueue (rk_worker)', () => {
 });
 
 describe('CR-011 queues after a reset (rk_worker)', () => {
-  it(
-    'T15: after a reset rk_worker can create a queue and send a job, and cannot create a table in pgboss',
-    async () => {
-      await runReset(process.env.DATABASE_URL_TEST!);
+  it('T15: after a reset rk_worker can create a queue and send a job, and cannot create a table in pgboss', async () => {
+    await runReset(process.env.DATABASE_URL_TEST!);
 
-      const queue = new PgBossQueue(workerUrlForTestDb(), silentLogger);
-      const workerPool = new Pool({ connectionString: workerUrlForTestDb() });
-      await queue.start();
-      try {
-        const name = uniqueName('cr011.t15');
-        expect(await queue.enqueue(name, {}, { key: 'k' })).toEqual({ ok: true, data: 'enqueued' });
-        expect(await storedPolicy(name)).toBe('exclusive');
-        await expect(workerPool.query('create table pgboss.cr011_probe (id int)')).rejects.toThrow(
-          /permission denied/i,
-        );
-      } finally {
-        await queue.stop({ graceful: false });
-        await workerPool.end();
-      }
-    },
-    60_000,
-  );
+    const queue = new PgBossQueue(workerUrlForTestDb(), silentLogger);
+    const workerPool = new Pool({ connectionString: workerUrlForTestDb() });
+    await queue.start();
+    try {
+      const name = uniqueName('cr011.t15');
+      expect(await queue.enqueue(name, {}, { key: 'k' })).toEqual({ ok: true, data: 'enqueued' });
+      expect(await storedPolicy(name)).toBe('exclusive');
+      await expect(workerPool.query('create table pgboss.cr011_probe (id int)')).rejects.toThrow(
+        /permission denied/i,
+      );
+    } finally {
+      await queue.stop({ graceful: false });
+      await workerPool.end();
+    }
+  }, 60_000);
 });

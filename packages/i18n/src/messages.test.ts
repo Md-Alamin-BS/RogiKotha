@@ -5,8 +5,12 @@ import { describe, expect, it } from 'vitest';
 import { MESSAGE_KEYS } from './keys';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const en: unknown = JSON.parse(fs.readFileSync(path.join(__dirname, '../messages/en.json'), 'utf8'));
-const bn: unknown = JSON.parse(fs.readFileSync(path.join(__dirname, '../messages/bn.json'), 'utf8'));
+const en: unknown = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '../messages/en.json'), 'utf8'),
+);
+const bn: unknown = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '../messages/bn.json'), 'utf8'),
+);
 const contractsErrorsPath = path.join(__dirname, '../../contracts/src/errors.ts');
 
 function flatten(obj: unknown, prefix = ''): [string, string][] {
@@ -48,9 +52,7 @@ describe('i18n message dictionaries', () => {
   });
 
   it('no empty string value in either locale', () => {
-    const empties = [...enFlat.entries(), ...bnFlat.entries()].filter(
-      ([, v]) => v.trim() === '',
-    );
+    const empties = [...enFlat.entries(), ...bnFlat.entries()].filter(([, v]) => v.trim() === '');
     expect(empties).toEqual([]);
   });
 

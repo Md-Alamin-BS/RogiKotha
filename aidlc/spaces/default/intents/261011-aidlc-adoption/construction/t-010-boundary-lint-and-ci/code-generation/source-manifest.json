@@ -1,0 +1,544 @@
+{
+  "stage": "code-generation",
+  "unit": "t-010-boundary-lint-and-ci",
+  "version": 1,
+  "writes": [
+    {
+      "path": ".github/workflows/check.yml"
+    },
+    {
+      "path": ".prettierignore"
+    },
+    {
+      "path": "apps/web/package.json"
+    },
+    {
+      "path": "apps/web/src/app/layouts.test.tsx"
+    },
+    {
+      "path": "apps/web/src/app/not-found.tsx"
+    },
+    {
+      "path": "apps/web/src/app/pages.test.tsx"
+    },
+    {
+      "path": "apps/web/src/app/root.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/admin/Chrome.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/admin/ConsoleNav.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/admin/ConsoleNav.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/Colophon.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/Emergency.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/Masthead.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/Policy.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shell.smoke.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/Tabs.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/ViewShell.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/shared/Chrome.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/shared/live-region-announcements.smoke.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/shared/Sheet.tsx"
+    },
+    {
+      "path": "apps/web/src/i18n/request.test.ts"
+    },
+    {
+      "path": "apps/web/src/i18n/routing.test.ts"
+    },
+    {
+      "path": "apps/web/src/lib/announce.test.tsx"
+    },
+    {
+      "path": "apps/web/src/lib/cookies.test.ts"
+    },
+    {
+      "path": "apps/web/src/lib/metadata.test.ts"
+    },
+    {
+      "path": "apps/web/src/lib/titles.test.ts"
+    },
+    {
+      "path": "apps/web/src/proxy.test.ts"
+    },
+    {
+      "path": "apps/web/src/server/actions/preferences.test.ts"
+    },
+    {
+      "path": "apps/worker/package.json"
+    },
+    {
+      "path": "apps/worker/src/container.test.ts"
+    },
+    {
+      "path": "apps/worker/src/container.wiring.test.ts"
+    },
+    {
+      "path": "apps/worker/src/env.load.test.ts"
+    },
+    {
+      "path": "apps/worker/src/env.ts"
+    },
+    {
+      "path": "apps/worker/src/handlers/outbox-relay.test.ts"
+    },
+    {
+      "path": "apps/worker/src/handlers/outbox-relay.ts"
+    },
+    {
+      "path": "apps/worker/src/health.test.ts"
+    },
+    {
+      "path": "apps/worker/src/health.ts"
+    },
+    {
+      "path": "apps/worker/src/logger.levels.test.ts"
+    },
+    {
+      "path": "apps/worker/src/main.test.ts"
+    },
+    {
+      "path": "apps/worker/src/main.ts"
+    },
+    {
+      "path": "apps/worker/src/registry.test.ts"
+    },
+    {
+      "path": "apps/worker/src/worker.smoke.test.ts"
+    },
+    {
+      "path": "docs/implementation/01-conventions.md"
+    },
+    {
+      "path": "docs/implementation/handoffs/T-010.md"
+    },
+    {
+      "path": "docs/implementation/ISSUES.md"
+    },
+    {
+      "path": "docs/implementation/tasks/T-010-boundary-lint-and-ci.md"
+    },
+    {
+      "path": "docs/planning/research/2026-10-28-boundary-lint-and-coverage.md"
+    },
+    {
+      "path": "docs/status/decision-log.md"
+    },
+    {
+      "path": "docs/status/dependency-check-log.md"
+    },
+    {
+      "path": "eslint.boundaries.mjs"
+    },
+    {
+      "path": "eslint.config.mjs"
+    },
+    {
+      "path": "infra/compose/docker-compose.yml"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/app/page-bad.tsx"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/components/Component.test.tsx"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/components/ComponentAuth.tsx"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/components/ComponentBad.tsx"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/components/ComponentDb.tsx"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/components/ComponentForm.tsx"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/components/ComponentLate.tsx"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/lib/shared-node.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/lib/web-bad.test.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/server/actions/sample.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/server/auth.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/web/src/server/container.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-app.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-bad.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-late-auth.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-relative.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-relative-types.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-require.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-sql.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-types.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/manifest.json"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/packages/domain/src/domain-bad.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/packages/test-support/src/fakes/fake-bad.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/packages/test-support/src/seed/seed-ok.ts"
+    },
+    {
+      "path": "lint-fixtures/tsconfig.json"
+    },
+    {
+      "path": "package.json"
+    },
+    {
+      "path": "packages/contracts/src/actor.ts"
+    },
+    {
+      "path": "packages/contracts/src/contracts.smoke.test.ts"
+    },
+    {
+      "path": "packages/contracts/src/enums.ts"
+    },
+    {
+      "path": "packages/contracts/src/internal-error.test.ts"
+    },
+    {
+      "path": "packages/contracts/src/page.test.ts"
+    },
+    {
+      "path": "packages/contracts/src/page.ts"
+    },
+    {
+      "path": "packages/contracts/src/public-id.test.ts"
+    },
+    {
+      "path": "packages/contracts/src/result-guards.test.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/administration.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/data-requests.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/directory.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/moderation.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/review.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/staff.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/taxonomy.ts"
+    },
+    {
+      "path": "packages/contracts/src/time.test.ts"
+    },
+    {
+      "path": "packages/database/src/append-only.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/constraints.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/global-setup.ts"
+    },
+    {
+      "path": "packages/database/src/grants.smoke.test.ts"
+    },
+    {
+      "path": "packages/database/src/migrations.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/outbox.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/production-refusal.test.ts"
+    },
+    {
+      "path": "packages/database/src/queue/outbox-relay-store.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/queue/outbox-relay-store.ts"
+    },
+    {
+      "path": "packages/database/src/queue/pg-boss-queue.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/queue/pg-boss-queue.smoke.test.ts"
+    },
+    {
+      "path": "packages/database/src/queue/pg-boss-queue.ts"
+    },
+    {
+      "path": "packages/database/src/queue/pg-boss-queue.validator.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/queue/queue-test-support.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/data-requests.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/not-implemented.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/not-implemented.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/outbox.ts"
+    },
+    {
+      "path": "packages/database/src/reset-guard.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/schema/community.ts"
+    },
+    {
+      "path": "packages/database/src/schema/directory.ts"
+    },
+    {
+      "path": "packages/database/src/schema/enums.ts"
+    },
+    {
+      "path": "packages/database/src/schema/evidence.ts"
+    },
+    {
+      "path": "packages/database/src/schema/foreign-keys.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/schema/moderation.ts"
+    },
+    {
+      "path": "packages/database/src/schema/notification.ts"
+    },
+    {
+      "path": "packages/database/src/schema/retention.ts"
+    },
+    {
+      "path": "packages/database/src/schema/review.ts"
+    },
+    {
+      "path": "packages/database/src/schema/search.ts"
+    },
+    {
+      "path": "packages/database/src/schema/taxonomy.ts"
+    },
+    {
+      "path": "packages/database/src/validator-probes.int.test.ts"
+    },
+    {
+      "path": "packages/database/vitest.config.ts"
+    },
+    {
+      "path": "packages/i18n/scripts/check-parity.mjs"
+    },
+    {
+      "path": "packages/i18n/scripts/port-from-prototype.mjs"
+    },
+    {
+      "path": "packages/i18n/src/format.test.ts"
+    },
+    {
+      "path": "packages/i18n/src/format-date-range.test.ts"
+    },
+    {
+      "path": "packages/i18n/src/index.ts"
+    },
+    {
+      "path": "packages/i18n/src/messages.test.ts"
+    },
+    {
+      "path": "packages/i18n/src/request.test.ts"
+    },
+    {
+      "path": "packages/i18n/src/routing.test.ts"
+    },
+    {
+      "path": "packages/test-support/scripts/build-fixtures.mjs"
+    },
+    {
+      "path": "packages/test-support/scripts/port-corpus.mjs"
+    },
+    {
+      "path": "packages/test-support/src/builders/builders.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/builders/case.ts"
+    },
+    {
+      "path": "packages/test-support/src/builders/config.ts"
+    },
+    {
+      "path": "packages/test-support/src/builders/facility-review.ts"
+    },
+    {
+      "path": "packages/test-support/src/builders/review.ts"
+    },
+    {
+      "path": "packages/test-support/src/corpus/corpus.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/corpus/cr-008-validation.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/corpus/cr-012-corpus.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/corpus/types.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/corpus/types.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/fakes.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/port-fakes.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/rate-limiter.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/repositories.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/repositories.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/repositories-superset.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/scanner.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/search-index.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/derivatives.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed.int.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed-accounts.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed-config.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed-content.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed-directory.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed-evidence.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed-moderation.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed-notifications.ts"
+    },
+    {
+      "path": "packages/test-support/src/test-support.smoke.test.ts"
+    },
+    {
+      "path": "packages/test-support/vitest.config.ts"
+    },
+    {
+      "path": "pnpm-lock.yaml"
+    },
+    {
+      "path": "pnpm-workspace.yaml"
+    },
+    {
+      "path": "prettier.config.mjs"
+    },
+    {
+      "path": "scripts/boundaries.smoke.test.mjs"
+    },
+    {
+      "path": "scripts/check-boundaries-fixture.mjs"
+    },
+    {
+      "path": "scripts/check-boundaries-fixture.test.mjs"
+    },
+    {
+      "path": "scripts/check-identity.mjs"
+    },
+    {
+      "path": "scripts/check-identity.test.mjs"
+    },
+    {
+      "path": "scripts/contrast.test.mjs"
+    },
+    {
+      "path": "scripts/coverage-exclusions.test.mjs"
+    },
+    {
+      "path": "scripts/vitest.config.ts"
+    },
+    {
+      "path": "tools/contrast.mjs"
+    },
+    {
+      "path": "tools/README.md"
+    },
+    {
+      "path": "vitest.workspace.ts"
+    }
+  ]
+}

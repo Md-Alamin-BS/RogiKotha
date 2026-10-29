@@ -1,6 +1,16 @@
 // Notifications (02-data-model.md §12).
 import { sql } from 'drizzle-orm';
-import { check, customType, index, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  check,
+  customType,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 import { accountProfiles } from './account';
 import { createdAt, id } from './_common';
@@ -89,7 +99,10 @@ export const emailDeliveries = pgTable(
       'email_deliveries_category_check',
       sql`${t.category} in ('verification', 'reset', 'security', 'moderation', 'evidence', 'device_approval', 'deletion')`,
     ),
-    check('email_deliveries_status_check', sql`${t.status} in ('queued', 'sent', 'failed', 'suppressed')`),
+    check(
+      'email_deliveries_status_check',
+      sql`${t.status} in ('queued', 'sent', 'failed', 'suppressed')`,
+    ),
   ],
 );
 
@@ -104,5 +117,10 @@ export const outboxEvents = pgTable(
     processedAt: timestamp('processed_at', { withTimezone: true }),
     attempts: integer('attempts').notNull().default(0),
   },
-  (t) => [index('outbox_events_processed_at_created_at_idx').on(t.processedAt.asc().nullsFirst(), t.createdAt.asc())],
+  (t) => [
+    index('outbox_events_processed_at_created_at_idx').on(
+      t.processedAt.asc().nullsFirst(),
+      t.createdAt.asc(),
+    ),
+  ],
 );

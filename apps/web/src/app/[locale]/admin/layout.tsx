@@ -39,7 +39,13 @@ export default async function AdminLayout({
     <>
       <SkipLink />
       <DemoMarker />
-      <Masthead activeTab={activeTab} counts={counts} locale={locale} theme={theme} motion={motion} />
+      <Masthead
+        activeTab={activeTab}
+        counts={counts}
+        locale={locale}
+        theme={theme}
+        motion={motion}
+      />
       <div className="progress" aria-hidden="true">
         <i />
       </div>

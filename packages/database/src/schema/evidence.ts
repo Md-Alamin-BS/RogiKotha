@@ -17,7 +17,13 @@ import {
 
 import { accountProfiles } from './account';
 import { createdAt, id, publicId } from './_common';
-import { artifactKindEnum, custodyEventEnum, evidenceFailReasonEnum, evidenceGroupEnum, evidenceStateEnum } from './enums';
+import {
+  artifactKindEnum,
+  custodyEventEnum,
+  evidenceFailReasonEnum,
+  evidenceGroupEnum,
+  evidenceStateEnum,
+} from './enums';
 import { legalHolds } from './retention';
 import { reviews } from './review';
 
@@ -85,7 +91,10 @@ export const evidenceItems = pgTable(
     index('evidence_items_retention_expires_at_idx')
       .on(t.retentionExpiresAt)
       .where(sql`${t.holdId} is null and ${t.state} = 'published'`),
-    check('evidence_items_declared_mime_check', sql`${t.declaredMime} in ('image/jpeg', 'image/png')`),
+    check(
+      'evidence_items_declared_mime_check',
+      sql`${t.declaredMime} in ('image/jpeg', 'image/png')`,
+    ),
     check(
       'evidence_items_detected_mime_check',
       sql`${t.detectedMime} is null or ${t.detectedMime} in ('image/jpeg', 'image/png')`,
@@ -123,7 +132,10 @@ export const evidenceArtifacts = pgTable(
   },
   (t) => [
     index('evidence_artifacts_item_id_kind_page_no_idx').on(t.itemId, t.kind, t.pageNo),
-    check('evidence_artifacts_original_not_public_check', sql`not (${t.kind} = 'original' and ${t.public})`),
+    check(
+      'evidence_artifacts_original_not_public_check',
+      sql`not (${t.kind} = 'original' and ${t.public})`,
+    ),
   ],
 );
 

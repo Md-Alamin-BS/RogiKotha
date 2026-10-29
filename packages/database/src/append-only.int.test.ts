@@ -52,7 +52,13 @@ async function insertEvidenceItem() {
     .returning();
   const [doctor] = await testDb
     .insert(doctors)
-    .values({ publicId: `d${crypto.randomUUID().slice(0, 8)}`, nameEn: 'A', nameBn: 'B', state: 'published', nameKey: 'a' })
+    .values({
+      publicId: `d${crypto.randomUUID().slice(0, 8)}`,
+      nameEn: 'A',
+      nameBn: 'B',
+      state: 'published',
+      nameKey: 'a',
+    })
     .returning();
   const [review] = await testDb
     .insert(reviews)
@@ -100,10 +106,18 @@ describe('append-only enforcement', () => {
   it('updating an audit event raises append_only_violation', async () => {
     const [row] = await testDb
       .insert(auditEvents)
-      .values({ stream: 'account:append-only-test', action: 'test_action', actor: 'system:test', details: {} })
+      .values({
+        stream: 'account:append-only-test',
+        action: 'test_action',
+        actor: 'system:test',
+        details: {},
+      })
       .returning();
     await expectPgError(
-      testDb.update(auditEvents).set({ action: 'changed' }).where(sql`${auditEvents.id} = ${row!.id}`),
+      testDb
+        .update(auditEvents)
+        .set({ action: 'changed' })
+        .where(sql`${auditEvents.id} = ${row!.id}`),
       /append_only_violation/i,
     );
   });

@@ -23,7 +23,9 @@ export const taxonomyTerms = pgTable(
     state: publicationStateEnum('state').notNull(),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex('taxonomy_terms_seed_ref_unique').on(t.seedRef).where(wherePresent(t.seedRef))],
+  (t) => [
+    uniqueIndex('taxonomy_terms_seed_ref_unique').on(t.seedRef).where(wherePresent(t.seedRef)),
+  ],
 );
 
 export const taxonomyAliases = pgTable(

@@ -3,7 +3,12 @@
 // (`DecideCaseInput`) needs a real `MOD-\d+` code, which `toDecideCaseInput()`
 // below derives so builders.test.ts can validate that subset against the
 // real contracts schema.
-import type { DecideCaseInput, ModerationAction, ModerationLane, ReportReason } from '@rogikotha/contracts';
+import type {
+  DecideCaseInput,
+  ModerationAction,
+  ModerationLane,
+  ReportReason,
+} from '@rogikotha/contracts';
 import type { z } from 'zod';
 
 import type { CorpusModerationCase } from '../corpus/types.js';

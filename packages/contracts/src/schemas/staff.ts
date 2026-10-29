@@ -5,7 +5,9 @@ import { z } from 'zod';
 
 import { STAFF_ROLES } from '../enums';
 
-export const BeginDeviceApprovalInput = z.object({ deviceSecret: z.string().min(1).optional() }).strict();
+export const BeginDeviceApprovalInput = z
+  .object({ deviceSecret: z.string().min(1).optional() })
+  .strict();
 
 export const ApproveDeviceInput = z
   .object({

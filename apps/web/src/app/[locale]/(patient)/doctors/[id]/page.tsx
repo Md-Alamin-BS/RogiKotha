@@ -9,11 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: documentTitle('profile', t) };
 }
 
-export default async function DoctorProfilePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function DoctorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const t = await getTranslations();
   return (

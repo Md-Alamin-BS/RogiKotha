@@ -11,7 +11,9 @@ export const RequestDataDeletionInput = z
   })
   .strict();
 
-export const GetDataRequestStatusInput = z.object({ requestId: z.string().min(1).optional() }).strict();
+export const GetDataRequestStatusInput = z
+  .object({ requestId: z.string().min(1).optional() })
+  .strict();
 
 export const dataRequestsSchemas = {
   RequestDataExportInput,

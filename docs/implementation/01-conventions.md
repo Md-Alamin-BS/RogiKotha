@@ -81,19 +81,28 @@ Module names (fixed): `account`, `identity`, `directory`, `taxonomy`, `review`, 
 
 ## 2. Dependency direction
 
-```
-domain            → (nothing)
-contracts         → zod only
-application       → domain, contracts
-database          → application (ports), contracts, drizzle, pg
-adapters          → application (ports), contracts, the specific library
-i18n              → (nothing runtime); next-intl is wired in apps/web
-test-support      → application, contracts, domain (fakes implement ports)
-apps/web          → application, contracts, i18n, database, adapters (only in server/container.ts), next, react
-apps/worker       → application, contracts, database, adapters
-```
+Lint-enforced by `eslint-plugin-boundaries` in `eslint.boundaries.mjs` (T-010), with FD-040 and FD-093. Every source file under `packages/*/src` and `apps/*/src` belongs to the first element whose folder matches (narrower folders first); an import that crosses elements must be in its row, and an internal import that does not resolve to a source file fails.
 
-Forbidden and lint-enforced: components importing `database`, `adapters`, `test-support`, or `node:` modules; `domain` importing anything; `application` importing a library adapter; `worker` importing Better Auth or any identity-reveal/deletion command (AD-6).
+| Element | Folder | May import (internal) | Externals |
+|---|---|---|---|
+| domain | `packages/domain/src` | nothing | none |
+| contracts | `packages/contracts/src` | nothing | `zod`, `uuid` only |
+| application | `packages/application/src` | domain, contracts | none |
+| database | `packages/database/src` | application (ports), contracts | any (drizzle, pg, pg-boss, dotenv, Node) |
+| adapters | `packages/adapters/src` | application (ports), contracts | any (each adapter's library) |
+| i18n | `packages/i18n/src` | nothing | `next-intl` only |
+| test-support-seed | `packages/test-support/src/seed` | application, contracts, domain, test-support, **database** (dev-only, FD-040) | any |
+| test-support | `packages/test-support/src` (the rest) | application, contracts, domain (fakes implement ports) | any |
+| web-actions | `apps/web/src/server/actions` | application, contracts, i18n, web-server, web-shared | any |
+| web-server | `apps/web/src/server` (the rest) | application, contracts, database, i18n; **adapters only from `server/container.ts`** | any |
+| web-components | `apps/web/src/components` | contracts, i18n, web-actions (server actions only, FD-093 (1)), web-shared | no Node built-ins, `pg`, `pg-boss`, `drizzle-orm`, `better-auth`, `sharp`, `pdfjs-dist`, `dotenv`, `@node-rs/argon2` |
+| web-shared | `apps/web/src/lib`, `apps/web/src/i18n` | contracts, i18n (FD-093 (6)) | as web-components: components import it (FD-093 (6)) |
+| web | `apps/web/src` (the rest: `app/`, `proxy.ts`) | application, contracts, i18n, web-components, web-actions, web-server, web-shared | any (next, react, next-intl) |
+| worker | `apps/worker/src` | application (only through a future `@rogikotha/application/worker` subpath, by no other specifier, a relative path included; type-only imports allowed), contracts, database, adapters | not `better-auth`, `drizzle-orm`, `pg` (AD-6, FD-093 (2), (3)) |
+
+Test files (`*.test.ts(x)`, including smoke and int tests, `test-setup.ts`, `global-setup.ts`, `*-test-support.ts`) keep their element's row and may also import Node built-ins, `vitest`, `@vitest/*` and `@testing-library/*`; test files in `packages/*` may also import `test-support`. Nothing in `apps/*` imports `test-support`, in source or tests (FD-040).
+
+The worker and component bans also cover `import()` and `require()`. The worker bans match the specifier text, so they hold before Better Auth is installed, and a value import that reaches application code by any other specifier is refused after resolution; the worker's container-grep test stays as a second net (AD-6). `pnpm lint:boundaries` proves the rules on the fixture in `lint-fixtures/boundary-violation/`: fifteen violations, each refused once, and six allowed controls.
 
 ## 3. Commands, queries, results
 
@@ -221,7 +230,7 @@ Test names read as sentences: `it('hides content after five distinct confirmed a
 ## 13. Definition of done (every task)
 
 1. All steps in the task file done; owned paths only.
-2. `pnpm check` green (typecheck, lint incl. boundaries, unit + integration tests, i18n parity, build).
+2. `pnpm check` green — nine steps in this order, stopping at the first failure (T-010): `typecheck`, `lint` (boundary rules included), `lint:boundaries` (the fixture proof), `format:check` (Prettier), `check:identity` (no attribution markers), `test:coverage` (every test project, the database one included, with the 80% line floor per package), `i18n:check`, `contrast` (`--tokens apps/web/src/styles/tokens.css`), `build`. Then `pnpm smoke` green, and the CI run on the Bolt branch head green before the merge.
 3. New strings exist in both `en.json` and `bn.json`.
 4. Hard-rule checklist in the task file ticked with evidence (file:line or test name).
 5. `docs/implementation/tasks/T-xxx-*.md` "Hand-off" section filled: what changed, what was not done, questions for the human, follow-ups.

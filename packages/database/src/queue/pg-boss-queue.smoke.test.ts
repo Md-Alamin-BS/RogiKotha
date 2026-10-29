@@ -13,8 +13,14 @@ describe('queue smoke', () => {
     await queue.start();
     try {
       const name = uniqueName('cr011.smoke');
-      expect(await queue.enqueue(name, { n: 1 }, { key: 'k' })).toEqual({ ok: true, data: 'enqueued' });
-      expect(await queue.enqueue(name, { n: 1 }, { key: 'k' })).toEqual({ ok: true, data: 'deduplicated' });
+      expect(await queue.enqueue(name, { n: 1 }, { key: 'k' })).toEqual({
+        ok: true,
+        data: 'enqueued',
+      });
+      expect(await queue.enqueue(name, { n: 1 }, { key: 'k' })).toEqual({
+        ok: true,
+        data: 'deduplicated',
+      });
       expect(await jobsIn(name)).toHaveLength(1);
     } finally {
       await queue.stop({ graceful: false });

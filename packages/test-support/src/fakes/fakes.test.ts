@@ -102,7 +102,12 @@ describe('every other fake', () => {
 
   it('RecordingMailer records sends', async () => {
     const mailer = new RecordingMailer();
-    const result = await mailer.send({ to: 'x@y.z', category: 'verification', messageKey: 'email.verify.body', locale: 'en' });
+    const result = await mailer.send({
+      to: 'x@y.z',
+      category: 'verification',
+      messageKey: 'email.verify.body',
+      locale: 'en',
+    });
     expect(result.ok).toBe(true);
     expect(mailer.sent).toHaveLength(1);
   });
@@ -123,8 +128,20 @@ describe('every other fake', () => {
 
   it('NaiveSearchIndex substring-matches only published docs', async () => {
     const index = new NaiveSearchIndex();
-    await index.upsert({ kind: 'doctor', refId: '1', publicId: 'p1', titleEn: 'Dr. Farhana Rahman', published: true });
-    await index.upsert({ kind: 'doctor', refId: '2', publicId: 'p2', titleEn: 'Dr. Hidden', published: false });
+    await index.upsert({
+      kind: 'doctor',
+      refId: '1',
+      publicId: 'p1',
+      titleEn: 'Dr. Farhana Rahman',
+      published: true,
+    });
+    await index.upsert({
+      kind: 'doctor',
+      refId: '2',
+      publicId: 'p2',
+      titleEn: 'Dr. Hidden',
+      published: false,
+    });
     const { results } = await index.search('farhana');
     expect(results).toHaveLength(1);
     expect(results[0]!.publicId).toBe('p1');

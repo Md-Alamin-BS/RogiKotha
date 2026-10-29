@@ -9,11 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: documentTitle('account', t) };
 }
 
-export default async function ExperiencePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ExperiencePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const t = await getTranslations();
   return (

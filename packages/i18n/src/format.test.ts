@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { countParams, formatDate, formatDigits, formatMonthYear, formatNumber, formatRelative } from './format';
+import {
+  countParams,
+  formatDate,
+  formatDigits,
+  formatMonthYear,
+  formatNumber,
+  formatRelative,
+} from './format';
 
 describe('formatNumber', () => {
   it('formatNumber renders Bengali digits for bn', () => {

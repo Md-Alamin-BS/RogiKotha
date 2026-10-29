@@ -15,8 +15,16 @@ const TERMS_SECTIONS: PolicySection[] = [
   { key: 'limits', titleKey: 'aboutview.limitsTitle', bodyKey: 'aboutview.limitsBody' },
   { key: 'reviewer', titleKey: 'aboutview.reviewerTitle', bodyKey: 'aboutview.reviewerBody' },
   { key: 'moderation', titleKey: 'aboutview.modTitle', bodyKey: 'aboutview.modBody' },
-  { key: 'eligibility', titleKey: 'policy.terms.eligibility', bodyKey: 'policy.terms.eligibilityBody' },
-  { key: 'enforcement', titleKey: 'policy.terms.enforcement', bodyKey: 'policy.terms.enforcementBody' },
+  {
+    key: 'eligibility',
+    titleKey: 'policy.terms.eligibility',
+    bodyKey: 'policy.terms.eligibilityBody',
+  },
+  {
+    key: 'enforcement',
+    titleKey: 'policy.terms.enforcement',
+    bodyKey: 'policy.terms.enforcementBody',
+  },
 ];
 
 // Task step 3 + FD-022: identity choices/redaction (reused from About), what

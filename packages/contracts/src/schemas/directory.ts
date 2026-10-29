@@ -6,7 +6,10 @@ import { OUTCOMES, RELATIONSHIPS, SUBMISSION_STATUSES } from '../enums';
 import { PUBLIC_ID_RE } from '../ids';
 
 const publicId = z.string().regex(PUBLIC_ID_RE);
-const PageParams = { page: z.number().int().min(1).optional(), pageSize: z.number().int().min(1).max(100).optional() };
+const PageParams = {
+  page: z.number().int().min(1).optional(),
+  pageSize: z.number().int().min(1).max(100).optional(),
+};
 const PROFILE_KIND = z.enum(['doctor', 'facility']);
 
 export const GetDoctorInput = z

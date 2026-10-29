@@ -35,7 +35,9 @@ describe('builders parse with their contracts schema', () => {
   it('anAccount() -> RegisterInput', () => {
     resetSeq();
     expect(() => RegisterInput.parse(toRegisterInput(anAccount()))).not.toThrow();
-    expect(() => RegisterInput.parse(toRegisterInput(anAccount({ role: 'moderator' })))).not.toThrow();
+    expect(() =>
+      RegisterInput.parse(toRegisterInput(anAccount({ role: 'moderator' }))),
+    ).not.toThrow();
   });
 
   it('aReview() -> PublishReviewInput (publish subset)', () => {
@@ -44,7 +46,9 @@ describe('builders parse with their contracts schema', () => {
 
   it('aComment() -> CommentPostInput', () => {
     expect(() => CommentPostInput.parse(toCommentPostInput(aComment()))).not.toThrow();
-    expect(() => CommentPostInput.parse(toCommentPostInput(aComment({ parentSeedRef: 'k1' })))).not.toThrow();
+    expect(() =>
+      CommentPostInput.parse(toCommentPostInput(aComment({ parentSeedRef: 'k1' }))),
+    ).not.toThrow();
   });
 
   it('anEvidenceItem() -> IntakeEvidenceInput', () => {

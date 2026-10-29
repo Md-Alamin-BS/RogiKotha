@@ -17,7 +17,13 @@ export default function NotFound() {
   return (
     <html lang="en">
       <body>
-        <main style={{ padding: '3rem 1.25rem', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
+        <main
+          style={{
+            padding: '3rem 1.25rem',
+            textAlign: 'center',
+            fontFamily: 'system-ui, sans-serif',
+          }}
+        >
           <p>
             Nothing matched yet. <Link href="/en">Go home</Link>
           </p>

@@ -9,11 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: documentTitle('queue', t) };
 }
 
-export default async function CaseTrayPage({
-  params,
-}: {
-  params: Promise<{ code: string }>;
-}) {
+export default async function CaseTrayPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const t = await getTranslations();
   return (

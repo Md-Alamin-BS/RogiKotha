@@ -29,12 +29,20 @@ describe('test-support smoke', () => {
     expect(publishInput.attestation).toBe(true);
 
     const ports = makeFakePorts();
-    const key = await ports.storage.putQuarantine(Readable.from(Buffer.from('smoke')), { itemId: 'smoke-item' });
+    const key = await ports.storage.putQuarantine(Readable.from(Buffer.from('smoke')), {
+      itemId: 'smoke-item',
+    });
     expect(await ports.storage.head(key)).toEqual({ bytes: 5 });
   });
 
   it("serves the FD-089 corpus and FD-039's moderation facts through the package entry point", () => {
-    expect({ doctors: DOCTORS.length, branches: BRANCHES.length, reviews: REVIEWS.length, comments: COMMENTS.length, cases: MODERATION_CASES.length }).toEqual({
+    expect({
+      doctors: DOCTORS.length,
+      branches: BRANCHES.length,
+      reviews: REVIEWS.length,
+      comments: COMMENTS.length,
+      cases: MODERATION_CASES.length,
+    }).toEqual({
       doctors: 10,
       branches: 10,
       reviews: 24,

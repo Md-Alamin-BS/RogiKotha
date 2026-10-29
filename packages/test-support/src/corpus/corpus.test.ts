@@ -10,9 +10,10 @@ describe('corpus invariants', () => {
   it("every review's doctorId exists", () => {
     const doctorRefs = new Set(DOCTORS.map((d) => d.seedRef));
     for (const r of REVIEWS) {
-      expect(doctorRefs.has(r.doctorSeedRef), `review ${r.seedRef} references unknown doctor ${r.doctorSeedRef}`).toBe(
-        true,
-      );
+      expect(
+        doctorRefs.has(r.doctorSeedRef),
+        `review ${r.seedRef} references unknown doctor ${r.doctorSeedRef}`,
+      ).toBe(true);
     }
   });
 
