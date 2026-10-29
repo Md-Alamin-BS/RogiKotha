@@ -1,0 +1,112 @@
+{
+  "stage": "code-generation",
+  "unit": "t-011-patient-design-and-motion-system",
+  "version": 1,
+  "writes": [
+    {
+      "path": ".gitattributes"
+    },
+    {
+      "path": ".prettierignore"
+    },
+    {
+      "path": "apps/web/e2e/smoke/motion.spec.ts"
+    },
+    {
+      "path": "apps/web/e2e/tsconfig.json"
+    },
+    {
+      "path": "apps/web/package.json"
+    },
+    {
+      "path": "apps/web/playwright.config.ts"
+    },
+    {
+      "path": "apps/web/src/app/fonts/HindSiliguri-SemiBold-bengali.woff2"
+    },
+    {
+      "path": "apps/web/src/app/fonts/OFL.txt"
+    },
+    {
+      "path": "apps/web/src/app/fonts/bn-heading.ts"
+    },
+    {
+      "path": "apps/web/src/app/layouts.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/motion/PublishTick.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/motion/PublishTick.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/motion/Reveal.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/motion/Reveal.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/motion/RouteTransition.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/motion/RouteTransition.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/motion/motion-test-support.ts"
+    },
+    {
+      "path": "apps/web/src/components/patient/motion/motion.smoke.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/shared/ThemeControls.tsx"
+    },
+    {
+      "path": "apps/web/src/styles/motion.css"
+    },
+    {
+      "path": "apps/web/src/styles/patient.css"
+    },
+    {
+      "path": "apps/web/vitest.config.ts"
+    },
+    {
+      "path": "apps/web/vitest.setup.ts"
+    },
+    {
+      "path": "docs/implementation/01-conventions.md"
+    },
+    {
+      "path": "docs/implementation/ISSUES.md"
+    },
+    {
+      "path": "docs/implementation/handoffs/T-011.md"
+    },
+    {
+      "path": "docs/implementation/tasks/T-011-patient-design-and-motion-system.md"
+    },
+    {
+      "path": "docs/status/dependency-check-log.md"
+    },
+    {
+      "path": "package.json"
+    },
+    {
+      "path": "pnpm-lock.yaml"
+    },
+    {
+      "path": "prettier.config.mjs"
+    },
+    {
+      "path": "scripts/contrast.test.mjs"
+    },
+    {
+      "path": "scripts/css-motion-check.mjs"
+    },
+    {
+      "path": "scripts/css-motion-check.test.mjs"
+    },
+    {
+      "path": "tools/contrast.mjs"
+    }
+  ]
+}

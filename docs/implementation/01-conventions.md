@@ -183,7 +183,7 @@ export interface Actor {
 5. Fonts: none shipped, none fetched. The stacks in `tokens.css` are final.
 6. Icons: the inline SVG paths in the prototype (`ICONS` in `admin/app.js`) become a small `Icon` component with the same paths. No icon library.
 7. Motion: CSS-only, the five 04b primitives. No animation libraries.
-8. Before a UI task is done: run `npx impeccable detect apps/web/src --no-advisory` and `pnpm contrast` (ported `tools/contrast.mjs` reading `tokens.css`); both must be clean.
+8. Before a UI task is done: run `npx impeccable detect apps/web/src --no-advisory` and `pnpm contrast` (ported `tools/contrast.mjs` reading `tokens.css`); both must be clean. On the patient side (FD-091, T-011) `pnpm contrast:patient` (the patient token pairs in both modes) and `pnpm check:motion` (motion rules M1–M11 on `patient.css` and `motion.css`: no hover transforms, every movement behind the reduced-motion guard, identical dark copies) must also pass; both run inside `pnpm check`.
 
 ## 8. React port rules
 
@@ -230,7 +230,7 @@ Test names read as sentences: `it('hides content after five distinct confirmed a
 ## 13. Definition of done (every task)
 
 1. All steps in the task file done; owned paths only.
-2. `pnpm check` green — nine steps in this order, stopping at the first failure (T-010): `typecheck`, `lint` (boundary rules included), `lint:boundaries` (the fixture proof), `format:check` (Prettier), `check:identity` (no attribution markers), `test:coverage` (every test project, the database one included, with the 80% line floor per package), `i18n:check`, `contrast` (`--tokens apps/web/src/styles/tokens.css`), `build`. Then `pnpm smoke` green, and the CI run on the Bolt branch head green before the merge.
+2. `pnpm check` green — eleven steps in this order, stopping at the first failure (T-010, T-011): `typecheck`, `lint` (boundary rules included), `lint:boundaries` (the fixture proof), `format:check` (Prettier), `check:identity` (no attribution markers), `test:coverage` (every test project, the database one included, with the 80% line floor per package), `i18n:check`, `contrast` (`--tokens apps/web/src/styles/tokens.css`), `contrast:patient`, `check:motion`, `build`. Then `pnpm smoke` green, and the CI run on the Bolt branch head green before the merge.
 3. New strings exist in both `en.json` and `bn.json`.
 4. Hard-rule checklist in the task file ticked with evidence (file:line or test name).
 5. `docs/implementation/tasks/T-xxx-*.md` "Hand-off" section filled: what changed, what was not done, questions for the human, follow-ups.

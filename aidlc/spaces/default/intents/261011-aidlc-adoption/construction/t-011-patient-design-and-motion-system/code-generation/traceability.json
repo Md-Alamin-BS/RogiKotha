@@ -1,0 +1,292 @@
+{
+  "stage": "code-generation",
+  "unit": "t-011-patient-design-and-motion-system",
+  "upstream_ids": [
+    "AC2.3.1",
+    "AC2.3.2",
+    "AC2.3.3",
+    "AC2.3.4",
+    "AC2.3.5",
+    "AC2.3.6",
+    "AC2.4.1",
+    "AC2.4.2",
+    "AC2.4.3",
+    "AC2.4.4",
+    "AC2.4.5",
+    "AC2.4.6"
+  ],
+  "coverage": [
+    {
+      "id": "AC2.3.1",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "AC2.3.2",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "AC2.3.3",
+      "status": "OK",
+      "target": "tools/contrast.mjs"
+    },
+    {
+      "id": "AC2.3.4",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "AC2.3.5",
+      "status": "OK",
+      "target": "apps/web/src/app/fonts/bn-heading.ts"
+    },
+    {
+      "id": "AC2.3.6",
+      "status": "OK",
+      "target": "scripts/css-motion-check.mjs"
+    },
+    {
+      "id": "AC2.4.1",
+      "status": "OK",
+      "target": "apps/web/src/components/patient/motion/RouteTransition.tsx"
+    },
+    {
+      "id": "AC2.4.2",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "AC2.4.3",
+      "status": "OK",
+      "target": "apps/web/src/components/patient/motion/Reveal.tsx"
+    },
+    {
+      "id": "AC2.4.4",
+      "status": "OK",
+      "target": "apps/web/src/components/patient/motion/PublishTick.tsx"
+    },
+    {
+      "id": "AC2.4.5",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "AC2.4.6",
+      "status": "OK",
+      "target": "apps/web/e2e/smoke/motion.spec.ts"
+    }
+  ],
+  "reverse": [
+    {
+      "id": "BR1.1",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR1.2",
+      "status": "OK",
+      "target": "tools/contrast.mjs"
+    },
+    {
+      "id": "BR1.3",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR1.4",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR1.5",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR1.6",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR1.7",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR1.8",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR2.1",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR2.2",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR2.3",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR2.4",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR2.5",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR3.1",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR3.2",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR3.3",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR3.4",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR3.5",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR3.6",
+      "status": "OK",
+      "target": "apps/web/src/styles/patient.css"
+    },
+    {
+      "id": "BR4.1",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "BR4.2",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "BR4.3",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "BR4.4",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "BR4.5",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "BR4.6",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "BR5",
+      "status": "OK",
+      "target": "apps/web/src/components/patient/motion/Reveal.tsx"
+    },
+    {
+      "id": "BR6",
+      "status": "OK",
+      "target": "apps/web/src/components/patient/motion/motion.smoke.test.tsx"
+    },
+    {
+      "id": "BR6.1",
+      "status": "OK",
+      "target": "apps/web/src/components/shared/ThemeControls.tsx"
+    },
+    {
+      "id": "BR9.1",
+      "status": "OK",
+      "target": "scripts/css-motion-check.mjs"
+    },
+    {
+      "id": "BR9.2",
+      "status": "OK",
+      "target": "scripts/css-motion-check.mjs"
+    },
+    {
+      "id": "BR9.3",
+      "status": "OK",
+      "target": "scripts/css-motion-check.mjs"
+    },
+    {
+      "id": "BR9.4",
+      "status": "OK",
+      "target": "apps/web/e2e/smoke/motion.spec.ts"
+    },
+    {
+      "id": "BR9.5",
+      "status": "OK",
+      "target": "package.json"
+    },
+    {
+      "id": "BR9.6",
+      "status": "OK",
+      "target": "package.json"
+    },
+    {
+      "id": "BR9.7",
+      "status": "OK",
+      "target": "docs/status/dependency-check-log.md"
+    },
+    {
+      "id": "BR9.8",
+      "status": "OK",
+      "target": "apps/web/src/components/patient/motion/RouteTransition.test.tsx"
+    },
+    {
+      "id": "BR9.9",
+      "status": "OK",
+      "target": "apps/web/playwright.config.ts"
+    },
+    {
+      "id": "BR4.7",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "BR6.7",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "BR6.8",
+      "status": "OK",
+      "target": "apps/web/src/components/patient/motion/motion.smoke.test.tsx"
+    },
+    {
+      "id": "BR6.9",
+      "status": "OK",
+      "target": "apps/web/src/styles/motion.css"
+    },
+    {
+      "id": "BR6.10",
+      "status": "OK",
+      "target": "apps/web/e2e/smoke/motion.spec.ts"
+    }
+  ]
+}

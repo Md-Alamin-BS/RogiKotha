@@ -374,6 +374,8 @@
   @media (prefers-reduced-motion: no-preference) {
     :root:not([data-motion="reduced"]) .progress i {
       width: 100%;
+      /* A page too short to scroll leaves the timeline inactive; rest empty, not full. */
+      transform: translateX(-100%);
       animation: rk-progress linear both;
       animation-timeline: scroll(root block);
     }

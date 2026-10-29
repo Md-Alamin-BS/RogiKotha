@@ -1,6 +1,6 @@
 # Code summary — U45 `t-011-patient-design-and-motion-system` (T-011)
 
-Phase C (plan Step 12) completes this file. Phase A wrote the spike record below.
+Phases A to C are complete; the spike record (Phase A) is below, then the Phase B and C summary.
 
 ## Spike: `RouteTransition` and the static groups (plan Step 4; WF2, Q4, Q8)
 
@@ -32,3 +32,17 @@ Findings that change the plan's assumptions:
 2. **Hit testing.** Named static groups (the masthead with its tabs and controls) do not receive pointer input for the transition's duration, at most 240 ms (Next's view-transitions guide). Accepted; noted for U42.
 3. **Publish tick drawing.** Scaling an arm from 0 (frontend-components § 5.3) breaks BR4.3 (`scale()` only between 0.98 and 1.02, `M4-scale`). Each arm is drawn instead by sliding its stroke out of a clipped window (a nested `<svg overflow="hidden">`), transform only.
 4. **Reading bar.** The old `scaleX(0)` → `scaleX(1)` bar also breaks BR4.3; it now slides `translateX(-100%)` → `none` inside a clipped `.progress`.
+
+## Phase B (plan Steps 7–9, commit `c08dedf`)
+
+- **B1, tooling:** `scripts/css-motion-check.mjs` (rules M0–M11 over `patient.css` and `motion.css`, with 121 tooling tests); `tools/contrast.mjs --pairs patient`; root scripts `contrast:patient` and `check:motion`; Prettier keeps double quotes in CSS.
+- **B2, shell restyle:** `patient.css` on the FD-091 tokens: masthead, tabs, controls, buttons, chips, cards, sheet, colophon, a 3 px focus ring and 44 px targets. All 13 hover lifts and the tab and capsule hover pseudo-transforms are removed. `ThemeControls.tsx` passes the `rk-language` transition type. Fixed on the way: the Bengali hotline overflow (ISS-315), focus rings hidden on fields (ISS-316) and the account icon size (ISS-317).
+- **B3, tests:** 70 component and smoke tests in `en` and `bn` (`apps/web` 433/435 lines); the Playwright `smoke:e2e` motion spec, 12 of 12.
+
+## Phase C (plan Steps 10–12)
+
+- `pnpm check` is eleven steps (`contrast:patient`, `check:motion` before `build`): green in 206 s. `pnpm smoke` green (26 tests). impeccable detect: no findings.
+- `motion.css`: the reading bar rests at `translateX(-100%)` when the page cannot scroll (ISS-314).
+- Records: `01-conventions.md` §7.8 and §13, `ISSUES.md` ISS-303 to ISS-320, the task file Hand-off, `handoffs/T-011.md`.
+- `source-manifest.json` leaves out the two layout files because their paths contain `[` and `]`: `apps/web/src/app/[locale]/layout.tsx` and `apps/web/src/app/[locale]/(patient)/layout.tsx`, both changed in Phase A.
+

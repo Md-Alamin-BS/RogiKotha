@@ -38,9 +38,9 @@ The build runs in three phases inside this one Unit (one branch, serial merge, D
 
 **Phase C — gate and records (one developer)**
 
-- [ ] **Step 10** — `pnpm check` as eleven steps (`contrast:patient` and `check:motion` after `contrast`, `build` last); `timeout 1200 pnpm check` and `timeout 600 pnpm smoke` green; `npx impeccable detect apps/web/src --no-advisory` and `pnpm contrast` clean (UI Unit rule); the Lighthouse baseline and the wall clock recorded.
-- [ ] **Step 11** — Records: `01-conventions.md` §7.8 and §13; `ISSUES.md` rows for the design's findings (next free ids after ISS-302, `Found in U45 T-011`), incl. the BR3.6 page-body remainder; the task file's Hand-off and `docs/implementation/handoffs/T-011.md` (renames, final colours, font size, baseline, out-of-owned-path files, task-text corrections, the owner's look review in `en` and `bn`).
-- [ ] **Step 12** — Step 5 files: `code-summary.md`, `traceability.json`, `source-manifest.json` (literal paths only, no `[`, `]` or `*`).
+- [x] **Step 10** — `pnpm check` as eleven steps (`contrast:patient` and `check:motion` after `contrast`, `build` last); `timeout 1200 pnpm check` and `timeout 600 pnpm smoke` green; `npx impeccable detect apps/web/src --no-advisory` and `pnpm contrast` clean (UI Unit rule); the Lighthouse baseline and the wall clock recorded.
+- [x] **Step 11** — Records: `01-conventions.md` §7.8 and §13; `ISSUES.md` rows for the design's findings (next free ids after ISS-302, `Found in U45 T-011`), incl. the BR3.6 page-body remainder; the task file's Hand-off and `docs/implementation/handoffs/T-011.md` (renames, final colours, font size, baseline, out-of-owned-path files, task-text corrections, the owner's look review in `en` and `bn`).
+- [x] **Step 12** — Step 5 files: `code-summary.md`, `traceability.json`, `source-manifest.json` (literal paths only, no `[`, `]` or `*`).
 
 ## Files touched
 

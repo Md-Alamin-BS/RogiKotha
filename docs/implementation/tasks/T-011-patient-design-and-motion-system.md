@@ -70,3 +70,13 @@ Replace the patient side's look ("Quiet Clinic, minimal", 04b) with the FD-091 d
 ## Hand-off
 
 List every token and class rename, the final colour values after the contrast check, and the font file sizes. Record new Bengali copy for the owner's review (FD-042).
+
+**Done 2026-10-29** (Bolt `bolt/t-011-patient-design-and-motion-system`; full record in [handoffs/T-011.md](../handoffs/T-011.md)).
+
+- **Renames:** none. Class names are unchanged; the shell restyle changes only rule bodies in `patient.css`. New classes: `.ctl .ico` and the motion hooks in `motion.css` (`RouteTransition`, `Reveal`, `PublishTick`, `.progress i`), each with an `added: T-011` comment.
+- **Final colours after the contrast check (light / dark):** paper `hsl(40 33% 95%)` / `hsl(30 12% 9%)`; surface `hsl(0 0% 100%)` / `hsl(30 10% 13%)`; ink `hsl(194 23% 15%)` / `hsl(40 25% 93%)`; ink-muted `hsl(194 12% 33%)` / `hsl(38 10% 74%)`; primary `hsl(175 75% 24%)` / `hsl(170 45% 60%)`; primary-soft `hsl(167 33% 92%)` / `hsl(170 30% 18%)`; decor `hsl(40 73% 55%)` / `hsl(40 70% 60%)`; focus `hsl(218 78% 47%)` / `hsl(214 90% 70%)`. `pnpm contrast:patient` passes every text pair at AA and every 1.4.11 boundary at 3:1 in both modes.
+- **Font:** Hind Siliguri 600, Bengali subset only, `HindSiliguri-SemiBold-bengali.woff2` 74,784 bytes (OFL, `OFL.txt` beside it), loaded with `next/font/local` for Bengali headings.
+- **Bengali copy:** no new strings; nothing to review for FD-042.
+- **Owner's look review in `en` and `bn`:** waiting (owner review queue).
+- **Issues:** ISS-303 to ISS-320.
+
