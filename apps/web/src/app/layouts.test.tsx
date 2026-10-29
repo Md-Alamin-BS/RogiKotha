@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider, type AbstractIntlMessages } from 'next-intl';
 import type * as NextIntl from 'next-intl';
@@ -148,6 +148,24 @@ describe('locale layout', () => {
     expect(requestLocale.set).toHaveBeenCalledWith(locale);
   });
 
+  it('switches animation off on the whole document only when motion was switched off', async () => {
+    givenRequest({ pathname: '/en', motion: 'off' });
+    expect((await renderedDocument('en')).documentElement.getAttribute('data-motion')).toBe(
+      'reduced',
+    );
+    givenRequest({ pathname: '/en', motion: 'on' });
+    expect((await renderedDocument('en')).documentElement.hasAttribute('data-motion')).toBe(false);
+    givenRequest({ pathname: '/en' });
+    expect((await renderedDocument('en')).documentElement.hasAttribute('data-motion')).toBe(false);
+  });
+
+  it('loads the Bengali heading font for Bengali pages only', async () => {
+    givenRequest({ pathname: '/bn' });
+    expect((await renderedDocument('bn')).documentElement.className).not.toBe('');
+    givenRequest({ pathname: '/en' });
+    expect((await renderedDocument('en')).documentElement.className).toBe('');
+  });
+
   it('refuses a locale the site does not serve', async () => {
     givenRequest({ pathname: '/fr' });
     await expect(renderedDocument('fr')).rejects.toThrow('NEXT_NOT_FOUND');
@@ -206,6 +224,26 @@ describe.each(LOCALES)('patient layout in %s', (locale) => {
     await renderPatient({ pathname: `/${locale}` });
     expect(within(screen.getByRole('main')).getByText('patient page content')).toBeInTheDocument();
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main');
+  });
+
+  afterEach(() => {
+    delete document.documentElement.dataset.motionReady;
+  });
+
+  it('puts the page content in the route frame and marks the page ready for entry motion', async () => {
+    await renderPatient({ pathname: `/${locale}` });
+    const frame = within(screen.getByRole('main')).getByText('patient page content').parentElement;
+    expect(frame).toHaveClass('page-frame');
+    expect(document.documentElement).toHaveAttribute('data-motion-ready');
+  });
+
+  it('keeps the demo marker and the colophon outside the route frame and every motion hook', async () => {
+    await renderPatient({ pathname: `/${locale}` });
+    for (const part of [document.querySelector('.demo'), screen.getByRole('contentinfo')]) {
+      expect(part).not.toBeNull();
+      expect(part?.closest('.page-frame, [data-reveal-list], .reveal')).toBeNull();
+      expect(part?.querySelector('[data-reveal-list], .reveal')).toBeNull();
+    }
   });
 
   it('highlights the tab for the current page', async () => {

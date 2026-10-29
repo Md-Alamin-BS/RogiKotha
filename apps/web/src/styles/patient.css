@@ -298,35 +298,48 @@ html:lang(bn) body {
   white-space: nowrap;
   border: 0;
 }
+/* Shown at once on focus, never slid in (BR4.2, frontend-components § 7). */
 .skip {
   position: absolute;
-  left: 12px;
-  top: -60px;
+  inset-inline-start: var(--space-3);
+  top: -100px;
   z-index: 80;
-  padding: 10px 20px;
-  background: var(--accent);
-  color: var(--accent-ink);
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  padding: 0 var(--space-5);
+  background: var(--primary);
+  color: var(--primary-ink);
   text-decoration: none;
   font-family: var(--sans);
+  font-size: var(--fs-small);
   font-weight: 700;
-  border-radius: 0 0 var(--r-sm) var(--r-sm);
+  border-radius: var(--radius-control);
+  box-shadow: var(--elev-2);
+}
+/* added: T-011 the skip link's Bengali face */
+html:lang(bn) .skip {
+  font-family: var(--bangla);
 }
 .skip:focus {
-  top: 0;
+  top: var(--space-2);
 }
+/* One 3px ring for every focusable, drawn at once and never removed (BR3.4). */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-  border-radius: 6px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
+/* Never animated or moved (BR7.1); motion.css keeps it in its static group. */
 .demo {
   margin: 0;
-  padding: 7px 16px;
+  padding: var(--space-2) var(--space-4);
   text-align: center;
   font-family: var(--sans);
-  font-size: 11.5px;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   background: var(--warn-bg);
   color: var(--warn-ink);
@@ -336,81 +349,124 @@ html:lang(bn) .demo {
   font-family: var(--bangla);
   letter-spacing: 0;
   text-transform: none;
-  font-size: 13px;
 }
 
-/* ---------- masthead ---------- */
+/* ---------- masthead ----------
+   A solid surface with one hairline, no glass (BR3.2). Mobile first: the brand
+   and the four controls share the first row, the write button spans the
+   second and the tab strip scrolls in the third; from 48rem the button joins
+   the first row and the tabs wrap in the second. Every control is 44px
+   (BR3.3); the page never scrolls sideways (BR3.5). */
 
 .masthead {
   position: sticky;
   top: 0;
   z-index: 50;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "brand controls"
+    "cta cta"
+    "tabs tabs";
   align-items: center;
-  gap: 22px;
-  flex-wrap: wrap;
-  padding: 12px clamp(14px, 3.5vw, 40px);
-  background: var(--glass);
+  gap: var(--space-2) var(--space-4);
+  /* Safe-area: leave room for the notch on iPhone 14+ and similar. */
+  padding: max(var(--space-3), env(safe-area-inset-top)) clamp(var(--space-4), 4vw, var(--space-7))
+    var(--space-2);
+  background: var(--masthead-bg);
   border-bottom: 1px solid var(--rule);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
 }
 .brand {
+  grid-area: brand;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: var(--target);
   text-decoration: none;
   color: inherit;
+  border-radius: var(--radius-control);
 }
+/* A teal disc with a small warm arc; the arc is decoration only (BR1.3). */
 .brand-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   flex: none;
-  background:
-    radial-gradient(circle at 34% 30%, hsl(var(--hue-b) 88% 68%), transparent 64%),
-    linear-gradient(140deg, hsl(var(--hue-b) 74% 52%), hsl(var(--hue-a) 66% 40%));
-  box-shadow: 0 6px 16px -8px hsl(var(--hue-a) 70% 40% / 0.7);
+  background: var(--primary);
+  box-shadow: var(--elev-1);
+}
+/* added: T-011 the brand mark's decorative arc */
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-block-start-color: var(--decor);
+  border-inline-end-color: var(--decor);
 }
 .brand-text {
   display: grid;
-  line-height: 1.15;
+  min-width: 0;
 }
 .brand-text b {
   font-family: var(--sans);
-  font-size: 18px;
+  font-size: var(--fs-h3);
+  line-height: var(--lh-h3);
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
+/* The wordmark is a Bengali heading: Hind Siliguri 600 (BR2.4). */
 html:lang(bn) .brand-text b {
-  font-family: var(--bangla);
-  font-weight: 700;
+  font-family: var(--display-bangla);
+  font-weight: 600;
   letter-spacing: 0;
 }
 .brand-text i {
   font-style: normal;
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
   color: var(--ink-faint);
 }
 html:lang(bn) .brand-text i {
   font-family: var(--bangla);
-  font-size: 12px;
 }
 
 .tabs {
+  grid-area: tabs;
   display: flex;
-  gap: 2px;
-  margin-inline-start: auto;
-  flex-wrap: wrap;
+  gap: var(--space-1);
+  min-width: 0;
+  /* Room for the focus ring inside the scrolling strip. */
+  padding-block: var(--space-1);
+  padding-inline-end: var(--space-6);
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* A soft fade says more tabs sit off-screen; it lies in the strip's end
+     padding, never over a tab. */
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--space-6)), transparent 100%);
+  mask-image: linear-gradient(to right, #000 calc(100% - var(--space-6)), transparent 100%);
+}
+/* added: T-011 hide the strip's scrollbar in WebKit as well */
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 .tabs a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  padding: 0 var(--space-4);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
   font-weight: 600;
-  padding: 7px 12px;
-  border-radius: 999px;
-  color: var(--ink-soft);
+  border-radius: var(--radius-chip);
+  color: var(--ink-muted);
   text-decoration: none;
   white-space: nowrap;
   border: 1px solid transparent;
@@ -420,52 +476,123 @@ html:lang(bn) .tabs a {
 }
 .tabs a:hover {
   color: var(--ink);
-  background: var(--glass-2);
+  background: var(--surface-2);
 }
 .tabs a[aria-current="page"] {
-  color: var(--accent);
-  background: var(--accent-soft);
-  border-color: color-mix(in oklab, var(--accent) 40%, transparent);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+/* added: T-011 the current tab keeps its wash on hover */
+.tabs a[aria-current="page"]:hover {
+  color: var(--primary-2);
+  background: var(--primary-soft);
+}
+/* added: T-011 the current tab's static underline bar, its non-colour cue (BR1.4) */
+.tabs a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: var(--space-4);
+  bottom: var(--space-1);
+  height: 2px;
+  border-radius: var(--radius-chip);
+  background: var(--primary);
 }
 .tabs a.staff {
   color: var(--warn-ink);
 }
 .tabs a.staff::before {
   content: "◆";
-  margin-inline-end: 5px;
+  margin-inline-end: var(--space-1);
   font-size: 9px;
   vertical-align: 1px;
 }
 
+/* The write button is the one primary-filled control in the chrome. */
+.cta-write {
+  grid-area: cta;
+}
+
 .controls {
+  grid-area: controls;
   display: flex;
-  gap: 5px;
+  gap: var(--space-1);
+  justify-self: end;
 }
 .ctl {
-  /* bangla-ok: a 40px control around a single symbol glyph */
-  width: 36px;
-  height: 36px;
+  /* bangla-ok: a 44px control around a single symbol glyph */
+  width: var(--target);
+  height: var(--target);
   display: grid;
   place-items: center;
-  border: 1px solid var(--rule);
-  border-radius: 11px;
-  background: var(--glass-2);
-  color: var(--ink-soft);
-  font-size: 14px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: var(--fs-h3);
   cursor: pointer;
   text-decoration: none;
 }
-.ctl:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-  transform: translateY(-2px);
+/* added: T-011 the account icon at glyph size inside its 44px control */
+.ctl .ico {
+  width: 20px;
+  height: 20px;
 }
+.ctl:hover {
+  color: var(--ink);
+  border-color: var(--ink-faint);
+  background: var(--surface-2);
+}
+/* Pressed: the wash plus a doubled primary edge, so the state is not hue alone (BR1.4). */
 .ctl[aria-pressed="true"] {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
+@media (min-width: 48rem) {
+  /* added: T-011 the two-row masthead from 48rem */
+  .masthead {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "brand cta controls"
+      "tabs tabs tabs";
+    column-gap: var(--space-5);
+  }
+  /* added: T-011 the tabs wrap instead of scrolling once there is room */
+  .tabs {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-inline-end: 0;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+/* On the narrowest phones the brand gives way so the wordmark and four 44px
+   controls share one row (BR3.5): the tagline goes first, then the mark and
+   wordmark step down. */
+@media (max-width: 30rem) {
+  /* added: T-011 room for the wordmark and four 44px controls at 360px */
+  .brand {
+    gap: var(--space-2);
+  }
+  /* added: T-011 a smaller brand mark on the narrowest phones */
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+  /* added: T-011 the wordmark one step smaller on the narrowest phones */
+  .brand-text b {
+    font-size: var(--fs-body);
+  }
+  /* added: T-011 the tagline hidden on the narrowest phones */
+  .brand-text i {
+    display: none;
+  }
+}
+
+/* Decorative reading bar; motion.css draws it on scroll and hides it in reduced mode. */
 .progress {
   position: sticky;
   top: 0;
@@ -477,13 +604,15 @@ html:lang(bn) .tabs a {
   display: block;
   height: 100%;
   width: 0;
-  background: var(--accent);
+  background: var(--primary);
 }
 
 /* ---------- shared structure ---------- */
 
+/* The inline padding matches the masthead's, so page and chrome share one edge. */
 main {
-  padding: clamp(18px, 3.5vw, 40px) clamp(14px, 3.5vw, 40px) 90px;
+  padding: clamp(var(--space-5), 4vw, var(--space-7)) clamp(var(--space-4), 4vw, var(--space-7))
+    var(--space-8);
   max-width: 1300px;
   margin: 0 auto;
 }
@@ -491,15 +620,14 @@ main {
   display: none;
 }
 
+/* A white card with soft depth on warm paper (BR3.1); solid, never frosted (BR3.2). */
 .panel {
-  background: var(--glass);
+  background: var(--card-bg);
   border: 1px solid var(--rule);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  padding: clamp(18px, 2.8vw, 30px);
-  margin-bottom: 18px;
+  border-radius: var(--radius-card);
+  box-shadow: var(--elev-1);
+  padding: clamp(var(--space-4), 3vw, var(--space-5));
+  margin-bottom: var(--space-6);
 }
 .panel.flush {
   padding: 0;
@@ -508,19 +636,19 @@ main {
 
 .kicker {
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--accent);
-  margin: 0 0 12px;
+  color: var(--eyebrow);
+  margin: 0 0 var(--space-3);
   display: block;
 }
 html:lang(bn) .kicker {
   font-family: var(--bangla);
   letter-spacing: 0;
   text-transform: none;
-  font-size: 12.5px;
 }
 
 h1,
@@ -566,62 +694,69 @@ html:lang(bn) .display {
 }
 
 .section-head {
-  font-size: clamp(20px, 2.8vw, 30px);
-  border-bottom: 1px solid var(--rule-hard);
-  padding-bottom: 9px;
-  margin: 34px 0 18px;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  margin: var(--space-7) 0 var(--space-5);
 }
 .lede {
-  font-size: clamp(16px, 1.4vw, 19px);
-  color: var(--ink-soft);
+  font-size: clamp(var(--fs-body), 1.4vw, var(--fs-h3));
+  color: var(--ink-muted);
   max-width: 58ch;
 }
 .note {
   font-family: var(--sans);
-  font-size: 12.5px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
   color: var(--ink-faint);
 }
 html:lang(bn) .note {
   font-family: var(--bangla);
-  font-size: 13.5px;
 }
 
+/* Buttons: 44px, 8px corners, a soft lift at rest; hover changes colour only
+   (BR3.1, BR3.3, BR6.5). The press squeeze lives in motion.css. */
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--target);
+  padding: 0 var(--space-5);
   font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 650;
-  border: 0;
-  border-radius: 999px;
-  padding: 12px 26px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
   cursor: pointer;
-  background: var(--accent);
-  color: var(--accent-ink);
-  box-shadow: 0 10px 24px -14px var(--accent);
+  background: var(--primary);
+  color: var(--primary-ink);
+  box-shadow: var(--elev-1);
 }
 html:lang(bn) .btn {
   font-family: var(--bangla);
 }
 .btn:hover {
-  transform: translateY(-2px);
-  background: var(--accent-2);
-  box-shadow: 0 14px 30px -14px var(--accent);
+  background: var(--primary-2);
 }
 .btn.small {
-  padding: 8px 16px;
-  font-size: 13px;
+  padding: 0 var(--space-4);
 }
 .btn.ghost {
-  background: transparent;
-  color: var(--ink-soft);
-  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--rule-strong);
   box-shadow: none;
 }
 .btn.ghost:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-soft);
 }
 .btn.block {
-  display: block;
+  display: flex;
   width: 100%;
 }
 .link-btn {
@@ -630,9 +765,10 @@ html:lang(bn) .btn {
   padding: 0;
   font: inherit;
   font-family: var(--sans);
-  font-size: 13px;
-  color: var(--accent);
+  font-size: var(--fs-small);
+  color: var(--primary);
   text-decoration: underline;
+  text-underline-offset: 0.15em;
   cursor: pointer;
 }
 html:lang(bn) .link-btn {
@@ -644,18 +780,18 @@ html:lang(bn) .link-btn {
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
   font-family: var(--sans);
-  font-size: 11.5px;
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
   font-weight: 600;
-  padding: 3px 11px;
-  border-radius: 999px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-chip);
   border: 1px solid currentColor;
   white-space: nowrap;
 }
 html:lang(bn) .badge {
   font-family: var(--bangla);
-  font-size: 12.5px;
 }
 .badge::before {
   content: "";
@@ -701,49 +837,50 @@ html:lang(bn) .badge {
 .tag {
   display: inline-block;
   font-family: var(--sans);
-  font-size: 12px;
-  padding: 3px 11px;
-  border-radius: 7px;
-  background: var(--accent-soft);
-  color: color-mix(in oklab, var(--accent) 88%, var(--ink));
-  border: 1px solid color-mix(in oklab, var(--accent) 24%, transparent);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-chip);
+  background: var(--primary-soft);
+  color: var(--ink);
+  border: 1px solid color-mix(in oklab, var(--primary) 24%, transparent);
 }
 html:lang(bn) .tag {
   font-family: var(--bangla);
-  font-size: 13px;
 }
 
 .prov {
   display: inline-block;
   font-family: var(--sans);
-  font-size: 10.5px;
-  padding: 2px 8px;
-  border-radius: 6px;
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-control);
   border: 1px solid var(--rule);
   color: var(--ink-faint);
-  background: var(--glass-2);
+  background: var(--surface-2);
 }
 html:lang(bn) .prov {
   font-family: var(--bangla);
-  font-size: 11.5px;
 }
 .prov[data-p="admin"] {
   color: var(--positive);
   border-color: color-mix(in oklab, var(--positive) 42%, transparent);
 }
 .prov[data-p="provider"] {
-  color: var(--accent);
-  border-color: color-mix(in oklab, var(--accent) 42%, transparent);
+  color: var(--primary);
+  border-color: color-mix(in oklab, var(--primary) 42%, transparent);
 }
 
 .reviewer-label {
   display: inline-flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: baseline;
   font-family: var(--sans);
-  font-size: 12.5px;
-  padding: 5px 13px;
-  border-radius: var(--r-sm);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-control);
   background: var(--warn-bg);
   border: 1px dashed var(--warn-line);
   color: var(--warn-ink);
@@ -754,18 +891,19 @@ html:lang(bn) .reviewer-label {
 .reviewer-label i {
   font-style: normal;
   opacity: 0.78;
-  font-size: 11.5px;
+  font-size: var(--fs-label);
 }
 
 .limited {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-family: var(--sans);
-  font-size: 12.5px;
-  margin-top: 10px;
-  padding: 7px 14px;
-  border-radius: var(--r-sm);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-control);
   background: var(--warn-bg);
   border: 1px solid var(--warn-line);
   color: var(--warn-ink);
@@ -776,12 +914,13 @@ html:lang(bn) .limited {
 
 .callout {
   font-family: var(--sans);
-  font-size: 13px;
-  padding: 14px 17px;
-  border-radius: var(--r-md);
-  background: var(--glass-2);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
   border: 1px solid var(--rule);
-  color: var(--ink-soft);
+  color: var(--ink-muted);
 }
 html:lang(bn) .callout {
   font-family: var(--bangla);
@@ -798,7 +937,7 @@ html:lang(bn) .callout {
 }
 .callout b {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 /* ---------- the distribution ----------
@@ -979,11 +1118,11 @@ html:lang(bn) .margin-note .k {
   border: 1px solid var(--rule);
   box-shadow: var(--shadow);
 }
+/* The field sits flush inside the pill, so the pill carries the 3px ring (BR3.4). */
 .search-shell:focus-within {
-  border-color: var(--accent);
-  box-shadow:
-    0 0 0 4px var(--accent-soft),
-    var(--shadow);
+  border-color: var(--primary);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 .search-shell input {
   flex: 1;
@@ -1014,46 +1153,54 @@ html:lang(bn) .search-shell input {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
+/* Chips: 44px pills; hover changes colour and edge only (BR3.3, BR6.5). */
 .chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  padding: 0 var(--space-4);
   font-family: var(--sans);
-  font-size: 13px;
-  border: 1px solid var(--rule);
-  background: var(--glass-2);
-  color: var(--ink-soft);
-  padding: 7px 15px;
-  border-radius: 999px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  text-decoration: none;
+  border: 1px solid var(--rule-hard);
+  background: var(--surface);
+  color: var(--ink-muted);
+  border-radius: var(--radius-chip);
   cursor: pointer;
 }
 html:lang(bn) .chip {
   font-family: var(--bangla);
 }
 .chip:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-  transform: translateY(-2px);
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-soft);
 }
 
 .browse-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-min), 1fr));
+  gap: var(--space-3);
 }
 .browse-card {
+  display: block;
   text-align: start;
+  text-decoration: none;
   font: inherit;
   color: inherit;
   cursor: pointer;
-  background: var(--glass-2);
+  background: var(--card-bg);
   border: 1px solid var(--rule);
-  border-radius: var(--r-md);
-  padding: 16px 18px;
+  border-radius: var(--radius-card);
+  box-shadow: var(--elev-1);
+  padding: var(--space-4) var(--space-5);
 }
 .browse-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--accent);
+  border-color: var(--primary);
 }
 .browse-card b {
   display: block;
@@ -1078,20 +1225,22 @@ html:lang(bn) .browse-card span {
 .emergency-lines {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 14px 0;
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
 }
 .emergency-lines a {
   display: grid;
+  min-height: var(--target);
   text-decoration: none;
   color: var(--danger-ink);
   background: var(--danger-bg);
   border: 1px solid var(--danger-line);
-  border-radius: var(--r-md);
-  padding: 9px 18px;
+  border-radius: var(--radius-card);
+  padding: var(--space-2) var(--space-4);
 }
+/* Emergency guidance never moves (BR7.1): hover darkens the edge only. */
 .emergency-lines a:hover {
-  transform: translateY(-2px);
+  border-color: var(--danger-ink);
 }
 .emergency-lines b {
   font-family: var(--mono);
@@ -1163,29 +1312,36 @@ html:lang(bn) .resolved {
 
 .seg {
   display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  border-radius: 999px;
-  background: var(--glass-2);
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-chip);
+  background: var(--surface-2);
   border: 1px solid var(--rule);
 }
 .seg button {
+  min-height: var(--target);
+  padding: 0 var(--space-4);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
   font-weight: 600;
   border: 0;
   background: transparent;
-  color: var(--ink-soft);
-  padding: 7px 16px;
-  border-radius: 999px;
+  color: var(--ink-muted);
+  border-radius: var(--radius-chip);
   cursor: pointer;
 }
 html:lang(bn) .seg button {
   font-family: var(--bangla);
 }
+/* added: T-011 hover colour for the segmented options */
+.seg button:hover {
+  color: var(--ink);
+}
 .seg button[aria-pressed="true"] {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--primary);
+  color: var(--primary-ink);
+  box-shadow: var(--elev-1);
 }
 
 .meta-row {
@@ -1291,7 +1447,6 @@ html:lang(bn) .fset > span {
 .doc-entry:hover {
   background: var(--glass);
   border-color: var(--rule);
-  transform: translateY(-2px);
 }
 .doc-av {
   width: 70px;
@@ -1325,14 +1480,16 @@ html:lang(bn) .doc-sub {
 }
 
 .empty-state {
-  padding: 48px;
+  padding: var(--space-7);
   text-align: center;
   border: 1px dashed var(--rule-hard);
-  border-radius: var(--r-lg);
-  color: var(--ink-soft);
+  border-radius: var(--radius-card);
+  color: var(--ink-muted);
 }
 
-/* ---------- compare tray + sheet ---------- */
+/* ---------- compare tray + sheet ----------
+   Both float above the page, so they take the second elevation (BR3.1); both
+   are solid, never frosted (BR3.2). Their entry rise lives in motion.css. */
 
 .tray {
   position: fixed;
@@ -1340,13 +1497,12 @@ html:lang(bn) .doc-sub {
   bottom: 0;
   z-index: 60;
   /* Safe-area: leave room for the home indicator on iPhone 14+ and
-     Android with gesture bars. Uses the larger of 16px and the
-     viewport's bottom safe-area inset. */
-  padding: 12px clamp(14px, 3.5vw, 40px) max(16px, env(safe-area-inset-bottom));
-  background: var(--glass);
+     Android with gesture bars. */
+  padding: var(--space-3) clamp(var(--space-4), 4vw, var(--space-7))
+    max(var(--space-4), env(safe-area-inset-bottom));
+  background: var(--surface);
   border-top: 1px solid var(--rule);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  box-shadow: var(--elev-2);
 }
 .tray[hidden] {
   display: none;
@@ -1356,13 +1512,14 @@ html:lang(bn) .doc-sub {
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 .tray-label {
   font-family: var(--sans);
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--ink-faint);
 }
@@ -1370,23 +1527,23 @@ html:lang(bn) .tray-label {
   font-family: var(--bangla);
   letter-spacing: 0;
   text-transform: none;
-  font-size: 12.5px;
 }
 .tray-items {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
   flex: 1;
 }
 .tray-chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-1);
   font-family: var(--sans);
-  font-size: 13px;
-  padding: 6px 8px 6px 14px;
-  border-radius: 999px;
-  background: var(--glass-2);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  padding-inline-start: var(--space-4);
+  border-radius: var(--radius-chip);
+  background: var(--surface-2);
   border: 1px solid var(--rule);
 }
 html:lang(bn) .tray-chip {
@@ -1394,32 +1551,33 @@ html:lang(bn) .tray-chip {
 }
 .tray-chip button {
   /* bangla-ok: holds the remove glyph only */
+  min-width: var(--target);
+  min-height: var(--target);
   border: 0;
+  border-radius: var(--radius-chip);
   background: none;
   color: var(--ink-faint);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1;
-  padding: 2px 4px;
+  padding: 0;
 }
 .tray-chip button:hover {
   color: var(--negative);
 }
 .tray-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .overlay {
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: hsl(24 30% 6% / 0.58);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: var(--overlay-scrim);
   display: grid;
   place-items: center;
-  padding: clamp(12px, 4vw, 40px);
+  padding: clamp(var(--space-3), 4vw, var(--space-6));
 }
 .overlay[hidden] {
   display: none;
@@ -1429,38 +1587,42 @@ html:lang(bn) .tray-chip {
   max-height: 86vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
-  border: 1px solid var(--rule-hard);
-  border-radius: var(--r-lg);
-  box-shadow: 0 40px 100px -40px hsl(0 0% 0% / 0.7);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  box-shadow: var(--elev-2);
 }
 .sheet-head {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 18px 22px;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
   border-bottom: 1px solid var(--rule);
 }
 .sheet-head h2 {
   margin: 0;
-  font-size: 19px;
+  font-size: var(--fs-h2);
   flex: 1;
 }
 .sheet-close {
-  border: 1px solid var(--rule);
-  background: transparent;
-  color: var(--ink-soft);
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  /* bangla-ok: holds the close glyph only */
+  flex: none;
+  width: var(--target);
+  height: var(--target);
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink-muted);
+  border-radius: var(--radius-control);
+  font-size: var(--fs-body);
   cursor: pointer;
 }
 .sheet-close:hover {
   color: var(--negative);
   border-color: var(--negative);
+  background: var(--danger-bg);
 }
 .sheet-body {
-  padding: 22px;
+  padding: var(--space-5);
   overflow-y: auto;
 }
 
@@ -1573,26 +1735,40 @@ html:lang(bn) .facts .k {
 .pillrow {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
-  margin: 4px 0 16px;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 var(--space-4);
 }
-.pillrow button {
+/* A pill row holds buttons today and links in later Units; both are 44px chips (BR3.3). */
+.pillrow button,
+.pillrow a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  padding: 0 var(--space-4);
   font-family: var(--sans);
-  font-size: 13px;
-  border: 1px solid var(--rule);
-  background: var(--glass-2);
-  color: var(--ink-soft);
-  padding: 7px 15px;
-  border-radius: 999px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  text-decoration: none;
+  border: 1px solid var(--rule-hard);
+  background: var(--surface);
+  color: var(--ink-muted);
+  border-radius: var(--radius-chip);
   cursor: pointer;
 }
-html:lang(bn) .pillrow button {
+html:lang(bn) .pillrow :is(button, a) {
   font-family: var(--bangla);
 }
-.pillrow button[aria-pressed="true"] {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: var(--accent-soft);
+/* added: T-011 hover colour for the pill row */
+.pillrow :is(button, a):hover {
+  color: var(--ink);
+  border-color: var(--rule-strong);
+}
+.pillrow button[aria-pressed="true"],
+.pillrow a[aria-current="page"] {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
 .breakdown {
@@ -1965,8 +2141,8 @@ html:lang(bn) .composer-box textarea {
   font-family: var(--bangla);
   line-height: 1.9;
 }
+/* The shared 3px ring stays on; the edge darkens too (BR3.4). */
 .composer-box textarea:focus {
-  outline: none;
   border-color: var(--accent);
 }
 
@@ -1986,7 +2162,6 @@ html:lang(bn) .composer-box textarea {
   padding: 16px;
 }
 .related-card:hover {
-  transform: translateY(-3px);
   border-color: var(--accent);
 }
 .related-card h4 {
@@ -2026,7 +2201,6 @@ html:lang(bn) .react {
 .react:hover {
   color: var(--accent);
   border-color: var(--accent);
-  transform: translateY(-2px);
 }
 .react[aria-pressed="true"] {
   color: var(--accent);
@@ -2118,7 +2292,6 @@ html:lang(bn) .crit h4 {
 }
 .mini-row:hover {
   border-color: var(--accent);
-  transform: translateY(-2px);
 }
 .mini-av {
   width: 38px;
@@ -2164,7 +2337,7 @@ html:lang(bn) .mini-row span {
   cursor: pointer;
 }
 .c-mode:hover {
-  transform: translateY(-2px);
+  border-color: var(--rule-strong);
 }
 .c-mode[aria-pressed="true"] {
   border-color: var(--accent);
@@ -2202,31 +2375,32 @@ html:lang(bn) .c-mode span {
 }
 
 .field {
-  margin-bottom: 22px;
+  margin-bottom: var(--space-5);
 }
 .field > label,
 .field > .lbl {
   display: block;
   font-family: var(--sans);
-  font-size: 11.5px;
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
   font-weight: 700;
-  letter-spacing: 0.11em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--ink-faint);
-  margin-bottom: 8px;
+  color: var(--ink-muted);
+  margin-bottom: var(--space-2);
 }
 html:lang(bn) .field > label,
 html:lang(bn) .field > .lbl {
   font-family: var(--bangla);
   letter-spacing: 0;
   text-transform: none;
-  font-size: 13px;
 }
 .field .sub {
   font-family: var(--sans);
-  font-size: 12.5px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
   color: var(--ink-faint);
-  margin: 0 0 9px;
+  margin: 0 0 var(--space-2);
 }
 html:lang(bn) .field .sub {
   font-family: var(--bangla);
@@ -2235,10 +2409,11 @@ html:lang(bn) .field .sub {
 .field select,
 .field textarea {
   width: 100%;
+  min-height: var(--target);
   font-family: var(--sans);
-  font-size: 15.5px;
-  padding: 12px 15px;
-  border-radius: var(--r-md);
+  font-size: var(--fs-body);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
   border: 1px solid var(--rule);
   background: var(--glass-2);
   color: var(--ink);
@@ -2256,8 +2431,8 @@ html:lang(bn) .field textarea {
   font-family: var(--bangla);
   line-height: 1.95;
 }
+/* The shared 3px ring stays on; the edge darkens too (BR3.4). */
 .field :is(input, select, textarea):focus {
-  outline: none;
   border-color: var(--accent);
 }
 .req {
@@ -2272,6 +2447,7 @@ html:lang(bn) .field textarea {
   gap: 8px;
 }
 .opt {
+  min-height: var(--target);
   font-family: var(--sans);
   font-size: 13.5px;
   border: 1px solid var(--rule);
@@ -2285,7 +2461,8 @@ html:lang(bn) .opt {
   font-family: var(--bangla);
 }
 .opt:hover {
-  transform: translateY(-2px);
+  color: var(--ink);
+  border-color: var(--rule-strong);
 }
 .opt[aria-pressed="true"] {
   color: var(--accent);
@@ -2704,7 +2881,6 @@ html:lang(bn) .lane-head .target {
 }
 .case:hover {
   border-color: var(--accent);
-  transform: translateY(-2px);
 }
 .case[aria-pressed="true"] {
   border-color: var(--accent);
@@ -2891,53 +3067,60 @@ html:lang(bn) .kv th {
   font-size: 12.5px;
 }
 
-/* ---------- colophon ---------- */
+/* ---------- colophon ----------
+   A full-width inset band whose content lines up with the page's. The
+   disclaimer is body-size text, not small print, and never moves (BR7.1). */
 
 .colophon {
+  padding-block: var(--space-6) var(--space-7);
+  padding-inline: calc(max(0px, (100% - 1300px) / 2) + clamp(var(--space-4), 4vw, var(--space-7)));
+  background: var(--surface-2);
   border-top: 1px solid var(--rule);
-  padding: 28px clamp(14px, 3.5vw, 40px) 60px;
-  max-width: 1300px;
-  margin: 0 auto;
   font-family: var(--sans);
-  font-size: 12.5px;
-  color: var(--ink-faint);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-muted);
 }
 html:lang(bn) .colophon {
   font-family: var(--bangla);
-  font-size: 13.5px;
 }
 .colophon p {
-  max-width: 94ch;
+  max-width: var(--measure);
 }
 .foot-demo {
-  margin-top: 10px;
+  margin-top: var(--space-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  font-weight: 600;
   color: var(--warn-ink);
 }
 .foot-nav {
   display: flex;
-  gap: 10px;
+  gap: var(--space-2);
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: var(--space-5);
 }
 .foot-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  padding: 0 var(--space-4);
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
   font-weight: 600;
   text-decoration: none;
-  color: var(--ink-soft);
-  padding: 7px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--rule);
-  background: var(--glass-2);
-  min-height: 32px;
+  color: var(--ink);
+  border-radius: var(--radius-chip);
+  border: 1px solid var(--rule-hard);
+  background: var(--surface);
 }
 html:lang(bn) .foot-nav a {
   font-family: var(--bangla);
-  font-size: 13px;
 }
 .foot-nav a:hover {
-  border-color: var(--rule-hard);
-  color: var(--accent);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 /* ---------- responsive ---------- */
@@ -2974,27 +3157,6 @@ html:lang(bn) .foot-nav a {
 }
 
 @media (max-width: 720px) {
-  .masthead {
-    gap: 12px;
-  }
-  /* Tabs scroll horizontally on touch. The right-edge mask is a soft
-     visual cue that more tabs exist off-screen; it doesn't interfere
-     with tap targets because it lives in the wrapper padding, not the
-     tab elements. Mask colour matches the masthead's --bg so it blends
-     into the page background. */
-  .tabs {
-    order: 3;
-    width: 100%;
-    margin-inline-start: 0;
-    overflow-x: auto;
-    padding-bottom: 2px;
-    padding-inline-end: 28px;
-    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
-    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
-  }
-  .controls {
-    margin-inline-start: auto;
-  }
   .p-hero {
     grid-template-columns: 78px minmax(0, 1fr);
     gap: 16px;
@@ -3024,51 +3186,8 @@ html:lang(bn) .foot-nav a {
   }
 }
 
-/* ---------- touch-target floor (WCAG 2.5.5) ----------
-   Enlarge interactive controls on coarse pointers only — desktop stays
-   unchanged. The Quiet Clinic aesthetic is carried by the elements
-   themselves; bumping their size on touch devices is invisible to mouse
-   users. Covers .ctl, .sheet-close, .tabs a, .chip, .pillrow button, .opt,
-   .seg button, .tray-chip button, .btn. */
-@media (pointer: coarse) {
-  .ctl {
-    min-width: 44px;
-    min-height: 44px;
-  }
-  .sheet-close {
-    min-width: 44px;
-    min-height: 44px;
-  }
-  .tabs a {
-    min-height: 44px;
-    padding-block: 13px;
-  }
-  .chip {
-    min-height: 44px;
-    padding-block: 14px;
-  }
-  .pillrow button {
-    min-height: 44px;
-    padding-block: 14px;
-  }
-  .opt {
-    min-height: 44px;
-    padding-block: 14px;
-  }
-  .seg button {
-    min-height: 44px;
-    padding-block: 12px;
-  }
-  .tray-chip button {
-    min-width: 32px;
-    min-height: 32px;
-    padding: 4px 6px;
-  }
-  .btn {
-    min-height: 44px;
-    padding-block: 12px;
-  }
-}
+/* Touch targets: the 44px floor is part of each control's own rule, on every
+   pointer type (BR3.3), so no coarse-pointer patch is needed. */
 
 /* Region and role hooks: rules read the hook tokens defined in the token block. */
 .kicker {
@@ -3127,70 +3246,26 @@ h4 {
   display: none;
 }
 
-/* Nothing frosted. Surfaces are opaque and simply sit on the page. */
-.masthead {
-  background: var(--bg);
-  border-bottom: 1px solid var(--rule);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  /* Safe-area: leave room for the notch on iPhone 14+ and similar. Uses
-     the larger of 14px (designer-intended masthead height) and the
-     viewport's top safe-area inset. */
-  padding-block: max(14px, env(safe-area-inset-top)) 14px;
-}
-.panel {
-  background: var(--glass);
-  border: 1px solid var(--rule);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  padding: clamp(22px, 3.2vw, 32px);
-  margin-bottom: 20px;
-}
-.overlay {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  background: var(--overlay-scrim);
-}
-.sheet {
-  border-radius: var(--r-lg);
-}
-.tray {
-  background: var(--bg);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-top: 1px solid var(--rule);
-}
-
-/* Round everything that can be round. */
+/* Round everything that can be round: avatars are discs, pills are chips and
+   cards share one radius (BR3.1). Buttons and controls keep their 8px corner
+   from their own rules. */
 .doc-av,
 .p-av,
 .mini-av,
 .inspect-av {
   border-radius: 50%;
 }
-.brand-mark {
-  border-radius: 50%;
-}
 .badge,
 .tag,
-.prov,
 .opt,
 .chip,
 .react,
 .pillrow button,
-.ctl,
 .tabs a,
-.btn,
 .seg,
 .seg button,
 .tray-chip {
-  border-radius: 999px;
-}
-.ctl {
-  width: 36px;
-  height: 36px;
+  border-radius: var(--radius-chip);
 }
 .browse-card,
 .related-card,
@@ -3207,26 +3282,16 @@ h4 {
 .comment,
 .chapters li,
 .mine-item,
-.q-item {
-  border-radius: var(--r-md);
-}
+.q-item,
 .doc-entry {
-  border-radius: var(--r-lg);
+  border-radius: var(--radius-card);
 }
 .doc-entry + .doc-entry {
   border-top: 0;
-  margin-top: 10px;
+  margin-top: var(--space-3);
 }
 
 /* More air than the other three. */
-main {
-  padding: clamp(28px, 4vw, 56px) clamp(20px, 4vw, 56px) 120px;
-}
-.section-head {
-  border-bottom: 0;
-  padding-bottom: 0;
-  margin: 44px 0 20px;
-}
 .acct {
   border-top: 0;
   background: var(--glass);
@@ -3331,40 +3396,6 @@ h4 {
 html:lang(bn) .story {
   font-family: var(--bangla);
   line-height: 2.02;
-}
-
-.btn {
-  box-shadow: none;
-  padding: 12px 24px;
-}
-.btn:hover {
-  transform: none;
-  background: var(--accent-2);
-  box-shadow: none;
-}
-.btn.ghost:hover {
-  background: var(--accent-soft);
-}
-.browse-card:hover,
-.related-card:hover,
-.mini-row:hover,
-.c-mode:hover,
-.chip:hover,
-.opt:hover,
-.react:hover,
-.ctl:hover,
-.doc-entry:hover {
-  transform: none;
-}
-.doc-entry:hover {
-  background: var(--glass);
-  border-color: var(--rule-hard);
-}
-
-/* Emergency is the only place coral appears, so it cannot be confused with
-   an ordinary action. */
-.emergency-lines a {
-  border-radius: var(--r-md);
 }
 
 /* ---------- the distribution: a row of separate capsules ----------
@@ -3513,9 +3544,9 @@ html:lang(bn) .emerg-head p {
   border: 1px solid var(--danger-line);
   background: var(--danger-bg);
 }
+/* Emergency guidance never moves (BR7.1): hover darkens the edge only. */
 .emerg-card:hover {
   border-color: var(--danger-ink);
-  transform: translateY(-2px);
 }
 .emerg-card .k {
   font-family: var(--sans);
@@ -3542,6 +3573,11 @@ html:lang(bn) .emerg-card .k {
 }
 html:lang(bn) .emerg-card .num {
   letter-spacing: 0;
+}
+/* added: T-011 Bengali digits are wider and a hyphen before a digit is no
+   break point, so the longest hotline overflowed a four-column card */
+html:lang(bn) .emerg-card .num {
+  font-size: clamp(26px, 2.4vw, 30px);
 }
 .emerg-card .cta {
   display: inline-flex;
@@ -3678,10 +3714,6 @@ html:lang(bn) .about-section p {
 @media (pointer: coarse) {
   .emerg-card {
     min-height: 108px;
-  }
-  .foot-nav a {
-    min-height: 40px;
-    padding: 9px 16px;
   }
 }
 
@@ -4058,26 +4090,24 @@ html:lang(bn) .byline--comment .byline-name {
 .btn-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-3);
   align-items: center;
 }
 
 /* --- the write CTA: the only accent-filled control in the chrome --------- */
+/* On phones it spans its own masthead row, so it stays the obvious primary
+   action; from 48rem it sits beside the controls. */
 .cta-write {
-  flex: none;
   white-space: nowrap;
   align-self: center;
 }
 html:lang(bn) .cta-write {
   font-family: var(--bangla);
 }
-@media (max-width: 720px) {
-  /* On narrow screens the masthead stacks; the CTA spans it so it stays the
-     obvious primary action rather than a stray pill. */
+@media (min-width: 48rem) {
+  /* added: T-011 the write button beside the controls on wider screens */
   .cta-write {
-    width: 100%;
-    justify-content: center;
-    margin-top: 4px;
+    justify-self: end;
   }
 }
 
@@ -4194,20 +4224,17 @@ html:lang(bn) .doc-treats {
 .index-list .doc-entry + .doc-entry {
   margin-top: 0;
 }
-/* A card is a distinct plane at rest, not only on hover. Before this the
-   shared layer set background:transparent / border:transparent and only the
-   :hover rule painted it white. Keyline = NHS nhsuk-card--clickable, flat,
-   zero blur - it is an edge, not the panel shadow FD-027 rejected. */
+/* A card is a distinct plane at rest, not only on hover: a white surface, a
+   hairline and FD-091's soft first elevation (BR3.1). Hover changes the edge
+   only, never the position (BR6.5). */
 .doc-entry {
-  background: var(--glass);
+  background: var(--card-bg);
   border: 1px solid var(--rule);
-  box-shadow: var(--keyline);
+  box-shadow: var(--elev-1);
 }
 .doc-entry:hover {
-  background: var(--glass);
-  border-color: var(--rule-hard);
-  box-shadow: var(--keyline-hover);
-  transform: none;
+  background: var(--card-bg);
+  border-color: var(--primary);
 }
 .doc-entry:active {
   box-shadow: none;
@@ -4216,11 +4243,11 @@ html:lang(bn) .doc-treats {
 .mine-item,
 .related-card,
 .browse-card {
-  box-shadow: var(--keyline);
+  box-shadow: var(--elev-1);
 }
 .related-card:hover,
 .browse-card:hover {
-  box-shadow: var(--keyline-hover);
+  border-color: var(--primary);
 }
 /* Capsules are a boundary the reader inspects; resting edge moves up one
    step, hover to the 3:1 tier. */
@@ -4382,60 +4409,25 @@ html:lang(bn) .sub-head {
 }
 
 /* ==========================================================================
-   Capsule hover rule and tab underline. All patient motion lives in
-   motion.css (BR4.7); these are their resting and hover states.
+   Capsule hover rule. All patient motion lives in motion.css (BR4.7); this is
+   its resting and hover state. The tab bar's current-tab underline is a
+   static bar in the masthead section.
    ========================================================================== */
 
 /* The capsule's status dot (the ::before) becomes a 2px left rule on hover,
-   tinted per status. */
+   tinted per status. It appears at once: hover changes colour, never shape
+   or position (BR6.5). */
 .cap::before {
   inset: 0 !important;
   width: 2px !important;
   height: 100% !important;
   border-radius: 0 !important;
-  transform: scaleY(0);
-  transform-origin: 0 50%;
   opacity: 0;
 }
 .cap:hover {
   border-color: var(--rule-hard);
 }
 .cap:hover::before {
-  transform: scaleY(1);
-  opacity: 1;
-}
-
-/* Top-nav tabs: a thin underline fills on the active tab (aria-current). */
-.tabs {
-  position: relative;
-}
-.tabs a {
-  position: relative;
-}
-.tabs a::after {
-  content: "";
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: -4px;
-  height: 1px;
-  background: var(--ink);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  opacity: 0.85;
-}
-.tabs a[aria-current="page"]::after {
-  transform: scaleX(1);
-}
-.tabs a:hover {
-  color: var(--ink);
-}
-.tabs a:hover::after {
-  transform: scaleX(0.4);
-  opacity: 0.4;
-}
-.tabs a[aria-current="page"]:hover::after {
-  transform: scaleX(1);
   opacity: 1;
 }
 
@@ -4761,16 +4753,17 @@ html:lang(bn) .viewer-controls .vdownload {
    .ctl is sized (font-size 14px in a 36px circle) for one symbol glyph. */
 .field .field-error {
   font-family: var(--sans);
-  font-size: 12.5px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
   color: var(--warn-ink);
   font-weight: 600;
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 }
 html:lang(bn) .field .field-error {
   font-family: var(--bangla);
 }
 .ctl.account {
-  font-size: 12px;
+  font-size: var(--fs-label);
   font-weight: 700;
   position: relative;
 }
@@ -4783,7 +4776,7 @@ html:lang(bn) .field .field-error {
   height: 8px;
   border-radius: 50%;
   background: var(--warn-ink);
-  border: 1px solid var(--glass-2);
+  border: 1px solid var(--surface);
 }
 
 /* added: T-011 publish confirmation (PublishTick); the tick draws in motion.css */
