@@ -2,7 +2,7 @@
 
 Source of truth for the Unit's decision logic. Built from `unit-of-work.md` (U14), `unit-of-work-story-map.md` (US4.1, US4.3, US5.3, US6.4), `requirements.md` (FR15–FR18, FR24–FR27, FR36–FR38, FR48–FR52), `stories.md`, `components.md`, `contract-summary.md` (C6, C7, C9), T-201 with its amendments, FD-067, the project hard rules (`project.md`) and `01-conventions.md` §2–§5, §10. The workflows that apply these rules, the port signatures and the view models are in `functional-spec.md`; the data shape is in `entities.md`.
 
-Rules that depend on an answer in `functional-design-questions.md` name the question in `source`. All answers were recorded on the owner's standing instruction and await the owner's confirmation in `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`; `functional-spec.md` § 14 lists what changes if the owner reverses one.
+Rules that depend on an answer in `functional-design-questions.md` name the question in `source`. Question 9 is the owner's answer (C); Questions 1–8 and 10 were answered A on the owner's standing instruction of 2026-10-27, and Question 11 (B) and Questions 12–14 (A) under the owner's no-questions instruction of 2026-10-29; `functional-spec.md` § 14 lists what changes if the owner reverses one. Refreshed 2026-10-29: BR1.2, BR2.1, BR2.4, BR2.7, BR3.8, BR3.9, BR4.2, BR4.5, BR5.2, BR5.5, BR7.3–BR7.5 changed; BR2.12, BR3.11, BR5.6, BR6.6, BR7.6 and BR7.7 are new (existing keys keep their numbers).
 
 ```yaml
 rules:
@@ -19,9 +19,9 @@ rules:
     category: constraint
     applies_to: "directory.getFacility, directory.listFacilities, every branch reference in a view model"
     trigger: "Any query that loads a branch"
-    logic: "IF facility_branches.state = published AND facilities.state = published THEN the branch may be projected ELSE getFacility returns not_found and lists leave it out"
+    logic: "IF facility_branches.state = published AND facilities.state = published THEN the branch may be projected ELSE getFacility returns not_found and lists leave it out; a doctor is at a branch only through a doctor_chambers row whose branch_id is that branch (prototype facilities[].doctors entries without such a chamber are not modelled)"
     violation: "An unpublished branch on a public page is an S1 defect"
-    source: "FR24, 02-data-model.md §17"
+    source: "FR24, 02-data-model.md §4 and §17, ISS-266, Question 14"
   - id: BR1.3
     statement: "A review counts, and appears on a card, only when its state is published and it has no deleted_at; this one predicate is applied in SQL by every review read."
     category: constraint
@@ -67,9 +67,9 @@ rules:
     category: policy
     applies_to: "Every view model, port result and query in the owned paths"
     trigger: "Code Generation and review of the diff"
-    logic: "IF a field or sort derives a single quality figure from accounts (pct, average, score, rating, highest rated) THEN it is forbidden"
+    logic: "IF a field or sort derives a single quality figure from accounts (pct, average, score, rating, highest rated) THEN it is forbidden; no view model carries a percentage and no consumer is expected to compute one (counts with denominators only)"
     violation: "Any such field is an S1 defect against the PRODUCT.md hard rule"
-    source: "project.md Forbidden (no number for quality, no highest-rated sort), FR48, FR52, AC6.4.1, AC6.4.5, AC4.3.4"
+    source: "project.md Forbidden (no number for quality, no highest-rated sort), FR48, FR52, AC6.4.1, AC6.4.5, AC4.3.4, the owner's answer to T-202 Question 1 (no percentages, 2026-10-28)"
   - id: BR2.2
     statement: "A missing or hidden profile field is omitted from the view model; it is never replaced by 0, an empty string or a blank label."
     category: validation
@@ -91,9 +91,9 @@ rules:
     category: calculation
     applies_to: "domain/review/policies.ts isLimitedData; DistributionVM.limitedData; summary-level limitedData on doctor, facility and condition view models"
     trigger: "Building a distribution or summary"
-    logic: "threshold = ConfigProvider.current().limitedDataThreshold; limitedData = total > 0 AND total < threshold"
-    violation: "A constant threshold, or a summary below the threshold without the mark, breaks the hard rule (AC6.4.2)"
-    source: "project.md Mandated (Limited data), FR51, AC6.4.2, AC4.3.5, requirements Assumptions, Question 3"
+    logic: "threshold = (await ConfigProvider.current()).limitedDataThreshold, read once per port call; the configured range is 2-50, so a single account is always limited; limitedData = total > 0 AND total < threshold"
+    violation: "A constant threshold, an un-awaited read, or a summary below the threshold without the mark, breaks the hard rule (AC6.4.2)"
+    source: "project.md Mandated (Limited data), FR51, AC6.4.2, AC4.3.5, requirements Assumptions, Question 3, T-105 Question 2 (current() returns a Promise), the owner's answer to T-105 R2 (range 2-50)"
   - id: BR2.5
     statement: "Every doctor view model carries registrationNotVerified true and every facility view model carries notVerified true, whatever the stored data says."
     category: policy
@@ -115,9 +115,9 @@ rules:
     category: constraint
     applies_to: "ProviderExperience.forBranch, summariesForBranches, review.criteriaDistribution"
     trigger: "Any facility figure"
-    logic: "IF a figure is about a branch THEN its source rows are eligible facility_reviews with that branch_id; a doctor review whose branch_id is that branch is never counted or listed there"
+    logic: "IF a figure is about a branch THEN its source rows are eligible facility_reviews with that branch_id; a doctor review whose branch_id is that branch is never counted or listed there; facility figures are the nine criteria distributions only, never a sentiment"
     violation: "Doctor reviews on a facility page mix the two feedback kinds (FR26, AC4.3.1)"
-    source: "FR24, FR26, FR49, AC4.3.1, AC6.4.3"
+    source: "FR24, FR26, FR49, AC4.3.1, AC6.4.3, the owner's answer to T-203 Question 1 (nine-criteria model, 2026-10-28)"
   - id: BR2.8
     statement: "Lists are ordered neutrally: indexes alphabetically by the active-locale name, accounts newest first, and conditions, specialties, places and mentions by account count; never by sentiment, outcome, reactions or documents."
     category: policy
@@ -150,6 +150,14 @@ rules:
     logic: "provenance = field_provenance[field] IF present ELSE {source: community, updatedAt: profile updated_at or created_at}; chamber provenance = {source: chamber.provenance, updatedAt: chamber.created_at}"
     violation: "A public field without provenance fails AC4.1.4"
     source: "FR18, AC4.1.2, AC4.1.4, Question 6"
+  - id: BR2.12
+    statement: "When facility feedback is turned off, no facility feedback is read or projected: every facility card and profile carries feedbackVisible false and no account count, limited-data flag, distribution or account."
+    category: policy
+    applies_to: "directory.getFacility, directory.listFacilities, FacilityCardVM, FacilityProfileVM"
+    trigger: "Any facility query"
+    logic: "feedbackVisible = (await ConfigProvider.current()).featureVisibility.facilityAccounts; IF false THEN forBranch and summariesForBranches are not called, accountsTotal, accountsLimitedData and overall are absent, criteria and accounts are empty lists ELSE they are filled as usual"
+    violation: "Index cards that still show the overall distribution with facility feedback off (T-203 finding F8)"
+    source: "FR100 (feature visibility), FR24, T-203 finding F8, Question 2"
   - id: BR3.1
     statement: "distribution(values, keys, threshold) counts each value in keys once, ignores values outside keys, counts absent values as not provided, and marks empty and limited data."
     category: calculation
@@ -211,17 +219,17 @@ rules:
     category: calculation
     applies_to: "Doctor, facility and branch references in view models; contracts/ids.ts stableHue"
     trigger: "Mapping any avatar"
-    logic: "avatarHue = avatar_hue IF not null ELSE fnv1a(publicId) mod 360; branches always use stableHue(branch publicId)"
+    logic: "avatarHue = avatar_hue IF not null ELSE fnv1a(publicId) mod 360; doctors read doctors.avatar_hue and branches facility_branches.avatar_hue (new, seeded from the corpus); facilities.avatar_hue is not read by any branch view model"
     violation: "A hue that changes between requests for the same profile"
-    source: "T-201 step 4 and addendum, prototype hash(), Question 8"
+    source: "T-201 step 4 and addendum, prototype hash() and accent, Question 8, Question 12"
   - id: BR3.9
-    statement: "A card's condition is its first condition tag by tag order: the effective term with its public id, or the original free text without a link."
+    statement: "A card's condition is its first condition term tag by tag order, giving the effective term with its public id; a review with no condition term tag shows its first free-text condition tag without a link."
     category: calculation
-    applies_to: "ExperienceCardVM.condition"
+    applies_to: "ExperienceCardVM.condition; U21's related-by-condition selection uses the same choice"
     trigger: "Building a card"
-    logic: "IF the review has a condition tag THEN the first by created_at gives {publicId, name} for a term or {name} for free text; a hidden term gives {name} only; IF none THEN condition is omitted"
-    violation: "A card linking to a deactivated or wrong term"
-    source: "T-201 step 4, prototype accountRow, Question 5"
+    logic: "IF the review has a condition tag with term_id THEN the first such tag by (created_at, id) gives {publicId, name} of its effective term, or {name} only when that term is hidden; ELSE IF it has a free-text condition tag THEN the first gives {name}; ELSE condition is omitted"
+    violation: "A card linking to a deactivated or wrong term, or a seeded card showing the author's free text instead of its linked condition (the prototype's conditionId)"
+    source: "T-201 step 4, prototype accountRow (conditionById(r.conditionId)), Question 5, Question 11"
   - id: BR3.10
     statement: "Reads are batched: a list page issues a bounded number of queries, never one per row."
     category: constraint
@@ -230,6 +238,14 @@ rules:
     logic: "list queries load their rows, then their summaries with one grouped read per kind (summariesForDoctors, summariesForBranches), never in a loop"
     violation: "N+1 queries on an index page (T-201 step 3)"
     source: "T-201 step 3, Question 2"
+  - id: BR3.11
+    statement: "A branch is named by its own name (the hospital), its label when it has one, and its organisation as parent only when the organisation's name differs from the branch's own name."
+    category: calculation
+    applies_to: "FacilityCardVM, FacilityProfileVM (and its siblings), DoctorProfileVM.facilities, ConditionPageVM.facilities"
+    trigger: "Mapping any branch"
+    logic: "name = facility_branches.name in locale; branchName = branch_label in locale IF present ELSE omitted; parentName = facilities.name in locale IF it differs from name ELSE omitted; seeded f1 gives name 'Shefa General Hospital', branchName 'Dhanmondi branch', parentName 'Shefa Health Group'; f2 gives name 'Bandar Diagnostic Centre' only"
+    violation: "One place under two names across facility pages, chambers and condition pages (T-203 finding F2)"
+    source: "FR24, AC4.3.1, prototype facilities (name, branch, parent), the owner's answer to T-203 finding F2, Question 9"
   - id: BR4.1
     statement: "normalizeAliasKey(text) is NFC, then lowercase, then only letters, combining marks and digits are kept."
     category: calculation
@@ -243,9 +259,9 @@ rules:
     category: constraint
     applies_to: "taxonomy_terms.name_key_en, name_key_bn, taxonomy_aliases.alias_key; createProvisional, mapProvisional, seed-directory.ts"
     trigger: "Writing a term or alias"
-    logic: "IF a key is written THEN it is normalizeAliasKey of its text; the seed imports the same function instead of its own keyify"
-    violation: "The seeded key 'thyroid(hypothyroidism)' never matches a lookup of 'Thyroid (hypothyroidism)' (proposed ISS row)"
-    source: "T-201 step 1 (T-205 imports the same function), Question 4"
+    logic: "IF a key is written or looked up THEN it is normalizeAliasKey of its text, computed in application (queries and commands) or in the seed; the database repositories receive keys and never compute them, because database may not import domain (T-010, FD-093); the seed imports the function instead of its own keyify for taxonomy keys (doctors' name_key and bmdc_key stay T-204's)"
+    violation: "The seeded key 'thyroid(hypothyroidism)' never matches a lookup of 'Thyroid (hypothyroidism)' (proposed ISS row); a key function inside packages/database fails the boundary lint"
+    source: "T-201 step 1 (T-205 imports the same function), Question 4, 01-conventions.md §2 as built by T-010"
   - id: BR4.3
     statement: "taxonomy.resolve matches the normalised text exactly against active alias keys and then term name keys, returns the effective term, and returns no term when the match is ambiguous."
     category: calculation
@@ -267,9 +283,9 @@ rules:
     category: calculation
     applies_to: "taxonomy.listSuggested"
     trigger: "The composer asks for a group's suggestions"
-    logic: "group -> kind (symptom, condition, treatment, medicine); terms with suggested = true, state published, canonical_id null; order by suggested_order, then name in locale"
-    violation: "An empty or unordered suggestion list for a seeded group"
-    source: "T-201 addendum, 03-routes-and-contracts.md §4 taxonomy, ISS-157, Question 4"
+    logic: "group -> kind (symptom, condition, treatment, medicine); terms with suggested = true, state published, canonical_id null; order by suggested_order, then name in locale; the seed maps the prototype's TAG_GROUPS explicitly: condition suggestions flag c1, c3 and c2 (Hypothyroidism) in that order, the other nine items become canonical published terms of their kind, and no condition term is added"
+    violation: "An empty or unordered suggestion list for a seeded group, or an eleventh condition ('Hypothyroidism') with zero accounts in the topic index"
+    source: "T-201 addendum, 03-routes-and-contracts.md §4 taxonomy, ISS-157, prototype app.js TAG_GROUPS, Question 4"
   - id: BR4.6
     statement: "A condition page serves an active canonical term or an unmapped provisional term, marked provisional; a mapped term answers with its redirect target; a hidden term is not found."
     category: policy
@@ -287,13 +303,13 @@ rules:
     violation: "An anonymous visitor creating taxonomy terms"
     source: "C6 (requires verified), 03-routes-and-contracts.md §4, 01-conventions.md §5, Question 1"
   - id: BR5.2
-    statement: "createProvisional is idempotent per kind and key: it returns the existing effective term when one matches, and otherwise creates one provisional term holding the original wording, with one alias."
+    statement: "Creating a provisional term is one operation, idempotent per kind and key even under concurrent calls: it returns the existing effective term when one matches, and otherwise creates one provisional term holding the original wording, with one alias, on the caller's transaction."
     category: calculation
-    applies_to: "modules/taxonomy/commands/create-provisional.ts"
-    trigger: "A reviewer tags an unmapped wording"
-    logic: "key = normalizeAliasKey(text); IF an active term of that kind has this name or alias key THEN return its effective term ELSE insert a term {kind, name_en = name_bn = text, keys = key, provisional true, state published, created_by_account_id = actor} and an alias {alias = text, alias_key = key, lang, provenance community}"
-    violation: "Duplicate provisional terms for one wording, or a translated or altered wording (AC5.3.2)"
-    source: "FR37, AC5.3.2, components.md Taxonomy, Question 1"
+    applies_to: "modules/taxonomy/provisional-term.ts (the operation), commands/create-provisional.ts, U21 review.publish"
+    trigger: "A reviewer's unmapped wording is created as a term (the command, or publish)"
+    logic: "key = normalizeAliasKey(text); IF an active term of that kind has this name or alias key THEN return its effective term ELSE insert a term {kind, name_en = name_bn = text, keys = key, provisional true, state published} ON CONFLICT on the partial unique key (kind, name_key_en) WHERE provisional AND canonical_id IS NULL DO NOTHING; IF a row was inserted THEN insert its alias {alias = text, alias_key = key, lang, provenance community} ELSE re-read and return the concurrent winner, writing nothing else; created_by_account_id is never written; the operation never aborts the caller's transaction"
+    violation: "Duplicate provisional terms for one wording, a translated or altered wording (AC5.3.2), an aborted publish transaction, or a term that ties an account to an anonymous review's wording"
+    source: "FR37, AC5.3.2, components.md Taxonomy, Question 1, T-301 draft (publish creates terms on its transaction), FD-015 and FD-022 (anonymity; every identity reveal is a logged staff capability)"
   - id: BR5.3
     statement: "taxonomy.mapProvisional requires a Super Admin; anyone else is refused server-side and nothing changes."
     category: authorization
@@ -315,9 +331,17 @@ rules:
     category: policy
     applies_to: "createProvisional, mapProvisional"
     trigger: "A command succeeds"
-    logic: "audit stream taxonomy, details {termId, kind, lang} or {termId, canonicalId}, never the wording; outbox term.changed {id} for the new term, or for both terms on a mapping; all in one transaction"
-    violation: "A change without its audit row breaks 01-conventions.md §5; a missing term.changed leaves search stale (C15)"
-    source: "01-conventions.md §3 and §5, C6, C15, FR38, AC5.3.4, AC5.3.5"
+    logic: "audit stream taxonomy, details {termId, kind, lang} or {termId, canonicalId}, never the wording; the audit actor is the one the caller passes (the account for the command, the publishing persona inside review.publish, the Super Admin for a mapping); outbox term.changed {id} for the new term, or for both terms on a mapping; all in one transaction; nothing is written when the operation returns an existing term"
+    violation: "A change without its audit row breaks 01-conventions.md §5; a missing term.changed leaves search stale (C15); an account actor on a term created inside an anonymous publish links the account to that review"
+    source: "01-conventions.md §3 and §5, C6, C15, FR38, AC5.3.4, AC5.3.5, T-301 draft (publish audit actor is the persona)"
+  - id: BR5.6
+    statement: "The taxonomy.createProvisional command is limited to 30 calls per hour per account; the operation inside review.publish is not limited again."
+    category: constraint
+    applies_to: "modules/taxonomy/commands/create-provisional.ts"
+    trigger: "The command is called"
+    logic: "after authorization: RateLimiter.hit('taxonomy.createProvisional:' + accountId, 30, 3600); IF not allowed THEN rate_limited with retryAfterSec and nothing written; every call counts, idempotent ones included; publish keeps its own 5 per day"
+    violation: "Any verified account creating taxonomy terms without bound (former R3)"
+    source: "03-routes-and-contracts.md §4 (rates per command), R3 decided 2026-10-29"
   - id: BR6.1
     statement: "No file under modules/directory or modules/taxonomy imports modules/review or ReviewRepository; their review-derived figures arrive only through ProviderExperience and ConditionStats."
     category: constraint
@@ -358,6 +382,14 @@ rules:
     logic: "IF a query inserts, updates or deletes THEN it is a defect"
     violation: "A read with a side effect breaks 01-conventions.md §3 and makes summaries depend on who looked"
     source: "01-conventions.md §3, FR52 (no administrator rewrite of sentiment)"
+  - id: BR6.6
+    statement: "Every file sits where T-010's boundary matrix allows its imports: domain imports nothing, application imports only domain and contracts and no external package, database imports only application ports and contracts, seed code may also import domain and database."
+    category: constraint
+    applies_to: "Every file in the owned paths"
+    trigger: "pnpm lint (boundaries) on every pnpm check"
+    logic: "domain policies take plain values and structural types (no contracts import, no enum arrays from contracts); application parses inputs with the contracts schemas and never imports zod; repository methods take keys and thresholds as arguments; stableHue lives in contracts; the Review stub reaches other modules' tables only through repository ports; the static test of BR6.1 covers edges inside application, which the lint does not check"
+    violation: "A red boundary lint blocks the merge (FD-093); a domain file importing contracts or a database file importing domain is the typical slip"
+    source: "01-conventions.md §2 as built by T-010, FD-093, eslint.boundaries.mjs"
   - id: BR7.1
     statement: "Each level is tested as 01-conventions.md §10 asks, and integration tests run against the real PostgreSQL with rows they insert themselves."
     category: validation
@@ -379,25 +411,41 @@ rules:
     category: validation
     applies_to: "T-201 acceptance rows (topic index, d1 profile, forCondition, forDoctor on the seed)"
     trigger: "Build and Test"
-    logic: "expected counts are computed from packages/test-support/src/corpus; the corpus grows under FD-089 in U6 CR-012"
-    violation: "A literal '8 conditions, two with zero' fails after CR-012 without any defect"
-    source: "FD-089, T-201 acceptance rows"
+    logic: "expected counts are computed from packages/test-support/src/corpus (after CR-012: 10 conditions, c8 the one with zero accounts; after Question 13: 11 doctors, 25 reviews); seed-based rows live in packages/test-support/src/seed/seed.int.test.ts, the one file of the test-support-seed project, which runs after the database project (sequence.groupOrder 2) in pnpm test and pnpm check, not in pnpm test:int"
+    violation: "A literal '8 conditions, two with zero' fails after CR-012 without any defect; a seed-based row in packages/database cannot import the seed (test files there may import test-support, not its seed)"
+    source: "FD-089, FD-040, T-201 acceptance rows, vitest.workspace.ts as built by T-010"
   - id: BR7.4
-    statement: "pnpm check, pnpm smoke and pnpm test:int exit 0, and every package with source stays at or above the 80% line-coverage floor."
+    statement: "pnpm check (its nine steps), pnpm smoke and the CI run on the Bolt branch head are green, and every package with source stays at or above the 80% line-coverage floor with untested files counted."
     category: validation
     applies_to: "The whole repository"
     trigger: "End of Code Generation and Build and Test"
-    logic: "IF the Unit is complete THEN the three commands exit 0 and coverage is at or above 80% per package"
-    violation: "Any red check blocks the merge (team.md Way of Working)"
-    source: "team.md Way of Working and Testing Posture, D10"
+    logic: "IF the Unit is complete THEN typecheck, lint (boundaries), lint:boundaries, format:check, check:identity, test:coverage (every project, database and test-support-seed included), i18n:check, contrast and build pass in that order, pnpm smoke passes, and CI is green; coverage includes every source file, so each new file in domain, application, contracts, database and test-support arrives with tests, and application and domain are measured once they hold code"
+    violation: "Any red check blocks the merge (team.md Way of Working); a floor lowered to pass breaks D10"
+    source: "team.md Way of Working and Testing Posture, D10, 01-conventions.md §13 and vitest.workspace.ts as built by T-010"
   - id: BR7.5
-    statement: "ISS-222 and ISS-157 close in this Unit, and every finding of this design is an ISS row linked to U14 T-201."
+    statement: "ISS-222 and ISS-157 close in this Unit, ISS-266 closes as designed, ISS-268's mapping half is done, and every finding of this design is an ISS row linked to U14 T-201."
     category: policy
     applies_to: "docs/implementation/ISSUES.md"
     trigger: "End of Code Generation"
-    logic: "ISS-222 fixed (fake eligibility); ISS-157 fixed (Question 4); the rows of functional-spec.md § 9 added with Found in U14 T-201"
+    logic: "ISS-222 fixed (fake eligibility); ISS-157 fixed (Question 4); ISS-266 won't fix, chambers are the only link (Question 14); ISS-268 updated (mapping and seed data done in U14 T-201, rendering check stays with U15 and U16); the rows of functional-spec.md § 9 added with Found in U14 T-201, the seed condition-link row marked fixed in U14 T-201"
     violation: "An open owned row or an unrecorded finding breaks the defect-register rule"
-    source: "project.md Mandated (ISS rows), unit-of-work.md U14 (ISS-222), ISS-157"
+    source: "project.md Mandated (ISS rows), unit-of-work.md U14 (ISS-222), ISS-157, ISS-266, ISS-268"
+  - id: BR7.6
+    statement: "The tests that pin the stubs, the migration count and the fake method names are updated in the same commit as the change they pin."
+    category: validation
+    applies_to: "packages/database/src/repositories/not-implemented.test.ts, validator-probes.int.test.ts (P8), migrations.int.test.ts, packages/test-support/src/fakes/repositories.test.ts"
+    trigger: "Code Generation"
+    logic: "PgTaxonomyRepository leaves STUB_REPOSITORIES (no stub remains); PgDirectoryRepository and PgReviewRepository are checked by the list of their remaining stub methods (T-204, T-407; T-301, T-302), which still throw NotImplemented naming their owner; the trace test builds its repository without a database connection or moves to a class that stays a stub; both migration-count pins rise by one (from the count at build time); the fake tests use the renamed methods and prove BR1.3"
+    violation: "A red pnpm check (S1): every listed test fails as soon as a stub becomes real, a migration is added or a fake method is renamed (ISS-294)"
+    source: "ISS-294, CR-006 and T-301 notes on the migration pins, T-010 Phase B tests"
+  - id: BR7.7
+    statement: "The seed holds what the pages need to show on demo data: a condition term tag per review, each branch's own name, label and hue, the composer suggestions, and one doctor and one review with empty fields, all derived from the prototype."
+    category: validation
+    applies_to: "packages/test-support/src/seed/{seed-directory,seed-content}.ts, the corpus port, ui-design-prototype/shared/rogikotha-data.js"
+    trigger: "pnpm db:seed and the seed integration test"
+    logic: "one review_tags row {group condition, term_id} per corpus review with conditionSeedRef, before its free-text tags; facility_branches.name = corpus name, branch_label = corpus branchLabel, avatar_hue = corpus avatarHue; TAG_GROUPS through BR4.5's mapping; d11 without fee and languages and r25 without sentiment, outcome or documents enter the prototype first and reach the seed through the port; new rows are written only when their parent row is new, so a re-run stays a no-op and an existing local database needs pnpm demo:reset"
+    violation: "Empty condition pages and topic counts (T-203 F1, T-207 F2), two names for one place (T-203 F2), no 'Not provided' on any doctor page (T-202 F1)"
+    source: "FD-039, FD-089, Questions 4, 9, 11, 12 and 13"
 ```
 
 ## Rules summary
@@ -405,23 +453,24 @@ rules:
 | ID | Rule | Category |
 |---|---|---|
 | BR1.1 | Doctor visible only when published and not merged | constraint |
-| BR1.2 | Branch visible only when it and its organisation are published | constraint |
+| BR1.2 | Branch visible only when it and its organisation are published; doctors link to branches only through chambers | constraint |
 | BR1.3 | One eligibility predicate: review published and not deleted | constraint |
 | BR1.4 | Same predicate for facility reviews | constraint |
 | BR1.5 | A document is a published evidence item of an eligible review | calculation |
 | BR1.6 | Active terms only; counts use the effective (canonical) term | calculation |
 | BR1.7 | Old and redirected public ids resolve to their target | constraint |
-| BR2.1 | No number stands for quality; no highest-rated sort | policy |
+| BR2.1 | No number stands for quality; no percentage; no highest-rated sort | policy |
 | BR2.2 | Missing or hidden fields omitted, never 0 or blank | validation |
 | BR2.3 | Distributions: every key, total, not provided, empty | calculation |
-| BR2.4 | Limited data from the configured threshold, on distributions and summaries | calculation |
+| BR2.4 | Limited data from the awaited configured threshold (2–50), on distributions and summaries | calculation |
 | BR2.5 | Registration not verified / Not verified always true | policy |
 | BR2.6 | Facility feedback never in doctor figures | constraint |
-| BR2.7 | Doctor reviews never in facility figures | constraint |
+| BR2.7 | Doctor reviews never in facility figures; facility figures are the nine criteria | constraint |
 | BR2.8 | Neutral ordering everywhere | policy |
 | BR2.9 | Active-locale strings; user text in original wording; no locale keys | validation |
 | BR2.10 | Public ids and public text only; anonymous byline has no name | authorization |
 | BR2.11 | Provenance and date on every fact; default Community submitted | calculation |
+| BR2.12 | Facility feedback off: `feedbackVisible` false on cards and profiles, nothing read | policy |
 | BR3.1 | `distribution()` and `isLimitedData()` | calculation |
 | BR3.2 | Doctor conditions count distinct reviews; top three on cards | calculation |
 | BR3.3 | Doctors per condition count reviews, not tags | calculation |
@@ -429,27 +478,32 @@ rules:
 | BR3.5 | Profile filters: condition scopes, the rest narrow cards | calculation |
 | BR3.6 | Places and top specialties on a condition page | calculation |
 | BR3.7 | 190-grapheme excerpt with `Intl.Segmenter` | calculation |
-| BR3.8 | `avatarHue`: column, else `stableHue(publicId)` | calculation |
-| BR3.9 | Card condition: first condition tag | calculation |
+| BR3.8 | `avatarHue`: column (doctors, branches), else `stableHue(publicId)` | calculation |
+| BR3.9 | Card condition: first condition term tag, else first free-text condition tag | calculation |
 | BR3.10 | Batched reads, no N+1 | constraint |
+| BR3.11 | Branch names: own name, label, parent only when different | calculation |
 | BR4.1 | `normalizeAliasKey`: NFC, lowercase, letters, marks, digits | calculation |
-| BR4.2 | Every stored key uses `normalizeAliasKey` | constraint |
+| BR4.2 | Every key uses `normalizeAliasKey`, computed before the database | constraint |
 | BR4.3 | `resolve`: exact key, effective term, ambiguous gives none | calculation |
 | BR4.4 | Topic index lists every canonical condition, zero included | policy |
-| BR4.5 | `listSuggested` from the `suggested` flag, in order | calculation |
+| BR4.5 | `listSuggested` from the `suggested` flag, in order; explicit seed mapping | calculation |
 | BR4.6 | Provisional pages; mapped terms redirect; hidden not found | policy |
 | BR5.1 | `createProvisional`: verified, not restricted | authorization |
-| BR5.2 | `createProvisional`: idempotent, original wording | calculation |
+| BR5.2 | Provisional-term operation: idempotent under races, original wording, caller's transaction, no account column | calculation |
 | BR5.3 | `mapProvisional`: Super Admin only, refusal changes nothing | authorization |
 | BR5.4 | `mapProvisional`: validations, aliases copied | validation |
-| BR5.5 | Change, audit and `term.changed` in one transaction | policy |
+| BR5.5 | Change, audit (caller's actor) and `term.changed` in one transaction | policy |
+| BR5.6 | `createProvisional`: 30 per hour per account | constraint |
 | BR6.1 | No Directory or Taxonomy import of Review | constraint |
 | BR6.2 | Directory and Taxonomy repositories read no review tables | constraint |
 | BR6.3 | Review stub is ports-only | constraint |
 | BR6.4 | Additive port changes; documents follow | policy |
 | BR6.5 | Queries never write | constraint |
+| BR6.6 | Files placed by T-010's boundary matrix | constraint |
 | BR7.1 | Tests per level; integration tests insert their own rows | validation |
 | BR7.2 | At least one new smoke assertion; none removed | validation |
-| BR7.3 | Seed counts come from the corpus | validation |
-| BR7.4 | `pnpm check`, `pnpm smoke`, `pnpm test:int` green; 80% floor | validation |
-| BR7.5 | ISS-222 and ISS-157 closed; findings recorded | policy |
+| BR7.3 | Seed counts come from the corpus; seed rows in `seed.int.test.ts` | validation |
+| BR7.4 | Nine-step `pnpm check`, `pnpm smoke`, CI green; 80% floor, untested files counted | validation |
+| BR7.5 | ISS-222, ISS-157, ISS-266 closed; ISS-268 mapping done; findings recorded | policy |
+| BR7.6 | Stub, migration-count and fake-name pins updated in the same commit | validation |
+| BR7.7 | Seed demo data from the prototype: condition links, branch names and hues, suggestions, empty-field records | validation |

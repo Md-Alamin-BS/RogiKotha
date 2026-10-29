@@ -1,6 +1,6 @@
 # Frontend components — U45 `t-011-patient-design-and-motion-system`
 
-Component-level design for `functional-spec.md` (workflows WF1–WF8) and `rules.md` (BR1.1–BR9.7). It follows answer A to all eight questions in `functional-design-questions.md`, which await the owner's confirmation; the deltas for other options are in `functional-spec.md` § 10. Upstream: `unit-of-work.md` U45, `unit-of-work-story-map.md` US2.4 and US2.3, `requirements.md` NFR13, FR95, NFR1, NFR4, NFR5, NFR6, NFR7, `components.md` (no domain component), `contract-summary.md` (U45 has no runtime contract; C14 unchanged). There are no server actions, routes, contracts, schema changes or message keys.
+Component-level design for `functional-spec.md` (workflows WF1–WF8) and `rules.md` (BR1.1–BR9.9). It follows answer A to all ten questions in `functional-design-questions.md` (Q9–Q10 decided under the owner's no-questions instruction of 2026-10-29); the deltas for other options are in `functional-spec.md` § 10. Refreshed on 2026-10-29 against T-010 as built: see the files table (§ 2), spacing tokens (§ 3.4), press and hover (§ 6), the check (§ 8) and the tests (§ 9). Upstream: `unit-of-work.md` U45, `unit-of-work-story-map.md` US2.4 and US2.3, `requirements.md` NFR13, FR95, NFR1, NFR4, NFR5, NFR6, NFR7, `components.md` (no domain component), `contract-summary.md` (U45 has no runtime contract; C14 unchanged). There are no server actions, routes, contracts, schema changes or message keys.
 
 The snippets below are interface-level sketches, not code to copy.
 
@@ -27,6 +27,11 @@ components/patient/motion/
 ├── RouteTransition.tsx         (new)
 ├── Reveal.tsx                  (new)
 └── PublishTick.tsx             (new)
+
+app/fonts/
+├── bn-heading.ts               (new) the one localFont() call; exports the variable class
+├── HindSiliguri-SemiBold-bengali.woff2
+└── OFL.txt
 ```
 
 The staff layout (`app/[locale]/admin/layout.tsx`) does not import `motion.css` and does not render `RouteTransition`, so the staff console gets neither (BR1.6).
@@ -41,13 +46,22 @@ The staff layout (`app/[locale]/admin/layout.tsx`) does not import `motion.css` 
 | `apps/web/src/app/[locale]/layout.tsx` | `data-motion="reduced"` on `<html>` when `rk.motion` is off; the Hind Siliguri font variable class on `<html>` for `bn` only | yes ("fonts and motion wiring only") |
 | `apps/web/src/app/[locale]/(patient)/layout.tsx` | Import `motion.css` after `patient.css`; wrap `{children}` inside `<main>` with `RouteTransition` | yes |
 | `apps/web/src/app/fonts/HindSiliguri-SemiBold-bengali.woff2`, `apps/web/src/app/fonts/OFL.txt` | New: Bengali subset at weight 600 and its licence | yes |
-| `apps/web/src/components/patient/motion/{RouteTransition,Reveal,PublishTick}.tsx` and their tests | New | yes |
-| `scripts/css-motion-check.mjs` | New: the CSS motion check with a built-in `--self-test` (§ 8) | yes |
-| root `package.json` | Scripts `check:motion` and `contrast:patient`, both added to `check` | `check:motion` yes; `contrast:patient` is a one-line addition the Code Generation plan lists for approval (Q1 A) |
+| `apps/web/src/app/fonts/bn-heading.ts` | New: the `localFont()` call (element `web`), imported by `[locale]/layout.tsx` | yes (`app/fonts/`) |
+| `apps/web/src/components/patient/motion/{RouteTransition,Reveal,PublishTick}.tsx` and their tests | New. Element `web-components`: imports `react`, `@/i18n/routing` (`web-shared`) and nothing under `server/` except actions | yes |
+| `scripts/css-motion-check.mjs` | New: the CSS check (§ 8), no flags | yes |
+| `scripts/css-motion-check.test.mjs` | New: planted-violation tests in T-010's `tooling` project (§ 8) | **no** (sits beside the owned script): listed |
+| root `package.json` | Scripts `contrast:patient` and `check:motion`, inserted in `check` after `contrast` and before `build` (T-010 BR8.4) | `check:motion` yes; `contrast:patient` is listed for approval (Q1 A) |
+| `tools/contrast.mjs`, `scripts/contrast.test.mjs` | `--pairs patient` (about ten lines, D14) and one test case for it; the default pairs and the existing three tests unchanged | **no**: listed |
+| `.prettierignore`, `prettier.config.mjs` | `apps/web/src/styles/**` becomes `apps/web/src/styles/tokens.css`, `globals.css` and `admin.css`, each with its reason; one `overrides` entry `{ files: '*.css', options: { singleQuote: false } }` (Q9 A) | **no**: listed |
+| `.gitattributes` | `*.woff2 binary` (F9) | **no**: listed |
 | `apps/web/e2e/smoke/motion.spec.ts` | New Playwright smoke (§ 9) | yes |
-| `apps/web/playwright.config.ts`, `apps/web/package.json` (`@playwright/test` dev dependency, `smoke:e2e` script) | New (Q7 A) | **no**: the plan lists them for approval |
+| `apps/web/playwright.config.ts`, `apps/web/e2e/tsconfig.json`, `apps/web/package.json` (`@playwright/test` dev dependency; `smoke:e2e`; `typecheck` becomes `tsc --noEmit && tsc --noEmit -p e2e`), `pnpm-lock.yaml` | New or changed (Q7 A, F3); CI installs with `--frozen-lockfile`, so the lockfile is committed with the dependency | **no**: listed |
+| `apps/web/vitest.config.ts` | `exclude` gains `'e2e/**'` (F2) | **no**: listed |
+| `apps/web/vitest.setup.ts` | `vi.mock('next/font/local', …)` returning `{ className, variable, style }` (F4) | **no**: listed |
+| `apps/web/src/app/layouts.test.tsx` (T-010) | Two cases added: `<html data-motion="reduced">` only with `rk.motion=off`; the font variable class only on `bn`. No existing assertion changes, because `<body data-motion>` is unchanged | **no**: listed |
 | `apps/web/src/components/patient/{Masthead,Tabs,Colophon}.tsx`, `components/shared/{DemoMarker,SkipLink,ThemeControls,Sheet}.tsx` | Restyle only. No markup change is expected; if one is needed (for example a wrapper for a 44 px hit area), it is listed | T-011 names `components/patient/shell/**`, which does not exist; the plan lists these real files (proposed ISS row) |
 | `packages/i18n/messages/{en,bn}.json` | **No change expected** (BR9.3) | yes, only if a key proves necessary |
+| `docs/implementation/01-conventions.md` §7.8, §13; `docs/implementation/ISSUES.md`; `docs/implementation/handoffs/T-011.md`; `docs/status/dependency-check-log.md` | §7.8 names both contrast runs, §13 the eleven steps; records | records; §7.8 and §13 listed |
 
 ## 3. Tokens (the patient token block in `patient.css`)
 
@@ -84,9 +98,11 @@ All values are in `hsl()`. "Alias" is the existing name kept as `var()` of the c
 
 The design brief's hex values were converted and tuned. Paper is a step darker than `#FAF8F4`, so a card stands out from the page at 1.10:1. The hairline is darker than `#E4DFD6`, which measured 1.33:1 on a card, below the tool's 1.5 band. An inset and a faint-ink role were added.
 
-Key ratios (light / dark): ink on paper 13.25 / 15.52; muted ink on paper 6.57 / 9.71; faint ink on inset 4.78 / 5.49; primary on paper 5.76 / 8.91; primary on card 6.34 / 7.97; button label on primary 6.34 / 8.91; primary on primary-soft 5.49 / 5.96; focus on paper 5.23 / 7.41 and on inset 4.79 / 5.59; card vs paper 1.10 / 1.12; card vs inset 1.20 / 1.19; hairline on card 1.87 / 1.71 and on inset 1.55 / 1.70; strong boundary on card 3.59 / 3.61; demo marker text 8.76 / 10.81. The contrast tool does not check `--focus` or `--primary-soft`, so those pairs are recorded in the hand-off (proposed ISS row).
+Key ratios (light / dark): ink on paper 13.25 / 15.52; muted ink on paper 6.57 / 9.71; faint ink on inset 4.78 / 5.49; primary on paper 5.76 / 8.91; primary on card 6.34 / 7.97; button label on primary 6.34 / 8.91; primary on primary-soft 5.49 / 5.96; focus on paper 5.23 / 7.41 and on inset 4.79 / 5.59; card vs paper 1.10 / 1.12; card vs inset 1.20 / 1.19; hairline on card 1.87 / 1.71 and on inset 1.55 / 1.70; strong boundary on card 3.59 / 3.61; demo marker text 8.76 / 10.81. The tool's shared pair list does not include `--focus` or `--primary-soft`. `contrast:patient` adds them with `--pairs patient` (D14), so they are checked on every run instead of by hand.
 
-The dark values are written twice, identically: in `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { … } }` and in `:root[data-theme="dark"] { … }`. The tool reads only the second, and the reviewer compares the two (BR1.7).
+`contrast:patient` resolves every pair of the shared list through the aliases: `--bg`, `--glass`, `--glass-2`, `--ink-soft`, `--accent`, `--accent-ink`, `--eyebrow`, `--byline-accent`, `--aside-bg`, `--masthead-bg`, `--callout-bg`. Each alias is written exactly as `var(--canonical)`, with no fallback argument, because the tool follows only that form. A missing alias is now a failed run, not a `SKIP` (T-010 BR9.3).
+
+The dark values are written twice, identically: in `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { … } }` and in `:root[data-theme="dark"] { … }` at column 0. The tool merges every column-0 `:root {` block for light and takes only the last column-0 `:root[data-theme="dark"] {` block for dark. So `patient.css` holds exactly one such dark block and no `:root[data-scheme=…] {` block. `check:motion` `M10-tokens` enforces this and compares the two dark copies, replacing the reviewer's manual comparison (BR1.7, BR1.8).
 
 ### 3.2 Type
 
@@ -123,6 +139,23 @@ Fonts:
 | `--focus-ring` | `3px solid var(--focus)`, offset 2px | `:focus-visible` (BR3.4) |
 
 `backdrop-filter` is removed from every patient rule (BR3.2). The masthead becomes `--surface` with a bottom `--rule` and `--elev-0`.
+
+### 3.4 Spacing and layout (BR3.6)
+
+| Token | Value | Use |
+|---|---|---|
+| `--space-1` | 4px | Icon gaps, hairline offsets |
+| `--space-2` | 8px | Chip and pill gaps, label to field |
+| `--space-3` | 12px | List-row gaps, small paddings |
+| `--space-4` | 16px | Card padding (mobile), paragraph spacing |
+| `--space-5` | 24px | Card padding (desktop), section heading to content |
+| `--space-6` | 32px | Between panels |
+| `--space-7` | 48px | Between page sections |
+| `--space-8` | 64px | Hero padding (desktop) |
+| `--grid-min` | 16rem | `repeat(auto-fit, minmax(var(--grid-min), 1fr))` card grids (browse, topic, related cards) |
+| `--measure` | 72ch (kept: today's effective value, `patient.css` line 1105; read by `.opener-grid`, `.search`, `.a-grid`) | Reading width |
+
+Fluid spacing uses `clamp()` between two steps, for example `clamp(var(--space-5), 5vw, var(--space-8))` for the opener. The sibling drafts' inline margins (`margin-top: 22px`, `18px`, `14px`, `26px`) map to `--space-5`, `--space-4`, `--space-3` and `--space-6`. The `.opener` (home hero) takes `background: var(--hero-wash)` here, so T-207 adds no rule for it.
 
 ## 4. Motion tokens (`motion.css`)
 
@@ -186,7 +219,7 @@ It must never wrap a static block (BR7.4); a dev-time warning is not needed beca
 - It renders `span.publish-tick` with an inline SVG (`aria-hidden="true"`, `focusable="false"`) holding two strokes, then the children as plain text.
 - Stroke 1, the short arm, scales from 0 to 1 along its own axis over the first 40% of `--dur-slow`; stroke 2, the long arm, over the rest. Both use `transform` with `transform-box: fill-box` and the origin at the joint.
 - In reduced mode or before motion-ready, the complete tick shows at once.
-- It does not announce. The caller (T-308) speaks the same text through the existing `useAnnounce()` live region, so a second live region is never added (CR-004 BR4.3).
+- It does not announce. The caller (T-306 for publish; T-102 for its account confirmations) speaks the same text through the existing `useAnnounce()` live region, so a second live region is never added (CR-004 BR4.3).
 
 ### 5.4 Hooks for later Units (no component)
 
@@ -196,6 +229,9 @@ It must never wrap a static block (BR7.4); a dev-time warning is not needed beca
 | `.reveal` on a home section after the first | Scroll reveal (BR6.6) | T-207 |
 | `data-static="emergency"` or `data-static="disclaimer"` on one in-page block | Static group (BR7.2, BR7.3) | T-207, T-202, T-203, T-306, T-307 (any page that shows those blocks) |
 | `.sheet`, `.overlay`, menus | Entry via `@starting-style` (BR6.7) | Existing `Sheet.tsx` and later menus |
+| `data-press` on a pressable whose class is not in § 6's list | Press scale 0.98 (BR6.11) | Every later Unit; it never writes a press rule |
+
+No morph hook exists (Q10 A, BR6.12). `ViewTransition` takes `name="page"` in `RouteTransition` only.
 
 ## 6. `motion.css` structure
 
@@ -212,7 +248,7 @@ It must never wrap a static block (BR7.4); a dev-time warning is not needed beca
    - Reveal (`[data-reveal-list]` children, `@starting-style`).
    - Step slide (`[data-step-dir]`, `@starting-style`).
    - Sheet entry (`.sheet`, `.overlay`, `@starting-style`). The overlay's opacity fade may run at `--dur-instant` in reduced mode too.
-   - Press (`:active` scale on `.btn, .ctl, .chip, .seg button, .opt, .tabs a, card links`, excluding the static set).
+   - Press: `:active` scale on `.btn, .ctl, .chip, .seg button, .opt, .tabs a, .pillrow a, .pillrow button, .browse-card, .doc-entry, .related-card, .react, .mini-row, .c-mode, .case, [data-press]`. This covers the sibling drafts' `a.chip`, `a.browse-card`, `a.mini-row`, `.pillrow a` and `.doc-entry` (whose `:active` matches when its inner link is pressed). The selector ends `:not(.demo *, .colophon *, #view-emergency *, [data-static] *, .emerg-card, .emergency-lines a)`, so nothing in the static set scales. `M7-static` exempts names inside `:not()`.
    - Publish tick (`.publish-tick` strokes).
    - Scroll reveal (`.reveal` inside `@supports (animation-timeline: view())`).
    - Reading bar (`.progress i` inside `@supports (animation-timeline: scroll())`). It gets `display: none` in reduced mode.
@@ -228,8 +264,9 @@ Removed from `patient.css` and not carried over (each breaks a rule):
 | `.tray` `tray-in` `translateY(100%)` | BR4.3 (large pan) | Sheet-entry rise |
 | `.sheet` `sheet-in` `scale(.98)` 320 ms | BR4.1 | Sheet-entry rise, tokens |
 | `.skip` `transition: top` | BR4.2 | Shown at once on focus |
-| `.tabs a`, `.ctl` colour transitions | BR4.2, Q5 A | Instant colour |
-| `.ctl:hover`, `.emergency-lines a:hover` `translateY(-2px)` | BR6.5, BR7.1 | No hover lift |
+| `.tabs a`, `.ctl` colour transitions; `.mini-row` `transition: border-color 200ms, transform 260ms` | BR4.2, Q5 A | Instant colour |
+| The 13 hover lifts: `.ctl`, `.btn`, `.chip`, `.browse-card`, `.emergency-lines a`, `.doc-entry`, `.related-card`, `.react`, `.mini-row`, `.c-mode`, `.opt`, `.case` and `.emerg-card` (`patient.css` 224, 286, 436, 445, 458, 524, 717, 730, 754, 770, 807, 931, 1553), plus the later `transform: none` overrides at 1474, 1477 and 1864 | BR6.5, BR7.1 (`.emerg-card` and `.emergency-lines a` are emergency guidance; T-207 F6) | No hover lift; `M9-hover` fails any `:hover` transform |
+| `.tabs a:hover::after { transform: scaleX(.4) }` and its current-tab twin (2057–2058) | BR6.5 | The current tab's bar is static at full width; hover changes colour only |
 | `.panel`, `.masthead` `backdrop-filter` | BR3.2 | Solid surfaces |
 | `body[data-motion="off"]` and the blanket `prefers-reduced-motion` rule in `patient.css` | BR4.7, BR5.4 | Replaced by the guards and reduced overrides in `motion.css` |
 
@@ -252,7 +289,8 @@ No class is renamed. New classes and attributes (`page-frame`, `publish-tick`, `
 
 ## 8. `scripts/css-motion-check.mjs`
 
-- **Zero dependencies**, like the other `tools/*.mjs` scripts: a brace-aware scanner that tracks the at-rule stack (`@media`, `@supports`, `@starting-style`, `@keyframes`) and the selector of each rule.
+- **Zero dependencies**, like T-010's `scripts/check-identity.mjs`: a brace-aware scanner that tracks the at-rule stack (`@media`, `@supports`, `@starting-style`, `@keyframes`) and the selector of each rule. It is linted (`scripts/**/*.mjs` with Node globals) and formatted by Prettier, like the other root scripts. It exports its scan function, so the tests call it on fixture text without spawning a process.
+- **Parsing:** declarations, not lines. A value Prettier splits over several lines (a multi-value `transition`, a long `box-shadow`) is read whole, and the finding reports its first line. Attribute selectors match with either quote style. Numbers match with or without a leading zero (`.98` and `0.98`).
 - **Default inputs:** `apps/web/src/styles/patient.css` and `apps/web/src/styles/motion.css`. Explicit file arguments replace the defaults.
 - **Findings** (each prints `file:line  <code>  <reason>`; exit 1 if any, 0 otherwise):
 
@@ -264,11 +302,25 @@ No class is renamed. New classes and attributes (`page-frame`, `publish-tick`, `
 | `M4-scale` | A `scale(...)` value below 0.98 or above 1.02 | BR4.3 |
 | `M5-guard` | A rule that moves (transform transition, transform keyframe, view-transition animation) outside `@media (prefers-reduced-motion: no-preference)` or without a selector starting `:root:not([data-motion="reduced"])` | BR5.3 |
 | `M6-file` | Any motion declaration in `patient.css` | BR4.7 |
-| `M7-static` | A motion rule whose selector names `.demo`, `.colophon`, `.emergency-lines`, `#view-emergency` or `[data-static` (the static block itself is exempt) | BR7.4 |
+| `M7-static` | A motion rule whose selector names `.demo`, `.colophon`, `.emergency-lines`, `.emerg-card`, `#view-emergency` or `[data-static` outside a `:not(...)`. Exempt: the static block itself (`animation: none`, `transition: none`) and the rules that give the static groups their `view-transition-name` | BR7.4 |
 | `M8-bangla` | A rule sets uppercase or non-zero letter-spacing and no `:lang(bn)` rule resets it for the same selector | BR2.2 |
+| `M9-hover` | A rule whose selector contains `:hover` declares `transform`, `translate`, `scale` or `rotate` | BR6.5 |
+| `M10-tokens` | `patient.css` has not exactly one column-0 `:root[data-theme="dark"] {` block; its custom-property names or values differ from the `prefers-color-scheme: dark` block's; or a column-0 `:root[data-scheme=` block exists | BR1.7, BR1.8 |
+| `M11-vt-name` | A `view-transition-name` value other than `page`, `masthead`, `demo`, `colophon`, `emergency`, `disclaimer` or `none` | BR6.12 |
 
-- **`--self-test`** runs embedded fixtures and fails unless every planted violation is caught (including `transition: width`, the acceptance row) and a clean fixture passes. `check:motion` is `node scripts/css-motion-check.mjs --self-test && node scripts/css-motion-check.mjs`, so the check proves it can fail on every run (team.md: "A test must be able to fail").
-- **Non-goals:** it does not judge the LCP element or runtime behaviour; those are covered by Lighthouse and the smoke.
+- **Proof that it can fail:** `scripts/css-motion-check.test.mjs`, in T-010's `tooling` Vitest project. It has one planted fixture per code, including `transition: width` (the acceptance row), a Prettier-formatted multi-line `transition`, and a single-quoted guard. It also has one clean fixture that must pass. `pnpm check` runs it on every run inside `test:coverage`, so `check:motion` itself is a plain `node scripts/css-motion-check.mjs` (team.md: "A test must be able to fail"; D11).
+- **Smoke:** the Unit's smoke assertion is the Vitest `motion.smoke.test.tsx` (§ 9). The check needs no smoke file of its own.
+- **Non-goals:** it does not judge the LCP element or runtime behaviour, which Lighthouse and the smoke cover. It does not see the browser's own view-transition keyframes, which is one reason for Q10 A.
+
+### 8.1 `tools/contrast.mjs --pairs patient` (D14)
+
+- **The flag** appends a pair set after the shared `PAIRS`:
+  - `['--focus','--paper','focus ring on page',3,true]`, and the same pair on `--surface` and `--surface-2`;
+  - `['--primary','--primary-soft','current tab text',4.5]`;
+  - `['--ink','--primary-soft','text on primary wash',4.5]`.
+- **Without the flag**, the pair list, thresholds and output are unchanged (T-010 BR9.1, BR9.4).
+- **A missing token** in the extra set is a skip, so in `--tokens` mode it fails the run like any other (T-010 BR9.3).
+- **Test:** one new case in `scripts/contrast.test.mjs` runs the flag on a temporary stylesheet that lacks `--focus` and expects exit 1 naming it. The existing three cases stay as they are.
 
 ## 9. Tests (test-after, per `team.md` Testing Posture)
 
@@ -280,10 +332,19 @@ Component tests (Vitest, jsdom), each in `en` and `bn`, inside the translation p
 | RouteTransition keys by locale-free path | Same path under `/en` and `/bn` gives the same key; a new path a new key | BR6.1 |
 | Reveal renders the list hook | `data-reveal-list` on the chosen element; no `style` attribute on any child; 8 children all render | BR6.2, BR9.2 |
 | PublishTick renders text and a hidden tick | Text equals the caller's string in each language; SVG has `aria-hidden="true"`; no live region added | BR6.4, BR8.1 |
-| Shell renders in both languages | Masthead, tabs, controls, demo marker and colophon render; `html` gets the font variable only for `bn`; `data-motion="reduced"` appears only when the cookie is off | BR2.4, BR5.2, BR7.1 |
+| Shell renders in both languages | Masthead, tabs, controls, demo marker and colophon render; `html` gets the font variable only for `bn`; `data-motion="reduced"` appears only when the cookie is off. These are two new cases in T-010's `app/layouts.test.tsx`, using its `givenRequest` builder and its `@/i18n/routing` mock (which already supplies `usePathname`) | BR2.4, BR5.2, BR7.1 |
 | Static elements carry no motion hook | `.demo` and `.colophon` have no `data-reveal-list` ancestor and no `.reveal` | BR7.4 |
 
-CSS-level checks: `pnpm check:motion` (with self-test), `pnpm contrast` (staff palette, unchanged output), `pnpm contrast:patient`.
+Test rules (BR9.9):
+- **Languages and fixtures.** Every component test renders in `en` and `bn` inside the translation provider, with messages read from `packages/i18n/messages`, as `layouts.test.tsx` does. Nothing in `apps/web` imports `test-support` (FD-040; lint fails otherwise). Test names read as sentences, and no test asserts on a class name or an internal call.
+- **Font mock.** `vitest.setup.ts` mocks `next/font/local` once, returning `{ className: 'font-bn-heading', variable: 'font-bn-heading-var', style: { fontFamily: 'Hind Siliguri' } }`. `localFont()` throws without Next's build transform (F4), and every web test that renders the locale layout needs the stand-in.
+- **Coverage.** `apps/web` is at 418 / 420 lines after T-010. The three components, `bn-heading.ts` and the layout lines are counted (`apps/web/src/**`), and the tests above cover each branch: motion-ready set, the `data-motion` attribute present and absent, the font class for `bn` and absent for `en`. A drop below 80% is answered with tests, never an exclusion (T-010 BR6.4–BR6.5).
+- **Load stability.** If a new test file times out on its first test under load, it takes T-010's `beforeAll` warm-up pattern (ISS-296, ISS-297); no per-test timeout is raised.
+
+CSS-level checks:
+- `pnpm check:motion`, with its planted fixtures in `scripts/css-motion-check.test.mjs`;
+- `pnpm contrast` (staff palette, unchanged output; `scripts/contrast.test.mjs` unchanged and green);
+- `pnpm contrast:patient` (with `--pairs patient`, and its new test case).
 
 Smoke:
 - One Vitest `motion.smoke.test.tsx` beside the motion components asserts that the shell renders `RouteTransition`'s frame and the static set, in both languages.
@@ -294,6 +355,13 @@ Smoke:
   4. **Reveal:** a list of 8 items inserted after load animates items 1–6 only.
 
   The spec does not assert pixels.
+
+  Playwright files and how they run:
+  - `apps/web/playwright.config.ts` has `testDir: 'e2e'`, one Chromium project, and a `webServer` that runs `next start` on the built app. Later Units' specs (T-102's `auth.spec.ts`) run under the same `smoke:e2e`.
+  - The spec is linted with its own `apps/web/e2e/tsconfig.json` and type-checked by `typecheck`'s second `tsc -p e2e`.
+  - It is excluded from the Vitest web project.
+  - Prettier formats it. ESLint's boundary rules do not cover it, because it is outside `apps/*/src`.
+  - The browser binary comes from `npx playwright install chromium`, recorded in `unit-test-instructions.md`. It is not run in CI until T-503.
 
 Existing tests: no assertion is removed or skipped. Tests that match on class names stay valid because no class is renamed.
 
@@ -310,7 +378,8 @@ UI gates: `npx impeccable detect apps/web/src --no-advisory`. The `side-tab` ign
 | Press a button or control | Scales to 0.98 over 100 ms | Colour change only |
 | Open a sheet | Fades in and rises 12 px over 240 ms | Appears at once (scrim may fade in 100 ms) |
 | A list arrives after load | First 6 items rise and fade with a 40 ms stagger | Appear at once |
-| Publish succeeds (T-308) | Tick draws over 360 ms beside the text | Complete tick and text at once |
+| Publish succeeds (T-306), or a T-102 confirmation shows | Tick draws over 360 ms beside the text | Complete tick and text at once |
+| Hover a card, chip or control | Colour, background or border changes at once; nothing lifts | Same |
 | Scroll the home page (T-207) | Sections after the first fade and rise as they enter | Static |
 | Keyboard focus | 3 px ring appears at once | Same |
 

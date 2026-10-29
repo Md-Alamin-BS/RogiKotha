@@ -2,13 +2,18 @@
 
 Draft written ahead of the stage. The lead finalises it when the workflow reaches this Unit; then it moves to `<record>/construction/t-101-better-auth-adapter/functional-design/`.
 
+Refreshed 2026-10-29 against T-010 as built, the owner's answers and the sibling drafts (see `functional-spec.md`, "Refreshed 2026-10-29"). Question 8 changed to C; Questions 12–14 are new. Every open answer was filled by the agent under the owner's no-questions instruction of 2026-10-29.
+
 Context:
 - Unit U8 (kind `library`, size XL, **high risk**: authentication, identity, sessions) delivers T-101 (`docs/implementation/tasks/T-101-better-auth-adapter.md`, with its FD-045..FD-075 and FD-076..FD-090 amendments) for stories US3.1 and US3.2. Bolt 8 in `bolt-plan.md`; depends on U5 CR-006 (merged: `0007`/`0008`, FD-092), U4 CR-011 (merged: transactional relay, queue declaration) and U3 T-010 (boundary lint, coverage floor). Units Generation also assigned it the open points "sign-in counter address normalisation", "`apps/web/src/server/container.ts` is created by T-101" and "AC10.3.6 feedback fields (Account)".
 - Inputs read: `unit-of-work.md` (U8, decision-change table, open points), `unit-of-work-story-map.md`, `requirements.md` (FR1–FR9, NFR3, NFR10, NFR11), `stories.md` (AC3.1.1–AC3.1.6, AC3.2.1–AC3.2.5, AC10.1.4, AC10.3.6), `components.md` (Account), `contract-summary.md` (C1, C2, C5, C14, C15, ownership rules), `docs/status/decision-log.md` (FD-013, FD-041, FD-056..FD-059, FD-063, FD-070..FD-072, FD-076, FD-077, FD-092), `01-conventions.md`, `02-data-model.md` (§1, §2, §3, §12, §16, §17), `03-routes-and-contracts.md` (§1–§5), `docs/design/auth-screens-spec.md` (§1, §3, §5).
 - Code read as it is on `main` (2026-10-28): `packages/database/src/schema/{auth,account,identity,notification}.ts`, `client.ts`, `audit-writer.ts`, `repositories/{account,outbox}.ts`, `queue/{pg-boss-queue,queue-declaration,sql-executor,outbox-relay-store}.ts`; `apps/worker/src/{main,container,env,logger,registry}.ts` and `handlers/outbox-relay.ts`; `apps/web/src/server/actions/preferences.ts` and `app/api/health/route.ts`; `packages/application/src/index.ts` (empty placeholder, "Filled by T-101"); `packages/adapters/src/index.ts` (empty); `packages/contracts/src/{actor,errors,config-values}.ts`, `schemas/account.ts`; `packages/test-support/src/fakes/*`; `packages/i18n/messages/en.json` (`email.*`, `errors.auth.*`).
 - Open `ISSUES.md` rows in this area: ISS-032, ISS-033, ISS-078 (fixed, owner T-101), ISS-111 item 1, ISS-112 (S2, the adapter mapping comment is wrong), ISS-113, ISS-155, ISS-180, ISS-223, ISS-243 (no plain email in job payloads, owned by U8 and U34), ISS-253 (mail.send keys and ensure-before-transaction), ISS-255 (JobQueue result type).
 - Library research (2026-10-28, Better Auth documentation, to be re-confirmed on the pinned version in Code Generation): `disabledPaths` exists; `sendVerificationEmail` and `sendResetPassword` receive `{user, url, token}`; `revokeSessionsOnPasswordReset` and `onPasswordReset` exist; `sendOnSignUp`, `sendOnSignIn`, `autoSignInAfterVerification` exist; a `databaseHooks` before-hook that returns `false` aborts the operation, and hooks of a transactional operation run after commit; `requestPasswordReset` is neutral for unknown addresses; sign-in of an unverified user under `requireEmailVerification` answers 403.
-- Dependency check: the Better Auth entry in `docs/status/dependency-check-log.md` is dated 2026-09-10 (48 days old), the `@node-rs/argon2` entry 2026-09-13, and `nodemailer` has none. Code Generation must re-check the current stable 1.7.x release and its security advisories since 1.7.3, peer compatibility with Next 16.3.4, and nodemailer's current stable release, and append a dated entry before installing (BR7.8).
+- Dependency check: the Better Auth entry in `docs/status/dependency-check-log.md` is dated 2026-09-10 (49 days old), the `@node-rs/argon2` entry 2026-09-13, and `nodemailer` has none; T-010's 2026-10-28 entry covers only its lint and coverage tools. Code Generation must re-check the current stable 1.7.x release and its security advisories since 1.7.3, peer compatibility with Next 16.3.4, and nodemailer's current stable release, and append a dated entry before installing (BR7.8).
+- T-010 as built (read on `bolt/t-010-boundary-lint-and-ci` with `git show`, 2026-10-29): the boundary matrix in `eslint.boundaries.mjs` and `01-conventions.md` §2 (FD-093); `application` and `domain` may import no external package and no Node built-in; only `apps/web/src/server/container.ts` may import `adapters`; `web` (routes under `app/`) may not import `database`; the worker may import `application` only through a future `@rogikotha/application/worker` subpath (type-only imports of the root allowed), never `better-auth`, `drizzle-orm`, `pg` or `modules/{account,identity}`, and has no `i18n` edge; components may import server actions only. `pnpm check` has nine steps (`typecheck`, `lint`, `lint:boundaries`, `format:check`, `check:identity`, `test:coverage` with an 80% line floor per package, `i18n:check`, `contrast`, `build`). CI (`.github/workflows/check.yml`) runs on `main` and `bolt/**` with a `postgres:18` service, job-only `APP_ENCRYPTION_KEY` and `BETTER_AUTH_SECRET`, and no Mailpit. The `web` and `worker` Vitest projects exclude `*.int.test.ts`. T-010's hand-off: "`next build` without a `.env`: nothing in `apps/web` reads one at build time".
+- Owner answers (`docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`): R1 the worker holds a separate, mail-only key, with an FD entry before T-101's code; R2 FR90 feedback is text only in this release; T-102 Q4 the holder's own email is shown masked, with an FD entry amending 03 §2; T-104 Q15 "Former member" for a deleted account's named and pseudonymous personas; T-105 R1 only the settings the demo uses are built in release 1, R2 the limited-data threshold allows 2–50. From 2026-10-29 the agent decides every open point by its recommendation.
+- Findings of the sibling drafts against this Unit: T-102 Q10 (`SessionListItem.label` becomes `browser` and `os`), T-102 ENT-004 (the field-error key list), T-102 F1 (verify from a server action, not a page render); T-103 F2 (staff powers only with an approved device and an active account), T-103 Q1/Q2 (password check through `PasswordHasher` first, sessions through the public email sign-in), T-103 BR7.4 (`requires` order); T-104 F9 (`getActor` must not read `persona_links` through the account repository, AD-3), T-104 F12 and § 10.2 (`onRefused` for every refusal after `authenticated`, a `recorded` error commits), T-104 Q12 (ISS-108); T-105 Q1 (sign-in ranges where every value works), T-105 Q2 and F5 (`ConfigProvider.current()` returns a Promise).
 
 ## Settled before this stage
 
@@ -22,6 +27,14 @@ These are decided by FD entries, the contracts or the requirements and are not a
 - **Scope cuts.** No automatic deletion (FD-056); 30-day sessions, session list and Sign out everywhere, no login history or failed-login alerts (FD-057); self-service email reset, every reset audited, no manual Admin recovery (FD-059).
 - **Unconfirmed accounts may browse and edit settings but not contribute (FR4, AC3.1.4, `components.md` Account).** Question 2 only settles how the library is configured to allow it.
 - **Queue rules from CR-011 (ISS-253).** Every `mail.send` gets its own key; a producer that passes its own transaction to `enqueue` ensures the queue before opening it.
+- **Import boundaries (FD-093, `01-conventions.md` §2 as built by T-010).** The placement of every file this Unit creates follows the matrix (`functional-spec.md` § 6.4). FD-093 (2) already allows the first Unit that needs application code in the worker to add `@rogikotha/application/worker`; this Unit is that Unit.
+- **Gate and CI (T-010).** The nine-step `pnpm check`, the 80% line floor per package (new code arrives with its tests; `domain`, `application` and `adapters` stop being zero-line packages in this Bolt), `format:check`, `check:identity`, and a green CI run on the Bolt head before the merge.
+- **The worker's key is mail-only (owner's answer to R1).** `email_deliveries.to_email_enc` uses `MAIL_RECIPIENT_KEY`; the worker never holds `APP_ENCRYPTION_KEY`. Proposed FD-094 (`functional-spec.md` § 9.1) is appended before any code.
+- **Feedback is text only in release 1 (owner's answer to R2).** Confirms Question 11 A; proposed FD-096 narrows FR90 and AC10.3.6.
+- **The holder's own email is shown masked (owner's answer to T-102 Q4).** This Unit builds the data side: `account.getOwnAccount` returns the masked address, and `account.resendOwnVerification` resends without an address. Proposed FD-095 amends 03 §2.
+- **"Former member" (owner's answer to T-104 Q15)** changes nothing here: this Unit creates personas but never de-identifies them, and `personas.deidentified_at` is T-104's column. The username check keeps counting a deleted profile's username as taken; T-410 decides otherwise if it frees usernames.
+- **T-105 R1 and R2** change nothing here: the `signIn` block is a setting the demo uses (FD-072 row), and the limited-data range is T-105's.
+- **`ConfigProvider.current()` returns a Promise (T-105 Q2 A, F5).** This Unit creates the port that way; the defaults-only provider and `StaticConfigProvider` return a resolved promise.
 
 ## Settled in this design without a question
 
@@ -34,12 +47,22 @@ These follow from the contracts, the requirements, the project rules or the code
 - **Passwords are NFC-normalised before hashing and verifying**, so a Bengali passphrase typed on two keyboards still matches (FR3 allows international characters).
 - **A completed reset clears the live link from `email_deliveries.params`** once the delivery is final (BR6.8), so no working reset link stays at rest where `rk_worker` can read it.
 - **The severe notice's once-per-window check reads `email_deliveries`** (a row for the account and message key newer than the window), so it survives a restart, unlike the in-memory counters.
-- **The application layer's foundations are built here**: `defineCommand`, the transaction-carrying command context, and the ports T-101 uses (`PasswordHasher`, `RateLimiter`, `ConfigProvider`, `Crypto`, `Clock`, `IdGenerator`, `JobQueue`, `Outbox`, `AuditWriter`, `Logger`, `MailTransport`, `AccountRepository`). `packages/application/src/index.ts` says "Filled by T-101", and no earlier Unit created them. The `JobQueue` port returns the project's `Result`, with the adapter mapping `job_not_enqueued` to `internal` (closes ISS-255).
-- **The `Crypto` port and `adapters/crypto` are built here** (AES-256-GCM, `iv | tag | ciphertext`, the layout `FakeCrypto` already uses), because `to_email_enc` needs them and no other Unit before U8 builds them.
+- **The application layer's foundations are built here**: `defineCommand`, the explicit command context `{input, actor, ports, tx}`, and the ports T-101 uses (`UnitOfWork`, `AuthGateway`, `PasswordHasher`, `RateLimiter`, `ConfigProvider`, `Crypto`, `Clock`, `IdGenerator`, `JobQueue`, `Outbox`, `AuditWriter`, `Logger`, `MailTransport`, `AfterResponse`, `AccountRepository`, `EmailDeliveryRepository`). `packages/application/src/index.ts` says "Filled by T-101", and no earlier Unit created them. The `JobQueue` port returns the project's `Result`, with the adapter mapping `job_not_enqueued` to `internal` (closes ISS-255). Because `application` may import no external package and no Node built-in (FD-093), nothing in it imports `better-auth` or `node:async_hooks`; the library-call scope lives in the web tier (Question 12).
+- **`defineCommand` carries the later Units' hook points from the start** (T-103 BR7.4, T-104 F12 and § 10.2): the `requires` order is `authenticated → verifiedEmail → notRestricted → staffRole → capability → stepUp → owner`; `onRefused({actor, input, refusal})` runs in its own transaction for every refusal after `authenticated` passed, rate limits included; a handler's `err` rolls back unless the handler marks it `recorded`. T-101's own commands use none of the three, so tests of `defineCommand` itself cover them.
+- **The `Crypto` port and `adapters/crypto` are built here** (AES-256-GCM, `iv | tag | ciphertext`, the layout `FakeCrypto` already uses; `hmac(purpose, bytes)` with a per-purpose key derived from `BETTER_AUTH_SECRET`), because `to_email_enc` and the counter keys need them and no other Unit before U8 builds them. The web container builds two instances: the app key and the mail key (FD-094).
+- **No staff powers in T-101's Actor (T-103 F2).** `getActor` never sets `staffRole` or `capabilities`; the capability stub returns `[]` for everyone, `super_admin` included, until T-103 adds the device gate. Otherwise a super_admin password alone, on the patient sign-in, would carry every capability between this Unit's merge and T-103's.
+- **No persona read in `getActor` (T-104 F9, AD-3).** `Actor.personaId` stays unset until T-104's `identity.currentPersonaOf`; the account repository has no method that reads `personas` or `persona_links`. The display name T-102's account menu needs comes from `account.getOwnAccount` (the profile's own `display_name`). Registration still inserts the two personas, with `TODO(T-104)`.
+- **ISS-108 is fixed here.** This Unit creates `packages/application/src/audit/`, which ISS-108 names as the place for the allowlist: details are built by one typed builder per action (ids, enums, counts, booleans, before/after values), and `assertAllowlisted` in `audit-writer.ts` recurses into nested objects and arrays, with a test for each of the five accepted cases in ISS-108. T-104's Question 12 then finds it fixed.
+- **Field errors use T-102's key list (T-102 ENT-004).** `errors.auth.emailInvalid`, `errors.auth.passwordTooShort`, `errors.auth.passwordTooLong`, `errors.auth.passwordEqualsEmail`, `errors.auth.usernameInvalid`, `errors.auth.usernameTaken`, `errors.auth.displayNameRequired`, `errors.auth.ageRequired`, `errors.auth.termsRequired`, `errors.auth.invalidCredentials`. The four missing keys are added here in both languages, with T-102's proposed copy and the Bengali flagged, so no emitted key is ever missing.
+- **Session items carry `browser` and `os`, not one English label (T-102 Q10 A, F8).** `SessionVM` changes the same way in `view-models/security.ts`, and `SecurityVM` gains `emailVerified` and `ownEmailMasked`.
+- **Sign-in after verification uses the library's own auto sign-in** (`autoSignInAfterVerification: true`, the task's value). The first draft turned it off and let the command sign in, but no public library call creates a session without the password. The session hook allows that session only inside the verification scope and only for a pending, active or restricted profile (BR2.2).
+- **Verification runs from a server action** (POST), never during a page render, because only actions and route handlers can set the cookie (T-102 F1).
+- **Integration tests get their own projects.** `web-int` and `worker-int` in `vitest.workspace.ts` (`sequence.groupOrder: 3`, after `database` and `test-support-seed`, one file at a time), because the `web` and `worker` projects exclude `*.int.test.ts`; CI gains a Mailpit service and `MAIL_RECIPIENT_KEY`, `APP_URL` and `TERMS_VERSION`.
+- **Nothing reads a secret at module load**, so `next build` still needs no `.env` (T-010 hand-off): the container is built on first use, and `/api/auth/[...all]` calls the library handler lazily.
 - **The account state machine goes to `packages/domain/src/account/account-state.ts`** (02 §17 names that file), with only the transitions T-101 performs used by T-101 code.
-- **The health route reports `db`** (its comment and NFR3 name T-101); `mail` stays `unknown` (no web-side SMTP check; the worker sends).
+- **The health route reports `db`** (its comment and NFR3 name T-101) through `apps/web/src/server/health.ts`, because a route under `app/` may not import `database` (FD-093); `mail` stays `unknown` (no web-side SMTP check; the worker sends).
 - **The adapter mapping follows ISS-112**: the schema object is aliased under the library's model names with no `fields` block; the three indexes of ISS-113 come in the next free forward-only migration; nothing is renamed.
-- **Bengali copy**: `email.security.severeSignInActivity.{subject,body}` and the Question 7 error key are new and are flagged for the owner's bilingual review (FD-042 precedent). Every other key T-101 uses already exists in both files.
+- **Bengali copy**: `email.security.severeSignInActivity.{subject,body}`, `errors.auth.passwordEqualsEmail` (Question 7) and T-102's `errors.auth.emailInvalid`, `errors.auth.passwordTooLong` and `errors.auth.displayNameRequired` are new and are flagged for the owner's bilingual review (FD-042 precedent). Every other key T-101 uses already exists in both files.
 
 ## Question 1
 
@@ -52,7 +75,7 @@ B. **Keep the library endpoints and put the policy in its hooks.** `hooks.before
 C. **Mount the catch-all as the task text says**, with no restriction. Every bypass above stays open.
 X. Other (please specify)
 
-[Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
+[Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change). Refined in the 2026-10-29 refresh by Question 12: the commands reach the server API through the `AuthGateway` port, not by importing the library.
 
 ## Question 2
 
@@ -109,7 +132,7 @@ Which Actor shape does `getActor` return, and how does it tell T-102 that a sess
 
 Why this is open: `packages/contracts/src/actor.ts` (and 01-conventions §5) has `kind: 'anonymous' | 'account'`, `emailVerified?`, `stepUp?: {rechecked_at}`, and the task says "fill, keep shape". C5's `actor_shape` line reads `kind: anonymous | account | staff | system`, `verifiedEmail`, `stepUpAt?`. T-101 step 8 needs a flag on the anonymous Actor of a suspended account so T-102 can show `errors.auth.accountSuspended`.
 
-A. **Keep `actor.ts` as it is and add one optional field, `refusal?: 'suspended' | 'banned'`**, set only on an anonymous Actor (recommended). Staff stay `kind: 'account'` with a `staffRole`. The C5 `actor_shape` line is recorded as drift (an ISS row) and corrected to the code at the next contract revision. Additive, so no consumer breaks.
+A. **Keep `actor.ts` as it is and add one optional field, `refusal?: 'suspended' | 'banned'`**, set only on an anonymous Actor (recommended). Staff stay `kind: 'account'` with a `staffRole`, which T-103 sets behind its device gate (T-101 never sets it, T-103 F2). The C5 `actor_shape` line is recorded as drift (an ISS row) and corrected to the code at the next contract revision. Additive, so no consumer breaks.
 B. **Adopt C5's shape now.** Renames `emailVerified` and `stepUp`, adds two kinds, and changes `actor.ts`, its tests and every later Unit's expectations, for no behaviour T-101 needs.
 X. Other (please specify)
 
@@ -137,9 +160,10 @@ Why this is open: both numbers come from C5; T-105 will expose `severeFailures` 
 
 A. **Keep both as C5 states**, implement them exactly, and raise an S3 ISS row for U12 T-105 (and C1) so the setting's range is narrowed to the fixed limit or the fixed limit follows the setting, by the owner's choice (recommended). Nothing changes for the defaults (10 = 10).
 B. **Make the fixed per-email limit `max(10, severeFailures)`** now. Changes C5's fixed number without a contract revision.
+C. **Narrow the two ranges now, as U12 T-105's Question 1 A decided**: `delayAfterFailures` 1–9, `severeFailures` 2–10 and above `delayAfterFailures`; the other three keys keep C1's ranges; the defaults (3, 15, 1, 30, 10) do not change (recommended in the 2026-10-29 refresh). This Unit writes the block first, so the schema never accepts a value that does nothing, T-105 does not have to change it, and finding F3 closes here. C1's range line is recorded as drift, to be corrected at the next contract revision, the way Question 6 treats C5's `actor_shape` line.
 X. Other (please specify)
 
-[Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
+[Answer]: C (decided by the agent under the owner's no-questions instruction of 2026-10-29; it was A on 2026-10-27, before T-105's draft settled the ranges)
 
 ## Question 9
 
@@ -176,11 +200,49 @@ B. **Add `category` and `contact_allowed` columns now** with a fixed category li
 C. **Build all four fields, screenshot included.** A new upload path inside a high-risk auth Unit, outside its owned paths and estimate.
 X. Other (please specify)
 
-[Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
+[Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; the owner's answer to R2 on 2026-10-28, "FR90 feedback is text only in this release", confirms it; proposed FD-096 records the narrowing)
 
-## Raised for the owner, not decided in this stage
+## Question 12
 
-Each of these would change a data boundary or a product scope and has no FD entry, so this design does not decide it. The design follows the FD entries as written, and each is proposed as an `ISS-` row. Details are in `functional-spec.md` § 9.
+Where does the Better Auth call live, now that `application` may import no external package and no Node built-in (FD-093, T-010)?
 
-- **R1 — The worker key decrypts more than mail addresses.** FD-071 gives the worker `APP_ENCRYPTION_KEY`. The same key encrypts every `*_enc` column, and `rk_worker` can read two of them today: `reviews.exact_date_enc` (ISS-240) and `evidence_items.original_filename_enc` (ISS-139). With the key, the worker could decrypt both. A separate mail-recipient key (for example `MAIL_RECIPIENT_KEY`, used only for `to_email_enc`) would keep the worker's key to what it needs, but FD-071 names `APP_ENCRYPTION_KEY`, so changing it needs an FD entry. Suggested: decide before U8's Code Generation wires the worker key; the change is small if made now.
-- **R2 — FR90's extra feedback fields have no builder** (Question 11): category list, screenshot with its sensitive-data warning, contact permission.
+Why this is open: the first draft let the commands call `auth.api.*` themselves and kept an AsyncLocalStorage `CommandContext` in `defineCommand`. Under the boundary matrix as built, `packages/application/src` may import only `domain` and `contracts`, so both imports turn `pnpm lint` red. `adapters` may import `better-auth`, but not `database`, whose Drizzle schema and connection the library's adapter needs. `apps/web/src/server/*` may import `better-auth`, `database` and `application`, and `server/container.ts` alone may import `adapters`.
+
+A. **An `AuthGateway` port in `application`, implemented in `apps/web/src/server/better-auth/`** (recommended). The port speaks the application's language: `createCredentialUser`, `issueVerificationToken`, `verifyEmailToken`, `issueResetToken`, `resetPassword`, `changePassword`, `createSession`, `getSession`, `revokeSession(s)`, `listSessions`, `deleteUser`. Each method opens a library-call scope (AsyncLocalStorage, a web-tier Node import) naming its purpose; the `user.create.before` and `session.create.before` hooks and the email callbacks read that scope. `server/container.ts` builds the gateway with the Argon2 hasher from `adapters`, so `server/better-auth/*` never imports `adapters`. Commands stay testable with a fake gateway from `test-support`.
+B. **Implement the gateway in `packages/adapters/src/better-auth/`** and pass the Drizzle adapter and schema in from the container as opaque values. Keeps "adapters hold libraries", but hides the database dependency from the boundary rules and needs casts at the seam.
+C. **Add `application → better-auth` and `application → node:async_hooks` edges** (an FD-093 amendment). The first draft as written; every command test then loads the library, and the "pure application" rule is gone for every later Unit.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29)
+
+## Question 13
+
+How does the worker's `mail.send` get the email copy, given that the worker has no `i18n` edge (FD-093)?
+
+Why this is open: FD-071 has the worker render each email from `packages/i18n` in the delivery's locale. `packages/i18n/src` imports `next-intl`, and the matrix gives the worker no edge to it. The JSON files in `packages/i18n/messages/` sit outside every element and are not exported by the package.
+
+A. **A data-only element for the message files** (recommended). `i18n-messages` covers `packages/i18n/messages/*.json`, exported as `@rogikotha/i18n/messages/<locale>.json`; `worker` and `i18n` may import it. The worker imports both files with `with { type: 'json' }` and passes the `email.*` entries to the `mail.send` use case, which is pure application code in `@rogikotha/application/worker`. `next-intl` becomes an optional peer of `@rogikotha/i18n`, so the worker never installs or loads it. Needs proposed FD-097 (amends FD-093 and §2) and two fixture cases in `pnpm lint:boundaries`.
+B. **Read the JSON through `node:fs`** from a path resolved at start. Passes the lint, but the cross-package dependency is then invisible to the rules that exist to show it.
+C. **Render in the web tier at queue time** and store subject and body in `email_deliveries`. New columns, the rendered text with its live link at rest, and T-405's send-time checks would act on text written earlier.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29)
+
+## Question 14
+
+How does `account.signIn` check the password?
+
+Why this is open: the first draft let the library's `signInEmail` decide, relied on it hashing a dummy for an unknown email (undocumented, "to confirm in the spike"), and revoked any session the library returned for a suspended account. U10 T-103's Question 1 A checks the staff password through the `PasswordHasher` port first, with the same counters (shared per address and per network), so two different credential paths would exist.
+
+A. **Through the port first, then the gateway mints the session** (recommended). After the refusals of BR3.2, the command reads the credential through the account repository (password hash, status, account id; the web tier only) and verifies once with the port, against a dummy PHC hashed once at start-up when the address is unknown or deleted. Only a pending, active or restricted account then reaches `AuthGateway.createSession` (the library's public email sign-in inside a scope that allows a session); the library verifies a second time, a cost only a correct password pays. A suspended account never has a session row, not even briefly, and the equal-cost failure paths do not depend on library internals.
+B. **Keep the library as the decider** (the first draft): one Argon2 verify on success, but the timing of unknown emails depends on undocumented behaviour, a suspended account's session exists until it is revoked, and T-103 builds a second path.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29)
+
+## Answered by the owner (raised in the first draft)
+
+Each changed a data boundary or a product scope, so the first draft did not decide it. The owner has now answered both; the proposed decision-log rows are in `functional-spec.md` § 9.1 and are appended before any code.
+
+- **R1 — The worker key decrypted more than mail addresses.** FD-071's `APP_ENCRYPTION_KEY` encrypts every `*_enc` column, and `rk_worker` can read `reviews.exact_date_enc` (ISS-240) and `evidence_items.original_filename_enc` (ISS-139). **Owner's answer (2026-10-28):** the worker holds a separate, mail-only key. Proposed FD-094: `MAIL_RECIPIENT_KEY`, used only for `to_email_enc`; the worker never holds `APP_ENCRYPTION_KEY`.
+- **R2 — FR90's extra feedback fields had no builder** (Question 11). **Owner's answer (2026-10-28):** feedback is text only (body and locale) in this release; category, screenshot and contact move to release 2. Proposed FD-096.

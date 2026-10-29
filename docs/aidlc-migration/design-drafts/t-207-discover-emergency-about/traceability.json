@@ -1,0 +1,297 @@
+{
+  "stage": "functional-design",
+  "unit": "t-207-discover-emergency-about",
+  "upstream_ids": [
+    "AC12.1.1",
+    "AC12.1.2",
+    "AC12.1.3",
+    "AC12.1.4",
+    "AC12.1.5",
+    "AC12.1.6",
+    "AC5.1.1",
+    "AC5.1.2",
+    "AC5.1.3",
+    "AC5.1.4",
+    "AC5.1.5",
+    "AC5.1.6",
+    "AC4.3.1",
+    "AC4.3.2",
+    "AC4.3.3",
+    "AC4.3.4",
+    "AC4.3.5"
+  ],
+  "coverage": [
+    {
+      "id": "AC12.1.1",
+      "status": "N/A",
+      "target": "First-visit language detection, lang attribute and the Bangla | English switch are the T-008 shell (merged baseline); these pages render under the layout lang and every string comes from both dictionaries (BR6.1)"
+    },
+    {
+      "id": "AC12.1.2",
+      "status": "N/A",
+      "target": "The stored language override (rk.lang cookie) is the T-008 shell; nothing on these pages reads or writes it"
+    },
+    {
+      "id": "AC12.1.3",
+      "status": "N/A",
+      "target": "Writing mixed-language text and author translations is U26 T-306; these pages show stored text as written (BR6.3)"
+    },
+    {
+      "id": "AC12.1.4",
+      "status": "OK",
+      "target": "BR6.1 (new keys in both dictionaries in one commit; pnpm i18n:check green)"
+    },
+    {
+      "id": "AC12.1.5",
+      "status": "OK",
+      "target": "BR1.5, BR2.7, BR3.8, BR3.12 (the /emergency page shows the configured 999, 16263 and crisis line with the last-verified date in the active digits, signed out, and no flow requires visiting it)"
+    },
+    {
+      "id": "AC12.1.6",
+      "status": "OK",
+      "target": "BR4.1, BR4.2, BR4.3, BR4.4, BR4.5, BR9.1 (correct lang, landmarks, headings, focus and call-link names on the emergency, policy and home pages in both locales); the axe run with no serious or critical violations is U42 T-503"
+    },
+    {
+      "id": "AC5.1.1",
+      "status": "N/A",
+      "target": "Search matching and the result tabs are U18 T-205 and U19 T-206; this page mounts the hero SearchBox and chip links to /search (BR3.2, BR3.3)"
+    },
+    {
+      "id": "AC5.1.2",
+      "status": "N/A",
+      "target": "Alias and fuzzy matching are U18 T-205"
+    },
+    {
+      "id": "AC5.1.3",
+      "status": "N/A",
+      "target": "Did-you-mean and keeping the query as typed are U19 T-206 (SearchBox and the results page); the hero box starts empty (BR2.10)"
+    },
+    {
+      "id": "AC5.1.4",
+      "status": "N/A",
+      "target": "Search result cards are U19 T-206; the home page shows no search results, and its teaser rows carry no score (BR2.1, BR2.5)"
+    },
+    {
+      "id": "AC5.1.5",
+      "status": "N/A",
+      "target": "The separate location field is on the search page (U19 T-206); the home page, like the prototype, offers no location field and no Near Me"
+    },
+    {
+      "id": "AC5.1.6",
+      "status": "N/A",
+      "target": "Search exclusion is U18 T-205; the home page lists only what the published-only queries return (BR1.1)"
+    },
+    {
+      "id": "AC4.3.1",
+      "status": "N/A",
+      "target": "Branch pages and the parent aggregate are U16 T-203; the teaser shows each branch's own facility-account count (BR2.5)"
+    },
+    {
+      "id": "AC4.3.2",
+      "status": "N/A",
+      "target": "Not verified is shown on the branch page and the facility index cards (U16 T-203 BR2.5); teaser rows are links to those profiles and carry the Limited data tag only (Question 3 A)"
+    },
+    {
+      "id": "AC4.3.3",
+      "status": "OK",
+      "target": "BR2.5 (the teaser keeps the separation sentence and shows facility figures only; browse cards show doctor-account figures only); the query-level isolation test is U14 T-201 BR2.6"
+    },
+    {
+      "id": "AC4.3.4",
+      "status": "N/A",
+      "target": "Structured facility feedback is captured by U26 T-306 and shown on branch pages by U16 T-203; the teaser shows no criteria"
+    },
+    {
+      "id": "AC4.3.5",
+      "status": "OK",
+      "target": "BR2.3, BR2.4 (a facility without accounts is said in words, never 0; Limited data on sparse teaser rows)"
+    }
+  ],
+  "reverse": [
+    {
+      "id": "BR1.2",
+      "status": "N/A",
+      "target": "AC2.4.6 (LCP), NFR1, T-203 BR1.6"
+    },
+    {
+      "id": "BR1.3",
+      "status": "N/A",
+      "target": "Question 5; T-105 BR4.5 (configuration fallback); construction.md Error Handling; 01-conventions.md §3 and §11 (allowlisted log fields); project.md Mandated (emergency guidance)"
+    },
+    {
+      "id": "BR1.4",
+      "status": "N/A",
+      "target": "FR94, T-501 step 5 (SHELL_ROUTES includes /en and /bn)"
+    },
+    {
+      "id": "BR1.6",
+      "status": "N/A",
+      "target": "01-conventions.md §8 and §9, T-207 steps 1–4, T-203 BR1.7"
+    },
+    {
+      "id": "BR1.7",
+      "status": "N/A",
+      "target": "Question 7, ISS-120, 01-conventions.md §6 and §7.2, FD-024"
+    },
+    {
+      "id": "BR2.2",
+      "status": "N/A",
+      "target": "Question 2, project.md Mandated (neutral order) and Forbidden (no highest rated sort), T-201 WF5, WF7, WF13"
+    },
+    {
+      "id": "BR2.6",
+      "status": "N/A",
+      "target": "project.md Mandated (persistent disclaimer), prototype renderDiscover comment (STORY-PLAT-001), T-011 BR7.2, AC2.4.4"
+    },
+    {
+      "id": "BR2.8",
+      "status": "N/A",
+      "target": "project.md Forbidden (identity in a public projection), ADR-0008, prototype byline comment, T-202 BR2.7"
+    },
+    {
+      "id": "BR2.9",
+      "status": "N/A",
+      "target": "FD-008, FD-022, Question 1, T-207 step 3, fd-022-lawful-placement.test.tsx, fd-022-lawful-key-usage.test.ts"
+    },
+    {
+      "id": "BR2.11",
+      "status": "N/A",
+      "target": "project.md Mandated (demo marker), team.md Deployment, T-207 'Not in scope'"
+    },
+    {
+      "id": "BR3.1",
+      "status": "N/A",
+      "target": "prototype renderDiscover, T-207 step 4, acceptance row 'Discover block order'"
+    },
+    {
+      "id": "BR3.4",
+      "status": "N/A",
+      "target": "prototype renderDiscover (byCondition filter), T-207 step 4.3, T-203 BrowseCard contract"
+    },
+    {
+      "id": "BR3.5",
+      "status": "N/A",
+      "target": "prototype renderDiscover, T-207 step 4.4, T-202 MiniList contract, T-203 facilityLabel and the owner's answer to T-203 F2"
+    },
+    {
+      "id": "BR3.6",
+      "status": "N/A",
+      "target": "prototype renderDiscover, T-207 step 4.5"
+    },
+    {
+      "id": "BR3.7",
+      "status": "N/A",
+      "target": "prototype renderDiscover, T-207 step 4.6, T-201 WF13 (newest first)"
+    },
+    {
+      "id": "BR3.9",
+      "status": "N/A",
+      "target": "prototype renderAbout, T-207 step 2"
+    },
+    {
+      "id": "BR3.10",
+      "status": "N/A",
+      "target": "T-207 step 3, FD-008, FD-022, FD-044 (nav.about kicker), Question 1"
+    },
+    {
+      "id": "BR3.11",
+      "status": "N/A",
+      "target": "01-conventions.md §6, T-202 Question 5 A, T-203 BR3.9"
+    },
+    {
+      "id": "BR3.13",
+      "status": "N/A",
+      "target": "T-105 Question 5 A and finding F2, FR100, T-203 Question 13 and finding F9"
+    },
+    {
+      "id": "BR3.14",
+      "status": "N/A",
+      "target": "Question 9, FD-091 (prototype stays the source of truth for structure)"
+    },
+    {
+      "id": "BR5.1",
+      "status": "N/A",
+      "target": "T-011 Question 4 A and D5, T-202 F4, T-203 BR5.1, T-207 step 7 (FD-091)"
+    },
+    {
+      "id": "BR5.2",
+      "status": "N/A",
+      "target": "Question 4, T-011 BR6.6 and § 5.4, T-207 step 7, prototype how-list li.reveal"
+    },
+    {
+      "id": "BR5.3",
+      "status": "N/A",
+      "target": "AC2.4.4, AC2.4.6, T-011 BR4.5 and BR7.1–BR7.4, T-207 step 7"
+    },
+    {
+      "id": "BR5.4",
+      "status": "N/A",
+      "target": "T-011 BR4.7 and BR9.1, T-207 FD-091 acceptance row 'motion check', finding F6"
+    },
+    {
+      "id": "BR5.5",
+      "status": "N/A",
+      "target": "AC2.4.3, T-011 BR5.4, T-207 FD-091 acceptance row 'reduced-motion journey'"
+    },
+    {
+      "id": "BR5.6",
+      "status": "N/A",
+      "target": "AC2.4.6, NFR13, NFR1, T-207 acceptance row 'early performance check', T-011 BR4.5"
+    },
+    {
+      "id": "BR6.2",
+      "status": "N/A",
+      "target": "project.md Mandated (no capital-letter transform in Bengali), T-011 type rules"
+    },
+    {
+      "id": "BR7.1",
+      "status": "N/A",
+      "target": "FD-091, FD-032, project.md Code Style (FD-091 patient styles), T-207 FD-091 amendment, 01-conventions.md §7.2"
+    },
+    {
+      "id": "BR7.2",
+      "status": "N/A",
+      "target": "team.md Testing Posture (UI units), T-207 acceptance rows"
+    },
+    {
+      "id": "BR8.1",
+      "status": "N/A",
+      "target": "01-conventions.md §8, T-207 'Depends on', T-202 D10, T-203 BR8.1"
+    },
+    {
+      "id": "BR8.2",
+      "status": "N/A",
+      "target": "T-203 BR8.2, team.md Way of Working step 4 (files outside owned paths)"
+    },
+    {
+      "id": "BR8.3",
+      "status": "N/A",
+      "target": "T-207 owned paths and FD-091 amendment, team.md Way of Working step 4"
+    },
+    {
+      "id": "BR8.4",
+      "status": "N/A",
+      "target": "Question 6, 03-routes-and-contracts.md §4"
+    },
+    {
+      "id": "BR9.2",
+      "status": "N/A",
+      "target": "team.md Testing Posture (cumulative smoke suite)"
+    },
+    {
+      "id": "BR9.3",
+      "status": "N/A",
+      "target": "team.md Way of Working steps 2–4, T-207 acceptance rows, risk-and-sequencing-rationale.md (R-03)"
+    },
+    {
+      "id": "BR9.4",
+      "status": "N/A",
+      "target": "T-207 step 3, FD-022, BR2.9"
+    },
+    {
+      "id": "BR9.5",
+      "status": "N/A",
+      "target": "project.md Mandated (ISS rows), team.md Way of Working, unit-of-work.md U20"
+    }
+  ]
+}

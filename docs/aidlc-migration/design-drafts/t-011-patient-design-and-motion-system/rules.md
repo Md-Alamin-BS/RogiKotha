@@ -2,7 +2,7 @@
 
 Source of truth for the Unit's decision logic. Built from `unit-of-work.md` (U45), `unit-of-work-story-map.md` (US2.4, US2.3), `requirements.md` (NFR13, FR95, NFR1, NFR4, NFR5, NFR6, NFR7), `components.md` (no domain component owns presentation), `contract-summary.md` (U45 has no runtime contract), T-011, FD-091, FD-032, FD-030, FD-024, FD-042 and the hard rules in `project.md`. The entities these rules govern are in `entities.md`, the token values in `frontend-components.md` § 3, and the workflows and state transitions in `functional-spec.md`.
 
-Rules that depend on an answer in `functional-design-questions.md` name it in `source`. All eight answers are A, recorded on the owner's standing instruction and awaiting confirmation in `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`. `functional-spec.md` § 10 lists what changes if the owner picks another option.
+Rules that depend on an answer in `functional-design-questions.md` name it in `source`. All ten answers are A: Q1–Q8 on the owner's standing instruction of 2026-10-27, and Q9–Q10 decided by the agent under the owner's no-questions instruction of 2026-10-29. Each answer goes into `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md` when the stage finalises this draft. `functional-spec.md` § 10 lists what changes under another option. Refreshed 2026-10-29 against T-010 as built: BR1.8, BR3.6, BR6.11, BR6.12, BR9.8 and BR9.9 are new, and BR1.2, BR1.7, BR4.7, BR6.4, BR6.5, BR9.1, BR9.4 and BR9.7 are amended. No ID was renumbered.
 
 ```yaml
 rules:
@@ -18,11 +18,11 @@ rules:
   - id: BR1.2
     statement: "Every text pair reaches 4.5:1, the focus ring, strong boundaries and input borders reach 3:1, card vs page reaches 1.10:1, card vs inset 1.18:1, hairlines 1.5:1 and hover edges 2:1, in light and dark mode."
     category: validation
-    applies_to: "All ColourToken pairs the contrast tool checks, plus --focus and --primary-soft pairs computed in the hand-off"
-    trigger: "pnpm check (contrast:patient run) and Code Generation's hand-off"
-    logic: "IF any pair is below its floor THEN the token value is adjusted until it passes; the floor is never lowered; each adjusted value is noted in the hand-off"
-    violation: "A failing text or boundary pair is a build failure (contrast tool exit 1); a lowered floor is a D10 breach"
-    source: "NFR6, FR95, T-011 step 1, team.md Testing Posture (UI units pass pnpm contrast)"
+    applies_to: "All ColourToken pairs of tools/contrast.mjs, plus the --pairs patient set (--focus on --paper, --surface and --surface-2 at 3:1 hard; --primary and --ink on --primary-soft at 4.5:1), read from patient.css by contrast:patient"
+    trigger: "pnpm check S8a contrast:patient (node tools/contrast.mjs --tokens apps/web/src/styles/patient.css --pairs patient)"
+    logic: "IF any pair is below its floor, OR any pair is skipped for a missing token (T-010 fail-closed --tokens mode) THEN the run exits 1 and the token value is adjusted (or the alias added) until it passes; the floor is never lowered; each adjusted value is noted in the hand-off; without --pairs the tool's pair list is unchanged, so pnpm contrast on tokens.css keeps its exact output"
+    violation: "A failing or skipped pair is a red pnpm check; a lowered floor is a D10 breach; a --focus pair added to the shared list would make pnpm contrast fail closed on tokens.css"
+    source: "NFR6, FR95, T-011 step 1, team.md Testing Posture (UI units pass pnpm contrast), T-010 BR9.3-BR9.4, functional-spec.md D14"
   - id: BR1.3
     statement: "The warm accent (--decor) is decoration only: never text, never an icon that carries meaning, never a control's only boundary or state."
     category: constraint
@@ -59,10 +59,18 @@ rules:
     statement: "Dark mode uses the warm 'night paper' palette with the same roles and the same contrast floors; the prefers-color-scheme dark block and the explicit data-theme dark block hold identical values, and an explicit light theme always wins over the system setting."
     category: policy
     applies_to: "Patient token block, dark variants"
-    trigger: "Effective theme is dark"
+    trigger: "Effective theme is dark; pnpm check:motion (M10-tokens compares the two dark blocks)"
     logic: "IF data-theme is dark, OR no explicit theme is set and the system prefers dark THEN the dark values apply; IF data-theme is light THEN light values apply regardless of the system"
-    violation: "Diverging dark blocks, or a dark pair below its floor, is a defect"
+    violation: "Diverging dark blocks (check:motion M10-tokens exits 1), or a dark pair below its floor, is a defect"
     source: "functional-design-questions.md Q2 (A), prototype theme toggle, CR-004 WF1"
+  - id: BR1.8
+    statement: "patient.css holds exactly one column-0 :root[data-theme=\"dark\"] { block, the token block, whose custom properties equal those of the prefers-color-scheme dark block, and no column-0 :root[data-scheme=…] { block; a component's dark rule continues its selector (:root[data-theme=\"dark\"] .x {)."
+    category: validation
+    applies_to: "apps/web/src/styles/patient.css token structure; every later Unit that appends to patient.css"
+    trigger: "pnpm check:motion (M10-tokens)"
+    logic: "IF the count of column-0 dark token blocks is not 1, OR their property set differs from the media-query dark block, OR a scheme block exists THEN the check fails, naming the lines"
+    violation: "The contrast tool reads only the last dark block and treats scheme blocks as variants, so a second small dark block would check light values as dark ones (a silent pass) and a scheme block adds an unchecked variant"
+    source: "tools/contrast.mjs (T-010 --tokens mode: last dark block, scheme variants), functional-spec.md § 11 F5, NFR6"
 
   # 2. Typography and Bengali
   - id: BR2.1
@@ -147,6 +155,14 @@ rules:
     logic: "IF document scroll width exceeds the viewport width at any listed size, language or zoom THEN the shell rule causing it is fixed (wrap, shrink the brand tagline, never hide a control)"
     violation: "Horizontal overflow is an S2 defect against AC2.3.1"
     source: "NFR4, AC2.3.1, AC2.3.2"
+  - id: BR3.6
+    statement: "The token block defines a spacing scale (--space-1 4px, --space-2 8px, --space-3 12px, --space-4 16px, --space-5 24px, --space-6 32px, --space-7 48px, --space-8 64px), --grid-min for auto-fit card grids and --measure for the reading width; patient rules, the shell's and later Units', take margins, gaps and paddings from these tokens."
+    category: constraint
+    applies_to: "Patient token block; every patient rule that sets margin, padding or gap (T-102, T-202, T-203, T-207 and later page sections)"
+    trigger: "Any patient rule needs a spacing value"
+    logic: "IF a rule sets a margin, padding or gap THEN it uses a --space-* token, a calc() of them, or clamp() between two of them; a literal length outside the token block is rejected in review; a missing step is an ISSUES.md row, never a literal"
+    violation: "Literal spacing drifts the rhythm per page; the sibling drafts raise an ISS row and stall"
+    source: "FD-091 (generous white space, bento grid), T-202, T-203, T-207 and T-102 drafts (margins from T-011 spacing), functional-spec.md § 11 F7"
 
   # 4. Motion tokens and allowed properties
   - id: BR4.1
@@ -198,13 +214,13 @@ rules:
     violation: "Delayed interaction hurts INP and breaks FD-091 rule 2"
     source: "NFR13 (INP), FD-091 choreography rule 2, motion-tech-research.md §2.1"
   - id: BR4.7
-    statement: "Every motion declaration of the patient side lives in motion.css; patient.css holds no transition, animation, @keyframes, @starting-style or view-transition rule."
+    statement: "Every motion declaration of the patient side lives in motion.css; patient.css holds no transition, animation, @keyframes, @starting-style or view-transition rule; later Units use the primitives through their hooks and add no motion rule, and motion.css changes only in a Unit whose task names a new primitive."
     category: policy
-    applies_to: "apps/web/src/styles/patient.css, motion.css"
-    trigger: "pnpm check:motion"
-    logic: "IF patient.css contains any motion declaration THEN the check fails"
+    applies_to: "apps/web/src/styles/patient.css, motion.css; every later patient Unit"
+    trigger: "pnpm check:motion; review of any later Unit"
+    logic: "IF patient.css contains any motion declaration THEN the check fails; IF a later Unit's diff touches motion.css without a task line naming a new primitive THEN the reviewer rejects it and the need becomes an ISSUES.md row"
     violation: "check:motion exits non-zero"
-    source: "functional-spec.md § 9 (one motion file), T-011 owned paths (motion.css)"
+    source: "functional-spec.md § 9 D11 (one motion file), T-011 owned paths (motion.css), T-202, T-203 and T-207 drafts (no motion of their own)"
 
   # 5. Reduced motion
   - id: BR5.1
@@ -276,19 +292,19 @@ rules:
   - id: BR6.4
     statement: "A successful publish shows one tick, drawn in two strokes over --dur-slow by transform only, beside a plain text confirmation; the tick is decorative (aria-hidden) and the text carries the meaning; in reduced mode the complete tick shows at once."
     category: policy
-    applies_to: "PublishTick component; consumed by T-308"
-    trigger: "Publish succeeds"
+    applies_to: "PublishTick component; consumed by T-306 (composer publish) and T-102 (account confirmations)"
+    trigger: "Publish succeeds, or a T-102 confirmation shows"
     logic: "IF publish succeeds THEN render PublishTick with the caller's confirmation text (compose.publishedNote today); the caller keeps responsibility for announcing it through the existing live region"
     violation: "A second live region, animated text, or any extra celebration is a defect"
-    source: "AC2.4.2, AC2.4.5, FD-091 choreography rule 5, prototype app.js:1614 (✓ + compose.publishedNote)"
+    source: "AC2.4.2, AC2.4.5, FD-091 choreography rule 5, prototype app.js:1614 (✓ + compose.publishedNote), T-306 step 13, T-102 draft BR11.5"
   - id: BR6.5
-    statement: "Press feedback scales a control to 0.98 over --dur-instant; hover and active colour changes are instant; nothing lifts on hover."
+    statement: "Press feedback scales a pressable to 0.98 over --dur-instant; hover and active colour changes are instant; no :hover rule sets a transform anywhere on the patient side, so the 13 existing hover-lift rules (emergency cards and lines included) and the tab underline's hover scaleX are removed."
     category: policy
-    applies_to: ".btn, .ctl, .chip, .seg button, .opt, .tabs a, card links"
+    applies_to: ".btn, .ctl, .chip, .seg button, .opt, .tabs a, .pillrow a, .pillrow button, .browse-card, .doc-entry, .related-card, .react, .mini-row, .c-mode, .case, [data-press]; never an element of the static set"
     trigger: "Pointer press or hover"
-    logic: "IF a control is pressed AND effective = full THEN transform: scale(0.98) ELSE no transform; colour, background and border changes never transition"
-    violation: "A colour transition or a hover lift fails check:motion (BR4.2) or FD-091"
-    source: "NFR13 (press and focus feedback), functional-design-questions.md Q5 (A)"
+    logic: "IF a pressable is pressed AND effective = full AND it is not inside the static set THEN transform: scale(0.98) ELSE no transform; colour, background and border changes never transition; IF a :hover rule declares transform THEN check:motion M9-hover fails"
+    violation: "A colour transition, a hover lift, or a press scale on emergency guidance fails check:motion (BR4.2, M9-hover) or FD-091"
+    source: "NFR13 (press and focus feedback), functional-design-questions.md Q5 (A), T-202 F7, T-203 F11, T-207 F6 and F15, functional-spec.md § 11 F6 and F8"
   - id: BR6.6
     statement: "Home page sections below the first one may reveal on scroll: a fade and 12 px rise driven by a CSS scroll timeline inside @supports (animation-timeline: view()) and both guards; without support they are static, and the first section (hero, LCP) never carries the hook."
     category: policy
@@ -329,6 +345,22 @@ rules:
     logic: "IF an element shows a measured value THEN it has no transition or animation (the existing bar-in keyframe is removed)"
     violation: "A bar that grows from 0 shows a false value for its duration, against the exact-count rule"
     source: "project.md Mandated (exact counts and denominators), project.md Forbidden (never render a missing value as 0), FD-091 choreography rule 1"
+  - id: BR6.11
+    statement: "A later Unit makes a new card, row, chip or control pressable by giving it the data-press attribute, which gets the press primitive from motion.css; it never writes a press, hover or transition rule of its own."
+    category: policy
+    applies_to: "[data-press] hook; every later patient Unit"
+    trigger: "A later Unit adds a pressable element whose class is not in BR6.5's list"
+    logic: "IF the element is pressable THEN it carries data-press (and is not inside the static set) ELSE nothing; no motion rule outside motion.css (BR4.7)"
+    violation: "A Unit-local press rule fails check:motion M6-file; a missing hook leaves a pressable without feedback (polish S3)"
+    source: "NFR13 (press feedback), T-202 F7, T-203 F11, T-207 F15, functional-spec.md D16"
+  - id: BR6.12
+    statement: "Only six view-transition names exist on the patient side: page and the static groups masthead, demo, colophon, emergency and disclaimer; no per-item name and no shared-element morph in this release."
+    category: constraint
+    applies_to: "motion.css view-transition rules; RouteTransition; every later Unit"
+    trigger: "Any view-transition-name or ViewTransition name prop"
+    logic: "IF a CSS rule sets view-transition-name to a value outside the six THEN check:motion M11-vt-name fails; IF a component passes a ViewTransition name other than page THEN the reviewer rejects it; a morph would animate width and height of its group, outside BR4.2"
+    violation: "An avatar or card morph breaks BR4.2, AC2.4.2 and AC2.4.6 and adds a captured group per card"
+    source: "functional-design-questions.md Q10 (A), FD-091 choreography rule 7 (shared moves only card to story), T-202 Q12, T-203 Q15, functional-spec.md D15"
 
   # 7. Never-animated elements
   - id: BR7.1
@@ -360,7 +392,7 @@ rules:
     category: validation
     applies_to: "motion.css; Reveal usage in later Units"
     trigger: "pnpm check:motion and review"
-    logic: "IF a motion rule's selector contains .demo, .colophon, .emergency-lines, #view-emergency or [data-static THEN the check fails; IF a Reveal list contains a static block THEN the reviewer rejects"
+    logic: "IF a motion rule's selector contains .demo, .colophon, .emergency-lines, .emerg-card, #view-emergency or [data-static outside a :not(...) exclusion THEN the check fails (the static block itself is exempt); IF a Reveal list contains a static block THEN the reviewer rejects"
     violation: "check:motion exits non-zero"
     source: "AC2.4.4 (component test and CSS check), T-011 acceptance 'never-animated elements'"
 
@@ -376,13 +408,13 @@ rules:
 
   # 9. Checks and process
   - id: BR9.1
-    statement: "pnpm check:motion (scripts/css-motion-check.mjs) runs inside pnpm check and fails on: a non-transform/opacity animated property, a transition without an explicit property list, a literal duration outside the tokens, a repeated or infinite animation, a scale outside 0.98-1.02, a movement rule outside the guards, any motion declaration in patient.css, a motion rule that selects a static hook, and uppercase or letter-spacing on Bengali without a reset; a planted transition: width in a fixture fails it."
+    statement: "pnpm check:motion (node scripts/css-motion-check.mjs) runs inside pnpm check as step S8b, after contrast:patient and before build, and fails on any of these: a non-transform/opacity animated property; a transition without an explicit property list; a literal duration outside the tokens; a repeated or infinite animation; a scale outside 0.98-1.02; a movement rule outside the guards; any motion declaration in patient.css; a motion rule that selects a static hook outside :not(); uppercase or letter-spacing on Bengali without a reset; a transform in a :hover rule; a broken dark-token structure; a view-transition name outside the six. Its planted violations, including transition: width, run as Vitest tests in T-010's tooling project."
     category: validation
-    applies_to: "scripts/css-motion-check.mjs, root package.json check script"
-    trigger: "pnpm check"
-    logic: "IF any listed condition is found in apps/web/src/styles/patient.css or motion.css THEN print file, line and reason, and exit 1 ELSE exit 0"
+    applies_to: "scripts/css-motion-check.mjs, scripts/css-motion-check.test.mjs, root package.json check script"
+    trigger: "pnpm check (S8b; the tests run in S6 test:coverage), CI on every bolt/** push"
+    logic: "IF any listed condition is found in apps/web/src/styles/patient.css or motion.css THEN print file, line and reason, and exit 1 ELSE exit 0; declarations are parsed, not lines, so Prettier's multi-line values are read whole and their first line is reported; attribute selectors are matched with either quote style; IF a test's planted fixture passes the check THEN the test fails"
     violation: "A check that passes a planted violation is itself a defect"
-    source: "AC2.4.6 (CSS check), T-011 step 8 and acceptance 'Animated properties', BR4.1-BR4.7, BR5.3, BR7.4, BR2.2"
+    source: "AC2.4.6 (CSS check), T-011 step 8 and acceptance 'Animated properties', BR4.1-BR4.7, BR5.3, BR7.4, BR2.2, BR6.5, BR1.8, BR6.12, T-010 BR8.4 (appended after contrast), scripts/vitest.config.ts (tooling project)"
   - id: BR9.2
     statement: "The system is plain CSS plus React's own ViewTransition: no Tailwind, CSS-in-JS, animation library or icon library, no new runtime dependency, and no server-rendered style attribute for motion (a strict style-src-attr policy under T-502 would block it)."
     category: constraint
@@ -400,13 +432,13 @@ rules:
     violation: "A one-language key, or unflagged Bengali copy, breaks project.md Mandated and FD-042"
     source: "NFR7, project.md Mandated (both dictionaries in one commit), project.md Forbidden (no hard-coded string), FD-042"
   - id: BR9.4
-    statement: "Before the Unit is done: npx impeccable detect apps/web/src --no-advisory is clean, pnpm contrast keeps its exact staff output, contrast:patient passes, component tests pass in en and bn, the Playwright motion smoke passes, and pnpm check and pnpm smoke are green with no assertion removed."
+    statement: "Before the Unit is done, all of these hold: npx impeccable detect apps/web/src --no-advisory is clean; pnpm contrast keeps its exact staff output; contrast:patient passes with no pair skipped; component tests pass in en and bn; the Playwright motion smoke passes; pnpm check (eleven steps) and pnpm smoke are green with no assertion removed; the check workflow is green on the pushed Bolt head before the squash merge."
     category: validation
-    applies_to: "Code Generation and Build and Test"
-    trigger: "Unit completion"
-    logic: "IF any listed check fails THEN the Unit is not done; a check is never weakened to pass"
-    violation: "Unit cannot merge (team.md Way of Working, steps 2-3)"
-    source: "team.md Testing Posture, 01-conventions.md §7.8, T-011 acceptance table, functional-design-questions.md Q7 (A)"
+    applies_to: "Code Generation, Build and Test, the merge"
+    trigger: "Unit completion and merge"
+    logic: "IF any listed check fails, OR CI on bolt/t-011-patient-design-and-motion-system is not green THEN the Unit is not done and does not merge; a check is never weakened to pass"
+    violation: "Unit cannot merge (team.md Way of Working, steps 2-3 and 6; T-010 BR10.4)"
+    source: "team.md Testing Posture, 01-conventions.md §7.8, T-011 acceptance table, functional-design-questions.md Q7 (A), T-010 Q10 (a Bolt merges only after its branch is green)"
   - id: BR9.5
     statement: "Build and Test records a baseline for the shell, not a gate: Lighthouse on /en and /bn home on the throttled mid-range Android profile (slow 4G, 4x CPU), giving LCP, CLS and total blocking time, plus first-view CSS bytes and the font file size; the gated LCP, INP and CLS run on finished pages belongs to U42 (T-503)."
     category: policy
@@ -424,13 +456,29 @@ rules:
     violation: "A page that breaks or hides content without a motion feature fails AC2.3.5"
     source: "NFR5, AC2.3.5, motion-tech-research.md §2.2"
   - id: BR9.7
-    statement: "The hand-off lists every token and class rename, the final colour values after the contrast run, the font file size, the shell's Lighthouse baseline and any new Bengali copy; Code Generation appends dependency-check entries first for next/font/local and Hind Siliguri, Playwright, React ViewTransition on the pinned React and Next versions, and impeccable."
+    statement: "The hand-off lists every token and class rename, the final colour values after the contrast run, the font file size, the shell's Lighthouse baseline, any new Bengali copy, each file written outside the owned paths with its reason, and the task-text corrections; Code Generation appends dependency-check entries first for next/font/local and Hind Siliguri, Playwright, React ViewTransition on the pinned React and Next versions, and impeccable, reusing the 2026-10-28 Prettier entry while it is under 3 days old."
     category: policy
     applies_to: "Code Generation plan and hand-off (docs/implementation/handoffs/T-011.md)"
     trigger: "Code Generation start and Unit completion"
-    logic: "IF the dependency-check log has no entry under 3 days old for a dependency this Unit uses THEN check it and append an entry before implementing"
-    violation: "Missing entries break the AGENTS.md dependency rule; a missing rename list breaks T-011's hand-off section"
-    source: "T-011 Hand-off, project.md Mandated (dependency-check log), AGENTS.md"
+    logic: "IF the dependency-check log has no entry under 3 days old for a dependency this Unit uses THEN check it and append an entry before implementing; the Playwright version is one pnpm 11's minimumReleaseAge accepts"
+    violation: "Missing entries break the AGENTS.md dependency rule; a missing rename or owned-path list breaks T-011's hand-off section"
+    source: "T-011 Hand-off, project.md Mandated (dependency-check log), AGENTS.md, ISS-285 (release-age policy), T-010 hand-off format"
+  - id: BR9.8
+    statement: "patient.css and motion.css are inside Prettier's scope and pass format:check; tokens.css, globals.css and admin.css stay ignored as verbatim ports, each with its reason in .prettierignore; a CSS override (singleQuote false) keeps double quotes in CSS, so the contrast tool's :root[data-theme=\"dark\"] { pattern still matches."
+    category: constraint
+    applies_to: ".prettierignore, prettier.config.mjs, apps/web/src/styles/*.css"
+    trigger: "pnpm check S4 format:check, CI"
+    logic: "IF a patient stylesheet differs from Prettier's output THEN format:check exits 1; IF the CSS override is missing THEN Prettier writes single-quoted attribute selectors and contrast:patient fails closed (no dark block)"
+    violation: "Unformatted authored CSS merges, or a reformat silently breaks the contrast run"
+    source: "functional-design-questions.md Q9 (A), T-010 .prettierignore ('the FD-091 patient stylesheet, whose layout T-011 decides'), T-010 BR7.2, project.md Code Style (2026-10-27), 01-conventions.md §7.1, functional-spec.md D13 and § 11 F1"
+  - id: BR9.9
+    statement: "Every new component and module arrives with Vitest tests that render in en and bn and import nothing from test-support. apps/web stays at or above 80% line coverage. The Playwright files stay out of the Vitest web project (exclude e2e/**) and have their own tsconfig. next/font/local is mocked once in vitest.setup.ts."
+    category: validation
+    applies_to: "components/patient/motion/**, app/fonts/bn-heading.ts, [locale]/layout.tsx changes, apps/web/vitest.config.ts, apps/web/vitest.setup.ts, apps/web/e2e/**"
+    trigger: "pnpm check S2 lint, S6 test:coverage; CI"
+    logic: "IF apps/web's line coverage falls below 80% THEN test:coverage exits 1 and tests are added, never the floor lowered (D10); IF a web test imports test-support THEN lint fails (FD-040); IF Vitest collects an e2e spec, OR ESLint finds an e2e file in no tsconfig THEN the gate is red, so both are configured before the spec is written"
+    violation: "A red pnpm check (S1), or a lowered floor (D10 breach)"
+    source: "team.md Testing Posture (component tests in en and bn; 80% floor), FD-040, T-010 BR6.1-BR6.5, eslint.boundaries.mjs, functional-spec.md § 11 F2-F4"
 ```
 
 ## Rules summary
@@ -444,6 +492,7 @@ rules:
 | BR1.5 | policy | One `hsl()` token block at the top of `patient.css`, canonical names plus aliases; old layers removed |
 | BR1.6 | constraint | Staff console unchanged; no patient motion or tokens on staff pages |
 | BR1.7 | policy | Warm "night paper" dark palette; both dark blocks identical; explicit light wins |
+| BR1.8 | validation | Exactly one column-0 dark token block, equal to the media-query block; no scheme block (`M10-tokens`) |
 | BR2.1 | constraint | FD-091 type scale with `:lang(bn)` sizes and line-heights; one desktop step for display and H1 |
 | BR2.2 | validation | No uppercase and no letter-spacing on Bengali, anywhere |
 | BR2.3 | constraint | System fonts for body and Latin text |
@@ -454,13 +503,14 @@ rules:
 | BR3.3 | constraint | 44 × 44 px targets on every pointer type |
 | BR3.4 | constraint | 3 px focus ring, 2 px offset, never animated |
 | BR3.5 | validation | No horizontal overflow at the five viewports, both languages, 200% zoom |
+| BR3.6 | constraint | Spacing scale `--space-1`…`--space-8`, `--grid-min`, `--measure`; no literal spacing in patient rules |
 | BR4.1 | validation | Durations and easings only from tokens |
 | BR4.2 | validation | Only `transform` and `opacity` animate; explicit property lists |
 | BR4.3 | validation | Small movement only: 8–16 px rise, 24 px slide, scale 0.98–1.02 |
 | BR4.4 | validation | Nothing loops, repeats or auto-plays |
 | BR4.5 | policy | Nothing animates on first paint; the LCP element never animates in |
 | BR4.6 | constraint | Motion never delays reading, input or navigation |
-| BR4.7 | policy | All patient motion lives in `motion.css` |
+| BR4.7 | policy | All patient motion lives in `motion.css`; later Units add no motion rule |
 | BR5.1 | calculation | Reduced = OS reduce OR in-app switch |
 | BR5.2 | policy | `<html data-motion="reduced">` from the cookie; body attribute unchanged |
 | BR5.3 | validation | Every movement rule inside both guards |
@@ -469,22 +519,26 @@ rules:
 | BR6.1 | policy | Route transition: fade out, fade in plus 12 px rise, only on path changes |
 | BR6.2 | policy | Reveal: first 6 children stagger 40 ms; the rest appear at once |
 | BR6.3 | policy | Composer step slide 24 px from the direction of travel (T-306) |
-| BR6.4 | policy | Publish tick: one transform-drawn tick plus plain text (T-308) |
-| BR6.5 | policy | Press scale 0.98; instant hover colours; no hover lift |
+| BR6.4 | policy | Publish tick: one transform-drawn tick plus plain text (T-306; T-102 reuses it) |
+| BR6.5 | policy | Press scale 0.98 on the listed pressables; instant hover colours; no `:hover` transform anywhere (`M9-hover`) |
 | BR6.6 | policy | Home scroll reveals below the first section, inside `@supports` (T-207) |
 | BR6.7 | policy | Sheets and menus enter with a rise; close at once |
 | BR6.8 | constraint | Static skeletons only, for loads over 1 s |
 | BR6.9 | policy | Reading-progress bar scales with scroll; hidden in reduced mode |
 | BR6.10 | constraint | Data displays never animate; no bar grows from zero |
+| BR6.11 | policy | Later Units' pressables carry `data-press`; no Unit-local press or hover rule |
+| BR6.12 | constraint | Six view-transition names only; no shared-element morph (`M11-vt-name`) |
 | BR7.1 | constraint | Demo marker, disclaimer and emergency guidance are never animated |
 | BR7.2 | policy | Static view-transition groups above the moving page during route changes |
 | BR7.3 | constraint | One element per group name per page; a duplicate means a plain swap |
 | BR7.4 | validation | No motion rule, Reveal or scroll hook touches a static element |
 | BR8.1 | constraint | No gamification or dark-pattern motion |
-| BR9.1 | validation | `check:motion` in `pnpm check`, with the listed failure conditions |
+| BR9.1 | validation | `check:motion` as S8b of `pnpm check`, with the listed failure conditions; planted violations in `tooling` tests |
 | BR9.2 | constraint | Plain CSS plus React ViewTransition; no library; no motion style attributes |
 | BR9.3 | policy | No new keys expected; any new key in both dictionaries, Bengali flagged |
-| BR9.4 | validation | impeccable, both contrast runs, en/bn tests, motion smoke, `pnpm check`, `pnpm smoke` |
+| BR9.4 | validation | impeccable, both contrast runs, en/bn tests, motion smoke, `pnpm check`, `pnpm smoke`, CI green on the Bolt head |
 | BR9.5 | policy | Lighthouse baseline for the shell recorded, not gated (U42 gates) |
 | BR9.6 | constraint | Every motion feature is a progressive enhancement |
-| BR9.7 | policy | Hand-off lists renames, colours, font size, baseline; dependency entries first |
+| BR9.7 | policy | Hand-off lists renames, colours, font size, baseline, owned-path additions, task-text corrections; dependency entries first |
+| BR9.8 | constraint | Patient CSS in Prettier's scope with a double-quote CSS override; staff and shared CSS ignored |
+| BR9.9 | validation | Tests in `en` and `bn`, no `test-support`, `apps/web` ≥ 80% lines, e2e outside Vitest with its own tsconfig, font mocked in setup |

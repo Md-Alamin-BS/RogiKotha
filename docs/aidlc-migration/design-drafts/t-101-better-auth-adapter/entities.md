@@ -4,6 +4,8 @@ Draft written ahead of the stage. The lead finalises it when the workflow reache
 
 Source of truth for the data shape this Unit works on. Built from T-101 (with FD-056, FD-057, FD-058, FD-059, FD-063, FD-071, FD-072 and the C5/C15 amendments), `02-data-model.md` §1, §2, §3, §12 and §17, `contract-summary.md` (C1, C2, C5, C14, C15), `components.md` (Account) and the code on `main` (`packages/database/src/schema/{auth,account,identity,notification}.ts`, `packages/database/src/queue/*`, `packages/contracts/src/{actor,config-values,errors}.ts`, `packages/contracts/src/schemas/account.ts`). Workflows and state transitions are in `functional-spec.md`; decision logic is in `rules.md`.
 
+Refreshed 2026-10-29: `EmailDelivery.to_email_enc` uses the mail-only key (FD-094); `Actor` carries no staff powers and no persona from T-101; `SessionListItem` has `browser` and `os`; `SignInSettings` ranges narrowed (Question 8 C); the request-scoped `CommandContext` is split into the explicit command context and the web-tier `LibraryCallScope` (Question 12); new `OwnAccountVM` (FD-095) and `EmailCatalog` (FD-097); audit details are a recursive allowlist (ISS-108).
+
 Three kinds of entity appear here: **persisted** rows (existing tables; this Unit adds two columns of index or de-duplication support and no other column), **in-memory** state of the web process (the attempt counters), and **value objects** that cross a boundary (settings, the Actor, a job payload). Logical types only; the physical columns are the ones on `main`.
 
 ```yaml
@@ -22,7 +24,8 @@ entities:
       - { name: created_at, type: timestamp, required: true }
       - { name: updated_at, type: timestamp, required: true }
     constraints:
-      - "Created only inside the account.register command context (BR1.7); a creation outside it is refused by the library's user.create.before hook"
+      - "Created only inside the gateway's register scope, which only account.register opens (BR1.7); a creation outside it is refused by the library's user.create.before hook"
+      - "Its email is read only through the account repository in the web tier: findCredentialByEmail (sign-in, change password, T-103's staff sign-in) and findOwnEmail (the masked own view, BR4.10)"
       - "Never readable by rk_worker (FD-041, 0007_revoke_worker_auth_users.sql)"
       - "Never copied into a job payload, outbox payload, audit detail, log line or view model (BR6.6, BR8.1-BR8.3)"
     relationships:
@@ -44,6 +47,8 @@ entities:
       - { name: access_token, type: text, required: false, constraints: "always null (no OAuth)" }
       - { name: refresh_token, type: text, required: false, constraints: "always null" }
       - { name: id_token, type: text, required: false, constraints: "always null" }
+    constraints:
+      - "The password hash is read by AccountRepository.findCredentialByEmail and verified through the PasswordHasher port before any session exists (Question 14, T-103 Q1 A); never returned beyond the command"
     relationships:
       - { to: AuthUser, cardinality: "many-to-one", direction: "AuthCredential belongs to AuthUser (cascade delete)" }
 
@@ -62,7 +67,8 @@ entities:
       - { name: user_agent, type: text, required: false, constraints: "only input to the device label; never shown raw" }
       - { name: ip_address, type: text, required: false, constraints: "left empty: IP tracking is off (Question 5, BR4.9)" }
     constraints:
-      - "Not created for an account whose status is suspended, banned or deleted (session.create.before hook and the sign-in command, BR3.6)"
+      - "Created only inside a gateway scope that allows it: after the sign-in command decided (sessionAllowed) or in the verify scope for an allowed status (BR2.2, BR3.8, BR7.9)"
+      - "Not created for an account whose status is suspended, banned or deleted (the sign-in command never asks, and the session.create.before hook refuses, BR3.6)"
       - "Index on user_id added (ISS-113)"
     relationships:
       - { to: AuthUser, cardinality: "many-to-one", direction: "AuthSession belongs to AuthUser (cascade delete)" }
@@ -90,10 +96,10 @@ entities:
       - { name: auth_user_id, type: text-id, required: true, unique: true, references: AuthUser.id }
       - { name: username, type: citext, required: true, unique: true, constraints: "3-24 of [a-z0-9_]; unique without regard to case" }
       - { name: username_key, type: text, required: true, constraints: "NFC, lowercase form of username" }
-      - { name: display_name, type: text, required: true, min: 1, max: 60, constraints: "trimmed" }
+      - { name: display_name, type: text, required: true, min: 1, max: 60, constraints: "trimmed; the source of OwnAccountVM.displayName (no persona read, BR4.10)" }
       - { name: locale, type: enum, required: true, allowed_values: [en, bn] }
       - { name: status, type: enum, required: true, allowed_values: [pending_verification, active, restricted, suspended, banned, deleted], default: pending_verification }
-      - { name: staff_role, type: enum, required: false, allowed_values: [super_admin, admin, moderator], constraints: "never set by T-101 (seed and T-103 only)" }
+      - { name: staff_role, type: enum, required: false, allowed_values: [super_admin, admin, moderator], constraints: "never set and never turned into Actor powers by T-101 (seed and T-103 only; T-103 F2)" }
       - { name: age_confirmed_at, type: timestamp, required: true, constraints: "set at registration (column is nullable; register always fills it)" }
       - { name: terms_version, type: text, required: true, constraints: "from env TERMS_VERSION; register refuses to start without it" }
       - { name: terms_accepted_at, type: timestamp, required: true }
@@ -124,7 +130,7 @@ entities:
   - name: Persona
     kind: persisted
     table: personas
-    owner: "Identity module (U11 T-104); written here by account.register until T-104 moves it behind the identity repository (TODO(T-104))"
+    owner: "Identity module (U11 T-104); written here by account.register until T-104 moves it behind the identity repository (TODO(T-104)); never read by T-101 code (T-104 F9)"
     attributes:
       - { name: id, type: uuid-v7, required: true, unique: true }
       - { name: kind, type: enum, required: true, allowed_values: [named, pseudonymous] , constraints: "anonymous personas are never created by T-101" }
@@ -137,7 +143,7 @@ entities:
   - name: PersonaLink
     kind: persisted
     table: persona_links
-    owner: "Identity module (private linkage, AD-3)"
+    owner: "Identity module (private linkage, AD-3); T-101 inserts the two register links and never reads the table"
     attributes:
       - { name: persona_id, type: uuid-v7, required: true, unique: true, references: Persona.id }
       - { name: account_id, type: uuid-v7, required: true, references: AccountProfile.id }
@@ -147,11 +153,11 @@ entities:
     kind: persisted
     table: email_deliveries
     owner: "Notification module; U8 builds the first queueEmail for essential categories (C2, FD-071)"
-    description: "One queued email. The recipient travels only as ciphertext; the worker decrypts it with APP_ENCRYPTION_KEY (FD-071)."
+    description: "One queued email. The recipient travels only as ciphertext under the mail-only key; the worker decrypts it with MAIL_RECIPIENT_KEY and holds no other key (FD-071, FD-094)."
     attributes:
       - { name: id, type: uuid-v7, required: true, unique: true, constraints: "the only field of the mail.send job payload" }
       - { name: account_id, type: uuid-v7, required: true, references: AccountProfile.id }
-      - { name: to_email_enc, type: ciphertext, required: true, constraints: "AES-256-GCM, layout iv(12) | tag(16) | ciphertext, key APP_ENCRYPTION_KEY via the Crypto port; written only by the web tier" }
+      - { name: to_email_enc, type: ciphertext, required: true, constraints: "AES-256-GCM, layout iv(12) | tag(16) | ciphertext, key MAIL_RECIPIENT_KEY through the mail-key Crypto instance (FD-094), the only column that key encrypts; written only by the web tier" }
       - { name: locale, type: enum, required: true, allowed_values: [en, bn] }
       - { name: category, type: enum, required: true, allowed_values: [verification, reset, security], constraints: "the subset T-101 writes; the column allows more (moderation, evidence, device_approval, deletion)" }
       - { name: message_key, type: i18n-key, required: true, allowed_values: [email.verify, email.reset, email.existing, email.security.passwordChanged, email.security.severeSignInActivity], constraints: "the worker renders <message_key>.subject and <message_key>.body" }
@@ -169,7 +175,7 @@ entities:
   - name: MailSendJob
     kind: persisted (pg-boss job)
     table: pgboss.job (queue mail.send)
-    owner: "Worker handler apps/worker/src/handlers/mail-send.ts (U8 builds, U34 extends)"
+    owner: "Use case sendEmailDelivery in packages/application/src/modules/notification/ (exported through @rogikotha/application/worker), called by the worker handler apps/worker/src/handlers/mail-send.ts (U8 builds, U34 extends)"
     attributes:
       - { name: payload, type: object, required: true, constraints: "exactly {deliveryId}; no address, no params, no link (ISS-243)" }
       - { name: singleton_key, type: text, required: true, constraints: "mail.send:<deliveryId>, so concurrent deliveries never collapse under the exclusive policy (ISS-253)" }
@@ -195,7 +201,7 @@ entities:
       - { name: stream, type: text, required: true, constraints: "account:<accountId>" }
       - { name: action, type: enum, required: true, allowed_values: [registered, existing_email_register, email_verified, signed_out, signed_out_everywhere, password_reset, password_changed, severe_sign_in_activity, preferences_updated, feedback_submitted] }
       - { name: actor, type: text, required: true, constraints: "account:<accountId> or anonymous" }
-      - { name: details, type: object, required: true, constraints: "ids, enums and counts only; never email, token, link, IP or user agent (BR8.2)" }
+      - { name: details, type: object, required: true, constraints: "built by one typed builder per action and checked recursively: ids, enums, counts and booleans only; never email, token, link, IP or user agent (BR8.2, closes ISS-108)" }
 
   - name: Feedback
     kind: persisted
@@ -207,7 +213,7 @@ entities:
       - { name: body, type: text, required: true, min: 1, max: 2000, constraints: "free text; never logged or audited" }
       - { name: locale, type: enum, required: true, allowed_values: [en, bn] }
     constraints:
-      - "AC10.3.6's category, screenshot and contact-permission fields are not added here (Question 11)"
+      - "AC10.3.6's category, screenshot and contact-permission fields move to release 2 (Question 11, FD-096); no column is added for them"
 
   - name: SignInAttemptCounter
     kind: in-memory (web process)
@@ -233,13 +239,14 @@ entities:
     kind: value object
     source: "ConfigValues.signIn (packages/contracts/src/config-values.ts)"
     attributes:
-      - { name: delayAfterFailures, type: integer, required: true, default: 3, min: 1, max: 20 }
+      - { name: delayAfterFailures, type: integer, required: true, default: 3, min: 1, max: 9, constraints: "C1 said 1-20; narrowed so the delay can start before C5's fixed limit of 10 (Question 8 C, T-105 Q1 A)" }
       - { name: windowMinutes, type: integer, required: true, default: 15, min: 1, max: 1440 }
       - { name: firstDelaySeconds, type: integer, required: true, default: 1, min: 1, max: 60 }
       - { name: maxDelaySeconds, type: integer, required: true, default: 30, min: 1, max: 300, constraints: ">= firstDelaySeconds" }
-      - { name: severeFailures, type: integer, required: true, default: 10, min: 2, max: 100, constraints: "> delayAfterFailures" }
+      - { name: severeFailures, type: integer, required: true, default: 10, min: 2, max: 10, constraints: "> delayAfterFailures; C1 said 2-100; above 10 it could never fire (Question 8 C)" }
     constraints:
       - "The only key block T-101 adds to ConfigValues (review R-14); T-105 takes it over"
+      - "Read with await ConfigProvider.current() (the port returns a Promise, T-105 Q2 A)"
 
   - name: Actor
     kind: value object
@@ -247,11 +254,12 @@ entities:
     attributes:
       - { name: kind, type: enum, required: true, allowed_values: [anonymous, account] }
       - { name: accountId, type: uuid-v7, required: false }
-      - { name: personaId, type: uuid-v7, required: false, constraints: "the named persona" }
-      - { name: emailVerified, type: boolean, required: false }
+      - { name: personaId, type: uuid-v7, required: false, constraints: "never set by T-101; T-104 fills it through identity.currentPersonaOf (F9, AD-3)" }
+      - { name: emailVerified, type: boolean, required: false, constraints: "from the profile status: false only for pending_verification" }
       - { name: status, type: enum, required: false, allowed_values: [pending_verification, active, restricted] , constraints: "suspended, banned and deleted never produce an account Actor" }
-      - { name: staffRole, type: enum, required: false }
-      - { name: capabilities, type: list<Capability>, required: true, default: [] }
+      - { name: staffRole, type: enum, required: false, constraints: "never set by T-101; T-103 sets it only with an approved device and an active account (T-103 F2)" }
+      - { name: capabilities, type: list<Capability>, required: true, default: [], constraints: "always [] from T-101, super_admin included" }
+      - { name: stepUp, type: object, required: false, constraints: "existing field; never set by T-101 (T-103)" }
       - { name: refusal, type: enum, required: false, allowed_values: [suspended, banned], constraints: "only on an anonymous Actor whose session belongs to a suspended or banned account, so T-102 can show errors.auth.accountSuspended" }
       - { name: locale, type: enum, required: true, allowed_values: [en, bn] }
       - { name: correlationId, type: uuid, required: true }
@@ -260,29 +268,61 @@ entities:
 
   - name: SessionListItem
     kind: value object (view model)
-    source: "result of account.listSessions"
+    source: "result of account.listSessions; mapped 1:1 to SessionVM in packages/contracts/src/view-models/security.ts"
     attributes:
       - { name: id, type: text-id, required: true, constraints: "AuthSession.id, never the token" }
       - { name: current, type: boolean, required: true }
-      - { name: label, type: text, required: false, constraints: "browser family and OS parsed from the user agent; null when unknown (T-102 renders a key)" }
+      - { name: browser, type: text, required: false, constraints: "family name parsed from the user agent (Chrome, Firefox, Safari, Edge); null when unknown; replaces label (T-102 Q10 A)" }
+      - { name: os, type: text, required: false, constraints: "family name (Windows, macOS, Android, iOS, Linux); null when unknown; T-102 builds the label from auth.security.deviceLabel" }
       - { name: firstSeen, type: iso8601, required: true }
       - { name: lastSeen, type: iso8601, required: true }
 
-  - name: CommandContext
-    kind: value object (request scope)
-    description: "Marks that the current async call chain is inside a named account command, and carries its open transaction for the library callbacks."
+  - name: OwnAccountVM
+    kind: value object (view model)
+    source: "result of account.getOwnAccount (packages/contracts/src/view-models/security.ts); FD-095"
     attributes:
-      - { name: command, type: enum, required: true, allowed_values: [account.register, account.resendVerification, account.requestPasswordReset, account.resetPassword, account.verifyEmail, account.signIn, account.changePassword] }
-      - { name: tx, type: transaction, required: false }
+      - { name: username, type: text, required: true }
+      - { name: displayName, type: text, required: true, constraints: "AccountProfile.display_name; T-102's account menu title (no persona read)" }
+      - { name: emailVerified, type: boolean, required: true }
+      - { name: emailMasked, type: text, required: true, constraints: "first grapheme of the local part + '****' + '@' + domain, for example s****@example.test; the local part's length is never shown" }
     constraints:
-      - "The library's user.create.before hook allows creation only when command = account.register (BR1.7); the email callbacks queue only inside a context (BR7.9)"
+      - "Only for the signed-in holder's own account; built per request, never cached, never logged; no public, staff or worker projection carries it (FD-095)"
+      - "SecurityVM gains emailVerified and ownEmailMasked from it; the pending banner reads ownEmailMasked"
+
+  - name: EmailCatalog
+    kind: value object
+    source: "the email.* entries of packages/i18n/messages/en.json and bn.json, imported by the worker under FD-097"
+    attributes:
+      - { name: locale, type: enum, required: true, allowed_values: [en, bn] }
+      - { name: entries, type: "map<message_key, {subject, body}>", required: true, constraints: "plain text; each body has exactly one {link}" }
+    constraints:
+      - "Passed into sendEmailDelivery by the worker container; application code never imports packages/i18n"
+
+  - name: CommandContext
+    kind: value object (per command call)
+    description: "What defineCommand hands to a handler: the parsed input, the Actor, the ports and the open transaction. Passed explicitly; the application layer holds no async-local state (it may import no Node built-in, FD-093)."
+    attributes:
+      - { name: input, type: object, required: true, constraints: "parsed by the command's contracts schema" }
+      - { name: actor, type: Actor, required: true }
+      - { name: ports, type: object, required: true, constraints: "unitOfWork, authGateway, hasher, rateLimiter, config, crypto, mailCrypto, clock, ids, jobQueue, outbox, audit, logger, afterResponse, accounts, deliveries" }
+      - { name: tx, type: "Tx (opaque)", required: true, constraints: "the UnitOfWork transaction; repositories take it as their first argument" }
+
+  - name: LibraryCallScope
+    kind: value object (web tier, AsyncLocalStorage)
+    description: "Marks that the current async call chain is inside one AuthGateway method, so the library's hooks and email callbacks know why they run. Lives in apps/web/src/server/better-auth/library-scope.ts."
+    attributes:
+      - { name: purpose, type: enum, required: true, allowed_values: [register, issueVerification, verify, issueReset, reset, changePassword, signIn], constraints: "T-103 adds staffSignIn and approveDevice" }
+      - { name: sessionAllowed, type: boolean, required: true, default: false, constraints: "set only by a gateway method the command calls after its own decision (createSession)" }
+      - { name: token, type: secret, required: false, constraints: "filled by the email callback and returned to the command; never logged" }
+    constraints:
+      - "user.create.before allows creation only when purpose = register (BR1.7); session.create.before allows a session only with sessionAllowed, or in the verify scope for an allowed status, never for suspended, banned or deleted (BR7.9); callbacks outside a scope do nothing"
 ```
 
 ## Summary
 
 - **The four library tables** (`AuthUser`, `AuthCredential`, `AuthSession`, `AuthVerification`) stay owned by Better Auth and are read only through the account repository. `auth_users.email` is the only plaintext copy of an address; it never leaves the web tier except encrypted.
 - **The domain account** is `AccountProfile` with `AccountPreference` and the two default personas (`Persona` + private `PersonaLink`). `account.register` creates all of them, its audit row, its outbox event and the verification email in one transaction, right after the library has created the credential.
-- **Email** is an `EmailDelivery` row with the recipient as ciphertext and a `MailSendJob` that carries only the delivery id under its own key. The worker decrypts, renders from `packages/i18n` and sends; it never reads `auth_users`. The link is cleared from `params` once the delivery is final.
-- **Events and audit**: `account.registered` (no job) and `account.securityEvent` (in-app notice by T-405), and one `account:<id>` audit row per state change, with allowlisted details.
-- **Brute-force state** lives in memory: a `SignInAttemptCounter` per email key and per network key (both HMACs, never raw values) and generic `RateLimitBucket`s; the numbers come from `SignInSettings` through the `ConfigProvider` port.
-- **Boundary value objects**: the `Actor` (existing shape plus one optional `refusal` field), the `SessionListItem` (no token, no IP, no email) and the request-scoped `CommandContext` that keeps the library from creating users or sending mail outside a command.
+- **Email** is an `EmailDelivery` row with the recipient as ciphertext under the mail-only key (FD-094) and a `MailSendJob` that carries only the delivery id under its own key. The worker decrypts with `MAIL_RECIPIENT_KEY`, renders from the `EmailCatalog` (the `packages/i18n` message files, FD-097) and sends; it never reads `auth_users` and never holds `APP_ENCRYPTION_KEY`. The link is cleared from `params` once the delivery is final.
+- **Events and audit**: `account.registered` (no job) and `account.securityEvent` (in-app notice by T-405), and one `account:<id>` audit row per state change, with details from a recursive allowlist (ISS-108).
+- **Brute-force state** lives in memory: a `SignInAttemptCounter` per email key and per network key (both HMACs, never raw values) and generic `RateLimitBucket`s; the numbers come from `SignInSettings` through the asynchronous `ConfigProvider` port, in ranges where every value takes effect.
+- **Boundary value objects**: the `Actor` (existing shape plus one optional `refusal` field; no staff powers and no persona from T-101), the `SessionListItem` (browser and os, no token, no IP, no email), the `OwnAccountVM` (the holder's own masked address, FD-095), the explicit `CommandContext` and the web-tier `LibraryCallScope` that keeps the library from creating users or sessions or sending mail outside a gateway call.

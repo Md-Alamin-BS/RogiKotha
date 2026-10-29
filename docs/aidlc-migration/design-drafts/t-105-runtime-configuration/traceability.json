@@ -1,0 +1,207 @@
+{
+  "stage": "functional-design",
+  "unit": "t-105-runtime-configuration",
+  "upstream_ids": [
+    "AC11.1.1",
+    "AC11.1.2",
+    "AC11.1.3",
+    "AC11.1.4",
+    "AC11.1.5",
+    "AC11.1.6",
+    "AC3.1.5"
+  ],
+  "coverage": [
+    {
+      "id": "AC11.1.1",
+      "status": "OK",
+      "target": "BR1.2, BR1.3, BR1.6, BR1.7, BR4.6, BR6.4, BR8.1, BR9.1 (thresholds, limits, emergency contacts and feature visibility take effect without a deployment; actor, time, previous and new value recorded). The other settings AC11.1.1 names (label translations, warnings, sentiment optional, label-approval workflow, dangerous-advice visibility) are not in ConfigValues and are raised for the owner as R1"
+    },
+    {
+      "id": "AC11.1.2",
+      "status": "OK",
+      "target": "BR6.1, BR7.1, BR8.4 (every apply and rollback needs the password recheck; a wrong or missing password changes nothing; U10 records the failed attempt as step_up_failed)"
+    },
+    {
+      "id": "AC11.1.3",
+      "status": "OK",
+      "target": "BR1.1, BR1.5, BR3.1, BR6.2, BR8.3 (structural security, logging and data keys cannot exist; the change is refused, the current value stays and the attempt is recorded)"
+    },
+    {
+      "id": "AC11.1.4",
+      "status": "OK",
+      "target": "BR7.2, BR7.3, BR3.3, BR5.1 (restore as a new logged version with history kept; export is config.current and import goes through config.apply, Question 10)"
+    },
+    {
+      "id": "AC11.1.5",
+      "status": "N/A",
+      "target": "Taxonomy management is U14 T-201 and U37 T-408 (US11.1 maps to U10, U12, U13, U37); no taxonomy value is a configuration value"
+    },
+    {
+      "id": "AC11.1.6",
+      "status": "OK",
+      "target": "BR5.3, BR6.1, BR7.1, BR8.4 (config.write is Super Admin only, U10 BR1.2-BR1.4; Admin and Moderator are refused with nothing written)"
+    },
+    {
+      "id": "AC3.1.5",
+      "status": "OK",
+      "target": "BR1.9, BR1.10, BR4.6, BR9.1 (the progressive-delay and severe-activity values are runtime settings with the owner defaults; the delay and the notice themselves are U8 T-101)"
+    }
+  ],
+  "reverse": [
+    {
+      "id": "BR1.8",
+      "status": "N/A",
+      "target": "Question 6, T-105 hard-rule checklist ('lastVerified required')"
+    },
+    {
+      "id": "BR2.1",
+      "status": "N/A",
+      "target": "Question 3, T-105 acceptance row 'Unknown key', 01-conventions §3"
+    },
+    {
+      "id": "BR2.2",
+      "status": "N/A",
+      "target": "T-105 steps 1, 2 and 4"
+    },
+    {
+      "id": "BR2.3",
+      "status": "N/A",
+      "target": "T-105 acceptance rows, 03 §2 (config.invariant, config.out_of_range), errors.ts errorMessageKey, 01-conventions §11"
+    },
+    {
+      "id": "BR2.4",
+      "status": "N/A",
+      "target": "T-105 step 4 ('Reason >= 5 chars'), threat 3"
+    },
+    {
+      "id": "BR2.5",
+      "status": "N/A",
+      "target": "Design decision (functional-spec § 11), Question 10"
+    },
+    {
+      "id": "BR3.2",
+      "status": "N/A",
+      "target": "T-105 step 2 ('diff on leaf values') and tests ('nested, arrays'), 02-data-model.md §11 config_changes.path"
+    },
+    {
+      "id": "BR3.4",
+      "status": "N/A",
+      "target": "01-conventions §2, team.md Code Style, FD-093"
+    },
+    {
+      "id": "BR4.1",
+      "status": "N/A",
+      "target": "Question 2, 03 §3"
+    },
+    {
+      "id": "BR4.2",
+      "status": "N/A",
+      "target": "Question 9, 02-data-model.md §11 (corrected), T-105 step 3"
+    },
+    {
+      "id": "BR4.3",
+      "status": "N/A",
+      "target": "T-105 step 3 ('caches 5 s, invalidate on apply'), 03 §3 ('cached 5 s')"
+    },
+    {
+      "id": "BR4.4",
+      "status": "N/A",
+      "target": "T-105 step 3"
+    },
+    {
+      "id": "BR4.5",
+      "status": "N/A",
+      "target": "construction.md Error Handling, PRODUCT.md hard rule (emergency guidance), design decision"
+    },
+    {
+      "id": "BR5.2",
+      "status": "N/A",
+      "target": "C1 config.history ('actor: opaque'), 03 §2, T-408 step 8, FD-082 acceptance row"
+    },
+    {
+      "id": "BR6.3",
+      "status": "N/A",
+      "target": "T-105 step 4 and acceptance row 'Concurrency', threat 4, C1 errors"
+    },
+    {
+      "id": "BR8.2",
+      "status": "N/A",
+      "target": "FD-083, FD-065, FD-067, C1 ports_declared, C15 config.applied"
+    },
+    {
+      "id": "BR9.2",
+      "status": "N/A",
+      "target": "T-105 step 6, FD-072, FD-093, U8 draft (defaults-only provider)"
+    },
+    {
+      "id": "BR9.3",
+      "status": "N/A",
+      "target": "ISS-171, ISS-134, T-207 step 1, PRODUCT.md hard rule (non-blocking emergency guidance)"
+    },
+    {
+      "id": "BR9.4",
+      "status": "N/A",
+      "target": "0001_grants_part1.sql, FD-093 (worker imports), design decision"
+    },
+    {
+      "id": "BR9.5",
+      "status": "N/A",
+      "target": "T-105 acceptance row 'Super admin caps fixed', U10 BR1.1-BR1.5, BR3.1"
+    },
+    {
+      "id": "BR10.1",
+      "status": "N/A",
+      "target": "Question 5, PRODUCT.md hard rule (emergency guidance), T-105 hard-rule checklist"
+    },
+    {
+      "id": "BR10.2",
+      "status": "N/A",
+      "target": "project.md Mandated (Bengali and English), FD-024, FD-042, T-105 hard-rule checklist"
+    },
+    {
+      "id": "BR11.1",
+      "status": "N/A",
+      "target": "Question 7, FD-082, T-105 threat 6, 02-data-model.md §10"
+    },
+    {
+      "id": "BR11.2",
+      "status": "N/A",
+      "target": "T-105 step 5, FD-082, FD-063 acceptance row (seeded version 1)"
+    },
+    {
+      "id": "BR11.3",
+      "status": "N/A",
+      "target": "01-conventions §10 (builders and fakes), BR4.1"
+    },
+    {
+      "id": "BR12.1",
+      "status": "N/A",
+      "target": "T-105 'Tests to write', team.md Testing Posture, 01-conventions §10"
+    },
+    {
+      "id": "BR12.2",
+      "status": "N/A",
+      "target": "team.md Testing Posture"
+    },
+    {
+      "id": "BR12.3",
+      "status": "N/A",
+      "target": "T-105 acceptance row 'Checks', team.md Way of Working and Testing Posture"
+    },
+    {
+      "id": "BR12.4",
+      "status": "N/A",
+      "target": "team.md Way of Working step 4"
+    },
+    {
+      "id": "BR12.5",
+      "status": "N/A",
+      "target": "contract-summary.md (the building Unit corrects 03), unit-of-work.md documentation follow-ups (02 §11), project.md Mandated"
+    },
+    {
+      "id": "BR12.6",
+      "status": "N/A",
+      "target": "project.md Mandated, team.md Way of Working"
+    }
+  ]
+}

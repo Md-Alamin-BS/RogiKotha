@@ -4,7 +4,9 @@ Draft written ahead of the stage. The lead finalises it when the workflow reache
 
 Source of truth for the Unit's decision logic. Built from `unit-of-work.md` (U8), `unit-of-work-story-map.md` (US3.1, US3.2), `requirements.md` (FR1–FR9, NFR3, NFR10, NFR11), `stories.md` (AC3.1.1–AC3.1.6, AC3.2.1–AC3.2.5, AC10.1.4, AC10.3.6), `components.md` (Account), `contract-summary.md` (C1, C2, C5, C14, C15 and the ownership rules), T-101 with its amendments (FD-056, FD-057, FD-058, FD-059, FD-063, FD-071, FD-072, C5, C15, review R-14), FD-041 and FD-092, `auth-screens-spec.md` §3 and §5, and the open `ISSUES.md` rows ISS-032, ISS-033, ISS-078, ISS-111, ISS-112, ISS-113, ISS-155, ISS-180, ISS-223, ISS-243, ISS-253 and ISS-255.
 
-The rules that depend on a question follow the answers in `functional-design-questions.md`, recorded on the owner's standing instruction of 2026-10-27 and awaiting the owner's confirmation in `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`. `functional-spec.md` § 14 lists what changes if the owner reverses an answer. "Normalised email" always means NFC, trimmed, lowercase.
+The rules that depend on a question follow the answers in `functional-design-questions.md`: Questions 1–7 and 9–11 A (2026-10-27), Question 8 C and Questions 12–14 A (decided by the agent under the owner's no-questions instruction of 2026-10-29), all awaiting the owner's confirmation in `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`. They also follow the owner's answers to R1 and R2 (proposed FD-094, FD-096), to T-102 Q4 (FD-095), and FD-093 as built by T-010 (with proposed FD-097). `functional-spec.md` § 14 lists what changes if the owner reverses an answer. "Normalised email" always means NFC, trimmed, lowercase.
+
+Refreshed 2026-10-29: new BR2.7, BR4.10, BR7.11, BR7.12, BR9.6; changed BR1.1, BR1.5, BR1.7, BR1.10, BR2.2, BR2.6, BR3.4–BR3.6, BR3.8, BR3.12, BR4.3, BR4.7, BR5.2, BR5.3, BR6.1, BR6.3, BR6.5, BR6.8, BR7.1–BR7.4, BR7.9, BR8.2–BR8.4, BR8.6, BR9.1–BR9.5, BR10.1–BR10.4, BR11.2. No rule was removed or renumbered.
 
 ```yaml
 rules:
@@ -14,9 +16,9 @@ rules:
     category: validation
     applies_to: "account.register, RegisterInput"
     trigger: "account.register is called"
-    logic: "IF email is not a valid address THEN fieldErrors.email; IF password has fewer than 10 or more than 256 characters THEN auth.password_too_short or validation; IF the normalised password equals the normalised email THEN auth.password_equals_email; IF username does not match ^[a-z0-9_]{3,24}$ THEN auth.username_invalid; IF displayName trimmed is empty or longer than 60 THEN validation; IF ageConfirmed is false THEN auth.age_required; IF termsAccepted is false THEN auth.terms_required. One problem returns its own code; several return validation with one fieldErrors entry each"
-    violation: "No row is written; the result is err with the code and fieldErrors; nothing reveals whether the email exists"
-    source: "FR2, FR3, AC3.1.3, auth-screens-spec.md §3.1, Question 7, ISS-033"
+    logic: "IF email is not a valid address THEN fieldErrors.email = errors.auth.emailInvalid; IF password has fewer than 10 characters THEN auth.password_too_short (errors.auth.passwordTooShort); IF more than 256 THEN validation with errors.auth.passwordTooLong; IF the normalised password equals the normalised email THEN auth.password_equals_email (errors.auth.passwordEqualsEmail); IF username does not match ^[a-z0-9_]{3,24}$ THEN auth.username_invalid (errors.auth.usernameInvalid); IF displayName trimmed is empty or longer than 60 THEN validation with errors.auth.displayNameRequired; IF ageConfirmed is false THEN auth.age_required (errors.auth.ageRequired); IF termsAccepted is false THEN auth.terms_required (errors.auth.termsRequired). One problem returns its own code; several return validation with one fieldErrors entry each. Field-error keys are exactly the T-102 ENT-004 list; the same password rules and keys apply to newPassword in reset and change"
+    violation: "No row is written; the result is err with the code and fieldErrors; nothing reveals whether the email exists; a field error with a key outside the ENT-004 list is a defect (ISS-020)"
+    source: "FR2, FR3, AC3.1.3, auth-screens-spec.md §3.1, Question 7, ISS-033, T-102 draft ENT-004"
   - id: BR1.2
     statement: "Sign-up is limited to 5 attempts per hour per network key."
     category: policy
@@ -46,9 +48,9 @@ rules:
     category: constraint
     applies_to: "account.register, new-email branch"
     trigger: "The normalised email has no AuthUser"
-    logic: "Inside the account.register command context: the library creates AuthUser and AuthCredential (no session, no library email); THEN one transaction inserts AccountProfile (pending_verification, username_key, terms_version from TERMS_VERSION, age_confirmed_at, terms_accepted_at), AccountPreference (interface_locale = locale), the named and pseudonymous personas and their links, audit registered, outbox account.registered {accountId}, and the verification EmailDelivery with its mail.send job; IF that transaction fails THEN the library user is deleted (cascade) and the result is err internal"
+    logic: "AuthGateway.createCredentialUser({email, password}) creates AuthUser and AuthCredential inside the gateway's register scope (no session, no library email); THEN one UnitOfWork transaction inserts AccountProfile (pending_verification, username_key, terms_version from TERMS_VERSION, age_confirmed_at, terms_accepted_at), AccountPreference (interface_locale = locale), the named and pseudonymous personas and their links, audit registered, outbox account.registered {accountId}, and the verification EmailDelivery with its mail.send job; IF that transaction fails THEN AuthGateway.deleteUser removes the library user (cascade) and the result is err internal"
     violation: "An AuthUser without a profile is a defect: getActor treats it as anonymous and logs auth.profile_missing; the integration test asserts one row of each kind"
-    source: "T-101 step 5 and acceptance row 'Register creates domain rows', Question 4, C2 queueEmail"
+    source: "T-101 step 5 and acceptance row 'Register creates domain rows', Questions 4 and 12, C2 queueEmail"
   - id: BR1.6
     statement: "The new-email and existing-email branches cost the same and return no earlier than the same floor."
     category: constraint
@@ -58,13 +60,13 @@ rules:
     violation: "A median timing difference of 15 % or more over 20 calls fails the T-101 timing row"
     source: "T-101 step 5 and acceptance row 'Timing', threat 1"
   - id: BR1.7
-    statement: "The library may create a user only inside account.register."
+    statement: "The library may create a user only inside the gateway's register scope, which only account.register opens."
     category: authorization
-    applies_to: "Better Auth databaseHooks.user.create.before"
+    applies_to: "Better Auth databaseHooks.user.create.before, apps/web/src/server/better-auth/library-scope.ts"
     trigger: "The library is about to insert an AuthUser"
-    logic: "IF the current CommandContext is not account.register THEN the hook returns false and logs auth.unexpected_user_create (no address in the line)"
-    violation: "A direct auth.api.signUpEmail outside the command that creates a row is an S1 defect (policy bypass, threat 7)"
-    source: "T-101 step 5 and threat 7, AD-4"
+    logic: "IF the active library-call scope is not purpose register THEN the hook returns false and logs auth.unexpected_user_create (no address in the line); only AuthGateway.createCredentialUser opens that scope, and only account.register calls it"
+    violation: "A direct auth.api.signUpEmail outside the gateway that creates a row is an S1 defect (policy bypass, threat 7)"
+    source: "T-101 step 5 and threat 7, AD-4, Question 12"
   - id: BR1.8
     statement: "Passwords are normalised to NFC and hashed with Argon2id m=65536 KiB, t=3, p=1 through the PasswordHasher port; plaintext is never stored or logged."
     category: constraint
@@ -86,9 +88,9 @@ rules:
     category: constraint
     applies_to: "account.register"
     trigger: "The new-email transaction"
-    logic: "IF the account is created THEN insert one named persona (display_name = displayName, username = username) and one pseudonymous persona (display_name = username, username = username) and one persona_link each, in the account module with TODO(T-104)"
-    violation: "Missing or extra personas fail the register acceptance row"
-    source: "02 §3 rules, T-101 step 5, 03 §4"
+    logic: "IF the account is created THEN insert one named persona (display_name = displayName, username = username) and one pseudonymous persona (display_name = username, username = username) and one persona_link each, in the account module with TODO(T-104) (T-104 replaces the inserts with identity.createDefaultPersonas); these inserts are the only persona access in T-101: no T-101 code reads personas or persona_links (AD-3, T-104 F9)"
+    violation: "Missing or extra personas fail the register acceptance row; a persona or persona_link read through the account repository is a second reader of the private linkage (T-104 BR3.1)"
+    source: "02 §3 rules, T-101 step 5, 03 §4, T-104 draft F9 and BR3.5"
 
   # Group 2 — Email verification
   - id: BR2.1
@@ -104,9 +106,9 @@ rules:
     category: constraint
     applies_to: "account.verifyEmail"
     trigger: "The library accepted the token"
-    logic: "IF status is pending_verification THEN set active and write audit email_verified in one transaction, then sign the holder in; IF status is active or restricted THEN change nothing and return ok; IF status is suspended, banned or deleted THEN change nothing, start no session and return auth.token_invalid"
-    violation: "A replayed or late token that reactivates a suspended account is an S1 defect"
-    source: "AC3.1.4, 02 §17 Account, T-101 step 6"
+    logic: "account.verifyEmail runs only from a server action (POST), never during a page render. AuthGateway.verifyEmailToken calls the library inside the verify scope with autoSignInAfterVerification on; the session.create.before hook allows that session only when the profile is pending_verification, active or restricted (status read through the account repository). THEN: IF status is pending_verification THEN set active and write audit email_verified in one transaction (retried up to 3 times; a final failure logs auth.verify_record_failed with the account id only); IF active or restricted THEN change nothing and return ok; IF suspended, banned or deleted THEN no session exists (the hook refused it), change nothing and return auth.token_invalid"
+    violation: "A replayed or late token that reactivates a suspended account, or gives it a session, is an S1 defect"
+    source: "AC3.1.4, 02 §17 Account, T-101 step 4 (autoSignInAfterVerification) and step 6, T-102 draft F1"
   - id: BR2.3
     statement: "An expired token is refused with auth.token_expired and an invalid or used one with auth.token_invalid, with the same shape whether or not the token's account exists."
     category: validation
@@ -136,9 +138,17 @@ rules:
     category: constraint
     applies_to: "Better Auth options"
     trigger: "Library configuration"
-    logic: "sendOnSignUp false, sendOnSignIn false, autoSignIn false at sign-up; the sendVerificationEmail and sendResetPassword callbacks only hand the token to the running command (BR7.9)"
+    logic: "sendOnSignUp false, sendOnSignIn false, autoSignIn false at sign-up; the sendVerificationEmail and sendResetPassword callbacks only hand the token to the active gateway scope, which returns it to the calling command (BR7.9)"
     violation: "An email sent outside queueEmail has no EmailDelivery row and bypasses FD-071"
     source: "FD-071, C2, T-101 step 6"
+  - id: BR2.7
+    statement: "A signed-in, unconfirmed holder can resend the confirmation to the account's own address without typing it."
+    category: policy
+    applies_to: "account.resendOwnVerification"
+    trigger: "The pending-confirmation banner's resend button"
+    logic: "requires authenticated; IF the actor's profile is not pending_verification THEN ok({}) and nothing is queued; IF the resend:account:<id> key has 3 hits in the last hour THEN auth.rate_limited with retryAfterSec; ELSE issue a new verification token through AuthGateway and queue email.verify to the account's own recipient (BR6.1); the input is {} and no address ever crosses the boundary"
+    violation: "With the masked address of FD-095 in the banner, a resend that needs the address would post the mask, get the neutral ok and send nothing: the holder never receives a link (S2)"
+    source: "FD-095 (owner's answer to T-102 Q4), FR4, AC3.1.4, auth-screens-spec.md §3.2"
 
   # Group 3 — Sign-in, limits, progressive delay, severe notice
   - id: BR3.1
@@ -166,29 +176,29 @@ rules:
     violation: "With the defaults, 9 failures must give refusals with retryAfterSec 1, 2, 4, 8, 16, 30, 30 (FD-063 row); any other sequence is a defect"
     source: "FD-058, FD-063, C5, AC3.1.5"
   - id: BR3.4
-    statement: "The delay and severe-notice numbers are read through ConfigProvider.current().signIn on every attempt."
+    statement: "The delay and severe-notice numbers are read through (await ConfigProvider.current()).signIn on every attempt."
     category: constraint
     applies_to: "account.signIn"
     trigger: "A sign-in attempt arrives"
-    logic: "The command reads delayAfterFailures, windowMinutes, firstDelaySeconds, maxDelaySeconds and severeFailures from the provider; no constant in code; the web composition root wires a defaults-only provider returning DEFAULT_CONFIG_VALUES until T-105"
-    violation: "A hard-coded value fails the FD-063 'settings through ConfigProvider' row"
-    source: "FD-063, FD-072, review R-14, AC3.1.5"
+    logic: "The port is current(): Promise<ConfigValues>; the command awaits it and reads delayAfterFailures, windowMinutes, firstDelaySeconds, maxDelaySeconds and severeFailures; no constant in code; the web composition root wires a defaults-only provider returning Promise.resolve(DEFAULT_CONFIG_VALUES) until T-105; StaticConfigProvider returns a resolved promise too"
+    violation: "A hard-coded value fails the FD-063 'settings through ConfigProvider' row; a synchronous port forces T-105 to break every caller"
+    source: "FD-063, FD-072, review R-14, AC3.1.5, T-105 draft Q2 A and F5"
   - id: BR3.5
     statement: "A wrong password, an unknown email and a deleted account each count as one failure on the email key and the network key; a success clears the email key; a refused attempt counts as nothing."
     category: calculation
     applies_to: "account.signIn"
     trigger: "An attempt that passed BR3.2 finishes"
-    logic: "IF the credential check fails (including unknown or deleted) THEN record a failure on both keys and return auth.invalid_credentials; IF it succeeds THEN clear the email key's failures; refusals under BR3.2 record nothing"
-    violation: "Counting refusals would extend the delay forever; not counting unknown emails would let the delay reveal existence"
-    source: "C5, AC3.1.5, T-101 step 10"
+    logic: "The credential check is one PasswordHasher.verify: against the stored PHC read through AccountRepository.findCredentialByEmail (web tier only), or against a dummy PHC hashed once at start-up with the production parameters when the address is unknown or its account deleted, so every failure costs one verify (Question 14). IF it fails THEN record a failure on both keys and return auth.invalid_credentials; IF it succeeds THEN clear the email key's failures; refusals under BR3.2 record nothing"
+    violation: "Counting refusals would extend the delay forever; not counting unknown emails would let the delay reveal existence; skipping the dummy verify would let timing reveal existence"
+    source: "C5, AC3.1.5, T-101 step 10, Question 14, T-103 draft Q1 A"
   - id: BR3.6
     statement: "A suspended or banned account gets auth.account_suspended only after its password was verified, and never receives a session."
     category: authorization
     applies_to: "account.signIn, Better Auth databaseHooks.session.create.before"
     trigger: "The credential check succeeds for a suspended or banned account"
-    logic: "IF status is suspended or banned THEN refuse with auth.account_suspended and create no session (the session hook refuses it and the command revokes any session the library returned); the attempt is not a failure"
+    logic: "IF status is suspended or banned THEN refuse with auth.account_suspended; the command never calls AuthGateway.createSession, so no session row exists, and the session.create.before hook refuses one for these statuses as a second layer; the attempt is not a failure"
     violation: "Showing the suspension before the password check reveals account status without a credential; a session for a suspended account fails threat 9"
-    source: "03 §4 account.signIn, C5, auth-screens-spec.md §3.3, ISS-078, ISS-032"
+    source: "03 §4 account.signIn, C5, auth-screens-spec.md §3.3, ISS-078, ISS-032, Question 14"
   - id: BR3.7
     statement: "A deleted account is refused exactly like a wrong password."
     category: authorization
@@ -202,9 +212,9 @@ rules:
     category: authorization
     applies_to: "account.signIn"
     trigger: "The credential check succeeds for a pending account"
-    logic: "IF status is pending_verification THEN create the session; auth.email_unverified is never returned by sign-in"
+    logic: "IF status is pending_verification, active or restricted THEN AuthGateway.createSession({email, password}) mints the session through the library's public email sign-in inside a scope that allows it (the library verifies once more; only a correct password pays that cost); auth.email_unverified is never returned by sign-in"
     violation: "Refusing sign-in to a pending account fails FR4 (edit settings before confirmation)"
-    source: "Question 2, FR4, AC3.1.4"
+    source: "Question 2, Question 14, FR4, AC3.1.4"
   - id: BR3.9
     statement: "When an address that has an account reaches severeFailures inside the window, one security email and one securityEvent are written in one transaction, at most once per account per window; nothing is written for an address without an account."
     category: policy
@@ -234,7 +244,7 @@ rules:
     category: constraint
     applies_to: "adapters/rate-limit-memory"
     trigger: "Any counter write"
-    logic: "Keys are HMAC-SHA256 with a key derived from BETTER_AUTH_SECRET; state is lost on restart (ASSUMPTION(T-101), demo); timestamps come from the Clock port"
+    logic: "Keys are Crypto.hmac('sign-in-counter', bytes): HMAC-SHA256 with a per-purpose key the adapter derives from BETTER_AUTH_SECRET (HKDF-SHA256); no key material enters the application layer; state is lost on restart (ASSUMPTION(T-101), demo); timestamps come from the Clock port"
     violation: "A raw address in a key could reach a heap dump or a debug log"
     source: "C5 (in-memory limiter), 01-conventions §11, BR8.1"
 
@@ -260,9 +270,9 @@ rules:
     category: authorization
     applies_to: "apps/web/src/server/auth.ts getActor"
     trigger: "Any server request that needs an Actor"
-    logic: "No valid session THEN anonymous; profile missing THEN anonymous and log auth.profile_missing; pending_verification THEN account, emailVerified false; active THEN account, emailVerified true; restricted THEN account, status restricted; suspended or banned THEN anonymous with refusal set; deleted THEN anonymous. personaId = the named persona; capabilities = resolveCapabilities stub ([] unless super_admin, TODO(T-103)); locale from the route; correlationId from a valid incoming x-correlation-id or a new uuid; cached per request"
-    violation: "An account Actor for a suspended, banned or deleted profile fails threat 9 and the 'Suspended cannot act' row"
-    source: "T-101 step 8, 01-conventions §5, Question 6"
+    logic: "The mapping is a pure application function (modules/account/resolve-actor.ts) fed by AuthGateway.getSession and the profile read; getActor in apps/web/src/server/auth.ts only gathers its inputs. No valid session THEN anonymous; profile missing THEN anonymous and log auth.profile_missing; pending_verification THEN account, emailVerified false; active THEN account, emailVerified true; restricted THEN account, status restricted; suspended or banned THEN anonymous with refusal set; deleted THEN anonymous. personaId is not set (T-104 fills it through identity.currentPersonaOf); staffRole is not set and capabilities is [] for every account, super_admin included (the stub returns [] with TODO(T-103); T-103 adds both behind its approved-device gate); locale from the route; correlationId from a valid incoming x-correlation-id or a new uuid; cached per request"
+    violation: "An account Actor for a suspended, banned or deleted profile fails threat 9 and the 'Suspended cannot act' row; capabilities from the role alone let a password without an approved device act as staff (T-103 F2, S2); a persona_links read here breaks AD-3 (T-104 F9)"
+    source: "T-101 step 8, 01-conventions §5, Question 6, T-103 draft F2 and Q3 A, T-104 draft F9"
   - id: BR4.4
     statement: "Session reads are never made inside a cached scope."
     category: constraint
@@ -292,9 +302,9 @@ rules:
     category: constraint
     applies_to: "account.listSessions"
     trigger: "An authenticated account opens its sessions"
-    logic: "Return SessionListItem for each session that is not expired and inside the 30-day cap: {id, current, label, firstSeen = created_at, lastSeen = updated_at}; label from the user agent by a small regex helper, null when unknown; no IP, no token, no login history, no failed-login list"
-    violation: "History or failed-login data fails FD-057; a token or IP in the result fails BR8.3"
-    source: "FR6, FD-057, AC3.2.3, 03 §4, T-101 step 7"
+    logic: "Return SessionListItem for each session that is not expired and inside the 30-day cap: {id, current, browser, os, firstSeen = created_at, lastSeen = updated_at}; browser and os are family names (Chrome, Firefox, Safari, Edge; Windows, macOS, Android, iOS, Linux) parsed from the user agent by a small regex helper, each null when unknown, so T-102 builds the label from a key in the page's language; no IP, no token, no login history, no failed-login list"
+    violation: "History or failed-login data fails FD-057; a token or IP in the result fails BR8.3; one English label string breaks FD-024 on Bengali pages (T-102 F8)"
+    source: "FR6, FD-057, AC3.2.3, 03 §4, T-101 step 7, T-102 draft Q10 A"
   - id: BR4.8
     statement: "A session of an account that became suspended or banned stops working on its next request."
     category: authorization
@@ -311,6 +321,14 @@ rules:
     logic: "IP tracking is disabled in the library; the client address is read once per request by one helper, hashed (BR3.12) and dropped; when no address is available the shared key signin:net:unknown is used"
     violation: "A stored IP is private data the session list never needs"
     source: "Question 5, FD-019 (no analytics), 01-conventions §11"
+  - id: BR4.10
+    statement: "A signed-in account can read its own account view, in which its own email address appears only masked."
+    category: constraint
+    applies_to: "account.getOwnAccount (query), OwnAccountVM, domain/account/mask-email.ts"
+    trigger: "A signed-in page that shows the holder's own account (/me/security, the pending banner on /me and /write, the account menu)"
+    logic: "requires authenticated; returns {username, displayName, emailVerified, emailMasked} for the actor's own account only; displayName and username come from account_profiles (no persona read); emailMasked = first grapheme of the local part + '****' + '@' + the domain, from the address AccountRepository.findOwnEmail reads in the web tier; the length of the local part is never shown; the full address never leaves the query; the response is built per request and never cached"
+    violation: "A full address, an address of another account, or a masked address in any public, staff or worker projection breaks 03 §2 as amended by FD-095 (S1, private data)"
+    source: "FD-095 (owner's answer to T-102 Q4 = B), 03 §2, auth-screens-spec.md §3.2 and §3.6, T-104 draft F9 (display name without a persona read)"
 
   # Group 5 — Password reset and change
   - id: BR5.1
@@ -326,7 +344,7 @@ rules:
     category: constraint
     applies_to: "account.resetPassword"
     trigger: "A valid, unexpired, unused token and a new password that meets BR1.1's password rules"
-    logic: "The library consumes the token and rotates the password (revokeSessionsOnPasswordReset on); THEN one transaction writes audit password_reset (no email, no token), account.securityEvent {accountId, kind: passwordChanged} and queues email.security.passwordChanged ({link} = the reset-request page), and every remaining session is revoked; the app transaction is retried up to 3 times and a final failure is logged at error level as auth.reset_record_failed with the account id (Question 4)"
+    logic: "AuthGateway.resetPassword consumes the token and rotates the password inside the reset scope (revokeSessionsOnPasswordReset on); THEN one transaction writes audit password_reset (no email, no token), account.securityEvent {accountId, kind: passwordChanged} and queues email.security.passwordChanged ({link} = the reset-request page), and every remaining session is revoked; the app transaction is retried up to 3 times and a final failure is logged at error level as auth.reset_record_failed with the account id (Question 4)"
     violation: "A reset with no audit row fails FD-059 and AC3.2.2; an old session still accepted fails threat 4"
     source: "FR9, FD-059, AC3.2.2, T-101 step 6, threat 4"
   - id: BR5.3
@@ -334,7 +352,7 @@ rules:
     category: authorization
     applies_to: "account.changePassword"
     trigger: "An authenticated account changes its password"
-    logic: "IF the action:account:<id> key has 5 failures in 15 min THEN auth.rate_limited; IF the current password does not verify THEN auth.invalid_credentials and record a failure; IF the new password breaks BR1.1's password rules THEN its code; ELSE rotate the password, revoke the other sessions, audit password_changed, append securityEvent passwordChanged and queue email.security.passwordChanged"
+    logic: "IF the action:account:<id> key has 5 failures in 15 min THEN auth.rate_limited; IF the current password does not verify through PasswordHasher (credential read through the account repository) THEN auth.invalid_credentials and record a failure; IF the new password breaks BR1.1's password rules THEN its code and key on newPassword; ELSE AuthGateway.changePassword rotates it and revokes the other sessions, then one transaction writes audit password_changed, appends securityEvent passwordChanged and queues email.security.passwordChanged"
     violation: "A change without the current password, or other sessions left alive, is a defect"
     source: "03 §4 account.changePassword, auth-screens-spec.md §3.6, T-101 step 7"
   - id: BR5.4
@@ -352,9 +370,9 @@ rules:
     category: constraint
     applies_to: "packages/application/src/modules/notification/internal/queue-email.ts, RecipientDirectory (modules/account)"
     trigger: "A command needs to send an essential email"
-    logic: "queueEmail(tx, {accountId, category, messageKey, params, dedupeKey?}): contactFor(tx, accountId) returns {locale = interface_locale, prefs, toEmailEnc} or null for a deleted account (THEN nothing is queued and ok({suppressed: true}) is returned); categories verification, reset and security are always allowed; IF dedupeKey already exists THEN nothing is queued; ELSE insert the EmailDelivery (queued) and enqueue mail.send {deliveryId} with key mail.send:<deliveryId> on the same transaction; the mail.send queue is ensured before the transaction opens"
-    violation: "A delivery without its job, a job without its delivery, a key-less job or a queue created inside the transaction is a defect (ISS-253)"
-    source: "C2 notification.queueEmail and RecipientDirectory, FD-071, ISS-253, Question 3"
+    logic: "queueEmail(tx, {accountId, category, messageKey, params, dedupeKey?}): contactFor(tx, accountId) returns {locale = interface_locale, prefs, toEmailEnc} or null for a deleted account (THEN nothing is queued and ok({suppressed: true}) is returned); toEmailEnc is encrypted with the mail-key Crypto instance (ports.mailCrypto, MAIL_RECIPIENT_KEY, FD-094), never with the app key; categories verification, reset and security are always allowed; IF dedupeKey already exists THEN nothing is queued; ELSE insert the EmailDelivery (queued) and enqueue mail.send {deliveryId} with key mail.send:<deliveryId> on the same transaction; the mail.send queue is ensured before the transaction opens"
+    violation: "A delivery without its job, a job without its delivery, a key-less job or a queue created inside the transaction is a defect (ISS-253); a recipient encrypted with APP_ENCRYPTION_KEY cannot be sent and breaks FD-094"
+    source: "C2 notification.queueEmail and RecipientDirectory, FD-071, FD-094, ISS-253, Question 3"
   - id: BR6.2
     statement: "Email params follow an allowlist per message key; every T-101 email carries exactly one absolute link and nothing else."
     category: validation
@@ -366,11 +384,11 @@ rules:
   - id: BR6.3
     statement: "mail.send loads its delivery by id, decrypts the recipient, renders the localized subject and body, sends over SMTP and records the outcome; it never reads auth_users."
     category: constraint
-    applies_to: "apps/worker/src/handlers/mail-send.ts"
+    applies_to: "packages/application/src/modules/notification/send-email-delivery.ts (exported through @rogikotha/application/worker), apps/worker/src/handlers/mail-send.ts"
     trigger: "A mail.send job runs"
-    logic: "Parse {deliveryId}; load the row; IF status is not queued THEN finish without sending; decrypt to_email_enc (failure THEN failed decrypt_failed, no retry); render <message_key>.subject and .body from packages/i18n in row.locale, replacing {link} (missing key THEN failed template_missing); send through the MailTransport port (SMTP, 30 s timeout, MAIL_FROM); success THEN sent, sent_at, attempts + 1; transient error THEN attempts + 1 and last_error_code, and rethrow for retry while attempts < 6, ELSE failed"
-    violation: "A read of auth_users is impossible as rk_worker and fails the FD-071 rows; a resend of a sent row is a defect"
-    source: "FD-071, FD-041, C2 mail.send, C15, T-101 step 6, FD-076 (5 retries, SMTP 30 s)"
+    logic: "The use case sendEmailDelivery({deliveryId}, {deliveries, mailCrypto, transport, catalog, clock, logger}) holds the logic; the worker handler only parses the payload and calls it. Parse {deliveryId}; load the row through EmailDeliveryRepository; IF status is not queued THEN finish without sending; decrypt to_email_enc with the mail key (failure THEN failed decrypt_failed, no retry); render <message_key>.subject and .body from the email catalogue (the email.* entries of packages/i18n/messages/<locale>.json, imported by the worker under FD-097) in row.locale, replacing {link} (missing key THEN failed template_missing); send through the MailTransport port (SMTP, 30 s timeout, MAIL_FROM); success THEN sent, sent_at, attempts + 1; transient error THEN attempts + 1 and last_error_code, and rethrow for retry while attempts < 6, ELSE failed"
+    violation: "A read of auth_users is impossible as rk_worker and fails the FD-071 rows; a resend of a sent row is a defect; an import of packages/i18n/src or of the application root (value) from the worker fails lint (FD-093)"
+    source: "FD-071, FD-041, FD-093 (2), FD-097, C2 mail.send, C15, T-101 step 6, FD-076 (5 retries, SMTP 30 s), Question 13"
   - id: BR6.4
     statement: "The relay routes no account event to mail.send: account.registered routes to no job and account.securityEvent to notification.deliver only."
     category: constraint
@@ -380,13 +398,13 @@ rules:
     violation: "Any account.* -> mail.send entry fails the FD-071/C15 row"
     source: "C15, FD-071, T-101 amendment 'C15 relay routes'"
   - id: BR6.5
-    statement: "The worker gets APP_ENCRYPTION_KEY, refuses to start without a valid 32-byte key, and still never imports Better Auth."
+    statement: "The worker holds MAIL_RECIPIENT_KEY and no other secret key: it refuses to start without a valid 32-byte mail key, never reads APP_ENCRYPTION_KEY or BETTER_AUTH_SECRET, and still never imports Better Auth."
     category: constraint
     applies_to: "apps/worker/src/env.ts, container.ts"
     trigger: "Worker start"
-    logic: "IF APP_ENCRYPTION_KEY is missing or does not decode to 32 bytes THEN exit 1 with a message that names the variable but not its value; the worker container wires Crypto, MailTransport and the mail.send handler only"
-    violation: "A worker that starts without the key fails every delivery; a Better Auth import breaks AD-6"
-    source: "FD-071, AD-6, 01-conventions §2"
+    logic: "IF MAIL_RECIPIENT_KEY is missing or does not decode to 32 bytes THEN exit 1 with a message that names the variable but not its value; right after dotenv loads the shared .env, the worker deletes APP_ENCRYPTION_KEY and BETTER_AUTH_SECRET from process.env; the worker container builds one Crypto from MAIL_RECIPIENT_KEY and wires it, MailTransport, the email delivery repository and the mail.send handler; a worker test asserts that no file under apps/worker/src reads APP_ENCRYPTION_KEY"
+    violation: "A worker that starts without the key fails every delivery; a worker holding APP_ENCRYPTION_KEY can decrypt reviews.exact_date_enc and evidence_items.original_filename_enc (ISS-240, ISS-139, S2); a Better Auth import breaks AD-6"
+    source: "FD-071, FD-094 (owner's answer to R1), AD-6, 01-conventions §2 and §11"
   - id: BR6.6
     statement: "No job payload and no outbox payload ever contains an email address."
     category: constraint
@@ -406,9 +424,9 @@ rules:
   - id: BR6.8
     statement: "Once a delivery is sent or finally failed, its params are cleared, so no live reset or verification link stays at rest."
     category: policy
-    applies_to: "mail.send"
+    applies_to: "sendEmailDelivery (mail.send use case), EmailDeliveryRepository.markSent / markFailed"
     trigger: "A delivery reaches sent or failed"
-    logic: "IF status becomes sent or failed THEN params is set to {} in the same update"
+    logic: "IF status becomes sent or failed THEN params is set to {} in the same update; the repository methods for the two final statuses take no params argument, so a caller cannot keep them"
     violation: "A reset link kept in email_deliveries.params is readable by anyone who can read the table, including rk_worker, until it expires"
     source: "Design decision (functional-spec.md § 13), FD-071, AC10.1.4"
 
@@ -418,33 +436,33 @@ rules:
     category: authorization
     applies_to: "apps/web/src/app/api/auth/[...all]/route.ts, Better Auth disabledPaths"
     trigger: "Any request to /api/auth/*"
-    logic: "The route wraps the library handler and answers 404 for any path not on the allowlist (get-session and ok only); disabledPaths also lists sign-up, sign-in, request-password-reset, reset-password, verify-email, send-verification-email, change-password, change-email, update-user, delete-user, revoke-session(s), list-sessions as a second layer"
+    logic: "The route wraps the library handler and answers 404 for any path not on the allowlist (get-session and ok only); it obtains the handler lazily from the container on the first request, never at module load (BR7.2); disabledPaths also lists sign-up, sign-in, request-password-reset, reset-password, verify-email, send-verification-email, change-password, change-email, update-user, delete-user, revoke-session(s), list-sessions as a second layer"
     violation: "A reachable sign-in or sign-up endpoint bypasses the delay, the limits, the timing floor and the domain rows (S1)"
     source: "Question 1, AD-4, T-101 threats 5 and 7, C14"
   - id: BR7.2
-    statement: "The web tier refuses to start without a valid BETTER_AUTH_SECRET, APP_URL, APP_ENCRYPTION_KEY and TERMS_VERSION."
+    statement: "The web tier refuses to serve without a valid BETTER_AUTH_SECRET, APP_URL, APP_ENCRYPTION_KEY, MAIL_RECIPIENT_KEY and TERMS_VERSION, and reads none of them while next build runs."
     category: validation
-    applies_to: "apps/web server start (auth.ts, container.ts)"
-    trigger: "Start-up"
-    logic: "IF BETTER_AUTH_SECRET is missing or shorter than 32 characters, APP_URL is not an absolute URL, APP_ENCRYPTION_KEY does not decode to 32 bytes or TERMS_VERSION is empty THEN fail with a message naming the variable, never its value; .env.example lists every variable with an empty value"
-    violation: "A default or hard-coded secret is a defect against the construction Security rule"
-    source: "T-101 step 4, construction.md Security, infra/compose/.env.example"
+    applies_to: "apps/web/src/server/env.ts, container.ts, instrumentation.ts"
+    trigger: "Server start and the first request"
+    logic: "IF BETTER_AUTH_SECRET is missing or shorter than 32 characters, APP_URL is not an absolute URL, APP_ENCRYPTION_KEY or MAIL_RECIPIENT_KEY does not decode to 32 bytes, the two keys are equal, or TERMS_VERSION is empty THEN fail with a message naming the variable, never its value; the check runs in instrumentation.ts register() at server start and again when the container is first built; no module reads a secret at import time, so next build needs no .env (T-010 hand-off); .env.example lists every variable with an empty value"
+    violation: "A default or hard-coded secret is a defect against the construction Security rule; a secret read at module load turns pnpm build red on a machine without .env (S1)"
+    source: "T-101 step 4, construction.md Security, infra/compose/.env.example, FD-094, T-010 hand-off 'Fragile or surprising'"
   - id: BR7.3
     statement: "The library maps to the four auth_* tables by aliasing the schema object under the library's model names, with no fields block; three indexes are added and nothing is renamed."
     category: constraint
-    applies_to: "apps/web/src/server/auth.ts, packages/database/src/schema/auth.ts, a new forward-only migration"
+    applies_to: "apps/web/src/server/better-auth/instance.ts, packages/database/src/schema/auth.ts, a new forward-only migration"
     trigger: "Code Generation wires the adapter"
     logic: "The schema passed to the adapter maps user, session, account and verification to authUsers, authSessions, authAccounts and authVerifications; the misleading comment block in schema/auth.ts is corrected; indexes on auth_sessions.user_id, auth_accounts.user_id and auth_verifications.identifier come in the next free migration; a schema test diffs the library's expected columns"
     violation: "Following the old comment block makes the library throw at start (ISS-112)"
     source: "ISS-112, ISS-113, T-101 step 2"
   - id: BR7.4
-    statement: "ConfigValues gains exactly the signIn block with the FD-063 defaults and the C5 ranges and cross-field checks, and no other key."
+    statement: "ConfigValues gains exactly the signIn block with the FD-063 defaults, ranges in which every value takes effect, and the two cross-field checks, and no other key."
     category: validation
     applies_to: "packages/contracts/src/config-values.ts, DEFAULT_CONFIG_VALUES, apps/web/src/server/container.ts"
     trigger: "Code Generation"
-    logic: "signIn {delayAfterFailures 1-20 default 3, windowMinutes 1-1440 default 15, firstDelaySeconds 1-60 default 1, maxDelaySeconds 1-300 default 30 and >= firstDelaySeconds, severeFailures 2-100 default 10 and > delayAfterFailures}, strict; the web container wires a defaults-only ConfigProvider returning DEFAULT_CONFIG_VALUES"
-    violation: "Fails the FD-063 'C5 settings block and ranges' row"
-    source: "C1 config_values_changes, C5, review R-14, FD-063"
+    logic: "signIn {delayAfterFailures 1-9 default 3, windowMinutes 1-1440 default 15, firstDelaySeconds 1-60 default 1, maxDelaySeconds 1-300 default 30 and >= firstDelaySeconds, severeFailures 2-10 default 10 and > delayAfterFailures}, strict (Question 8 C, the ranges of T-105 Question 1 A: C5 fixes the per-email limit at 10 failures in 15 minutes, so a larger value would never take effect); the web container wires a defaults-only ConfigProvider returning Promise.resolve(DEFAULT_CONFIG_VALUES); C1's range line is recorded as drift"
+    violation: "Fails the FD-063 'C5 settings block and ranges' row; a value accepted that can never take effect misleads the operator (T-105 F1)"
+    source: "C1 config_values_changes, C5, review R-14, FD-063, Question 8, T-105 draft Q1 A and BR1.9"
   - id: BR7.5
     statement: "The library's own rate limiter stays on as defence in depth; the RateLimiter port is the limit that is specified and tested."
     category: policy
@@ -478,21 +496,37 @@ rules:
     violation: "Installing without the entry breaks the project's Mandated dependency rule"
     source: "AGENTS.md, project.md Mandated, T-101 read-first item 7"
   - id: BR7.9
-    statement: "Library callbacks act only inside a command context: the email callbacks hand their token to the running command, and outside a command they send nothing."
+    statement: "Library hooks and callbacks act only inside a gateway scope: the email callbacks hand their token to the scope that asked for it, and outside a scope they send nothing and no user or session is created."
     category: authorization
-    applies_to: "sendVerificationEmail, sendResetPassword callbacks"
-    trigger: "The library calls an email callback"
-    logic: "IF a CommandContext is active THEN pass {token} to it and return; ELSE log auth.callback_outside_command (no address) and do nothing"
-    violation: "A callback that queues mail on its own could send to an address no command authorised"
-    source: "FD-071, Question 1, threat 7"
+    applies_to: "sendVerificationEmail, sendResetPassword callbacks, user.create.before and session.create.before hooks, apps/web/src/server/better-auth/library-scope.ts"
+    trigger: "The library calls a callback or a database hook"
+    logic: "Each AuthGateway method opens an AsyncLocalStorage scope {purpose, sessionAllowed, token?}; purposes: register, issueVerification, verify, issueReset, reset, changePassword, signIn (T-103 adds staffSignIn and approveDevice). IF a scope with the matching purpose is active THEN the callback stores {token} in it and returns; ELSE it logs auth.callback_outside_scope (no address) and does nothing. session.create.before allows a session only when the scope has sessionAllowed (set by the command after its own decision, BR3.8) or the purpose is verify with an allowed status (BR2.2), and never for a suspended, banned or deleted profile"
+    violation: "A callback that queues mail on its own could send to an address no command authorised; a session created outside a scope bypasses the limits and the status check (S1)"
+    source: "FD-071, Questions 1 and 12, threat 7, T-103 draft § 10 (staff session flag)"
   - id: BR7.10
     statement: "Public reading still needs no account: T-101 changes no page route, and every visitor without a valid session is an anonymous Actor."
     category: policy
     applies_to: "apps/web routes"
     trigger: "Code Generation"
-    logic: "Only /api/auth/[...all], server actions, auth.ts, container.ts and the health route's db probe change in apps/web; getActor returns anonymous for any visitor without a valid session"
+    logic: "Only /api/auth/[...all], instrumentation.ts, server actions, server/auth.ts, server/better-auth/**, server/container.ts, server/env.ts, server/health.ts and the health route's db probe change in apps/web; getActor returns anonymous for any visitor without a valid session"
     violation: "A public page that starts requiring a session fails AC3.1.1"
     source: "FR1, AC3.1.1, T-101 hard-rule checklist"
+  - id: BR7.11
+    statement: "defineCommand runs every command the same way: parse, authorize in a fixed order, then the handler inside one UnitOfWork transaction; refusals after authenticated can be recorded, and a handler error rolls back unless it is marked recorded."
+    category: constraint
+    applies_to: "packages/application/src/command.ts, ports/unit-of-work.ts, packages/database/src/unit-of-work.ts"
+    trigger: "Any command runs"
+    logic: "parse the input with its contracts schema (failure THEN validation with field-error keys, nothing else runs); authorize in the order authenticated → verifiedEmail → notRestricted → staffRole → capability → stepUp → owner (the first refusal wins; anonymous THEN forbidden; a missing verified email THEN auth.email_unverified; a missing step-up THEN auth.step_up_required); IF a refusal comes after authenticated passed AND the command declares onRefused THEN onRefused({actor, input, refusal}) runs in its own UnitOfWork transaction, which commits, and the command still returns the refusal; command-level rate limits refuse through the same hook; THEN handle({input, actor, ports, tx}) runs inside UnitOfWork.run: ok commits, err rolls back unless the handler returned it with recorded: true (an internal flag stripped before the result leaves the application), a throw rolls back and becomes err internal with a fresh correlation id"
+    violation: "A refused attempt that must be recorded (T-104 identity.reveal) and is not, a failed command that leaves rows behind, or a second command helper with other rules, is a defect"
+    source: "01-conventions §3 and §5, T-103 draft BR7.4, T-104 draft F12 and § 10.2, Question 12"
+  - id: BR7.12
+    statement: "Every file this Unit creates sits where the T-010 boundary matrix allows its imports, and the gate proves it."
+    category: constraint
+    applies_to: "eslint.boundaries.mjs, 01-conventions.md §2, every new file"
+    trigger: "Code Generation"
+    logic: "application and domain import no external package and no Node built-in: no better-auth, no node:async_hooks, no node:crypto (BR7.9 scope and the Crypto adapter live outside); better-auth is imported only under apps/web/src/server/better-auth/ and apps/web/src/app/api/auth/; adapters are imported in apps/web only by server/container.ts; routes under app/ reach the database only through server/ (health.ts); server actions import application, contracts, i18n, server and web-shared only; components import server actions only; the worker imports application code only through @rogikotha/application/worker (added here, FD-093 (2)), which re-exports nothing from modules/account, modules/identity or modules/data-requests/commands, and email copy only through @rogikotha/i18n/messages (FD-097); pnpm lint and pnpm lint:boundaries pass with no new suppression"
+    violation: "A red pnpm lint is S1; a re-export that carries account code into the worker bypasses the specifier bans and breaks AD-6"
+    source: "FD-093, 01-conventions §2 as built by T-010, FD-097, Questions 12 and 13"
 
   # Group 8 — Privacy, logging, i18n, boundaries
   - id: BR8.1
@@ -504,27 +538,27 @@ rules:
     violation: "Secrets in logs fail threat 10 (S1)"
     source: "01-conventions §11, T-101 threat 10, ISS-111 item 1"
   - id: BR8.2
-    statement: "Audit details hold ids, enums and counts only."
+    statement: "Audit details hold ids, enums, counts and booleans only, built from an allowlist and checked recursively (closes ISS-108)."
     category: constraint
-    applies_to: "AuditWriter calls in the account module"
+    applies_to: "packages/application/src/audit/** (one typed details builder per action), packages/database/src/audit-writer.ts assertAllowlisted"
     trigger: "Any audit row"
-    logic: "No email, token, link, password, IP or user agent in details; actor is account:<id> or anonymous"
-    violation: "Fails the hard-rule checklist 'no email/token in details' and the FD-059 row"
-    source: "01-conventions §5, FD-059, AC3.2.2"
+    logic: "Each action has a builder that accepts only its listed fields (ids, enum values, counts, booleans, before/after values for configuration); assertAllowlisted walks nested objects and arrays and refuses any key outside the action's list, any string that is not an id or a known enum value, and any email-shaped or over-long string; no email, token, link, password, IP or user agent in details; actor is account:<id> or anonymous; a test covers each of the five cases ISS-108 found accepted ({actor:{email}}, {snapshot:{body}}, {notes:[long]}, {emailAddress}, {reason:free text})"
+    violation: "Fails the hard-rule checklist 'no email/token in details' and the FD-059 row; ISS-108 (S2) stays open for every later Unit"
+    source: "01-conventions §5, FD-059, AC3.2.2, ISS-108, T-104 draft Q12 and F8"
   - id: BR8.3
     statement: "No result of a T-101 command or query carries an email, a session token, an IP or the internal auth user id."
     category: constraint
     applies_to: "Actor, SessionListItem, every Result"
     trigger: "Any command or query returns"
-    logic: "Only the fields in entities.md; register returns {accountId} only"
-    violation: "Fails 03 §2 view-model rule"
-    source: "03 §2, contract-summary privacy rules"
+    logic: "Only the fields in entities.md; register returns {accountId} only; the single exception is account.getOwnAccount's emailMasked for the actor's own account (BR4.10, FD-095)"
+    violation: "Fails 03 §2 view-model rule as amended by FD-095"
+    source: "03 §2, FD-095, contract-summary privacy rules"
   - id: BR8.4
     statement: "Every new user-facing string has an English and a Bengali entry in the same commit, and new Bengali copy is flagged for the owner's review."
     category: policy
     applies_to: "packages/i18n/messages/{en,bn}.json"
     trigger: "Code Generation adds a key"
-    logic: "New keys: email.security.severeSignInActivity.subject and .body, errors.auth.passwordEqualsEmail (Question 7); each listed in the hand-off as Bengali awaiting review"
+    logic: "New keys: email.security.severeSignInActivity.subject and .body, errors.auth.passwordEqualsEmail (Question 7), and the T-102 field-error keys this Unit emits first: errors.auth.emailInvalid, errors.auth.passwordTooLong, errors.auth.displayNameRequired (with T-102's proposed copy); each listed in the hand-off as Bengali awaiting review"
     violation: "A key without Bengali fails the build (project.md Mandated)"
     source: "project.md Mandated, ADR 0011, FD-024, FD-042 precedent"
   - id: BR8.5
@@ -536,13 +570,13 @@ rules:
     violation: "Real personal data breaks a hard rule (S1)"
     source: "project.md Forbidden (real personal data), team.md Testing Posture"
   - id: BR8.6
-    statement: "The worker imports no Better Auth, no identity-reveal and no deletion command; the forbidden-import test covers the new handler."
+    statement: "The worker imports no Better Auth, no identity-reveal and no deletion command, no drizzle-orm or pg, and application code only through @rogikotha/application/worker; the forbidden-import tests cover the new handler."
     category: constraint
-    applies_to: "apps/worker/src/**"
+    applies_to: "apps/worker/src/**, packages/application/src/worker.ts"
     trigger: "Code Generation"
-    logic: "container.test.ts's grep stays green with mail-send.ts added; the handler imports adapters, database, contracts and i18n messages only"
-    violation: "Breaks AD-6"
-    source: "AD-6, team.md Code Style boundaries"
+    logic: "container.test.ts's grep stays green with mail-send.ts added; the handler imports @rogikotha/application/worker (values), @rogikotha/application (types only), adapters, database, contracts and @rogikotha/i18n/messages/*.json only (FD-093, FD-097); a test walks the import graph of packages/application/src/worker.ts and finds no file under modules/account, modules/identity or modules/data-requests/commands"
+    violation: "Breaks AD-6 and FD-093; a re-export through the subpath would carry account code past the specifier bans"
+    source: "AD-6, FD-093 (2) and (3), FD-097, team.md Code Style boundaries"
 
   # Group 9 — Verification
   - id: BR9.1
@@ -550,25 +584,25 @@ rules:
     category: validation
     applies_to: "packages/domain, packages/application, packages/adapters, packages/database, apps/web, apps/worker tests"
     trigger: "Code Generation"
-    logic: "The test list in functional-spec.md § 11; each test can fail; names read as sentences"
+    logic: "The test list in functional-spec.md § 11; each test can fail; names read as sentences; package tests use test-support fakes (a fake AuthGateway, the windowed limiter, FakeCrypto with hmac, the async StaticConfigProvider); apps/web and apps/worker tests never import test-support (FD-040) and use local stand-ins or the real stack"
     violation: "A missing level fails team.md Testing Posture"
-    source: "team.md Testing Posture, 01-conventions §10, T-101 'Tests to write'"
+    source: "team.md Testing Posture, 01-conventions §10, T-101 'Tests to write', FD-040, FD-093 (5)"
   - id: BR9.2
     statement: "The cumulative smoke suite gains at least one assertion for this Unit and loses none."
     category: validation
     applies_to: "pnpm smoke"
     trigger: "Code Generation"
-    logic: "At least: register then verify then getActor returns an account Actor; and the route allowlist answers 404 for /api/auth/sign-up/email"
+    logic: "At least: register then verify then getActor returns an account Actor (apps/web/src/server/register-verify.int.smoke.test.ts, collected by web-int, BR9.6); and the route allowlist answers 404 for /api/auth/sign-up/email (a web unit smoke test with the handler stubbed, no database)"
     violation: "Breaks the cumulative smoke rule"
     source: "team.md Testing Posture"
   - id: BR9.3
-    statement: "pnpm check, pnpm smoke and pnpm test:int exit 0 with the compose stack running."
+    statement: "pnpm check (all nine steps), pnpm smoke and pnpm test:int exit 0 with the compose stack running, and the CI run on the Bolt head is green before the merge."
     category: validation
-    applies_to: "repository"
+    applies_to: "repository, .github/workflows/check.yml"
     trigger: "End of Code Generation and Build and Test"
-    logic: "All three exit 0; every T-101 acceptance row is executed and recorded as expected against observed"
+    logic: "typecheck, lint, lint:boundaries, format:check, check:identity, test:coverage, i18n:check, contrast and build in that order, then pnpm smoke; pnpm test:int covers database, web-int and worker-int; every T-101 acceptance row is executed and recorded as expected against observed; no tool or model identity in any file or commit (check:identity)"
     violation: "A red check blocks the merge"
-    source: "team.md Way of Working, project.md Mandated"
+    source: "team.md Way of Working, project.md Mandated, 01-conventions §13 as built by T-010"
   - id: BR9.4
     statement: "As a high-risk Unit, a separate agent writes and runs 3 to 5 adversarial regression tests from the angles in functional-spec.md § 12, and the owner signs off in writing."
     category: validation
@@ -578,13 +612,21 @@ rules:
     violation: "Missing adversarial tests or sign-off blocks the phase gate"
     source: "team.md Way of Working step 5, project.md Mandated"
   - id: BR9.5
-    statement: "The packages that gain source code meet the 80 % line-coverage floor from T-010."
+    statement: "Every package this Unit touches stays at or above the 80 % line floor T-010 enforces, the three that gain their first lines included."
     category: validation
-    applies_to: "packages/application, packages/adapters, packages/domain"
-    trigger: "Build and Test"
-    logic: "Measured with @vitest/coverage-v8 once T-010's thresholds exist; never lowered to pass"
-    violation: "Below the floor blocks the merge (D10)"
-    source: "team.md Testing Posture, org.md classic scope floor"
+    applies_to: "packages/domain, packages/application, packages/adapters, packages/contracts, packages/database, packages/test-support, apps/web, apps/worker"
+    trigger: "Every pnpm check (test:coverage step)"
+    logic: "Measured per package by test:coverage, which runs every project (web-int and worker-int included); domain, application and adapters go from 0 of 0 lines to measured in this Bolt, so their tests land in the same commits as their code; the Argon2 bench lives in packages/adapters/scripts/, outside src, so it is neither measured nor dead weight; never lowered to pass (D10)"
+    violation: "Below the floor turns pnpm check red and blocks the merge (D10)"
+    source: "team.md Testing Posture, org.md classic scope floor, vitest.workspace.ts as built by T-010"
+  - id: BR9.6
+    statement: "The integration tests of the web tier and the worker run in their own Vitest projects after the database projects, and CI provides what they need."
+    category: validation
+    applies_to: "vitest.workspace.ts, apps/web/vitest.config.ts, apps/worker/vitest.config.ts, .github/workflows/check.yml, package.json test:int"
+    trigger: "Code Generation"
+    logic: "Projects web-int (apps/web, node environment, src/**/*.int.test.ts and src/**/*.int.smoke.test.ts) and worker-int (apps/worker, the same globs), each fileParallelism false and sequence.groupOrder 3, so they start after database (1) and test-support-seed (2) have used DATABASE_URL_TEST; the web and worker projects also exclude **/*.int.smoke.test.ts; test:int names database, web-int and worker-int; CI adds a Mailpit service pinned to the compose tag (axllent/mailpit:v1.31.1) with ports 1025 and 8025, MAIL_RECIPIENT_KEY in the job-only secret loop, and APP_URL, TERMS_VERSION, SMTP_HOST, SMTP_PORT, MAILPIT_URL in the job env; synthetic addresses carry a per-run suffix so the seeded corpus never collides"
+    violation: "The web and worker projects exclude *.int.test.ts today, so integration tests placed there would never run while the gate stays green and the acceptance rows they back would be recorded without a run (S2)"
+    source: "apps/web and apps/worker vitest.config.ts on the T-010 branch, vitest.workspace.ts (groupOrder), .github/workflows/check.yml, team.md Testing Posture"
 
   # Group 10 — Records and scope
   - id: BR10.1
@@ -592,7 +634,7 @@ rules:
     category: policy
     applies_to: "Owned paths"
     trigger: "Code Generation"
-    logic: "The additions in functional-spec.md § 15 (application infrastructure, Crypto port and adapter, domain account state, notification queueEmail, contracts errors, worker env/container/registry/relay, the health route's db probe, the auth index migration, test-support fixes for ISS-223, NotImplemented for ISS-111)"
+    logic: "The additions in functional-spec.md § 15 (application infrastructure and the worker subpath, Crypto port and adapter, domain account state and mask-email, notification queueEmail and sendEmailDelivery, contracts errors and view models, worker env/container/registry/relay/package.json, the web env, health, gateway and instrumentation files, the auth index migration and the unit of work, the audit writer for ISS-108, test-support fakes, the boundary rules and fixture for FD-097, the i18n package exports, vitest.workspace.ts and the two app configs, the CI workflow, NotImplemented for ISS-111 and its test)"
     violation: "An unrecorded file outside the owned paths fails the reviewer's diff review (G4)"
     source: "team.md Way of Working, ISS-248 precedent"
   - id: BR10.2
@@ -600,7 +642,7 @@ rules:
     category: policy
     applies_to: "03-routes-and-contracts.md, 02-data-model.md, 01-conventions.md"
     trigger: "Code Generation"
-    logic: "03 §2 gains auth.password_equals_email first (before contracts); 03 §3 Mailer becomes MailTransport plus queueEmail; 03 §4 sign-in limits read as C5; 03 §5 account routes read as C15; 02 §1 sessions read as absolute 30 days; 01 §11 lists APP_ENCRYPTION_KEY for the worker"
+    logic: "03 §2 gains auth.password_equals_email first (before contracts) and FD-095's masked-email sentence; 03 §3 Mailer becomes MailTransport plus queueEmail, ConfigProvider.current() returns a Promise, AuthGateway and UnitOfWork are listed; 03 §4 sign-in limits read as C5, account.listSessions returns browser and os, account.getOwnAccount and account.resendOwnVerification are added, account.submitFeedback reads as FD-096; 03 §5 account routes read as C15; 02's encryption sentence names MAIL_RECIPIENT_KEY for email_deliveries.to_email_enc (FD-094); 02 §1 sessions read as absolute 30 days; 01 §2 gains the i18n-messages element (FD-097); 01 §11 lists MAIL_RECIPIENT_KEY for web and worker and APP_ENCRYPTION_KEY for the web only; the T-101 task file's FD-071 amendment and acceptance row say MAIL_RECIPIENT_KEY; T-504's preflight generates MAIL_RECIPIENT_KEY (an ISS row for U42 if its task file is outside these owned paths)"
     violation: "Leaving the old text recreates the source drift ISS-140 came from"
     source: "contract-summary.md ('this summary wins; the Unit that builds the operation corrects 03'), errors.ts header"
   - id: BR10.3
@@ -608,17 +650,17 @@ rules:
     category: policy
     applies_to: "docs/implementation/ISSUES.md"
     trigger: "End of Code Generation"
-    logic: "Closed or updated: ISS-032, ISS-033, ISS-078, ISS-111 (1), ISS-112, ISS-113, ISS-223, ISS-243, ISS-253 (the mail.send part), ISS-255; informational: ISS-155, ISS-180; new rows as listed in functional-spec.md § 9 and § 10"
+    logic: "Closed or updated: ISS-032, ISS-033, ISS-078, ISS-108, ISS-111 (1), ISS-112, ISS-113, ISS-223, ISS-243, ISS-253 (the mail.send part), ISS-255; ISS-139 and ISS-240 get a note that the worker can no longer decrypt those columns (FD-094) although it can still read them; informational: ISS-155, ISS-180; new rows as listed in functional-spec.md § 9"
     violation: "An unrecorded defect breaks the defect-register rule"
     source: "project.md Mandated (ISS rows), team.md Way of Working"
   - id: BR10.4
-    statement: "A change to a data boundary, a worker grant or a hard rule that no FD entry authorises is raised to the owner, not decided here."
+    statement: "Every change to a data boundary, an import boundary or a requirement that this Unit's code depends on has its FD entry in the decision log before any code changes."
     category: policy
-    applies_to: "R1 (worker key scope), R2 (FR90 feedback fields)"
-    trigger: "The design finds such a change"
-    logic: "Record it as raised, propose an ISS row, keep the design on the FD as written"
-    violation: "Deciding it would break the project rule on data boundaries"
-    source: "project.md Mandated (decision log binding), contract ownership rules"
+    applies_to: "docs/status/decision-log.md: proposed FD-094 (mail-only key, owner's R1), FD-095 (masked own email, owner's T-102 Q4), FD-096 (text-only feedback, owner's R2), FD-097 (worker reads the message files, Question 13)"
+    trigger: "First step of Code Generation, before any source file changes"
+    logic: "Append the four rows of functional-spec.md § 9.1 verbatim, in order, with the next free FD numbers (renumbered in order if another Unit appended entries first); any further boundary change found while building is raised the same way: by recommendation under the owner's 2026-10-29 instruction, written as an FD row before the code"
+    violation: "Code that depends on a decision with no FD entry breaks the project rule that the decision log is binding"
+    source: "project.md Mandated (decision log binding), contract ownership rules, OWNER-REVIEW-QUEUE.md (R1: an FD entry is written before T-101's code)"
 
   # Group 11 — Settings and feedback
   - id: BR11.1
@@ -634,9 +676,9 @@ rules:
     category: policy
     applies_to: "account.submitFeedback"
     trigger: "An authenticated account submits feedback"
-    logic: "IF the action:account:<id> feedback key has 5 hits in 24 h THEN rate_limited; ELSE insert Feedback {body, locale} and audit feedback_submitted (no body); AC10.3.6's extra fields are not built here (Question 11)"
+    logic: "IF the action:account:<id> feedback key has 5 hits in 24 h THEN rate_limited; ELSE insert Feedback {body, locale} and audit feedback_submitted (no body); AC10.3.6's category, screenshot and contact-permission fields move to release 2 (FD-096) and nothing is built for them"
     violation: "A sixth submission in a day accepted fails the T-101 test row"
-    source: "03 §4, T-101 step 7 and tests, Question 11"
+    source: "03 §4, T-101 step 7 and tests, Question 11, FD-096 (owner's answer to R2)"
 ```
 
 ## Rules summary
@@ -659,11 +701,12 @@ rules:
 | BR2.4 | Neutral resend, 3 per hour per email | policy |
 | BR2.5 | Unconfirmed: settings yes, contributions no | authorization |
 | BR2.6 | Library sends no email itself | constraint |
+| BR2.7 | Signed-in pending holder resends to own address, no address typed | policy |
 | BR3.1 | One counter per normalised email | calculation |
 | BR3.2 | Network, email, delay checks before any read or password check | policy |
 | BR3.3 | Delay formula 1, 2, 4 … capped | calculation |
 | BR3.4 | Settings through `ConfigProvider` | constraint |
-| BR3.5 | What counts as a failure; success clears the email key | calculation |
+| BR3.5 | One port verify (dummy for unknown); what counts as a failure; success clears the email key | calculation |
 | BR3.6 | Suspended/banned: message only after the password, no session | authorization |
 | BR3.7 | Deleted = wrong password | authorization |
 | BR3.8 | Pending accounts sign in | authorization |
@@ -673,13 +716,14 @@ rules:
 | BR3.12 | In-memory, hashed keys only | constraint |
 | BR4.1 | Absolute 30-day session | constraint |
 | BR4.2 | Cookie attributes, trusted origin | constraint |
-| BR4.3 | `getActor` mapping per status | authorization |
+| BR4.3 | `getActor` mapping per status; no staff powers, no persona read | authorization |
 | BR4.4 | No session read in a cached scope | constraint |
 | BR4.5 | Sign-out | constraint |
 | BR4.6 | Sign out everywhere | constraint |
-| BR4.7 | Session list without history, IP or token | constraint |
+| BR4.7 | Session list with browser and os, without history, IP or token | constraint |
 | BR4.8 | Status re-read every request | authorization |
 | BR4.9 | No IP stored | constraint |
+| BR4.10 | Own account view with the masked own email only (FD-095) | constraint |
 | BR5.1 | Neutral reset request, 3 per hour, 1 h link | policy |
 | BR5.2 | Completed reset: revoke, audit, event, email | constraint |
 | BR5.3 | Change password with current password, 5 failures per 15 min | authorization |
@@ -688,22 +732,24 @@ rules:
 | BR6.2 | Params allowlist: one link | validation |
 | BR6.3 | `mail.send` handler behaviour | constraint |
 | BR6.4 | Relay routes no account event to `mail.send` | constraint |
-| BR6.5 | Worker key, start check, no Better Auth | constraint |
+| BR6.5 | Worker holds the mail-only key only, start check, no Better Auth | constraint |
 | BR6.6 | No address in any payload | constraint |
 | BR6.7 | Plain-text bilingual content-free emails | validation |
 | BR6.8 | Params cleared after a final status | policy |
 | BR7.1 | Library HTTP allowlist | authorization |
 | BR7.2 | Start-up secret checks | validation |
 | BR7.3 | Model mapping by alias, three indexes | constraint |
-| BR7.4 | `signIn` config block only | validation |
+| BR7.4 | `signIn` config block only, ranges where every value works | validation |
 | BR7.5 | Library limiter as defence in depth | policy |
 | BR7.6 | Hasher port in the library, bench recorded | constraint |
 | BR7.7 | No plugins | constraint |
 | BR7.8 | Dependency re-check before install | policy |
-| BR7.9 | Library callbacks act only inside a command | authorization |
+| BR7.9 | Library hooks and callbacks act only inside a gateway scope | authorization |
 | BR7.10 | No page route changed; public reading open | policy |
+| BR7.11 | `defineCommand`: order, `onRefused`, `recorded`, one transaction | constraint |
+| BR7.12 | Placement under the T-010 boundary matrix | constraint |
 | BR8.1 | Log allowlist | constraint |
-| BR8.2 | Audit allowlist | constraint |
+| BR8.2 | Audit allowlist, recursive (ISS-108) | constraint |
 | BR8.3 | No email, token, IP in results | constraint |
 | BR8.4 | `en` + `bn` together, Bengali flagged | policy |
 | BR8.5 | Synthetic data only | policy |
@@ -712,10 +758,11 @@ rules:
 | BR9.2 | Smoke grows | validation |
 | BR9.3 | All checks green | validation |
 | BR9.4 | Adversarial tests and owner sign-off | validation |
-| BR9.5 | Coverage floor | validation |
+| BR9.5 | Coverage floor in every touched package | validation |
+| BR9.6 | `web-int`, `worker-int` projects; CI Mailpit and keys | validation |
 | BR10.1 | Owned-path additions recorded | policy |
 | BR10.2 | Reference documents corrected | policy |
 | BR10.3 | ISS rows closed and added | policy |
-| BR10.4 | Data-boundary changes raised, not decided | policy |
+| BR10.4 | FD-094..FD-097 appended before any code | policy |
 | BR11.1 | Preferences for every account | authorization |
 | BR11.2 | Feedback body, 5 per day | policy |

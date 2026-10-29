@@ -8,10 +8,21 @@
 | Requirements | NFR13 (visual and motion quality), FR95 (accessible controls), NFR1 (performance reference), NFR4 (responsive), NFR5 (browsers), NFR6 (accessibility), NFR7 (localization) — `requirements.md` |
 | Decisions | FD-091 (redesign and motion), FD-032 (plain CSS, no animation library), FD-030 (staff console keeps Chart Tray), FD-024 (equal languages), FD-042 (Bengali copy review); CR-004 (motion toggle stays silent) |
 | Upstream design | `components.md`: no domain component owns presentation. `contract-summary.md`: "FD-091 (patient redesign) and U45 T-011: presentation only. U45 has no runtime contract"; C14 is unchanged |
-| Questions | Q1–Q8 in `functional-design-questions.md`, all answered A on the owner's standing instruction of 2026-10-27 and listed in `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md` for the owner to confirm or change. This specification follows A throughout; § 10 lists what changes under each other option |
-| Status | Draft written ahead of the stage, from the CR-011 Bolt branch; `apps/web`, `tools`, `packages/i18n` and `package.json` are identical to `main` there |
+| Questions | Q1–Q10 in `functional-design-questions.md`, all answered A. Q1–Q8 on the owner's standing instruction of 2026-10-27; Q9–Q10 decided by the agent under the owner's no-questions instruction of 2026-10-29. Each is added to `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md` when the stage finalises this draft. This specification follows A throughout; § 10 lists what changes under each other option |
+| Status | Draft written ahead of the stage from the CR-011 Bolt branch, refreshed on 2026-10-29 against `bolt/t-010-boundary-lint-and-ci` (T-010 built, not yet merged). Code Generation starts from `main` after T-010's squash merge |
 
 This file is the source of truth for the Unit's workflows and state transitions. `entities.md` holds the shape of the design-system objects and `rules.md` the numbered decision rules. Concrete token values are in `frontend-components.md` § 3–4. The entity-relationship view (§ 6) and the rules summary at the end are derived from those files.
+
+**Refreshed 2026-10-29 after T-010.** What changed:
+- **Gate order.** `pnpm check` is T-010's nine steps. This Unit adds `contrast:patient` and then `check:motion` after S8 `contrast`, and `build` stays last (WF8, T-010 BR8.4).
+- **Contrast.** `contrast:patient` runs T-010's fail-closed `--tokens` mode on `patient.css`, plus a new `--pairs patient` set for the focus ring and the current-tab wash. `pnpm contrast` keeps its exact output, which closes T-011's half of ISS-279 (BR1.2, D14).
+- **One dark token block.** `patient.css` gets exactly one column-0 dark token block, identical to the media-query copy, and no scheme block. The CSS check enforces this, because a second block would make the contrast tool check light values as dark ones (BR1.8).
+- **Prettier.** `patient.css` and `motion.css` enter Prettier's scope; the staff and shared stylesheets stay ignored. A CSS override keeps double quotes, which the contrast tool's block pattern needs (Q9, BR9.8).
+- **Tests and tooling.** The CSS check's planted violations move to a Vitest file in T-010's `tooling` project. `--self-test` is dropped (D11). The Playwright spec is kept out of the Vitest web project and gets its own tsconfig. `next/font/local` is mocked in the web test setup. The new components keep `apps/web` at or above 80% line coverage, with tests in `en` and `bn` that never import `test-support` (BR9.9).
+- **Hover and press.** All 13 hover-lift rules are removed, `.emerg-card:hover` included (T-207 F6). The press list covers the sibling drafts' classes. A generic `[data-press]` hook means later Units never add motion rules (BR6.5, BR6.11; T-202 F7, T-203 F11, T-207 F15).
+- **Morphs.** No shared-element morph. This decides T-202 Q12 and T-203 Q15 (Q10, BR6.12).
+- **Spacing tokens.** Spacing and layout tokens are added, because the T-202, T-203, T-207 and T-102 drafts rely on them (BR3.6). The home hero wash is applied to `.opener`.
+- **Records.** `PublishTick`'s consumers are corrected to T-306 (publish) and T-102 (account confirmations); T-308 is the evidence viewer. A Bolt merges only after a green CI run on its `bolt/**` head (BR9.4). New findings are in § 11.
 
 ## 1. What changes, in one paragraph
 
@@ -23,19 +34,24 @@ The patient side swaps the 04b "Quiet Clinic" look for FD-091's "Warm Paper, Sof
 - **Reduced motion:** both the operating-system setting and the existing in-app switch turn all movement off, including route transitions.
 - **Never animated:** the demo marker, the medical-advice disclaimer and the emergency guidance; during route changes they never move and are never covered.
 - **Staff console:** unchanged.
-- **New check:** `check:motion` joins `pnpm check`, and a second contrast run checks the new palette.
+- **New checks:** `contrast:patient` checks the new palette (fail closed) and `check:motion` checks the patient CSS. Both join `pnpm check` after `contrast`, so they also run in CI on every `bolt/**` push.
 
 ## 2. As is (baseline on `main`)
 
 | Element | Where | Today |
 |---|---|---|
 | Tokens | `tokens.css` (shared with the staff console via `globals.css`); `patient.css` carries its own concept-04 layer, the 04b block and scheme A/B/C blocks that override it on patient pages | 04b teal-grey palette, rounded system faces, radii 10/16/22 |
-| Patient motion | `patient.css`, 44 `transition`/`animation` declarations | `.view` rises on every mount; `.display`, `.lede` and first list rows rise 700–800 ms on load; distribution bars grow from 0 in 800 ms; colour transitions on tabs and controls; hover lifts, including on emergency lines; `backdrop-filter` blur on `.panel` and `.masthead` |
+| Patient motion | `patient.css`, 57 lines with `transition` or `animation` | `.view` rises on every mount; `.display`, `.lede` and first list rows rise 700–800 ms on load; distribution bars grow from 0 in 800 ms; colour transitions on tabs and controls; 13 hover-lift rules (`.ctl`, `.btn`, `.chip`, `.browse-card`, `.emergency-lines a`, `.doc-entry`, `.related-card`, `.react`, `.mini-row`, `.c-mode`, `.opt`, `.case`, `.emerg-card`), two of them on emergency guidance, plus a hover `scaleX` on the tab underline; `backdrop-filter` blur on `.panel` and `.masthead`; two column-0 `:root[data-theme="dark"]` blocks (lines 115 and 1360) |
 | Reduced motion | `patient.css` | A blanket `prefers-reduced-motion: reduce` rule (all durations 1 ms) and `body[data-motion="off"]` (animations none); neither reaches `::view-transition-*` |
 | Motion switch | `ThemeControls` `#motion`, `rk.motion` cookie `on`/`off`, `<body data-motion>` set by `[locale]/layout.tsx` | Works; silent (CR-004 BR4.4) |
 | Fonts | `tokens.css` stacks | No web font |
-| Contrast | `pnpm contrast` (T-010: `tools/contrast.mjs --tokens apps/web/src/styles/tokens.css`) | Checks the staff palette's fixed names in `hsl()` |
-| Browser tests | none | No Playwright in the repository; `pnpm smoke` runs Vitest `*.smoke.test.*` |
+| Contrast | `pnpm contrast` = `node tools/contrast.mjs --tokens apps/web/src/styles/tokens.css` (T-010) | Checks the staff palette's fixed names in `hsl()`. In `--tokens` mode it fails closed: an unreadable file, no column-0 `:root {` or `:root[data-theme="dark"] {` block, or any pair skipped for a missing token exits 1. It merges every bare `:root {` block, takes only the **last** dark block, and treats every `:root[data-scheme=…] {` block as another variant. `scripts/contrast.test.mjs` pins `tokens.css` to the prototype's results |
+| Gate | `pnpm check` (T-010) | Nine steps, fail fast: typecheck → lint (boundaries included) → lint:boundaries → format:check → check:identity → test:coverage (80% lines per package, untested files count) → i18n:check → contrast → build |
+| Format | `prettier --check .`, `singleQuote: true`, `.prettierignore` | `apps/web/src/styles/**` is ignored "until T-011 decides for its own CSS"; `apps/`, `scripts/` and the root are in scope |
+| Coverage | `vitest.workspace.ts` | `apps/web/src/**/*.{ts,tsx}` counted, tests excluded; `apps/web` 418 / 420 lines (99.5%) after T-010 |
+| Lint scope | `eslint.boundaries.mjs` | `apps/web/src/components` is `web-components` (may import `contracts`, `i18n`, server actions, `web-shared` = `src/lib` and `src/i18n`); no Node built-ins outside tests; nothing in `apps/*` imports `test-support`. `apps/web/e2e/**` is outside every element and every tsconfig |
+| CI | `.github/workflows/check.yml` | Runs `pnpm check` and `pnpm smoke` on pushes to `main` and `bolt/**`; a Bolt merges only after a green run on its head |
+| Browser tests | none | No Playwright in the repository; `pnpm smoke` runs Vitest `*.smoke.test.*`. The Vitest web project uses Vitest's default include, which also matches `*.spec.ts` |
 
 ## 3. Workflows
 
@@ -43,7 +59,7 @@ The patient side swaps the 04b "Quiet Clinic" look for FD-091's "Warm Paper, Sof
 
 1. The `[locale]` layout renders `<html lang data-lang data-theme>` as today, plus:
    - `data-motion="reduced"` when the `rk.motion` cookie reads `off` (BR5.2);
-   - the Hind Siliguri font variable class when the locale is `bn` (BR2.4).
+   - the Hind Siliguri font variable class when the locale is `bn` (BR2.4). The `next/font/local` call sits in its own module, `app/fonts/bn-heading.ts`, so the web test setup can stand in for it (BR9.9).
 
    `<body data-app data-motion>` is unchanged.
 2. The patient layout loads `globals.css` (with the staff palette in `tokens.css`), then `patient.css`, whose token block redefines every token the patient side reads (BR1.5, BR1.6), then `motion.css`.
@@ -114,14 +130,14 @@ Text fallback: activate a link → new path key → unsupported or history navig
 
 ### WF5 — Press, hover and focus feedback
 
-1. Hover: colour, background and border change at once; nothing moves (BR6.5).
-2. Press (`:active`) with full motion: the control scales to 0.98 over 100 ms and back on release. With reduced motion there is a colour change only. Static elements (emergency call links, footer links) never scale (BR7.1).
+1. Hover: colour, background and border change at once; nothing moves. No `:hover` rule sets a transform, the tab underline included (BR6.5, `check:motion` `M9-hover`).
+2. Press (`:active`) with full motion: the pressable scales to 0.98 over 100 ms and back on release. Pressables are the listed shell and shared classes (`frontend-components.md` § 6) and any element a later Unit marks `data-press` (BR6.11). With reduced motion there is a colour change only. Elements in the static set never scale: emergency cards and call links, the colophon's links, the demo marker. The press selector excludes them with `:not(…)` (BR7.1).
 3. Keyboard focus: the 3 px `--focus` ring with a 2 px offset appears at once, in every mode (BR3.4).
 
-### WF6 — Publish confirmation (built by T-308 on this primitive)
+### WF6 — Publish confirmation (built by T-306 on this primitive; T-102 reuses it)
 
-1. A publish succeeds.
-2. T-308 renders `PublishTick` with `compose.publishedNote` as its text, and announces the same text through the existing live region (BR6.4).
+1. A publish succeeds. T-102 uses the same primitive for its account confirmations, such as a confirmed email or a changed password.
+2. T-306 (the composer) renders `PublishTick` with `compose.publishedNote` as its text, and announces the same text through the existing live region (BR6.4).
 3. With full motion, the tick's short arm draws over the first 40% of 360 ms and the long arm over the rest, by `transform` only. With reduced motion, the full tick shows at once.
 4. Nothing else happens: no confetti, badge, points, streak, counter or nudge to share (BR8.1).
 
@@ -139,15 +155,25 @@ Text fallback: activate a link → new path key → unsupported or history navig
 ### WF8 — Checks (Code Generation and Build and Test)
 
 1. Before building, Code Generation:
-   - appends dependency-check entries: `next/font/local` and Hind Siliguri, Playwright, React `ViewTransition` on React 19.3.0 and Next 16.3.4, and impeccable (BR9.7);
+   - appends dependency-check entries: `next/font/local` and Hind Siliguri, Playwright, React `ViewTransition` on React 19.3.0 and Next 16.3.4, and impeccable (BR9.7). The Prettier 3.9.6 entry of 2026-10-28 is reused while it is under 3 days old. The Playwright version must be one that pnpm 11's `minimumReleaseAge` accepts (ISS-285 shows the policy refusing a day-old release);
+   - adds `*.woff2 binary` to `.gitattributes` before the font file is committed (ISS-178's lesson);
    - runs the half-day spike on `RouteTransition` (keyed boundary in the layout, Q4) and on the static groups (Q8).
-2. `pnpm check` runs, after T-010 and this Unit: typecheck, lint, boundaries, tests, i18n parity, `contrast` (staff palette, output unchanged), `contrast:patient`, `check:motion` (self-test first) and build (BR9.1, BR1.2).
-3. `pnpm smoke` runs the cumulative Vitest smoke suite, including the new motion smoke. `pnpm --filter @rogikotha/web smoke:e2e` runs the Playwright motion spec against the built app (BR9.4).
-4. Build and Test then:
+2. `pnpm check` runs eleven steps after this Unit, fail fast (T-010 BR8.1, BR8.4):
+   - S1–S7 are T-010's: typecheck, lint, lint:boundaries, format:check, check:identity, test:coverage, i18n:check;
+   - S8 `contrast` checks the staff palette, with unchanged output;
+   - S8a `contrast:patient` checks the patient palette, fail closed, with `--pairs patient` (BR1.2);
+   - S8b `check:motion` (BR9.1);
+   - S9 `build`.
+
+   `test:coverage` also runs the CSS check's planted-violation tests in the `tooling` project, so the check proves it can fail on every run (D11). It also holds `apps/web` at 80% lines or more with the new components counted (BR9.9). `format:check` covers `patient.css`, `motion.css`, the new scripts, the Playwright config and spec (BR9.8).
+3. `pnpm smoke` runs the cumulative Vitest smoke suite, including the new motion smoke; it stays Vitest-only, as CI runs it. `pnpm --filter @rogikotha/web smoke:e2e` runs the Playwright specs under `apps/web/e2e/` against the built app; this Unit adds `motion.spec.ts`. It runs at Build and Test, and it joins `pnpm check` and CI when T-503 extends the configuration (BR9.4).
+4. The Bolt branch `bolt/t-011-patient-design-and-motion-system` is pushed, and CI's `check` workflow must be green on its head before the squash merge. The run URL is recorded in the Build and Test record (T-010 BR10.4, BR9.4).
+5. Build and Test then:
    - executes every acceptance row of T-011;
    - runs the Bengali rendering check (BR2.5) and the viewport and zoom run (BR3.5);
-   - records the Lighthouse baseline (BR9.5).
-5. The hand-off lists renames, final colours, the font size and the baseline (BR9.7).
+   - records the Lighthouse baseline (BR9.5);
+   - records `pnpm check`'s wall clock against ISS-298.
+6. The hand-off lists renames, final colours, the font size, the baseline, the out-of-owned-path files (§ 11) and the task-text corrections (BR9.7).
 
 ## 4. State transitions
 
@@ -212,11 +238,13 @@ Unchanged: `light` ↔ `dark` through the existing two-state toggle (CR-004 WF1,
 | Route transition | opacity, transform | outgoing 160 ms `--ease-in`; incoming 240 ms `--ease-out` | 12 px rise (incoming only) | none (instant) | `RouteTransition`, group `page` | here |
 | List reveal | opacity, transform | 240 ms, 40 ms stagger, first 6 | 12 px | none | `Reveal` (`data-reveal-list`) | here; used by list pages |
 | Step slide | opacity, transform | 240 ms `--ease-standard` | 24 px | none | `[data-step-dir]` | T-306 |
-| Press | transform | 100 ms | scale 0.98 | colour only | `:active` on controls | here |
-| Publish tick | transform | 360 ms | — | full tick at once | `PublishTick` | T-308 |
+| Press | transform | 100 ms | scale 0.98 | colour only | `:active` on the listed pressables and on `[data-press]` | here; `[data-press]` for later Units |
+| Publish tick | transform | 360 ms | — | full tick at once | `PublishTick` | T-306 (publish), T-102 (account confirmations) |
 | Scroll reveal | opacity, transform | scroll-driven | 12 px | static | `.reveal` (after the first section) | T-207 |
 | Sheet entry | opacity, transform | 240 ms `--ease-out` | 12 px | at once (scrim ≤ 100 ms fade) | `.sheet`, `.overlay` | here |
 | Reading bar | transform | scroll-driven | scaleX | hidden | `.progress i` | here |
+
+No other primitive exists. There is no shared-element morph and no view-transition name other than `page` and the five static groups (Q10, BR6.12). A later Unit uses these primitives through their hooks and adds no motion rule of its own (BR4.7).
 
 ## 6. Entity-relationship view (derived from `entities.md`)
 
@@ -253,6 +281,10 @@ Text fallback: the theme preference selects each colour token's light or dark va
 | 200% zoom at 360 px | Masthead wraps; no horizontal overflow; 44 px targets keep | BR3.5, BR3.3 |
 | Long Bengali brand tagline at 360 px | Tagline wraps under the brand name; brand name and all controls stay visible | BR3.5 |
 | Staff console pages | No `motion.css`, no `RouteTransition`, no change in look; `<html data-motion="reduced">` may appear but nothing reads it there | BR1.6 |
+| A later Unit appends a second column-0 `:root[data-theme="dark"] {` block to `patient.css` | `check:motion` `M10-tokens` fails. Without that check, the contrast tool would take that small block as the whole dark set and check light values as dark ones, a silent pass | BR1.8 |
+| A later Unit writes a component's dark rule | Written as `:root[data-theme="dark"] .x {` (the selector continues), so it is not a token block | BR1.8 |
+| `patient.css` formatted by Prettier without the CSS quote override | `[data-theme="dark"]` becomes `[data-theme='dark']`; `contrast:patient` finds no dark block and exits 1 (fail closed, not silent) | BR9.8 |
+| A later Unit's card, chip or row is pressable but not in the press list | It carries `data-press`; no motion rule is added outside `motion.css` | BR6.11 |
 
 ## 8. Acceptance mapping (T-011 acceptance table)
 
@@ -261,18 +293,21 @@ Text fallback: the theme preference selects each colour token's light or dark va
 | AC2.4.1: tokens and plain CSS | Token block in `patient.css` (not `tokens.css`, Q1 A) with the § 3 values; `package.json` has no Tailwind, CSS-in-JS or animation library | BR1.1, BR1.5, BR2.1, BR3.1, BR3.3, BR9.2 |
 | AC2.4.2: motion on key moments | Playwright motion spec: tab click runs `page` animations from the tokens; Reveal staggers items 1–6 only (run via `smoke:e2e`; `pnpm smoke` runs the Vitest motion smoke) | BR4.1, BR4.2, BR6.1, BR6.2 |
 | AC2.4.3: reduced motion | Motion spec with `reducedMotion: 'reduce'` and with `rk.motion=off`: no view-transition animation, no stagger, no slide; every step completes | BR5.1–BR5.5 |
-| AC2.4.4: never-animated elements | Component test (no motion hook on static elements) and `check:motion` `M7-static` | BR7.1–BR7.4 |
+| AC2.4.4: never-animated elements | Component test (no motion hook on static elements), `check:motion` `M7-static` and `M9-hover` (no hover transform, `.emerg-card` included) | BR7.1–BR7.4, BR6.5 |
 | AC2.4.5: no gamification | `rg -i "confetti\|streak\|badge-earn\|points" apps/web/src` finds nothing in patient motion code | BR8.1 |
-| Animated properties | `pnpm check:motion` passes; the self-test's planted `transition: width` fails | BR4.2, BR9.1 |
-| Contrast | `pnpm contrast:patient` passes every pair; `pnpm contrast` output unchanged | BR1.2, BR1.6 |
+| Animated properties | `pnpm check:motion` passes on the real files; `scripts/css-motion-check.test.mjs` shows a planted `transition: width` failing it (run by `test:coverage` inside `pnpm check`) | BR4.2, BR9.1 |
+| Contrast | `pnpm contrast:patient` passes every pair, the `--pairs patient` set included, with no pair skipped; `pnpm contrast` output unchanged and `scripts/contrast.test.mjs` green | BR1.2, BR1.6, BR1.8 |
 | Both languages | Component tests in `en` and `bn`; the font variable appears only for `bn`; no uppercase or tracking on Bengali (`M8-bangla`) | BR2.2, BR2.4 |
 | AC2.4.6 baseline | Lighthouse on `/en` and `/bn` home (shell) recorded in the hand-off; the gated run is U42's | BR9.5 |
+| Gate and CI | `pnpm check` (eleven steps) and `pnpm smoke` green locally; `apps/web` at 80% lines or more; the `check` workflow green on the Bolt head | BR9.4, BR9.8, BR9.9 |
 
 Story coverage, including the US2.3 criteria, is in `traceability.json`. AC2.3.4 (form errors) is N/A here because this Unit adds no form.
 
 ## 9. Decisions
 
-**D1 — Patient tokens live in `patient.css`, and `tokens.css` stays the staff palette (Q1 A).** Chosen because `tokens.css` feeds the staff console, and `patient.css` already overrides it on patient pages. Rejected: B, rewriting `tokens.css` and freezing the staff palette in `admin.css`, which touches the staff stylesheet and drops the staff palette from `pnpm check`; C, scoping under `[data-app]`, which the contrast tool cannot read. Consequence: the task's acceptance row "inspect `tokens.css`" reads "inspect the `patient.css` token block", recorded in the hand-off.
+**D1 — Patient tokens live in `patient.css`, and `tokens.css` stays the staff palette (Q1 A).** Chosen because `tokens.css` feeds the staff console, and `patient.css` already overrides it on patient pages. Rejected: B, rewriting `tokens.css` and freezing the staff palette in `admin.css`, which touches the staff stylesheet and drops the staff palette from `pnpm check`; C, scoping under `[data-app]`, which the contrast tool cannot read. Consequences:
+- The task's acceptance row "inspect `tokens.css`" reads "inspect the `patient.css` token block", and its "Contrast: `pnpm contrast`" row reads "`pnpm contrast:patient`, with `pnpm contrast` unchanged". Both are recorded in the hand-off.
+- Because `tokens.css` is untouched, `pnpm contrast` keeps passing and T-010's `scripts/contrast.test.mjs` (`tokens.css` gives the prototype's results) stays green, so ISS-279's T-011 half does not happen.
 
 **D2 — Canonical FD-091 names plus legacy aliases, in `hsl()`.** Chosen so that 2,000+ lines of `patient.css` and the contrast tool's fixed pair list keep working while new code uses role names. Rejected: renaming everywhere (large diff, high regression risk) and keeping only the old names (`--accent` would keep meaning "primary" while FD-091 calls the amber "accent"). The amber is `--decor`.
 
@@ -292,9 +327,36 @@ Story coverage, including the US2.3 criteria, is in `traceability.json`. AC2.3.4
 
 **D10 — No first-paint motion (`data-motion-ready`).** Chosen as one global rule that guarantees FD-091 rule 2 (the LCP element is never animated in) for every later Unit, without per-page judgement. Rejected: excluding the LCP element case by case, which is unknowable per viewport.
 
-**D11 — One motion file and a zero-dependency check with a self-test.** Chosen so motion is reviewed in one place, later Units extend it there, and the check proves it can fail on every run. `scripts/` is not a Vitest project, so the self-test stands in for a separate test runner.
+**D11 — One motion file and a zero-dependency check proven by tests.** Chosen so motion is reviewed in one place: later Units use its hooks and add no motion rule (the sibling drafts T-202, T-203 and T-207 rely on this). Only a Unit whose task names a new primitive changes `motion.css`. Since T-010, `scripts/` is the `tooling` Vitest project (`scripts/vitest.config.ts`, `**/*.test.mjs`). The planted violations therefore live in `scripts/css-motion-check.test.mjs`, as T-010's `contrast.test.mjs` and `check-identity.test.mjs` do. `pnpm check` runs them on every run inside `test:coverage`, and `check:motion` is a plain `node scripts/css-motion-check.mjs`. Rejected: keeping a `--self-test` flag beside the tests (two proofs of one thing).
 
 **D12 — No blur, 44 px targets everywhere, static data displays.** Chosen for the low-end Android performance gate (blur), FD-091's target size on every pointer (not only coarse pointers), and the exact-count rule (a bar growing from 0 shows a false value).
+
+**D13 — The patient CSS enters Prettier's scope; the staff and shared CSS stay out (Q9 A).**
+- **Why.** After this Unit, `patient.css` and `motion.css` are authored code, not a port (project.md Code Style, 2026-10-27). About ten later patient Units will append to them, so the gate should catch layout drift. The file is rewritten in this Unit anyway, so formatting it adds no churn commit.
+- **The quote override.** Prettier's `singleQuote: true` turns `:root[data-theme="dark"] {` into `:root[data-theme='dark'] {`; this was verified on 2026-10-29 with the installed Prettier 3.9.6 and the repository's configuration. The contrast tool matches only the double-quoted form, so one `overrides` entry keeps double quotes in CSS (the CSS convention, and the staff files' form).
+- **Rejected.** B, keeping `apps/web/src/styles/**` ignored: no config change, but authored CSS without a format gate. C, formatting everything: it rewrites the verbatim staff port (`01-conventions.md` §7.1).
+- **Reversible.** One ignore line and one override.
+
+**D14 — The patient palette gets its own fail-closed run with extra pairs.** `contrast:patient` is `node tools/contrast.mjs --tokens apps/web/src/styles/patient.css --pairs patient`. The new `--pairs patient` flag appends pairs the shared list lacks:
+- `--focus` on `--paper`, `--surface` and `--surface-2` at 3:1, hard;
+- `--primary` on `--primary-soft` at 4.5:1 (current tab text);
+- `--ink` on `--primary-soft` at 4.5:1.
+
+Without the flag, the tool's pairs are unchanged. `pnpm contrast` and `scripts/contrast.test.mjs` are therefore untouched, and T-010 BR9.4 holds. This is chosen because adding `--focus` to the shared list would make `pnpm contrast` fail closed on `tokens.css`, which has no `--focus`. It replaces the earlier plan of recording the focus pairs by hand in the hand-off. Cost: about ten lines in `tools/contrast.mjs` and one test case, both outside the owned paths (plan approval).
+
+**D15 — No shared-element morph in this release (Q10 A).** This decides T-202 Q12 and T-203 Q15 C:
+- FD-091's choreography rule 7 allows shared-element moves "only from card to story", and a doctor profile or a condition page is not a story.
+- A morph between boxes of different sizes animates `width` and `height` of `::view-transition-group(...)` through the browser's own keyframes. That is outside "only `transform` and `opacity`" (AC2.4.2, AC2.4.6, BR4.2), and `check:motion` cannot see it.
+- Every named card is captured on every navigation, which costs frames on low-end Android.
+
+The one move FD-091 allows, card to story (T-307), is deferred as an S4 row: it would need an FD note on the group's size animation and U42's frame-cost measurement first.
+
+**D16 — Spacing, layout and press hooks for later Units.** The T-202, T-203, T-207 and T-102 drafts take margins and gaps from "T-011 spacing" and raise an `ISSUES.md` row when a token is missing. So the token block adds:
+- a spacing scale `--space-1` … `--space-8`;
+- `--grid-min` for card grids;
+- the existing `--measure` (BR3.6).
+
+Press feedback reaches later classes through `data-press` instead of edits to `motion.css` (BR6.11). The home hero wash is applied to `.opener` here, so T-207 adds no rule for it.
 
 ## 10. Option deltas (if the owner changes an answer)
 
@@ -314,6 +376,10 @@ Story coverage, including the US2.3 criteria, is in `traceability.json`. AC2.3.4
 | Q7 → C | No browser smoke in this Unit; AC2.4.2 and AC2.4.3 are verified by static checks and jsdom, with an S4 `ISS-` row deferring the browser proof to U42 |
 | Q8 → B | Only `masthead` and `colophon` are static groups; in-page emergency and disclaimer blocks fade with the page; AC2.4.4 needs an FD note |
 | Q8 → C | `RouteTransition` gets an opt-out, and pages with emergency guidance pass it; each later Unit must remember it |
+| Q9 → B | `.prettierignore` and `prettier.config.mjs` stay as T-010 left them; `motion.css` is also ignored; BR9.8 says "hand-formatted, single style per file" |
+| Q9 → C | All five stylesheets formatted; `01-conventions.md` §7.1 needs an FD note; `scripts/contrast.test.mjs`'s prototype comparison must still pass after `tokens.css` is reflowed |
+| Q10 → B | A `Morph` wrapper (`ViewTransition name`, `share` class `rk-morph`) joins `components/patient/motion/`; T-202's `Avatar` and hero take a name hook; an FD note allows `width`/`height` on one group; BR4.2 and `M1-property` gain that exception |
+| Q10 → C | The same wrapper, used only by T-307 (experience card to story head) |
 
 ## 11. Risks to verify in Code Generation and Build and Test
 
@@ -324,17 +390,46 @@ Story coverage, including the US2.3 criteria, is in `traceability.json`. AC2.3.4
 - **Font swap shift on `/bn`.** `next/font/local` fallback adjustment targets Latin fallbacks, not Nirmala UI or Noto Sans Bengali. Measure CLS on a cold `/bn` load. If the heading rewrap contributes noticeably, add a manual fallback `@font-face` with `size-adjust` tuned to the Bengali system face, and record it.
 - **Masthead at 360 px in `bn`.** Brand, a 44 px compose button and four 44 px controls on one row is tight; tabs wrap below. Verify no overflow at 360 px and 200% zoom (BR3.5).
 - **Tokens falling through to the staff palette.** List every `var(--…)` in `patient.css` and `motion.css` and confirm each is defined in the patient block (BR1.5); record the list's count in the hand-off.
-- **Owned-path gaps.** `components/patient/shell/**` does not exist; the real shell files, `apps/web/playwright.config.ts`, `apps/web/package.json` and the `contrast:patient` script line need plan approval.
-- **Docs that describe the old look.** `DESIGN.md` (patient sections), `01-conventions.md` §6 and §7.1/§7.4/§7.5/§7.7, `PRODUCT.md` line 87 (`body[data-motion="off"]`) and `.impeccable/config.json`'s `side-tab` reason all describe 04b. None is in owned paths; proposed `ISS-` row.
+- **Owned-path gaps.** `components/patient/shell/**` does not exist. These files need plan approval, each listed with its reason in the hand-off (`frontend-components.md` § 2):
+  - the real shell files;
+  - `apps/web/playwright.config.ts`, `apps/web/e2e/tsconfig.json`, `apps/web/package.json`, `apps/web/vitest.config.ts`, `apps/web/vitest.setup.ts` and `app/layouts.test.tsx`;
+  - the `contrast:patient` script line, `tools/contrast.mjs` and `scripts/contrast.test.mjs`;
+  - `.prettierignore`, `prettier.config.mjs`, `.gitattributes` and `pnpm-lock.yaml`.
+- **Docs that describe the old look or the old gate.** None is in the owned paths; proposed `ISS-` row:
+  - `DESIGN.md` (patient sections);
+  - `01-conventions.md` §6, §7.1, §7.4, §7.5, §7.7, §7.8 (only `pnpm contrast`) and §13 (nine steps);
+  - `PRODUCT.md` line 87 (`body[data-motion="off"]`);
+  - `.impeccable/config.json`'s `side-tab` reason.
+- **Task-text drift in later tasks.** T-306, T-307 and T-308 say "wrap the pages in `RouteTransition`"; the layout provides it (Q4 A), as the T-202, T-203 and T-207 drafts already note. T-102's draft expects `pnpm smoke` to include `smoke:e2e`; it does not (WF8 step 3). Listed in the hand-off.
 
-## 12. Dependency check status (2026-10-28)
+### Found in the T-010 re-check (2026-10-29)
+
+Each is designed out below. Rows are proposed for `ISSUES.md`, with ids assigned when the stage finalises, `Found in` U45 T-011.
+
+| # | Severity if built as before | Finding | Designed out by |
+|---|---|---|---|
+| F1 | S1 (red check) | Bringing `patient.css` into Prettier's scope under `singleQuote: true` rewrites `:root[data-theme="dark"] {` to single quotes; `contrast:patient` then finds no dark block and exits 1 | Q9 A: the CSS override keeps double quotes (BR9.8); the CSS check accepts either quote style |
+| F2 | S1 (red check) | The Vitest web project has no `include`, so Vitest's default would collect `apps/web/e2e/smoke/motion.spec.ts`; Playwright's `test()` throws there and `test:coverage` fails | `e2e/**` added to the web project's `exclude` (BR9.9) |
+| F3 | S1 (red check) | `apps/web/e2e/**` is in no tsconfig, so ESLint's type-aware project service cannot parse the spec and `pnpm lint` fails | `apps/web/e2e/tsconfig.json`; `typecheck` also runs `tsc -p e2e` (BR9.9) |
+| F4 | S1 (red check) | `layouts.test.tsx` (T-010) renders the locale layout. Without Next's build transform, `localFont()` throws (`next/dist/compiled/@next/font/dist/local/index.js`: `throw new Error()`), so a direct call in the layout breaks those tests under Vitest | The font call lives in `app/fonts/bn-heading.ts`; `vitest.setup.ts` mocks `next/font/local` once for every web test (BR9.9) |
+| F5 | S2 (contrast hidden) | The contrast tool takes the last column-0 dark block only; `patient.css` has two today, and a later Unit's small dark block would make the dark run check light values, a silent pass | One dark token block, checked by `M10-tokens` (BR1.8) |
+| F6 | S2 (hard rule) | 13 hover-lift rules, not 2: `.emerg-card:hover` and `.emergency-lines a:hover` move emergency guidance (T-207 F6); the static set stops transitions, not a hover transform | Every hover transform removed; `M9-hover` (BR6.5) |
+| F7 | S2 (storyboard look) | Three sibling drafts take margins and gaps from "T-011 spacing", which the token block did not define | Spacing and layout tokens (BR3.6) |
+| F8 | S3 | Press feedback on the sibling drafts' classes (`.pillrow a`, `.doc-entry`, `.browse-card`, `.mini-row`, `.chip`) was not in the list, and later Units may not add motion | Press list extended; `data-press` hook (BR6.11) |
+| F9 | S3 | `* text=auto eol=lf` with no `*.woff2` rule; a misdetected font would be corrupted, as `report.pdf` was (ISS-178) | `*.woff2 binary` in `.gitattributes` before the font is committed |
+| F10 | S4 | ISS-279 expects T-011 to break `pnpm contrast`; under Q1 A `tokens.css` is untouched | T-011's half of ISS-279 closes at Build and Test; the Mailpit and ClamAV half stays open |
+| F11 | S4 | Earlier draft text named T-308 as `PublishTick`'s consumer; it is T-306 (and T-102) | Corrected here (WF6, BR6.4) |
+| F12 | S4 | The avatar morph proposal (T-202 Q12, T-203 Q15 C) | Not built (Q10 A, D15); the card-to-story move is deferred to T-307 with an FD note |
+
+## 12. Dependency check status (2026-10-29, log read on the T-010 branch)
 
 | Dependency | Latest log entry | Action for Code Generation |
 |---|---|---|
 | Hind Siliguri, `next/font/local` | none | New entry: font version and licence, `next/font/local` options on Next 16.3.4 |
-| Playwright | 2026-09-10 (1.63.0, origin plan) | Re-check (older than 3 days) |
+| Playwright | 2026-09-10 (1.63.0, origin plan) | Re-check (older than 3 days); pick a release pnpm 11's `minimumReleaseAge` accepts; confirm it installs no browser at `pnpm install` (CI uses `--frozen-lockfile` and runs no Playwright yet) |
 | React `ViewTransition`, Next 16.3.4, React 19.3.0 | 2026-09-13 (T-008); research 2026-10-27 is not a log entry | Re-check and log: stable `ViewTransition` on 19.3.0, known issues, the 16.4.3 and 19.3.1 notes |
 | impeccable | 2026-09-10 (4.1.0) | Re-check |
+| Prettier 3.9.6 (CSS printing, `overrides`) | 2026-10-28 (T-010) | Reuse while under 3 days old; otherwise re-check |
 
 ## Rules summary (derived from `rules.md`)
 
@@ -347,6 +442,7 @@ Story coverage, including the US2.3 criteria, is in `traceability.json`. AC2.3.4
 | BR1.5 | One `hsl()` token block at the top of `patient.css`, canonical names plus aliases |
 | BR1.6 | Staff console unchanged |
 | BR1.7 | Night-paper dark palette; both dark blocks identical |
+| BR1.8 | One column-0 dark token block, no scheme block; checked by `M10-tokens` |
 | BR2.1 | FD-091 type scale with `:lang(bn)` sizes and line-heights |
 | BR2.2 | No uppercase or letter-spacing on Bengali |
 | BR2.3 | System fonts for body and Latin text |
@@ -357,13 +453,14 @@ Story coverage, including the US2.3 criteria, is in `traceability.json`. AC2.3.4
 | BR3.3 | 44 × 44 px targets everywhere |
 | BR3.4 | 3 px focus ring, never animated |
 | BR3.5 | No horizontal overflow at five viewports, both languages, 200% zoom |
+| BR3.6 | Spacing and layout tokens; later Units use them, never literal spacing |
 | BR4.1 | Durations and easings only from tokens |
 | BR4.2 | Only `transform` and `opacity` animate |
 | BR4.3 | Small movement only |
 | BR4.4 | Nothing loops or auto-plays |
 | BR4.5 | Nothing animates on first paint |
 | BR4.6 | Motion never delays reading or input |
-| BR4.7 | All patient motion in `motion.css` |
+| BR4.7 | All patient motion in `motion.css`; later Units add no motion rule |
 | BR5.1 | Reduced = OS reduce OR in-app switch |
 | BR5.2 | `<html data-motion="reduced">` from the cookie |
 | BR5.3 | Every movement rule inside both guards |
@@ -373,21 +470,25 @@ Story coverage, including the US2.3 criteria, is in `traceability.json`. AC2.3.4
 | BR6.2 | Reveal staggers the first 6 children |
 | BR6.3 | Composer step slide 24 px |
 | BR6.4 | Publish tick plus plain text |
-| BR6.5 | Press scale 0.98; instant hover |
+| BR6.5 | Press scale 0.98; instant hover; no hover transform anywhere |
 | BR6.6 | Home scroll reveals below the first section |
 | BR6.7 | Sheets enter with a rise; close at once |
 | BR6.8 | Static skeletons only |
 | BR6.9 | Reading bar scales with scroll; hidden in reduced mode |
 | BR6.10 | Data displays never animate |
+| BR6.11 | `data-press` hook for later Units' pressables |
+| BR6.12 | Only six view-transition names; no shared-element morph |
 | BR7.1 | Demo marker, disclaimer and emergency guidance never animated |
 | BR7.2 | Static groups above the moving page |
 | BR7.3 | One element per group name per page |
 | BR7.4 | No motion rule touches a static element |
 | BR8.1 | No gamification or dark-pattern motion |
-| BR9.1 | `check:motion` in `pnpm check` |
+| BR9.1 | `check:motion` in `pnpm check` after `contrast:patient`; planted violations in the `tooling` tests |
 | BR9.2 | Plain CSS plus React ViewTransition; no library; no motion style attributes |
 | BR9.3 | No new keys expected; any new key in both dictionaries, flagged |
-| BR9.4 | All UI gates green before done |
+| BR9.4 | All UI gates green before done, CI green on the Bolt head |
 | BR9.5 | Shell Lighthouse baseline recorded, not gated |
 | BR9.6 | Motion is progressive enhancement |
 | BR9.7 | Hand-off and dependency entries |
+| BR9.8 | Patient CSS in Prettier's scope with double quotes; staff and shared CSS ignored |
+| BR9.9 | Tests in `en` and `bn`, `apps/web` ≥ 80% lines, no `test-support`, e2e kept out of Vitest |

@@ -1,8 +1,8 @@
 # Entities — U14 `t-201-directory-and-taxonomy-modules`
 
-Source of truth for the data shape this Unit reads and, for the two taxonomy commands, writes. Built from T-201 (with FD-067, C6, C7 and the addendum), `02-data-model.md` §0, §3–§7 and §17, `components.md` (Directory, Taxonomy, Review), `contract-summary.md` (C6, C7, C9), the schema files on `main` and the answers in `functional-design-questions.md`. Workflows, port signatures and view models are in `functional-spec.md`; decision logic is in `rules.md`.
+Source of truth for the data shape this Unit reads and, for the two taxonomy commands, writes. Built from T-201 (with FD-067, C6, C7 and the addendum), `02-data-model.md` §0, §3–§7 and §17, `components.md` (Directory, Taxonomy, Review), `contract-summary.md` (C6, C7, C9), the schema files on `main` (refreshed 2026-10-29, after CR-012), the corpus and prototype data, and the answers in `functional-design-questions.md`. Workflows, port signatures and view models are in `functional-spec.md`; decision logic is in `rules.md`.
 
-The Unit adds two columns (`taxonomy_terms.suggested`, `taxonomy_terms.suggested_order`, Question 4) and no table. Every other entity below exists on `main` and is only read. Entities owned by another component are listed because a read crosses them; the owner is named on each.
+The Unit adds no table. Its one migration adds `taxonomy_terms.suggested` and `suggested_order` (Question 4) with a partial unique key on open provisional terms (BR5.2), and `facility_branches.branch_label_en`, `branch_label_bn` (Question 9 C) and `avatar_hue` (Question 12); it changes what `facility_branches.name_en/bn` holds (the branch's own name, the hospital, instead of its label). Every other entity below exists on `main` and is only read. Entities owned by another component are listed because a read crosses them; the owner is named on each.
 
 ```yaml
 entities:
@@ -18,9 +18,9 @@ entities:
       - { name: qualifications_en, type: text, required: false }
       - { name: qualifications_bn, type: text, required: false }
       - { name: bmdc_number, type: text, required: false, constraints: "profile information only; never makes the registration verified" }
-      - { name: languages_en, type: text, required: false }
+      - { name: languages_en, type: text, required: false, constraints: "empty on the seeded d11 (Question 13)" }
       - { name: languages_bn, type: text, required: false }
-      - { name: fee_display_en, type: text, required: false }
+      - { name: fee_display_en, type: text, required: false, constraints: "empty on the seeded d11 (Question 13)" }
       - { name: fee_display_bn, type: text, required: false }
       - { name: city_en, type: text, required: false }
       - { name: city_bn, type: text, required: false }
@@ -45,7 +45,7 @@ entities:
     description: "Where and when a doctor sees patients (table doctor_chambers)."
     attributes:
       - { name: doctor_id, type: uuid, required: true, references: Doctor.id }
-      - { name: branch_id, type: uuid, required: false, references: FacilityBranch.id, constraints: "links the doctor to a facility branch; absent for a chamber with no profile" }
+      - { name: branch_id, type: uuid, required: false, references: FacilityBranch.id, constraints: "the only link between a doctor and a branch (Question 14); absent for a chamber with no profile (d3's Uttara Skin Care, d11's chamber)" }
       - { name: name_en, type: text, required: true }
       - { name: name_bn, type: text, required: true }
       - { name: hours_en, type: text, required: false }
@@ -59,11 +59,11 @@ entities:
     description: "A facility organisation, the parent of one or more branches (table facilities)."
     attributes:
       - { name: public_id, type: string, required: true, unique: true }
-      - { name: name_en, type: text, required: true }
+      - { name: name_en, type: text, required: true, constraints: "the organisation (\"Shefa Health Group\"); a single-branch organisation has its branch's name; projected as parentName only when it differs from the branch's own name (BR3.11)" }
       - { name: name_bn, type: text, required: true }
       - { name: type, type: enum, required: true, allowed_values: [hospital, clinic, diagnostic] }
       - { name: field_provenance, type: "map<field, ProvenanceEntry>", required: true, default: "{}" }
-      - { name: avatar_hue, type: integer, required: false, min: 0, max: 359, constraints: "not seeded today; stableHue fallback (Question 8)" }
+      - { name: avatar_hue, type: integer, required: false, min: 0, max: 359, constraints: "not seeded (the corpus has no organisation hue); no branch view model reads it" }
       - { name: state, type: enum, required: true, allowed_values: [draft, pending_review, published, hidden_pending_review, hidden, deleted_tombstone, rejected] }
       - { name: claimed_by_account_id, type: uuid, required: false, constraints: "private; projected only as the boolean claimed" }
     relationships:
@@ -75,8 +75,11 @@ entities:
     attributes:
       - { name: public_id, type: string, required: true, unique: true, constraints: "the id in /facilities/{publicId}" }
       - { name: facility_id, type: uuid, required: true, references: Facility.id }
-      - { name: name_en, type: text, required: true }
+      - { name: name_en, type: text, required: true, constraints: "the branch's own name, the hospital as the prototype names it (\"Shefa General Hospital\"); before this Unit the seed stored the label here (Question 9 C)" }
       - { name: name_bn, type: text, required: true }
+      - { name: branch_label_en, type: text, required: false, constraints: "new in this Unit (Question 9 C): the branch label (\"Dhanmondi branch\"); absent for a branch with no label; its provenance is the field_provenance entry branch" }
+      - { name: branch_label_bn, type: text, required: false, constraints: "new in this Unit; present exactly when branch_label_en is (database check)" }
+      - { name: avatar_hue, type: integer, required: false, min: 0, max: 359, constraints: "new in this Unit (Question 12); seeded from the corpus avatarHue (the prototype's accent); database check 0-359" }
       - { name: city_en, type: text, required: true }
       - { name: city_bn, type: text, required: true }
       - { name: area_en, type: text, required: false }
@@ -88,7 +91,9 @@ entities:
       - { name: is_primary, type: boolean, required: true, default: false }
     constraints:
       - "Publicly visible only when the branch and its facility are both published (BR1.2)"
-      - "Has no avatar_hue column; its hue is stableHue(public_id) (Question 8)"
+      - "Its hue is avatar_hue when present, else stableHue(public_id) (Questions 8 and 12, BR3.8)"
+      - "Projected as name = the branch's own name, branchName = the label, parentName = the organisation name when it differs (BR3.11)"
+      - "No seeded branch has an address (the corpus has no address field)"
     relationships:
       - { to: FacilityReview, cardinality: "one-to-many", direction: "FacilityBranch is the subject of FacilityReview (read only by Review)" }
       - { to: DoctorChamber, cardinality: "one-to-many", direction: "FacilityBranch hosts DoctorChamber" }
@@ -116,12 +121,13 @@ entities:
       - { name: name_key_bn, type: text, required: true, constraints: "normalizeAliasKey(name_bn) (BR4.2)" }
       - { name: provisional, type: boolean, required: true, default: false }
       - { name: canonical_id, type: uuid, required: false, references: TaxonomyTerm.id, constraints: "set when the term is mapped, merged or redirected; the canonical target has no canonical_id itself" }
-      - { name: created_by_account_id, type: uuid, required: false, constraints: "private; set by createProvisional; never projected" }
+      - { name: created_by_account_id, type: uuid, required: false, constraints: "private; never written by this Unit, so no term ties an account to a wording that may appear on an anonymous review (BR5.2); never projected" }
       - { name: state, type: enum, required: true, allowed_values: [draft, pending_review, published, hidden_pending_review, hidden, deleted_tombstone, rejected], constraints: "published is active; hidden is deactivated (Question 5)" }
       - { name: suggested, type: boolean, required: true, default: false, constraints: "new in this Unit (Question 4, ISS-157)" }
-      - { name: suggested_order, type: integer, required: false, min: 0, constraints: "new in this Unit; order of a suggestion inside its group" }
+      - { name: suggested_order, type: integer, required: false, min: 0, constraints: "new in this Unit; order of a suggestion inside its group (database check >= 0)" }
     constraints:
       - "Effective term = the term itself when canonical_id is absent, else its canonical target (BR1.6)"
+      - "At most one open provisional term per kind and key: partial unique index on (kind, name_key_en) where provisional and canonical_id is null, new in this Unit (BR5.2)"
       - "Only canonical, published terms of kind condition are listed in the topic index (BR4.4)"
       - "A tag group is the fixed enum tag_group [symptom, condition, treatment, medicine]; groups are not rows (Question 5)"
     relationships:
@@ -149,8 +155,8 @@ entities:
       - { name: author_persona_id, type: uuid, required: true, references: Persona.id, constraints: "never projected; only the byline derived from the persona" }
       - { name: relationship, type: enum, required: true, allowed_values: [self, parent, family, witness] }
       - { name: identity_mode, type: enum, required: true, allowed_values: [named, pseudonymous, anonymous] }
-      - { name: sentiment, type: enum, required: false, allowed_values: [positive, mixed, negative] }
-      - { name: outcome, type: enum, required: false, allowed_values: [helped, none, worse, uncertain] }
+      - { name: sentiment, type: enum, required: false, allowed_values: [positive, mixed, negative], constraints: "absent on the seeded r25 (Question 13)" }
+      - { name: outcome, type: enum, required: false, allowed_values: [helped, none, worse, uncertain], constraints: "absent on the seeded r25 (Question 13)" }
       - { name: period_year, type: integer, required: true }
       - { name: period_month, type: integer, required: true, min: 1, max: 12 }
       - { name: title, type: text, required: true, constraints: "original wording" }
@@ -173,10 +179,11 @@ entities:
       - { name: term_id, type: uuid, required: false, references: TaxonomyTerm.id }
       - { name: free_text, type: text, required: false, constraints: "original wording" }
       - { name: not_sure, type: boolean, required: true, default: false }
-      - { name: created_at, type: timestamp, required: true, constraints: "tag order; the first condition tag names the card's condition (BR3.9)" }
+      - { name: created_at, type: timestamp, required: true, constraints: "tag order; the first condition term tag, else the first free-text condition tag, names the card's condition (BR3.9)" }
     constraints:
       - "Exactly one of term_id, free_text, not_sure (database check)"
       - "A review counts once per effective term however many of its tags point there (BR3.2)"
+      - "The seed writes one condition term tag per review (from the corpus conditionSeedRef) before the review's free-text tags, which keep the author's wording (Question 11, BR7.7)"
 
   - name: FacilityReview
     owner: Review
@@ -195,6 +202,7 @@ entities:
       - { name: deleted_at, type: timestamp, required: false }
     constraints:
       - "Counts only when state = published AND deleted_at IS NULL (BR1.4)"
+      - "No sentiment: facility feedback is the nine criteria only (the owner's answer to T-203 Question 1)"
 
   - name: EvidenceItem
     owner: Evidence
@@ -248,7 +256,7 @@ entities:
 
 ## Summary
 
-- **Directory entities** (`Doctor`, `DoctorChamber`, `Facility`, `FacilityBranch`, `ProfileRedirect`) are read only. A doctor is visible when published and not merged; a branch when it and its organisation are published. Private columns (`claimed_by_account_id`) reach a view model only as a boolean.
-- **Taxonomy entities** (`TaxonomyTerm`, `TaxonomyAlias`) are read by the taxonomy queries and written by `createProvisional` and `mapProvisional`. The Unit adds `suggested` and `suggested_order` to the term. A term with a `canonical_id` is a redirect to its canonical target; a `hidden` term is deactivated. Every key column holds `normalizeAliasKey` of its text.
-- **Review-side entities** (`EligibleReview`, `ReviewTag`, `FacilityReview`) and the borrowed `EvidenceItem` and `Persona` are read only inside the Review stub, through the `ReviewRepository` read methods (FD-067). Doctor figures read `reviews` by `doctor_id`; facility figures read `facility_reviews` by `branch_id`; the two never meet.
+- **Directory entities** (`Doctor`, `DoctorChamber`, `Facility`, `FacilityBranch`, `ProfileRedirect`) are read only by the queries. A doctor is visible when published and not merged; a branch when it and its organisation are published; a doctor is at a branch only through a chamber linked to it. A branch now keeps its own name (the hospital), its label and its hue, and the organisation is its parent. Private columns (`claimed_by_account_id`) reach a view model only as a boolean.
+- **Taxonomy entities** (`TaxonomyTerm`, `TaxonomyAlias`) are read by the taxonomy queries and written by `createProvisional` (through the provisional-term operation) and `mapProvisional`. The Unit adds `suggested`, `suggested_order` and the open-provisional unique key to the term. A term with a `canonical_id` is a redirect to its canonical target; a `hidden` term is deactivated. Every key column holds `normalizeAliasKey` of its text, computed before the database.
+- **Review-side entities** (`EligibleReview`, `ReviewTag`, `FacilityReview`) and the borrowed `EvidenceItem` and `Persona` are read only inside the Review stub, through the `ReviewRepository` read methods (FD-067). Doctor figures read `reviews` by `doctor_id`; facility figures read `facility_reviews` by `branch_id`, as nine criteria with no sentiment; the two never meet. The seed links each review to its condition term and adds one review without sentiment or outcome.
 - **Value objects**: `ProvenanceEntry` (source, date, optional hidden flag), `Distribution` (counts for every key, total, not provided, empty, limited data) and `Byline` (no name at all for anonymous personas).

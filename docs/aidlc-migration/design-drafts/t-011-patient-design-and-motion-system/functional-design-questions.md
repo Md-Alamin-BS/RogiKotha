@@ -7,6 +7,15 @@ Context:
 - Decisions read: FD-091 (the redesign), FD-032 (plain CSS, no animation library), FD-030 (staff console keeps Chart Tray), FD-024 (equal languages), FD-042 (Bengali copy review).
 - Research read: `docs/planning/research/ui-direction-2026-10-27/design-direction-research.md` §4 (the design brief) and `motion-tech-research.md`.
 - Code read on the CR-011 Bolt branch (no file in this Unit's area differs from `main`): `apps/web/src/styles/{tokens,globals,patient,admin}.css`, `app/[locale]/layout.tsx`, `app/[locale]/(patient)/layout.tsx`, `app/[locale]/admin/layout.tsx`, the shell components (`Masthead`, `Tabs`, `Colophon`, `ViewShell`, `Emergency`, `DemoMarker`, `SkipLink`, `Sheet`, `ThemeControls`), `lib/cookies.ts` (`Motion = 'on' | 'off'`), `tools/contrast.mjs`, `tools/bangla-metrics.mjs`, the root and `apps/web` `package.json`, `.impeccable/config.json`, `DESIGN.md`, `docs/implementation/01-conventions.md` §6–§7 and `docs/status/dependency-check-log.md`.
+- **Refreshed 2026-10-29** against T-010 as built on `bolt/t-010-boundary-lint-and-ci` (read with `git show`, not merged yet). Read there:
+  - the root `package.json` (the nine-step `check`), `.prettierignore` and `prettier.config.mjs`;
+  - `tools/contrast.mjs` (`--tokens`, fail closed) and `scripts/contrast.test.mjs`;
+  - `scripts/vitest.config.ts` (the `tooling` project), `vitest.workspace.ts` (coverage roots and thresholds), `eslint.config.mjs` and `eslint.boundaries.mjs`;
+  - `apps/web/{vitest.config.ts,vitest.setup.ts,tsconfig.json,package.json}`, `app/layouts.test.tsx` and `.github/workflows/check.yml`;
+  - T-010's rules BR6–BR10, its hand-off, FD-093 and `ISSUES.md` ISS-272 to ISS-299.
+
+  Also read: the sibling drafts T-202, T-203, T-207 and T-102 for what they take from this Unit; the tasks T-306, T-307 and T-308; and the owner's answers of 2026-10-28 and 2026-10-29 in `OWNER-REVIEW-QUEUE.md`.
+- Answers: Q1–Q8 were decided on the owner's standing instruction of 2026-10-27. They are not in `OWNER-REVIEW-QUEUE.md` yet; they are added there when the stage finalises this draft. Since 2026-10-29 the owner asks for no questions at all, so Q9–Q10 below are decided by the agent on the recommended option and marked so.
 
 ## What the code shows that the task file does not
 
@@ -20,6 +29,23 @@ These facts shape the questions below.
 6. **The current patient motion breaks FD-091.** `.display`, `.lede` and the first list rows rise for 700–800 ms on first paint, which animates the LCP element. `.view` rises on every mount. `.skip` transitions `top`. Tabs and controls transition colours. `.ctl:hover` and `.emergency-lines a:hover` lift by 2 px (the second one moves emergency guidance). `.panel` and `.masthead` use `backdrop-filter` blur.
 7. **No dark palette exists for "Warm Paper".** The design brief gives light values only, but the patient masthead ships a working theme toggle (prototype behaviour, CR-004).
 8. **No new copy is needed.** The motion switch label (`a11y.motion`: "Reduce animation" / "অ্যানিমেশন কমান") and the publish confirmation text (`compose.publishedNote`, which the prototype shows after a `✓`) already exist in both dictionaries.
+
+What T-010 delivered that this design now has to fit (added 2026-10-29):
+
+9. **The gate is nine steps and fails fast**: typecheck, lint (boundary rules included), lint:boundaries, format:check, check:identity, test:coverage (80% lines per package, untested files counted), i18n:check, contrast, build. T-010's BR8.4 expects this Unit to append its check after `contrast`. CI runs `pnpm check` and `pnpm smoke` on every push to `main` and `bolt/**`, and a Bolt merges only after a green run.
+10. **`pnpm contrast` now fails closed.** In `--tokens` mode, a missing block or any pair skipped for a missing token exits 1 (ISS-272). The tool merges every column-0 `:root {` block, takes only the last column-0 `:root[data-theme="dark"] {` block, and checks each `:root[data-scheme=…] {` block as a variant. `patient.css` has two dark blocks today. ISS-279 expects T-011's token changes to break `pnpm contrast`; under Q1 A they do not, because `tokens.css` is untouched.
+11. **Prettier now gates formatting** with `singleQuote: true`, and `.prettierignore` leaves `apps/web/src/styles/**` out "until T-011 decides for its own CSS". Run on 2026-10-29 with the installed Prettier 3.9.6 and the repository's configuration, Prettier rewrites `:root[data-theme="dark"] {` as `:root[data-theme='dark'] {`, which the contrast tool would no longer find.
+12. **`scripts/` is a Vitest project** (`tooling`, `**/*.test.mjs`). T-010's own checks prove they can fail through tests there, not through a `--self-test` flag.
+13. **Test-time traps for this Unit's files.**
+    - The Vitest web project has no `include`, so it would collect a Playwright `*.spec.ts` under `apps/web/e2e/`.
+    - No tsconfig includes `apps/web/e2e/`, so type-aware ESLint cannot parse a spec there.
+    - `localFont()` throws without Next's build transform, and T-010's `layouts.test.tsx` renders the locale layout.
+14. **The sibling drafts rely on things the first draft did not offer.**
+    - "T-011 spacing" tokens (T-202, T-203, T-207, T-102).
+    - Press feedback on `.pillrow a`, `.doc-entry`, `a.browse-card`, `a.mini-row` and `a.chip` (T-202 F7, T-203 F11, T-207 F15).
+    - The removal of the `.emerg-card:hover` lift (T-207 F6). There are 13 hover-lift rules in all, not the 2 listed before.
+    - A decision on an avatar morph (T-202 Q12; T-203 Q15 C).
+    - `PublishTick`'s consumers are T-306 and T-102, not T-308 (the evidence viewer).
 
 ## Settled before this stage
 
@@ -41,6 +67,13 @@ These follow from FD-091, the hard rules or the code, so they are design decisio
 - **Hind Siliguri through `next/font/local`,** with the subset WOFF2 and its OFL licence committed under `apps/web/src/app/fonts/`. The build then needs no network.
 - **No new message keys** (fact 8). If Code Generation finds one is needed, it goes into both dictionaries in one commit and is flagged for the owner (FD-042).
 - **Scheme A/B/C blocks removed** from `patient.css`. Nothing in `apps/web` sets `data-scheme` (`01-conventions.md` §7.4 dropped the scheme controls).
+- **Added 2026-10-29, from T-010 as built** (`functional-spec.md` D11, D14, D16):
+  - `contrast:patient` and `check:motion` go after `contrast` and before `build`.
+  - `patient.css` keeps exactly one dark token block, checked by `check:motion`.
+  - The contrast tool gets a `--pairs patient` flag for the focus ring and the primary wash; the shared pair list is untouched.
+  - The CSS check's planted violations live in a Vitest file in the `tooling` project.
+  - The Playwright files are kept out of the Vitest web project and get their own tsconfig, and the font loader is mocked in the web test setup.
+  - Spacing tokens are added; every hover transform is removed; later Units mark new pressables with `data-press` and add no motion rule.
 
 ## Question 1
 
@@ -127,3 +160,36 @@ C. **No route transition at all on pages that contain emergency guidance.** This
 X. Other (please specify)
 
 [Answer]: A (decided by the agent on the owner's standing instruction of 2026-10-27; listed in docs/aidlc-migration/OWNER-REVIEW-QUEUE.md for the owner to confirm or change)
+
+## Question 9
+
+T-010 left `apps/web/src/styles/**` out of Prettier's scope "until T-011 decides for its own CSS" (fact 11). Is the patient CSS formatted by Prettier?
+
+A. **Bring `patient.css` and `motion.css` into scope; keep `tokens.css`, `globals.css` and `admin.css` ignored** (recommended).
+- **Why these two.** After this Unit both are authored code, not a port (project.md Code Style, 2026-10-27). About ten later patient Units append to them, so `format:check` keeps their layout consistent and their review diffs clean. The file is rewritten in this Unit anyway, so formatting adds no separate churn commit.
+- **Why the three stay out.** They stay verbatim staff or shared ports (`01-conventions.md` §7.1), with their reasons in `.prettierignore`.
+- **The quote override.** One `overrides` entry, `{ files: '*.css', options: { singleQuote: false } }`, keeps double quotes in CSS. That is the CSS convention and the staff files' form, and the contrast tool matches only `:root[data-theme="dark"] {`.
+- **Cost.** Two lines outside the owned paths, listed for plan approval. `patient.css` gets longer, because Prettier puts one declaration per line.
+
+B. **Keep `apps/web/src/styles/**` ignored, `motion.css` included.** No configuration change, but about ten Units then hand-format two growing files with no gate.
+C. **Format all five stylesheets.** One rule for all CSS, but it rewrites the verbatim staff port against `01-conventions.md` §7.1. It also reflows `tokens.css`, which `scripts/contrast.test.mjs` compares with the prototype.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29)
+
+## Question 10
+
+T-202's Question 12 proposes to this Unit a shared-element morph: the doctor's avatar on an index card flying into the profile hero. T-203's Question 15 C proposes the same from a topic card into the condition head. Does T-011 offer a morph primitive?
+
+A. **No morph in this release** (recommended). Three reasons:
+- FD-091's choreography rule 7 (design brief §4) allows shared-element moves "only from card to story", and a doctor profile or a condition page is not a story.
+- A morph between boxes of different sizes animates `width` and `height` of the `::view-transition-group` through the browser's own keyframes. That breaks "only `transform` and `opacity`" (AC2.4.2, AC2.4.6, BR4.2), and `check:motion` cannot see it.
+- Every card that carries a name is captured as its own group on every navigation from its list, which costs frames on the low-end Android profile.
+
+T-202 and T-203 then keep their option A (primitives only) and need no `ISSUES.md` row for the morph. The one move FD-091 allows, an experience card into its story (T-307), is recorded as an S4 deferral: it needs an FD note on the group's size animation and U42's frame-cost measurement first.
+
+B. **An avatar-morph primitive now**: a `Morph` wrapper around React's `ViewTransition name`, a name hook on T-202's `Avatar` and hero, and an FD note that allows `width`/`height` on that one group. It is the richest option, but it goes against FD-091 rule 7, and its cost on low-end phones is unmeasured.
+C. **Only the FD-091 card-to-story move now**, for T-307. It is within rule 7, but it needs the same size-animation exception and the same measurement, and T-307 is not built for many Units yet.
+X. Other (please specify)
+
+[Answer]: A (decided by the agent under the owner's no-questions instruction of 2026-10-29)
