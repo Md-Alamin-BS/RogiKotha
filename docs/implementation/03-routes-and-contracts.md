@@ -79,6 +79,7 @@ export type Capability =
 'auth.invalid_credentials' | 'auth.email_unverified' | 'auth.rate_limited' | 'auth.token_invalid' | 'auth.token_expired'
 | 'auth.step_up_required' | 'auth.device_unapproved' | 'auth.password_too_short' | 'auth.username_taken'
 | 'auth.username_invalid' | 'auth.age_required' | 'auth.terms_required' | 'auth.account_suspended'
+| 'auth.password_equals_email'
 | 'forbidden' | 'not_found' | 'conflict' | 'validation' | 'rate_limited' | 'internal'
 | 'review.min_fields' | 'review.attestation_required' | 'review.not_editable' | 'review.restore_expired'
 | 'evidence.too_many' | 'evidence.too_large' | 'evidence.total_too_large' | 'evidence.type_rejected' | 'evidence.not_previewable' | 'evidence.confirmation_required'
@@ -91,7 +92,7 @@ export type Capability =
 export interface PageMeta { cursor?: string; nextCursor?: string; total?: number; page?: number; pageSize?: number }
 ```
 
-Every command input is a zod schema in `contracts/schemas/<module>.ts` named `<VerbNoun>Input`; every view model is a plain serialisable type in `contracts/view-models/`. View models never contain `accountId`, emails, private linkage, or original filenames.
+Every command input is a zod schema in `contracts/schemas/<module>.ts` named `<VerbNoun>Input`; every view model is a plain serialisable type in `contracts/view-models/`. View models never contain `accountId`, emails, private linkage, or original filenames. One exception (FD-096): a signed-in account sees its own address only masked (`s****@example.test`: the first character of the local part, `****`, `@`, the domain), in `SecurityVM` and the pending-confirmation banner, built by `account.getOwnAccount` per request and never cached; no public, staff or worker projection carries even the masked form.
 
 ## 3. Ports (`packages/application/src/ports/`)
 

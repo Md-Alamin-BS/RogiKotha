@@ -412,8 +412,12 @@ export type MessageKey =
   | 'errors.auth.accountSuspended'
   | 'errors.auth.ageRequired'
   | 'errors.auth.deviceUnapproved'
+  | 'errors.auth.displayNameRequired'
+  | 'errors.auth.emailInvalid'
   | 'errors.auth.emailUnverified'
   | 'errors.auth.invalidCredentials'
+  | 'errors.auth.passwordEqualsEmail'
+  | 'errors.auth.passwordTooLong'
   | 'errors.auth.passwordTooShort'
   | 'errors.auth.rateLimited'
   | 'errors.auth.stepUpRequired'
@@ -1195,8 +1199,12 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.auth.accountSuspended',
   'errors.auth.ageRequired',
   'errors.auth.deviceUnapproved',
+  'errors.auth.displayNameRequired',
+  'errors.auth.emailInvalid',
   'errors.auth.emailUnverified',
   'errors.auth.invalidCredentials',
+  'errors.auth.passwordEqualsEmail',
+  'errors.auth.passwordTooLong',
   'errors.auth.passwordTooShort',
   'errors.auth.rateLimited',
   'errors.auth.stepUpRequired',

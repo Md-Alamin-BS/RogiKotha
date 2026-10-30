@@ -12,12 +12,18 @@ Coverage uses `@vitest/coverage-v8`, with an 80% line floor per package.
 
 ## Run this Unit's tests
 
-Every long command carries an outer `timeout`. Step 3 records the exact unit-scoped commands here once they are verified on the branch. Until then:
+Every long command carries an outer `timeout`. Verified on `bolt/t-101-better-auth-adapter` on 2026-10-30 (Step 3): the unit command ran 13 files and 74 tests green before this Unit's code.
 
 ```bash
 pnpm infra:up
+# Unit tests of the four core packages (no database):
 timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project domain --project application --project adapters --project contracts
+# The test-support fakes:
+timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project test-support
+# Database integration tests against DATABASE_URL_TEST (reset once per run):
 timeout 600 pnpm test:int
+# Coverage for one package, for example application:
+timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project application --coverage --coverage.include='packages/application/src/**' --coverage.thresholds.lines=0
 timeout 600 pnpm smoke
 timeout 1200 pnpm check
 ```

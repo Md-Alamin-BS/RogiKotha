@@ -28,10 +28,10 @@ The Unit runs in two developer phases on one branch, one after the other, then t
 
 **Phase A — core layers (one developer)**
 
-- [ ] **Step 1** — Baseline on `bolt/t-101-better-auth-adapter`. Run `pnpm infra:up`, then `timeout 1200 pnpm check` (eleven steps) and `timeout 600 pnpm smoke`, both green. Record the counts and the per-package coverage table.
-- [ ] **Step 2** — Confirm that FD-095 to FD-098 are in the decision log as written (review point 3). Then do the dependency check (BR7.8): Better Auth 1.7.x, nodemailer and `@node-rs/argon2`, each on the current stable release, with advisories and Next 16.3.4 peers checked. Append the entry to `docs/status/dependency-check-log.md`.
-- [ ] **Step 3** — Verify the test runner and record the unit-scoped commands in `unit-test-instructions.md`.
-- [ ] **Step 4** — Spike, time-boxed to 45 minutes (design § 16 and WF0 step 4). Install the libraries, build, and run one `signUpEmail` from a script. Confirm the listed library capabilities and the reset-token format (review point 1). Record the results in `code-summary.md`.
+- [x] **Step 1** — Baseline on `bolt/t-101-better-auth-adapter`. Run `pnpm infra:up`, then `timeout 1200 pnpm check` (eleven steps) and `timeout 600 pnpm smoke`, both green. Record the counts and the per-package coverage table.
+- [x] **Step 2** — Confirm that FD-095 to FD-098 are in the decision log as written (review point 3). Then do the dependency check (BR7.8): Better Auth 1.7.x, nodemailer and `@node-rs/argon2`, each on the current stable release, with advisories and Next 16.3.4 peers checked. Append the entry to `docs/status/dependency-check-log.md`.
+- [x] **Step 3** — Verify the test runner and record the unit-scoped commands in `unit-test-instructions.md`.
+- [x] **Step 4** — Spike, time-boxed to 45 minutes (design § 16 and WF0 step 4). Install the libraries, build, and run one `signUpEmail` from a script. Confirm the listed library capabilities and the reset-token format (review point 1). Record the results in `code-summary.md`.
 - [ ] **Step 5** — Contracts (WF0 step 5): `03-routes-and-contracts.md` §2, `errors.ts`, `config-values.ts` (`signIn` with the narrowed ranges, `windowMinutes` 15–1440), `schemas/account.ts`, `actor.ts`, `view-models/security.ts`. Write and run their tests.
 - [ ] **Step 6** — Domain: `account/account-state.ts`, `account/mask-email.ts`. Write and run the state-table and masking tests.
 - [ ] **Step 7** — Application (WF0 step 7): ports, `command.ts`, `audit/*` (closes ISS-108), `authorization/capabilities.ts`, `modules/account/**`, `modules/notification/internal/queue-email.ts`, `modules/notification/send-email-delivery.ts`, `src/worker.ts` and the `./worker` export. Include review points 1, 2, 4 and 5. Then the `test-support` fakes (WF0 step 10), and the application tests from § 11 using those fakes.

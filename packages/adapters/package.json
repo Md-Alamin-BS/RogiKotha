@@ -11,7 +11,12 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@node-rs/argon2": "^2.2.1",
     "@rogikotha/application": "workspace:*",
-    "@rogikotha/contracts": "workspace:*"
+    "@rogikotha/contracts": "workspace:*",
+    "nodemailer": "10.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.4"
   }
 }

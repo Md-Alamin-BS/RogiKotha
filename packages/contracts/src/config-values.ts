@@ -7,6 +7,37 @@ import { z } from 'zod';
 
 import { REPORT_REASONS } from './enums';
 
+// The C5 sign-in block (FD-058, FD-063). The ranges are narrower than C1's (Question 8 C): C5 fixes
+// the per-email limit at 10 failures in 15 minutes, so a delay threshold, a severe threshold or a
+// window outside these bounds could never take effect (review point 2).
+export const SignInSettingsSchema = z
+  .object({
+    delayAfterFailures: z.number().int().min(1).max(9),
+    windowMinutes: z.number().int().min(15).max(1440),
+    firstDelaySeconds: z.number().int().min(1).max(60),
+    maxDelaySeconds: z.number().int().min(1).max(300),
+    severeFailures: z.number().int().min(2).max(10),
+  })
+  .strict()
+  .superRefine((s, ctx) => {
+    if (s.maxDelaySeconds < s.firstDelaySeconds) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['maxDelaySeconds'],
+        message: 'maxDelaySeconds must be at least firstDelaySeconds',
+      });
+    }
+    if (s.severeFailures <= s.delayAfterFailures) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['severeFailures'],
+        message: 'severeFailures must be above delayAfterFailures',
+      });
+    }
+  });
+
+export type SignInSettings = z.infer<typeof SignInSettingsSchema>;
+
 export const ConfigValuesSchema = z
   .object({
     thresholds: z
@@ -57,6 +88,7 @@ export const ConfigValuesSchema = z
         lastVerified: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       })
       .strict(),
+    signIn: SignInSettingsSchema,
   })
   .strict();
 
@@ -77,5 +109,12 @@ export const DEFAULT_CONFIG_VALUES: ConfigValues = {
     healthLine: '16263',
     crisisLine: '09612-119911',
     lastVerified: '2026-08-21',
+  },
+  signIn: {
+    delayAfterFailures: 3,
+    windowMinutes: 15,
+    firstDelaySeconds: 1,
+    maxDelaySeconds: 30,
+    severeFailures: 10,
   },
 };
