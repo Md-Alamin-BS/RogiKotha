@@ -7,7 +7,7 @@ This guide picks up the RogiKotha build on a different computer, for example you
 | Branch | What it holds |
 |---|---|
 | `main` | Everything merged: 8 Units of the full plan (CR-004, CR-009, CR-006, CR-007, CR-011, CR-012, T-010, T-011), FD-094 to FD-099, the demo-slice record up to the approved code plan |
-| `bolt/demo-slice` | **The current work**: the demo slice (intent `261030-demo-slice`), committed as it stood when this machine stopped. The last commit message says how far it got |
+| `bolt/demo-slice` | **The current work**: the demo slice (intent `261030-demo-slice`). The code is **complete** (`f31342a`). `pnpm check`, `pnpm smoke` and the Playwright demo walk in en and bn (15/15) are green, and the two defects the adversarial testers found are fixed |
 | `bolt/t-101-better-auth-adapter` | The paused full-plan T-101 (sign-in) work in progress; resumes after the demo |
 
 ## 1. Set up the machine (once)
@@ -65,9 +65,9 @@ If one test fails only with "Timeout waiting for worker to respond", run it agai
    /aidlc --resume
    ```
    AI-DLC continues at Code Generation for the demo slice. Each machine writes its own audit file under the intent's `audit/` folder; that is expected.
-3. Tell Claude where things stand. This is a ready prompt:
+3. Tell Claude where things stand. On 2026-10-30 at about 18:00, the code was done and AI-DLC's code review of the slice had been requested. Then the work moved to this machine. This is a ready prompt:
 
-   > Continue the demo slice on branch `bolt/demo-slice`. Read `docs/aidlc-migration/CONTINUE-ON-ANOTHER-DEVICE.md` and `docs/aidlc-migration/RESUME.md`. The build workflow ran on my other machine and cannot be resumed here. Look at the plan `aidlc/spaces/default/intents/261030-demo-slice/construction/code-generation/code-generation-plan.md`. Its checkboxes are NOT reliable, because an agent ticked all 14 early. Trust the last commit message on the branch and the code itself. Run `pnpm check` to see what is still broken. Finish the remaining steps with parallel agents where files don't collide: integrate, click-through in a browser, adversarial tests, records. Then run the remaining AI-DLC gates. Don't ask me questions except for approvals and permissions.
+   > Continue the demo slice on branch `bolt/demo-slice`. Read `docs/aidlc-migration/CONTINUE-ON-ANOTHER-DEVICE.md` and `docs/aidlc-migration/RESUME.md`. The code is complete and green. AI-DLC's code-generation review was requested on my other machine. If the review file under `aidlc/spaces/default/intents/261030-demo-slice/.aidlc-engine/reviews/code-generation/` is missing on this machine (that folder is not committed), request the review again with `aidlc engine log review --stage code-generation --reviewer aidlc-architecture-reviewer-agent --iteration <next>`, dispatch the reviewer, fix what it finds, and record the verdict. Then open the Code Generation gate and ask me to approve. After that, run Build and Test and the three local deployment stages, then squash-merge into main and push. Don't ask me questions except for approvals and permissions.
 
 ## 5. What is left after the code
 
