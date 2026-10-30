@@ -13,7 +13,7 @@ Read this first when the session restarts. It lists exactly where the run stoppe
 ## Progress
 
 - **Done and merged on `main`, 8 of 45 Units:** CR-004, CR-009, CR-006, CR-007, CR-011, CR-012, T-010, T-011 (`f46e116`, review READY, CI green, `pnpm check` green on main in 142 s). `main` pushed at `0e72d4d`.
-- **In progress:** U8 **T-101** Functional Design. The draft was copied into the record with its FD rows renumbered FD-095..098 (added to the decision log). The reviewer was dispatched; next: record the verdict, `unit complete`, then Code Generation.
+- **In progress:** U8 **T-101** Code Generation on `bolt/t-101-better-auth-adapter`. Steps 1–4 are committed (`02ac348`). The rest is built by the workflow `wf_1601e481-dc8`: interfaces, then 5 parallel layer developers, an integrator, 3 adversarial testers plus a fixer, then records. Resume it with the script `C:\Users\BS01395\.claude\projects\C--Users-BS01395-Documents-GitHub-rogikotha\5d6af544-99ce-4a55-84fe-49f5cb410bf0\workflows\scripts\build-t101-sign-in-wf_1601e481-dc8.js` and `resumeFromRunId: "wf_1601e481-dc8"`. After it: the code review (`log review --stage code-generation`), CI, unit complete, checkpoint, merge. Every following patient Unit uses the same workflow shape.
 - Construction is still `unit-major`/`serial` (the engine's Bolt order). Parallel swarm needs every Unit's Functional Design first, including the deferred ones, so it is not switched on yet.
 
 ## In flight when the session closed (cut off by the close; resume as below)

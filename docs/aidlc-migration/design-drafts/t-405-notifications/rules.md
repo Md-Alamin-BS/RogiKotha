@@ -163,36 +163,3 @@ rules:
     logic: "viewer.unreadCount from notification.unreadCount; T-102 BR8.6 renders it"
     source: "T-102 BR8.6, hard rule (no 0 for a missing value)"
 ```
-
-## Rules summary
-
-| Id | One line |
-|---|---|
-| BR1.1 | Every C15 event has a route, none or deferred |
-| BR1.2 | Nine patient routes in release 1 |
-| BR1.3 | Review and housekeeping events route none |
-| BR1.4 | Appeals deferred (FD-088); staff-only routes deferred to T-408 |
-| BR2.1 | Recipients only from payload fields |
-| BR2.2 | One notice per recipient per event; mention > reply > comment |
-| BR2.3 | report.filed: one author notice, never the reporter |
-| BR2.4 | Dedupe keys make delivery idempotent |
-| BR2.5 | deliver never touches email |
-| BR2.6 | No notice for a gone target or deleted recipient |
-| BR2.7 | Bad events are logged and finished |
-| BR3.1 | emailAllowed table |
-| BR3.2 | queueEmail suppresses before writing; adds the link |
-| BR3.3 | mail.send re-checks preferences; suppressed |
-| BR3.4 | Email params allowlist; templates render only the link |
-| BR3.5 | No evidence email in the demo |
-| BR4.1 | Every key in en and bn |
-| BR4.2 | Params: ids, enums, counts |
-| BR4.3 | No actor names; no "verified" evidence |
-| BR4.4 | Routes are locale-free internal paths |
-| BR5.1 | Own rows only, authenticated |
-| BR5.2 | list: newest first, 20, inside the window |
-| BR5.3 | unreadCount inside the window |
-| BR5.4 | markRead own rows, not audited |
-| BR5.5 | expire by created_at |
-| BR6.1 | Page renders key + params, dot, relative time |
-| BR6.2 | Implicit mark-read after paint, announced |
-| BR6.3 | Menu count only above zero |

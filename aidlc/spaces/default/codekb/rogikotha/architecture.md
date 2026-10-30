@@ -1,119 +1,96 @@
-# Architecture — rogikotha
+# Architecture: rogikotha
 
 ## Architecture Analysis
 
 ### System Overview
 
-A TypeScript pnpm monorepo with two runnable processes and seven libraries, backed by three local containers:
-
-- **`apps/web`** — Next.js 16 App Router app serving the patient UI and the staff console under `/{locale}/…`.
-- **`apps/worker`** — Node process that starts pg-boss, relays the transactional outbox into jobs and logs a heartbeat.
-- **Libraries** — `contracts` (shared vocabulary), `database` (Drizzle schema, migrations, PostgreSQL adapters), `i18n` (dictionaries and formatters), `test-support` (corpus, fakes, seed), and three placeholders: `domain`, `application`, `adapters`.
-- **Infrastructure** (`infra/compose`) — PostgreSQL 18, Mailpit (SMTP sink), ClamAV (clamd).
+A TypeScript pnpm monorepo with two runnable processes (`apps/web`, `apps/worker`) and seven libraries, backed by three local containers (`infra/compose`: PostgreSQL 18, Mailpit, ClamAV). Component details are in `component-inventory.md`.
 
 ### Architectural Style
 
-**Ports-and-adapters modular monolith with an isolated worker** — that is the declared target (`docs/architecture/ARCHITECTURE-SPINE.md`, "Design Paradigm"). In code today it is a **layered monorepo whose core layers are not yet built**:
+The declared target is a **ports-and-adapters modular monolith with an isolated worker** (`docs/architecture/ARCHITECTURE-SPINE.md`; package layout per FD-033). In code it is a **layered monorepo whose core layers are still empty**:
 
-- The adapter side exists: `packages/database` holds real PostgreSQL adapters (`PgOutbox`, `PgAuditWriter`, `PgBossQueue`) and stub repository classes.
-- The core does not: `packages/domain`, `packages/application` and `packages/adapters` each export nothing (`src/index.ts` is `export {}`). No port interfaces exist, so adapters carry no `implements` clause (header comments in every `packages/database/src/repositories/*.ts`).
-- Process isolation is real: the worker runs under a separate least-privilege database role (`rk_worker`) and its composition root imports no auth or identity code (`apps/worker/src/container.ts`, guarded by `container.test.ts`).
+- The persistence adapter side exists: `packages/database` holds the full schema, migrations, grants, triggers and real `PgOutbox`, `PgAuditWriter`, `PgBossQueue` and `PgOutboxRelayStore`. Every other repository is a stub.
+- The core does not exist: `domain`, `application` and `adapters` export nothing, so there are no ports, no commands, no `Actor` resolution and no web composition root (`apps/web/src/server/container.ts` is absent).
+- Boundaries are now enforced: `eslint-plugin-boundaries` rules in `eslint.boundaries.mjs` (T-010) encode the dependency direction of `01-conventions.md` §2. `lint-fixtures/boundary-violation/` proves each rule fails.
+- Process isolation is real: the worker connects as `rk_worker`, which has no privilege on `auth_users` (`0007`) or `reports` and cannot insert into `review_versions` (`0008`).
 
 ### Component Relationships
 
 ```mermaid
 flowchart LR
   subgraph Apps
-    WEB["apps/web (Next.js)"]
-    WRK["apps/worker (pg-boss)"]
+    WEB["apps/web"]
+    WRK["apps/worker"]
   end
   subgraph Libraries
     CON["packages/contracts"]
     DB["packages/database"]
     I18N["packages/i18n"]
     TS["packages/test-support"]
-    APP["packages/application (empty)"]
-    DOM["packages/domain (empty)"]
-    ADP["packages/adapters (empty)"]
+    APP["packages/application - empty"]
+    DOM["packages/domain - empty"]
+    ADP["packages/adapters - empty"]
   end
   subgraph Infra["infra/compose"]
     PG[("PostgreSQL 18")]
     MAIL["Mailpit"]
     AV["ClamAV"]
   end
-  WEB -->|imports| CON
-  WEB -->|imports| I18N
-  WEB -.->|declared only| DB
-  WEB -.->|declared only| APP
-  WEB -.->|declared only| ADP
-  WRK -->|imports| DB
-  WRK -.->|declared only| APP
-  WRK -.->|declared only| CON
-  DB -->|imports| CON
-  DB -.->|declared only| APP
-  TS -->|imports| DB
-  TS -->|imports| CON
-  APP -.->|declared only| DOM
-  ADP -.->|declared only| APP
-  DB -->|rk_app / rk_worker| PG
-  WRK -->|rk_worker| PG
-  WRK -.->|configured, unused| MAIL
-  WRK -.->|configured, unused| AV
+  WEB --> CON
+  WEB --> I18N
+  WEB -.-> APP
+  WEB -.-> ADP
+  WEB -.-> DB
+  WRK --> DB
+  WRK -.-> APP
+  WRK -.-> ADP
+  DB --> CON
+  TS --> DB
+  TS --> CON
+  APP -.-> DOM
+  ADP -.-> APP
+  DB --> PG
+  WRK --> PG
+  WRK -.-> MAIL
+  WRK -.-> AV
 ```
 
-Text fallback: `apps/web` imports `contracts` and `i18n`; `apps/worker` imports `database`; `database` and `test-support` import `contracts`; `test-support` imports `database`. Dashed edges are dependencies declared in `package.json` but not yet imported in source. The worker and the database package talk to PostgreSQL; the worker's environment names Mailpit and ClamAV hosts, but no code calls them yet. Full edge list: `dependencies.md`.
+Text fallback: solid edges are real imports (web to contracts and i18n; worker to database; database to contracts; test-support to database and contracts) and real connections (database and worker to PostgreSQL). Dashed edges are declared in `package.json` or configured in env but not used in source. The full edge table is in `dependencies.md`.
 
 ### Data Flow
 
-1. **Page request** — browser → `proxy.ts` (next-intl locale negotiation, `x-pathname` header) → `[locale]/layout.tsx` (locale check, messages, theme/motion cookies, `data-app`) → nested `(patient)` or `admin` layout (chrome, stylesheet) → page (placeholder or static component). No page reads the database yet.
-2. **Preference change** — client control → server action in `server/actions/preferences.ts` → cookie set → `revalidatePath('/', 'layout')`.
-3. **Domain change (designed)** — an application command will write domain rows, an `audit_events` row (`PgAuditWriter`) and an `outbox_events` row (`PgOutbox.append`) in one transaction (`01-conventions.md` §3, §5). The writers exist; no command calls them yet.
-4. **Outbox relay (implemented)** — worker poller every 2 s → `PgOutbox.claimBatch` (`FOR UPDATE SKIP LOCKED`) → `RELAY` map event → job names → `PgBossQueue.enqueue` with `singletonKey = eventId:job` → `markProcessed`, or `markFailed` / dead-letter after 5 attempts.
-5. **Bootstrap** — `pnpm db:migrate` installs the `pgboss` schema as `rk_app`, then applies SQL migrations `0000`–`0006`; `pnpm db:seed` inserts the synthetic corpus through Drizzle.
+1. **Page request (built)**: browser, then `proxy.ts` (next-intl locale negotiation, `x-pathname` header), then `[locale]/layout.tsx` (locale check, messages, theme and motion cookies), then the `(patient)` or `admin` layout (chrome, stylesheet, `RouteTransition`), then the page. No page reads the database.
+2. **Preference change (built)**: client control, then a server action in `server/actions/preferences.ts`, which sets a cookie and calls `revalidatePath`.
+3. **State-changing command (designed only)**: a server action parses input with a `contracts` zod schema, authorizes the `Actor`, asks the domain to decide, then writes domain rows, an `audit_events` row and an `outbox_events` row in one transaction and returns a `Result` (`01-conventions.md` §3, §5). Only `withTx`, `PgAuditWriter` and `PgOutbox` exist.
+4. **Outbox relay (built)**: a worker poller every 2 s claims a batch with `FOR UPDATE SKIP LOCKED`, maps each event through `RELAY` to job names and enqueues them with `singletonKey = eventId:job`. Only `outbox.relay` is registered, so the jobs it enqueues have no consumer.
+5. **Bootstrap (built)**: `db:migrate` installs the `pgboss` schema and applies `0000` to `0008`; `db:seed` runs seven idempotent Drizzle steps.
 
 ### Key Design Decisions
 
-Decisions observed in code, with their source. None is new; each is already recorded in the project's own decision trail.
+Observed in code; each is already recorded in the decision log or a task.
 
-| Decision | Evidence in code | Source |
+| Decision | Evidence | Source |
 |---|---|---|
-| Trimmed monorepo: spine's `auth`, `evidence`, `search`, `ui` packages folded into `adapters` / `database` / `apps/web` | Workspace contains exactly `apps/{web,worker}` and `packages/{adapters,application,contracts,database,domain,i18n,test-support}`; `PgSearchIndex` lives in `packages/database/src/search/` | FD-033 (master plan §2, §4) |
-| Plain CSS ported from the prototype; no Tailwind/shadcn/Radix | `apps/web/src/styles/{tokens,patient,admin,globals}.css`; no CSS framework dependency | FD-032 |
-| Least-privilege roles; worker default-deny | `0001_grants_part1.sql`, `0005_grants_part2.sql` (default-privilege flip), `0006_pgboss_grants.sql` | AD-6, FD-037 |
-| Append-only custody/audit with one SECURITY DEFINER expiry path | `0003_triggers.sql` (`fn_block_mutation`, `fn_expire_audit`) | AD-7 |
-| Transactional outbox + pg-boss, no Redis | `packages/database/src/repositories/outbox.ts`, `queue/pg-boss-queue.ts` | Master plan §3 |
-| Outbox relay as a plain `setInterval` poller, not a pg-boss job | `apps/worker/src/registry.ts` (`intervalMs: 2000`), `main.ts` `startPoller` | ASSUMPTION(T-009) |
-| `pgboss` schema installed by `migrate.ts` as `rk_app`; worker never migrates it | `installPgBoss` in `migrate.ts`; `PgBossQueue` defaults `migrate: false` | T-009 |
-| UUIDv7 primary keys (database `uuidv7()` default and app `newId()`), 10-char public ids in URLs | `schema/_common.ts`, `contracts/src/ids.ts` | Spine conventions, `01-conventions.md` §4 |
-| `data-view` attribute set client-side by `ViewShell`; `data-app` derived server-side | `apps/web/src/lib/cookies.ts` comment block, `components/patient/ViewShell.tsx` | ASSUMPTION(T-008) (differs from `01-conventions.md` §7.3) |
-
-### Code vs. Architecture Spine
-
-Cross-check of the code against `docs/architecture/ARCHITECTURE-SPINE.md`. These are observations, not new decisions.
-
-| Spine element | Code today | Assessment |
-|---|---|---|
-| Structural seed lists `packages/{auth,evidence,search,ui}` | Not present | Consistent with FD-033 (folded); the spine file itself was not updated |
-| AD-2 commands own mutations | No command layer; `application` is empty; seed writes rows directly | Not yet implemented (Phase 1+) |
-| AD-4 Better Auth adapter | `auth_*` tables exist (`schema/auth.ts`); Better Auth is not a dependency; no `server/auth.ts` | Not yet implemented (T-101) |
-| AD-6 worker has no session / reveal / delete / general DB credentials | `rk_worker` role, narrow grants, grep test in `container.test.ts` | Implemented for the current surface; lint enforcement pending (T-010) |
-| AD-7 append-only custody and audit | Triggers on six tables | Implemented |
-| AD-8 PostgreSQL search | `search_documents`, `search_aliases` tables, `pg_trgm`; `PgSearchIndex` stub | Schema only (T-205) |
-| AD-9 equal languages | Parity script, en/bn dictionaries, locale routes | Implemented for shell |
-| AD-11 mock and production adapters share contracts | Fakes in `test-support` mirror stub method names; no shared port interface yet | Partially (no interfaces) |
-| AD-14 demo vs production modes | `APP_MODE` enum validated in worker; migrate/reset/seed refuse `production`; `DemoMarker` rendered | Implemented for current surface |
-| Stack table (Next 16.3.3, React 19.2.7, pg-boss 12.26.0, Tailwind, shadcn, Lucide, PDF.js, Playwright, axe, MSW) | Next 16.3.4, React 19.3.0, pg-boss 12.31.0; none of Tailwind/shadcn/Lucide/PDF.js/Playwright/axe/MSW installed | Spine table is older than the master plan pins and FD-032/FD-036; code follows the master plan |
-| Dependency direction "domain/application never import framework or DB" | Trivially true (both empty); not lint-enforced | Pending T-010 |
+| Trimmed package set (spine's `auth`, `evidence`, `search`, `ui` folded) | workspace layout | FD-033 |
+| Plain CSS; patient side on FD-091 tokens and motion, staff console a verbatim prototype port | `styles/tokens.css`, `patient.css`, `motion.css`, `admin.css` | FD-032, FD-091 |
+| Least-privilege roles, worker default-deny, later revocations | `0001`, `0005`, `0006`, `0007`, `0008` | AD-6, FD-041, FD-092 |
+| Append-only custody and audit by trigger | `0003_triggers.sql` | AD-7 |
+| Transactional outbox plus pg-boss, no Redis | `repositories/outbox.ts`, `queue/` | master plan §3 |
+| UUIDv7 keys and 10-character public ids | `schema/_common.ts`, `contracts/src/ids.ts` | `01-conventions.md` §4 |
+| Better Auth owns four `auth_*` tables with text ids; mapping documented for T-101 | `schema/auth.ts` header | AD-4 |
+| Phase 1 evidence is JPEG and PNG only | CHECK constraints in `schema/evidence.ts` | FD-036 |
+| Boundary lint with a fixture proof in the gate | `eslint.boundaries.mjs`, `scripts/check-boundaries-fixture.mjs` | T-010 |
 
 ### Improvement Opportunities
 
-- Introduce the application port interfaces so the existing `Pg*` classes and `test-support` fakes can declare `implements` and be checked against one contract (planned T-101).
-- Add the boundary lint (`eslint-plugin-boundaries`) and a CI workflow (planned T-010) so the dependency direction above is enforced rather than conventional.
-- Update the spine's structural seed and stack table, or annotate them with FD-032/FD-033/FD-036, so the two documents stop disagreeing with the code.
+- Build the T-101 core (ports, `Actor`, `defineCommand`, adapters, Better Auth, `server/container.ts`) first. Every demo capability depends on it, and its Functional Design is already approved (intent `261011-aidlc-adoption`).
+- Let the stub repositories `implements` their ports as they are filled, so the `test-support` fakes and the Pg classes are checked against one contract.
+- Replace the static `/api/health` probes once the database and queue adapters are wired.
 
 ## Interaction Diagrams
 
-### 1. Reader opens a localized page (implemented)
+### 1. Reader opens a localized page (built)
 
 ```mermaid
 sequenceDiagram
@@ -122,84 +99,74 @@ sequenceDiagram
   participant LL as Locale layout
   participant PL as Patient layout
   participant PG as Page
-  B->>PX: GET /bn/doctors
-  PX->>PX: set x-pathname, next-intl negotiation
-  PX->>LL: request with locale bn
-  LL->>LL: hasLocale check, getMessages, read rk.theme and rk.motion
-  LL->>PL: render with data-app patient
-  PL->>PG: render chrome, masthead, colophon
-  PG-->>B: placeholder view naming task T-202
+  B->>PX: GET /bn/write
+  PX->>LL: request with x-pathname and locale bn
+  LL->>LL: hasLocale, getMessages, theme and motion cookies
+  LL->>PL: render
+  PL->>PG: chrome, masthead, RouteTransition, colophon
+  PG-->>B: placeholder note naming T-306
 ```
 
-Text fallback: the browser request passes through `proxy.ts`, which stamps `x-pathname` and lets next-intl redirect or rewrite by locale (cookie `rk.lang`, then Accept-Language). The `[locale]` layout validates the locale, loads messages and theme/motion cookies and sets `lang`/`data-app` on `<html>`/`<body>`. The `(patient)` layout adds chrome and `patient.css`. The page renders; for most routes this is a placeholder.
+Text fallback: the proxy stamps `x-pathname` and lets next-intl pick the locale (cookie `rk.lang`, then Accept-Language). The locale layout validates the locale and loads messages and cookies. The patient layout adds chrome and styles. The page renders its placeholder note.
 
-### 2. Outbox event relayed to a job (implemented)
+### 2. Outbox event relayed to a job (built)
 
 ```mermaid
 sequenceDiagram
   participant M as worker main.ts
   participant R as relayOnce
-  participant O as PgOutbox
+  participant S as PgOutboxRelayStore
   participant DB as PostgreSQL
   participant Q as PgBossQueue
-  loop every 2 s, skipped if previous tick still running
+  loop every 2 s, skipped while the previous tick runs
     M->>R: outboxRelayHandler
-    R->>O: claimBatch 50
-    O->>DB: select ... for update skip locked, set processed_at
-    DB-->>O: rows
-    O-->>R: events
-    alt event name mapped in RELAY
-      R->>Q: enqueue job, singletonKey eventId:job
-      Q->>DB: insert into pgboss job table
-    else unmapped name
-      R->>R: log outbox.unmapped, treat as processed
+    R->>S: claim batch
+    S->>DB: select for update skip locked
+    DB-->>S: events
+    alt event name in RELAY
+      R->>Q: enqueue, singletonKey eventId:job
+      Q->>DB: insert pgboss job
+    else unmapped
+      R->>R: log and mark processed
     end
-    alt enqueue failed and attempts below 5
-      R->>O: markFailed, processed_at null, attempts + 1
-    else
-      R->>O: markProcessed ids
-    end
+    R->>S: mark processed, or failed with attempt count
   end
 ```
 
-Text fallback: the worker polls every two seconds. `claimBatch` locks up to 50 unprocessed rows with `SKIP LOCKED` and marks them processed in the same transaction. Each event is mapped through `RELAY` to zero or more job names and enqueued idempotently by `eventId:job`. A failed enqueue resets the row for retry until five attempts, then logs `outbox.dead` and gives up. No job handler consumes these queues yet.
+Text fallback: the worker polls every two seconds, claims unprocessed outbox rows with `SKIP LOCKED`, enqueues one idempotent job per mapped job name, and marks each row processed or failed. After the maximum number of attempts the row is dead-lettered.
 
-### 3. Local bootstrap: migrate and seed (implemented)
+### 3. Demo slice: write an experience with a document, then comment (designed, not built)
+
+Orientation only. It shows the commands the demo needs, in the shape `01-conventions.md` §3 prescribes. None of these steps exists in code.
 
 ```mermaid
 sequenceDiagram
-  participant Dev as Developer
-  participant MG as migrate.ts
-  participant PB as installPgBoss
-  participant DZ as drizzle migrator
-  participant SD as seed.ts
+  participant A as Author browser
+  participant W as apps/web server action
+  participant C as application command
   participant DB as PostgreSQL
-  Dev->>MG: pnpm db:migrate, DATABASE_URL as rk_app
-  MG->>MG: refuse if APP_MODE production
-  MG->>PB: install pgboss schema
-  PB->>DB: create schema pgboss
-  MG->>DZ: apply 0000 to 0006
-  DZ->>DB: tables, grants, triggers, deferred FKs, pgboss grants
-  Dev->>SD: pnpm db:seed
-  SD->>DB: accounts, config, directory, content, evidence, moderation, notifications
+  participant K as worker
+  participant V as ClamAV
+  participant O as Other user browser
+  A->>W: register and sign in via Better Auth
+  A->>W: save draft, then publish review for a seeded doctor
+  W->>C: review.publish with Actor
+  C->>DB: reviews, persona, audit, outbox in one transaction
+  A->>W: upload image
+  W->>C: evidence.intake
+  C->>DB: evidence_items quarantined, custody event, outbox evidence.received
+  K->>DB: relay evidence.received to evidence.process
+  K->>V: scan original
+  alt clean
+    K->>DB: artifacts, state published
+  else infected or scanner down
+    K->>DB: failed, nothing public
+  end
+  A->>W: edit review
+  W->>C: review.correct, review_versions row
+  O->>W: open experience, post comment
+  W->>C: comment.post
+  C->>DB: comments row, audit, outbox comment.posted
 ```
 
-Text fallback: `db:migrate` refuses production mode, installs pg-boss's schema as `rk_app`, then applies the seven SQL migrations into `public` with the bookkeeping table `drizzle_migrations`. `db:seed` runs seven idempotent steps in order, each in its own transaction, skipping rows that already exist by natural key.
-
-### 4. State-changing command (designed, not implemented)
-
-Shown for orientation only; this is the contract in `01-conventions.md` §3 and §5, not code that exists.
-
-```mermaid
-flowchart LR
-  SA["server action or route handler"] --> PARSE["parse input with contracts zod schema"]
-  PARSE --> AUTH["authorize Actor"]
-  AUTH --> DECIDE["domain decision"]
-  DECIDE --> TX["one transaction"]
-  TX --> ROWS["domain rows"]
-  TX --> AUDIT["PgAuditWriter.write"]
-  TX --> OUTBOX["PgOutbox.append"]
-  TX --> RESULT["Result ok or err"]
-```
-
-Text fallback: a server action parses input with a `contracts` schema, authorizes the `Actor`, asks the domain to decide, then writes domain rows, an audit row and an outbox row in one transaction and returns a `Result`. Only the last three building blocks (`withTx`, `PgAuditWriter`, `PgOutbox`) exist today.
+Text fallback: the author registers and signs in through Better Auth, publishes a review about a seeded doctor, and uploads an image. The intake command records it as `quarantined`. The worker relays `evidence.received` to `evidence.process`, scans the original and publishes derivatives only on a clean scan, failing closed otherwise. Edits go through `review.correct` in the web tier, which writes a `review_versions` row. A second signed-in user opens the experience and posts a comment through `comment.post`.

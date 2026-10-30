@@ -5,7 +5,7 @@ Draft written ahead of the stage. The lead finalises it when the workflow reache
 Context:
 - Unit U34 delivers T-405 (`docs/implementation/tasks/T-405-notifications.md`, with its FD-045..FD-075 and FD-076..FD-090 amendments) for US10.1 (AC10.1.1–AC10.1.5) and the in-app half of AC3.1.5. It depends on U8 T-101, U9 T-102, U3 T-010, U4 CR-011 and U5 CR-006; U22 T-302, U30 T-401, U32 T-403, U33 T-404, U37 T-408 and U39 T-410 depend on it.
 - This draft covers the patient path for release 1: the in-app list, the unread count, in-app notices from domain events, and the optional discussion and moderation email through the existing mail path. Staff views and configuration are T-408's.
-- Inputs read: the task file, `unit-of-work-dependency.md`, `stories.md` (US10.1, AC3.1.5), `requirements.md` (FR87, FR88), `contract-summary.md` (C2, C15), the decision log, the `t-101`, `t-102`, `t-302` and `t-401` drafts, and on `main`: `schema/notification.ts`, `schema/account.ts`, `contracts/src/{enums.ts, schemas/notification.ts, view-models/notification.ts}`, `apps/worker/src/handlers/outbox-relay.ts`, migrations `0005` and `0008`, `packages/i18n/messages/en.json`, the placeholder `(patient)/notifications/page.tsx`.
+- Inputs read: the task file, `unit-of-work-dependency.md`, US10.1 and AC3.1.5, FR87/FR88, C2 and C15, the decision log, the `t-101`, `t-102`, `t-302` and `t-401` drafts, and the notification schema, contracts, relay, migrations `0005`/`0008` and message files on `main`.
 
 ## Settled before this stage
 
