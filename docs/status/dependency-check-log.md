@@ -27,6 +27,13 @@ Rules:
 
 ## Entries
 
+### 2026-10-30 (demo slice — Better Auth and Argon2id in apps/web)
+
+- Scope: intent `261030-demo-slice` (FD-099), plan Step 2: first install of `better-auth` and `@node-rs/argon2` into `apps/web`.
+- Checked: `better-auth` dist-tags (`latest` 1.7.14 of 2026-10-26, `beta` 1.8.0-beta.3, `release-1.6` 1.6.33); its peer ranges (`next ^16`, `react ^19`, `drizzle-orm ^0.45.2`, `pg ^8`); its bundled `@better-auth/drizzle-adapter` 1.7.14. `@node-rs/argon2` `latest` 2.2.2 (the seed already uses `^2.2.0`).
+- Findings: 1.7.14 is the newest patch of the stable 1.7 line, which carries the CVE fixes recorded in the 2026-09-10 entry; 1.8 is still beta and is not adopted. The peer ranges match this repo (Next 16.3.4, React 19.3.0, Drizzle 0.45.2), and pnpm resolved a single `drizzle-orm@0.45.2` instance for `database`, `worker` and `web`. The Drizzle adapter reads columns by the Drizzle table's property names, so `packages/database/src/schema/auth.ts`'s camelCase properties need only a `modelName` mapping, not the `fields` mapping its header comment lists. Better Auth telemetry is off by default and is set off explicitly.
+- Decision: `better-auth@~1.7.14` and `@node-rs/argon2@^2.2.2` in `apps/web`, Argon2id with the seed's parameters (m=64 MiB, t=3, p=1).
+
 ### 2026-10-29 (U45 T-011 — patient design and motion system)
 
 - Scope: T-011 adds the first web font (Hind Siliguri 600 through `next/font/local`), the first use of

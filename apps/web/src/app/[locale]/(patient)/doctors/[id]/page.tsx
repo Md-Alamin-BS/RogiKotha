@@ -1,22 +1,37 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
+import type { Locale } from '@rogikotha/contracts';
 import { ViewShell } from '@/components/patient/ViewShell';
-import { titleForView, documentTitle } from '@/lib/titles';
+import { DoctorProfile } from '@/components/patient/doctors/DoctorProfile';
+import { doctors } from '@/server/data';
+import { documentTitle } from '@/lib/titles';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations();
-  // TODO(T-202): replace with the real entity's name once its query exists.
-  return { title: documentTitle('profile', t) };
-}
+type Params = Promise<{ id: string }>;
 
-export default async function DoctorProfilePage({ params }: { params: Promise<{ id: string }> }) {
+// One lookup per request, shared by the metadata and the page.
+const loadDoctor = cache((id: string, locale: Locale) => doctors.getDoctor(id, locale));
+
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
   const t = await getTranslations();
+  const doctor = await loadDoctor(id, (await getLocale()) as Locale);
+  if (!doctor) return { title: documentTitle('profile', t) };
+  return { title: `${doctor.name} — ${t('brand.name')}` };
+}
+
+export default async function DoctorProfilePage({ params }: { params: Params }) {
+  const { id } = await params;
+  const locale = (await getLocale()) as Locale;
+  const doctor = await loadDoctor(id, locale);
+  if (!doctor) notFound();
+  const experiences = await doctors.listPublishedReviewsForDoctor(doctor.id, locale);
+
   return (
-    <ViewShell view="profile" title={titleForView('profile', t)}>
-      <p className="note">
-        {t('shell.placeholder', { task: 'T-202' })} ({id})
-      </p>
+    // The hero brings the doctor's name as the page's only h1.
+    <ViewShell view="profile" title="">
+      <DoctorProfile doctor={doctor} experiences={experiences} />
     </ViewShell>
   );
 }

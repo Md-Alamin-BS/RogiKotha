@@ -44,3 +44,4 @@ export * from './view-models/quarantine';
 export * from './view-models/providers';
 export * from './view-models/staff-notifications';
 export * from './view-models/config';
+export * from './view-models/demo';

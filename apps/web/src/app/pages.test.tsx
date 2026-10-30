@@ -37,7 +37,50 @@ vi.mock('@/i18n/routing', () => ({
   ),
   usePathname: () => '/',
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
+  redirect: vi.fn(() => {
+    throw new Error('NEXT_REDIRECT');
+  }),
 }));
+
+// The demo-slice pages read the session and the database; this table checks only their shell, so
+// a signed-in reader and fixed synthetic records stand in. Each page's own test covers its data.
+const RECORD = vi.hoisted(() => ({
+  doctorName: 'Dr. Synthetic Haque',
+  experienceTitle: 'Clear advice after a long wait',
+}));
+
+vi.mock('@/server/auth/session', async () => {
+  const { buildCurrentAccount } = await import('@/components/patient/profile/profile-test-support');
+  const account = buildCurrentAccount();
+  return {
+    getCurrentAccount: vi.fn(() => Promise.resolve(account)),
+    requireAccount: vi.fn(() => Promise.resolve(account)),
+  };
+});
+
+vi.mock('@/server/data', async () => {
+  const { buildDoctorDetail, buildDoctorRow } =
+    await import('@/components/patient/doctors/directory-test-support');
+  const { buildReviewDetail } =
+    await import('@/components/patient/experience/experience-test-support');
+  const { buildProfile } = await import('@/components/patient/profile/profile-test-support');
+  const resolve = <T,>(value: T) => vi.fn(() => Promise.resolve(value));
+  return {
+    doctors: {
+      listRecentPublishedReviews: resolve([]),
+      listDoctors: resolve([buildDoctorRow()]),
+      getDoctor: resolve(buildDoctorDetail({ name: RECORD.doctorName })),
+      listPublishedReviewsForDoctor: resolve([]),
+      listDoctorOptions: resolve([]),
+    },
+    reviews: {
+      getReviewByPublicId: resolve(buildReviewDetail({ title: RECORD.experienceTitle })),
+      getOwnReviewForEdit: resolve(null),
+    },
+    comments: { listComments: resolve([]) },
+    accounts: { getProfile: resolve(buildProfile()), listOwnReviews: resolve([]) },
+  };
+});
 
 const require = createRequire(import.meta.url);
 const i18nPackageRoot = path.resolve(path.dirname(require.resolve('@rogikotha/i18n')), '..');
@@ -54,26 +97,33 @@ function loadMessages(locale: (typeof LOCALES)[number]): AbstractIntlMessages {
   return messages;
 }
 
+type PageProps = { params: Promise<Record<string, string>> };
+
 type PageModule = {
-  default: (props: {
-    params: Promise<Record<string, string>>;
-  }) => ReactElement | Promise<ReactElement>;
-  generateMetadata: () => Promise<Metadata>;
+  default: (props: PageProps) => ReactElement | Promise<ReactElement>;
+  generateMetadata: (props: PageProps) => Promise<Metadata>;
 };
 
 interface RouteCase {
   route: string;
   load: () => Promise<unknown>;
   view: ViewName;
-  // Dynamic segment handed to the page, shown back to the reader.
+  // Dynamic segment handed to the page, shown back to the reader unless `recordTitle` is set.
   params?: Record<string, string>;
   // The page brings its own heading, so ViewShell renders none.
   ownsHeading?: boolean;
   noindex?: boolean;
+  // A page showing a real record names that record, in its heading and its tab title.
+  recordTitle?: string;
 }
 
 const ROUTES: RouteCase[] = [
-  { route: '/', load: () => import('./[locale]/(patient)/page'), view: 'discover' },
+  {
+    route: '/',
+    load: () => import('./[locale]/(patient)/page'),
+    view: 'discover',
+    ownsHeading: true,
+  },
   {
     route: '/about',
     load: () => import('./[locale]/(patient)/about/page'),
@@ -92,7 +142,9 @@ const ROUTES: RouteCase[] = [
     route: '/doctors/[id]',
     load: () => import('./[locale]/(patient)/doctors/[id]/page'),
     view: 'profile',
-    params: { id: 'doc-synthetic-1' },
+    params: { id: 'doc0000001' },
+    ownsHeading: true,
+    recordTitle: RECORD.doctorName,
   },
   {
     route: '/emergency',
@@ -109,7 +161,9 @@ const ROUTES: RouteCase[] = [
     route: '/experiences/[id]',
     load: () => import('./[locale]/(patient)/experiences/[id]/page'),
     view: 'account',
-    params: { id: 'exp-synthetic-1' },
+    params: { id: 'exp0000001' },
+    ownsHeading: true,
+    recordTitle: RECORD.experienceTitle,
   },
   {
     route: '/facilities',
@@ -226,9 +280,13 @@ const ROUTES: RouteCase[] = [
   },
 ];
 
+function propsFor(routeCase: RouteCase): PageProps {
+  return { params: Promise.resolve(routeCase.params ?? {}) };
+}
+
 async function renderRoute(routeCase: RouteCase, locale: (typeof LOCALES)[number]) {
   const page = (await routeCase.load()) as PageModule;
-  const element = await page.default({ params: Promise.resolve(routeCase.params ?? {}) });
+  const element = await page.default(propsFor(routeCase));
   const messages = loadMessages(locale);
   render(
     <NextIntlClientProvider locale={locale} messages={messages}>
@@ -274,11 +332,23 @@ describe.each(LOCALES)('route pages in %s', (locale) => {
     async (routeCase) => {
       await renderRoute(routeCase, locale);
       expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-      expect(document.querySelector('h1.display')).toBeNull();
+      // ViewShell's generic heading is the section's own child; a ported page may style its
+      // heading `.display` further in.
+      expect(document.querySelector('section.view > h1.display')).toBeNull();
     },
   );
 
-  it.each(ROUTES.filter((r) => r.params))(
+  it.each(ROUTES.filter((r) => r.recordTitle))(
+    '$route names the record in its heading',
+    async (routeCase) => {
+      await renderRoute(routeCase, locale);
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        routeCase.recordTitle ?? '',
+      );
+    },
+  );
+
+  it.each(ROUTES.filter((r) => r.params && !r.recordTitle))(
     '$route tells the reader which record was asked for',
     async (routeCase) => {
       await renderRoute(routeCase, locale);
@@ -292,13 +362,17 @@ describe.each(LOCALES)('route pages in %s', (locale) => {
     const page = (await routeCase.load()) as PageModule;
     const messages = loadMessages(locale);
     const translate = createTranslator({ locale, messages });
-    const metadata = await page.generateMetadata();
-    expect(metadata.title).toBe(documentTitle(routeCase.view, (key) => translate(key as never)));
+    const metadata = await page.generateMetadata(propsFor(routeCase));
+    expect(metadata.title).toBe(
+      routeCase.recordTitle
+        ? `${routeCase.recordTitle} — ${translate('brand.name' as never)}`
+        : documentTitle(routeCase.view, (key) => translate(key as never)),
+    );
   });
 
   it.each(ROUTES)('$route keeps search engines out only where it should', async (routeCase) => {
     const page = (await routeCase.load()) as PageModule;
-    const metadata = await page.generateMetadata();
+    const metadata = await page.generateMetadata(propsFor(routeCase));
     if (routeCase.noindex) {
       expect(metadata.robots).toEqual({ index: false });
     } else {
@@ -313,9 +387,9 @@ describe('route pages and the language switch', () => {
     if (!doctors) throw new Error('doctors route missing from the table');
     const page = (await doctors.load()) as PageModule;
     active.locale = 'en';
-    const english = (await page.generateMetadata()).title;
+    const english = (await page.generateMetadata(propsFor(doctors))).title;
     active.locale = 'bn';
-    const bengali = (await page.generateMetadata()).title;
+    const bengali = (await page.generateMetadata(propsFor(doctors))).title;
     expect(english).not.toBe(bengali);
   });
 });

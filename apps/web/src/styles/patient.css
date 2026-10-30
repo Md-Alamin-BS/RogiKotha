@@ -2405,7 +2405,10 @@ html:lang(bn) .field > .lbl {
 html:lang(bn) .field .sub {
   font-family: var(--bangla);
 }
+/* added: demo-slice the email and password inputs of the auth forms take the text field's look */
 .field input[type="text"],
+.field input[type="email"],
+.field input[type="password"],
 .field select,
 .field textarea {
   width: 100%;
@@ -3229,7 +3232,10 @@ h4 {
 .callout.danger {
   background: var(--callout-bg);
 }
+/* added: demo-slice email and password inputs */
 .field input[type="text"],
+.field input[type="email"],
+.field input[type="password"],
 .field select,
 .field textarea {
   background: var(--field-bg);
@@ -4076,7 +4082,10 @@ html:lang(bn) .byline--comment .byline-name {
 }
 
 /* --- form controls: WCAG 1.4.11 wants a 3:1 boundary; --rule is 1.55 --- */
+/* added: demo-slice email and password inputs */
 .field input[type="text"],
+.field input[type="email"],
+.field input[type="password"],
 .field select,
 .field textarea {
   border-color: var(--input-border);
@@ -4751,7 +4760,8 @@ html:lang(bn) .viewer-controls .vdownload {
    message (paired with aria-invalid/aria-describedby on the control) and a
    two-letter-initials variant of the existing .ctl masthead control, since
    .ctl is sized (font-size 14px in a 36px circle) for one symbol glyph. */
-.field .field-error {
+/* added: demo-slice the bare selector also styles the uploader's error, which sits outside .field */
+.field-error {
   font-family: var(--sans);
   font-size: var(--fs-small);
   line-height: var(--lh-small);
@@ -4759,7 +4769,7 @@ html:lang(bn) .viewer-controls .vdownload {
   font-weight: 600;
   margin: var(--space-1) 0 0;
 }
-html:lang(bn) .field .field-error {
+html:lang(bn) .field-error {
   font-family: var(--bangla);
 }
 .ctl.account {

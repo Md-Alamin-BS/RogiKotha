@@ -1,6 +1,6 @@
 # Resume point — Construction run (saved 2026-10-29)
 
-Read this first when the session restarts. It lists exactly where the run stopped, what was in flight, and the next steps in order. The owner's decisions and every agent-made call are in [OWNER-REVIEW-QUEUE.md](OWNER-REVIEW-QUEUE.md).
+Read this first when the session restarts. **On another computer, start with [CONTINUE-ON-ANOTHER-DEVICE.md](CONTINUE-ON-ANOTHER-DEVICE.md).** It lists exactly where the run stopped, what was in flight, and the next steps in order. The owner's decisions and every agent-made call are in [OWNER-REVIEW-QUEUE.md](OWNER-REVIEW-QUEUE.md).
 
 ## Owner instructions in force
 
@@ -12,9 +12,11 @@ Read this first when the session restarts. It lists exactly where the run stoppe
 
 ## Progress
 
-- **Done and merged on `main`, 8 of 45 Units:** CR-004, CR-009, CR-006, CR-007, CR-011, CR-012, T-010, T-011 (`f46e116`, review READY, CI green, `pnpm check` green on main in 142 s). `main` pushed at `0e72d4d`.
-- **In progress:** U8 **T-101** Code Generation on `bolt/t-101-better-auth-adapter`. Steps 1–4 are committed (`02ac348`). The rest is built by the workflow `wf_1601e481-dc8`: interfaces, then 5 parallel layer developers, an integrator, 3 adversarial testers plus a fixer, then records. Resume it with the script `C:\Users\BS01395\.claude\projects\C--Users-BS01395-Documents-GitHub-rogikotha\5d6af544-99ce-4a55-84fe-49f5cb410bf0\workflows\scripts\build-t101-sign-in-wf_1601e481-dc8.js` and `resumeFromRunId: "wf_1601e481-dc8"`. After it: the code review (`log review --stage code-generation`), CI, unit complete, checkpoint, merge. Every following patient Unit uses the same workflow shape.
-- Construction is still `unit-major`/`serial` (the engine's Bolt order). Parallel swarm needs every Unit's Functional Design first, including the deferred ones, so it is not switched on yet.
+- **2026-10-30: the owner cut scope to a same-day demo (FD-099).** A separate express intent `261030-demo-slice` builds only these flows: register and sign in, profile edit, doctors, writing and editing an experience, attachments, and comments.
+  - Reverse Engineering is approved (code knowledge base rescanned). Requirements are approved by the owner. The code plan is recorded, and plan approval is off for express.
+  - The build runs as workflow `wf_5973f690-709` on branch `bolt/demo-slice` (from `acd6bf5`): foundation, 6 parallel features, integrator, browser click-through, adversarial testers, records. Resume it with script `C:\Users\BS01395\.claude\projects\C--Users-BS01395-Documents-GitHub-rogikotha\5d6af544-99ce-4a55-84fe-49f5cb410bf0\workflows\scripts\build-demo-slice-wf_5973f690-709.js` and `resumeFromRunId: "wf_5973f690-709"`.
+  - After it: report the code-generation gate (needs the owner's approval), then Build and Test, then the deployment-pipeline, deployment-execution and observability stages (local demo only).
+- **Paused:** the full intent `261011-aidlc-adoption`, with 8 of 45 Units merged. T-101's work in progress is on `bolt/t-101-better-auth-adapter` (`20914dc`).
 
 ## In flight when the session closed (cut off by the close; resume as below)
 
