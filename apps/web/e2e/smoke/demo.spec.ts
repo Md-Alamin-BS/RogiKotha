@@ -197,3 +197,46 @@ for (const locale of ['en', 'bn'] as const) {
     }
   });
 }
+
+// Click-path steps 9 and 10 (FD-100, FD-101): add an unlisted doctor, then open the facility and
+// topic pages, which read the seeded records.
+for (const locale of ['en', 'bn'] as const) {
+  test(`a reader adds an unlisted doctor and opens the facility and topic pages in ${locale}`, async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const username = `adder_${uniqueSuffix()}`.slice(0, 24);
+    const doctorName = `Dr. Demo Newcomer ${uniqueSuffix()}`;
+    await register(page, locale, username, 'Demo Adder');
+
+    await page.goto(`/${locale}/write`);
+    await page.getByTestId('compose-add-doctor-open').click();
+    await page.getByTestId('compose-newDoctorName').fill(doctorName);
+    await page.getByTestId('compose-relationship-options').getByRole('button').first().click();
+    await page.getByTestId('compose-title').fill('Seen by a doctor not yet listed');
+    await page
+      .getByTestId('compose-body')
+      .fill('The doctor took time to explain the plan and the follow-up visit.');
+    await page.getByTestId('compose-identity-options').getByRole('button').first().click();
+    await page.getByTestId('compose-attestation').check();
+    await page.getByTestId('compose-publish').click();
+    await expect(page).toHaveURL(new RegExp(`/${locale}/experiences/[0-9a-z]{10}$`));
+
+    await page.goto(`/${locale}/doctors`);
+    const entry = page.getByTestId('doctor-entry').filter({ hasText: doctorName });
+    await expect(entry.getByTestId('not-verified')).toBeVisible();
+    await expect(entry.getByTestId('member-added')).toHaveText(msg(locale, 'label.memberAdded'));
+
+    await page.goto(`/${locale}/facilities`);
+    await page.getByTestId('facility-entry-link').first().click();
+    await expect(page.getByTestId('facility-separation')).toHaveText(
+      msg(locale, 'facility.separation'),
+    );
+
+    await page.goto(`/${locale}/topics`);
+    await expect(page.getByTestId('topic-card')).toHaveCount(10);
+    await page.getByTestId('topic-card').first().click();
+    await expect(page.locator('h1').first()).toBeVisible();
+    await shoot(page, `${locale}-topic`);
+  });
+}

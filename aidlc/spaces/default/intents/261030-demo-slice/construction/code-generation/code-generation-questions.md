@@ -18,7 +18,7 @@ Full plan: aidlc/spaces/default/intents/261030-demo-slice/construction/code-gene
 Test instructions: aidlc/spaces/default/intents/261030-demo-slice/construction/code-generation/unit-test-instructions.md
 
 [Approval Fingerprint]: sha256:v3:f198e3250fb426fd954df794c09ae56bcd097fea7e9e7ea91cd19491426c8184
-[Planned Source]: 8d291eeb5cc03064e9840294ef8375dad2ff240a453b8b0dc08bf4d9f728afac
+[Planned Source]: f28e217b88b4eb8ce083f9daaa927c31dba574a1bd489f3a39f9af2f262441a1
 
 
 [Answer]: Plan approval off

@@ -18,6 +18,11 @@ function someDefaults(overrides: Partial<ComposeValues> = {}): ComposeValues {
     sentiment: '',
     outcome: '',
     identity: 'pseudonymous',
+    newDoctor: '',
+    newDoctorName: '',
+    newDoctorSpecialtyId: '',
+    newDoctorChamber: '',
+    newDoctorBmdc: '',
     ...overrides,
   };
 }
@@ -28,6 +33,7 @@ function someProps(overrides: Partial<ComposeFormProps> = {}): ComposeFormProps 
       { id: 'doc-1', label: 'Dr. Synthetic Rahman — Paediatrics' },
       { id: 'doc-2', label: 'Dr. Example Sultana' },
     ],
+    specialties: [{ id: '0190a0b0-0000-7000-8000-000000000001', name: 'Paediatrics' }],
     periods: [
       { value: '2026-03', label: 'March 2026' },
       { value: '2026-02', label: 'February 2026' },
@@ -139,5 +145,91 @@ describe('the composer choices', () => {
     const submitted = vi.mocked(publishReview).mock.calls[0]?.[1];
     expect(submitted?.get('relationship')).toBe('self');
     expect(submitted?.get('attestation')).toBeNull();
+  });
+
+  it('keeps the chosen doctor and the ticked attestation after a refusal, and lists the refused fields', async () => {
+    vi.mocked(publishReview).mockResolvedValue({
+      attempt: 1,
+      values: someDefaults({ doctorId: 'doc-2', body: 'Very good doctor', attestation: 'on' }),
+      fieldErrors: { body: 'formErrors.compose.bodyTooShort' },
+      formError: 'errors.common.validation',
+    });
+    const user = userEvent.setup();
+    renderInLocale(
+      <ComposeForm {...someProps({ defaults: someDefaults({ doctorId: 'doc-2' }) })} />,
+      'en',
+    );
+
+    await user.click(screen.getByTestId('compose-attestation'));
+    await user.click(screen.getByRole('button', { name: 'Publish' }));
+
+    await waitFor(() => expect(screen.getByTestId('compose-error')).toHaveFocus());
+    expect(screen.getByTestId('compose-doctor')).toHaveValue('doc-2');
+    expect(screen.getByTestId('compose-attestation')).toBeChecked();
+    expect(
+      within(screen.getByTestId('compose-error-fields')).getByText('What happened?'),
+    ).toBeVisible();
+  });
+
+  it('counts the story while it is shorter than the minimum, then hides the count', async () => {
+    const user = userEvent.setup();
+    renderInLocale(<ComposeForm {...someProps()} />, 'en');
+    const body = screen.getByTestId('compose-body');
+
+    await user.type(body, 'Very good doctor');
+    expect(screen.getByTestId('compose-body-count')).toHaveTextContent(
+      '16 of at least 20 characters',
+    );
+    expect(body).toHaveAccessibleDescription(/16 of at least 20/);
+
+    await user.type(body, ' indeed');
+    expect(screen.queryByTestId('compose-body-count')).toBeNull();
+  });
+
+  it('opens the add-a-doctor panel, previews the typed name and sends it instead of a listed doctor', async () => {
+    vi.mocked(publishReview).mockResolvedValue({
+      attempt: 1,
+      values: null,
+      fieldErrors: {},
+      formError: 'errors.common.internal',
+    });
+    const user = userEvent.setup();
+    renderInLocale(<ComposeForm {...someProps()} />, 'en');
+
+    await user.click(screen.getByTestId('compose-add-doctor-open'));
+    expect(screen.queryByTestId('compose-doctor')).toBeNull();
+    expect(screen.getByTestId('compose-add-doctor-note')).toHaveTextContent(
+      'Added by a member — not confirmed',
+    );
+    await user.type(screen.getByTestId('compose-newDoctorName'), 'Dr. Synthetic Karim');
+    await user.selectOptions(screen.getByTestId('compose-newDoctorSpecialtyId'), 'Paediatrics');
+    expect(
+      within(screen.getByTestId('compose-preview')).getByText('Dr. Synthetic Karim'),
+    ).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Publish' }));
+    const submitted = vi.mocked(publishReview).mock.calls[0]?.[1];
+    expect(submitted?.get('newDoctor')).toBe('1');
+    expect(submitted?.get('newDoctorName')).toBe('Dr. Synthetic Karim');
+    expect(submitted?.get('newDoctorSpecialtyId')).toBe('0190a0b0-0000-7000-8000-000000000001');
+    expect(submitted?.get('doctorId')).toBeNull();
+  });
+
+  it('goes back to the doctor list from the add-a-doctor panel', async () => {
+    const user = userEvent.setup();
+    renderInLocale(<ComposeForm {...someProps()} />, 'en');
+    await user.click(screen.getByTestId('compose-add-doctor-open'));
+    await user.click(screen.getByTestId('compose-add-doctor-cancel'));
+    expect(screen.getByTestId('compose-doctor')).toBeVisible();
+    expect(hiddenValue('newDoctor')).toBe('');
+  });
+
+  it('labels the add-a-doctor panel in Bengali', async () => {
+    const t = translatorFor('bn');
+    const user = userEvent.setup();
+    renderInLocale(<ComposeForm {...someProps()} />, 'bn');
+    await user.click(screen.getByRole('button', { name: t('compose.addDoctor') }));
+    expect(screen.getByLabelText(new RegExp(t('compose.addName')))).toBeVisible();
+    expect(screen.getByTestId('compose-add-doctor-note')).toHaveTextContent(t('compose.addNote'));
   });
 });

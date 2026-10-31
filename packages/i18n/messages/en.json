@@ -430,7 +430,12 @@
       "intro": "You can change the title, your story and how you describe it. The doctor, the date and your name stay as they were published.",
       "save": "Save changes",
       "versionNote": "Each change is kept as a new version, and the experience shows “Edited”."
-    }
+    },
+    "addCancel": "Choose from the list instead",
+    "addNote": "The doctor appears straight away, marked “Added by a member — not confirmed”. RogiKotha has not checked that this doctor exists or that these details are right.",
+    "addSpecialtyNone": "Not sure",
+    "bodyCount": "{count} of at least {min} characters",
+    "errorFields": "Check these fields:"
   },
   "condition": {
     "accounts": "Experiences about this health topic",
@@ -450,7 +455,11 @@
     "symptoms": "Symptoms people described",
     "treatedAt": "Where this condition is treated",
     "treatedAtNote": "Districts, areas and hospitals pulled from the experiences above. Where someone actually went, not a directory.",
-    "treatments": "Treatments people mentioned"
+    "treatments": "Treatments people mentioned",
+    "kicker": "Health topic",
+    "listCount": "{n, plural, one {{count} health topic} other {{count} health topics}}",
+    "experienceCount": "{n, plural, one {{count} patient experience} other {{count} patient experiences}}",
+    "doctorCount": "{n, plural, one {{count} experience} other {{count} experiences}}"
   },
   "crit": {
     "admission": "Admission and discharge",
@@ -601,7 +610,11 @@
       "titleLength": "Title: write a title of up to 120 characters.",
       "bodyTooShort": "What happened: write at least 20 characters.",
       "bodyTooLong": "What happened: keep it under 10,000 characters.",
-      "identityRequired": "Name: choose how your name appears."
+      "identityRequired": "Name: choose how your name appears.",
+      "newDoctorName": "Doctor’s name: write the full name, 3 to 120 characters.",
+      "newDoctorSpecialty": "Specialty: choose one from the list, or “Not sure”.",
+      "newDoctorChamber": "Where they see patients: use 200 characters or fewer.",
+      "newDoctorBmdc": "BMDC number: use letters, numbers and dashes only, up to 20."
     },
     "profile": {
       "displayNameRequired": "Display name: enter the name you want to appear.",
@@ -726,7 +739,12 @@
       "diagnostic": "Diagnostic centre",
       "hospital": "Hospital"
     },
-    "write": "Describe your visit"
+    "write": "Describe your visit",
+    "listCount": "{n, plural, one {{count} branch} other {{count} branches}}",
+    "orderNote": "Listed alphabetically by name. Never ranked, and never scored.",
+    "visitCount": "{n, plural, one {{count} visit described} other {{count} visits described}}",
+    "noVisits": "No one has described a visit here yet.",
+    "address": "Address"
   },
   "filter": {
     "any": "Any",
@@ -786,7 +804,9 @@
     "notVerified": "Registration not verified",
     "notVerifiedWhy": "RogiKotha does not yet check BMDC registration. This profile was submitted by the community.",
     "reviewerLabel": "Reviewer’s label",
-    "reviewerLabelWhy": "This is the author’s own claim. RogiKotha has not checked it and takes no position on it."
+    "reviewerLabelWhy": "This is the author’s own claim. RogiKotha has not checked it and takes no position on it.",
+    "memberAdded": "Added by a member — not confirmed",
+    "memberAddedWhy": "A member added this doctor while sharing an experience. RogiKotha has not checked that this doctor exists or that the details are right."
   },
   "mine": {
     "addFollowUp": "Add an update",

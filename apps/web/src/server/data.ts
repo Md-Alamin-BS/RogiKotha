@@ -30,6 +30,7 @@ export const accounts = bindDb(demo.accounts);
 export const comments = bindDb(demo.comments);
 export const doctors = bindDb(demo.doctors);
 export const evidence = bindDb(demo.evidence);
+export const facilities = bindDb(demo.facilities);
 export const reviews = bindDb(demo.reviews);
 export const session = bindDb(demo.session);
 

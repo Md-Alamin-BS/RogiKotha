@@ -7,6 +7,7 @@ import { ExperienceRow } from '@/components/patient/home/ExperienceRow';
 import { Reveal } from '@/components/patient/motion/Reveal';
 import { DoctorAvatar } from './DoctorAvatar';
 import { placeLine } from './DoctorEntry';
+import { MemberAddedBadge } from './MemberAddedBadge';
 import { NotVerifiedBadge } from './NotVerifiedBadge';
 
 interface Fact {
@@ -51,6 +52,7 @@ export function DoctorProfile({
             </p>
             <div className="p-flags">
               <NotVerifiedBadge />
+              {doctor.memberAdded ? <MemberAddedBadge /> : null}
               <span className="badge plain" data-testid="doctor-profile-count">
                 {t('profile.experienceCount', {
                   n: doctor.publishedReviewCount,
@@ -58,6 +60,11 @@ export function DoctorProfile({
                 })}
               </span>
             </div>
+            {doctor.memberAdded ? (
+              <p className="note" data-testid="member-added-note">
+                {t('label.memberAddedWhy')}
+              </p>
+            ) : null}
             <div className="p-actions">
               {/* The write page accepts the uuid or the public id; the public id keeps uuids out of URLs. */}
               <Link

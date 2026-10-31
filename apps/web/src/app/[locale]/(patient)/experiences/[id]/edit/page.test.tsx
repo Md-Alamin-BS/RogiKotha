@@ -88,6 +88,7 @@ beforeEach(() => {
     city: null,
     area: null,
     avatarHue: null,
+    memberAdded: false,
     publishedReviewCount: 1,
     about: null,
     languages: null,

@@ -48,6 +48,7 @@ export function OptionGroup({
         role="group"
         aria-labelledby={labelId}
         aria-describedby={error ? errorId : undefined}
+        data-invalid={error ? 'true' : undefined}
         data-testid={`compose-${name}-options`}
       >
         {options.map((option) => (

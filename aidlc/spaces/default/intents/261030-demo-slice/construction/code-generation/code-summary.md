@@ -139,3 +139,32 @@ Found and recorded in this slice: ISS-324 to ISS-391.
 - Open S3: ISS-371 (accepted deviation) and the worker side of ISS-359.
 - Open S4: every other row; ISS-330 and ISS-384 name the owner for a decision.
 - Existing row seen again: ISS-299 (the unused `eslint-disable` warning in `packages/i18n/src/routing.ts:17`, a warning only).
+
+## Additions after the owner's demo test (2026-11-01)
+
+The owner tried the demo on 2026-11-01 and asked for three changes, deciding the details to the agent.
+
+| Change | Record | What exists now |
+|---|---|---|
+| A refused post wiped the doctor and the attestation and showed no visible error | ISS-392 | The form keeps every choice after a refusal, marks refused fields in red, lists them in the error summary and counts the story while it is under 20 characters |
+| Members could not write about an unlisted doctor | FD-100, ISS-393 to ISS-399 | "Add a doctor who isn't listed" in the write form; the doctor is public at once with "Added by a member — not confirmed" beside "Registration not verified", and a pending `profile_submissions` row for staff |
+| Hospitals & clinics and Health topics were placeholders | FD-101, ISS-400 | `/facilities` and `/facilities/[id]`, `/topics` and `/topics/[id]`, read-only, from the existing seed |
+
+The AI-DLC reviewer read the add-a-doctor diff and returned NOT-READY with two S2 findings (ISS-396, ISS-397) and one owner risk (ISS-398); both S2 findings are fixed and tested.
+
+FD-100 and FD-101 go beyond the approved `requirements.md` (FR1 to FR7, NFR1 to NFR6). Nothing traces them to a requirement, so the owner's approval at the Code Generation gate is their acceptance.
+
+### Files (2026-11-01)
+
+- New: `packages/contracts/src/doctor-name.ts` (+ test), `packages/database/src/demo/facilities.ts`, `packages/database/src/demo/{facilities,topics}.int.test.ts`, `apps/web/src/components/patient/doctors/MemberAddedBadge.tsx`, `apps/web/src/components/patient/facilities/{FacilityEntry,FacilityList,FacilityProfile}.tsx` (+ `FacilityViews.test.tsx`), `apps/web/src/components/patient/topics/{TopicList,TopicProfile}.tsx` (+ `TopicViews.test.tsx`).
+- Changed: `apps/web/src/server/actions/review.ts`, `apps/web/src/components/patient/compose/{ComposeForm,TextField,FormErrorSummary,OptionGroup}.tsx`, `apps/web/src/components/patient/doctors/{DoctorEntry,DoctorProfile}.tsx`, `apps/web/src/server/data.ts`, `apps/web/src/styles/patient.css`, `packages/database/src/demo/{doctors,reviews,index}.ts`, `packages/contracts/src/{index.ts,view-models/demo.ts}`, `packages/i18n/messages/{en,bn}.json` and the generated `packages/i18n/src/keys.ts` (873 keys), the pages `apps/web/src/app/[locale]/(patient)/{write,facilities,facilities/[id],topics,topics/[id]}/page.tsx`, and their tests.
+- Records: `docs/status/decision-log.md` (FD-100, FD-101), `docs/implementation/ISSUES.md` (ISS-392 to ISS-400), `docs/implementation/handoffs/demo-slice.md`, this file and `source-manifest.json`.
+
+### Tests added (2026-11-01)
+
+- Unit and component: `doctor-name.test.ts` (7), `review.test.ts` (+13: add-a-doctor, refused names, NUL byte, kept tick), `ComposeForm.test.tsx` (+5: kept doctor and tick, field list, live count, add-a-doctor panel in `en` and `bn`), `DoctorList.test.tsx` (+2: the member-added badge in both languages), `FacilityViews.test.tsx` (8), `TopicViews.test.tsx` (6), and the shared `pages.test.tsx` now renders the real facility and topic pages.
+- Database: `reviews.int.test.ts` (+6: create, reuse, different specialty, "Dristy"/"Isty", rollback, seeded doctor not marked), `facilities.int.test.ts` (3, including that facility visits never reach a doctor's count), `topics.int.test.ts` (3).
+- Smoke: `demo-slice.smoke.test.ts` gains "a reader adds an unlisted doctor, who then lists as member-added, and the directory pages answer".
+- End to end: `apps/web/e2e/smoke/demo.spec.ts` gains click-path steps 9 and 10 in `en` and `bn`.
+
+Verification on 2026-11-01: `pnpm typecheck`, `lint`, `lint:boundaries`, `format:check`, `check:identity`, `test:coverage` (160 files, 1742 passed and 2 expected fails), `i18n:check` (873 keys), `contrast`, `contrast:patient`, `check:motion` and `pnpm smoke` (14 files, 27 tests) green before the smoke and e2e additions; after them the new smoke file passes and `pnpm --filter @rogikotha/web smoke:e2e` is 17 of 17. `pnpm --filter @rogikotha/web build` green. A browser walk in `en` and `bn` of the refused-then-fixed post, adding a doctor, reusing it by name, and the facility and topic pages.

@@ -9,8 +9,9 @@ import { doctors as doctorTable } from '../schema/directory';
 import { testDb } from '../test-setup';
 import { createProfileForAuthUser } from './accounts';
 import { addComment, listComments } from './comments';
-import { listDoctors } from './doctors';
-import { createQuickReview, getReviewByPublicId } from './reviews';
+import { listDoctors, listTopics } from './doctors';
+import { listFacilities } from './facilities';
+import { createQuickReview, createQuickReviewWithNewDoctor, getReviewByPublicId } from './reviews';
 import { getCurrentAccountByAuthUserId } from './session';
 
 describe('demo slice smoke', () => {
@@ -73,5 +74,42 @@ describe('demo slice smoke', () => {
     expect(threads).toEqual([
       expect.objectContaining({ body: 'Thank you for writing this.', canDelete: true }),
     ]);
+  });
+
+  it('a reader adds an unlisted doctor, who then lists as member-added, and the directory pages answer', async () => {
+    const authUserId = newId();
+    const username = `smoke2_${authUserId.slice(-8)}`;
+    await testDb.insert(authUsers).values({ id: authUserId, email: `${username}@example.test` });
+    await createProfileForAuthUser(testDb, {
+      authUserId,
+      username,
+      displayName: 'Smoke Adder',
+      locale: 'en',
+      termsVersion: '1',
+    });
+    const account = await getCurrentAccountByAuthUserId(testDb, authUserId);
+    const name = `Dr. Smoke Newcomer ${authUserId.slice(-6)}`;
+
+    const created = await createQuickReviewWithNewDoctor(testDb, {
+      doctor: { name, specialtyId: null, chamber: null, bmdc: null },
+      review: {
+        authorPersonaId: account!.currentPersonaId,
+        authorAccountId: account!.accountId,
+        relationship: 'self',
+        periodYear: 2026,
+        periodMonth: 3,
+        title: 'Seen by a doctor not yet listed',
+        body: 'The doctor took time to explain the plan and the follow-up visit.',
+        sentiment: null,
+        outcome: null,
+        identityMode: 'named',
+        language: 'en',
+      },
+    });
+
+    const listed = (await listDoctors(testDb, 'en')).find((row) => row.id === created.doctorId);
+    expect(listed).toMatchObject({ name, memberAdded: true, publishedReviewCount: 1 });
+    await expect(listFacilities(testDb, 'en')).resolves.toEqual(expect.any(Array));
+    await expect(listTopics(testDb, 'bn')).resolves.toEqual(expect.any(Array));
   });
 });

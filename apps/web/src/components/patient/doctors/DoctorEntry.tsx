@@ -4,6 +4,7 @@ import type { Locale } from '@rogikotha/i18n';
 import { formatNumber } from '@rogikotha/i18n/format';
 import { Link } from '@/i18n/routing';
 import { DoctorAvatar } from './DoctorAvatar';
+import { MemberAddedBadge } from './MemberAddedBadge';
 import { NotVerifiedBadge } from './NotVerifiedBadge';
 
 /** "Area, City", or null when neither is known. */
@@ -42,6 +43,7 @@ export function DoctorEntry({ doctor }: { doctor: DemoDoctorListRow }) {
         </p>
         <span className="doc-flags">
           <NotVerifiedBadge />
+          {doctor.memberAdded ? <MemberAddedBadge /> : null}
         </span>
       </div>
       <div className="doc-side">

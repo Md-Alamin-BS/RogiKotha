@@ -7,8 +7,37 @@ This guide picks up the RogiKotha build on a different computer, for example you
 | Branch | What it holds |
 |---|---|
 | `main` | Everything merged: 8 Units of the full plan (CR-004, CR-009, CR-006, CR-007, CR-011, CR-012, T-010, T-011), FD-094 to FD-099, the demo-slice record up to the approved code plan |
-| `bolt/demo-slice` | **The current work**: the demo slice (intent `261030-demo-slice`). The code is **complete** (`f31342a`). `pnpm check`, `pnpm smoke` and the Playwright demo walk in en and bn (15/15) are green, and the two defects the adversarial testers found are fixed |
+| `bolt/demo-slice` | **The current work**: the demo slice (intent `261030-demo-slice`). The code is **complete** (`f31342a`) and carries the 2026-11-01 additions after the owner's test: the write-form fix, adding an unlisted doctor (FD-100) and the Hospitals & clinics and Health topics pages (FD-101); issues ISS-324 to ISS-400. `pnpm check`, `pnpm smoke` and the Playwright demo walk in en and bn (17/17, click-path steps 1 to 10) are green. Code Generation waits for your approval. **Not merged into `main`** |
 | `bolt/t-101-better-auth-adapter` | The paused full-plan T-101 (sign-in) work in progress; resumes after the demo |
+
+## 0. Just show the demo (about 15 minutes, no Claude Code needed)
+
+Use this when the other computer only has to run the demo. It needs Git, Node 24.18, pnpm 11.20 and Docker
+Desktop (running).
+
+```bash
+git clone https://github.com/Md-Alamin-BS/RogiKotha.git rogikotha   # or: git fetch --all in an existing clone
+cd rogikotha
+git switch bolt/demo-slice
+corepack enable && corepack prepare pnpm@11.20.0 --activate
+pnpm install
+cp infra/compose/.env.example .env
+node -e "console.log('APP_ENCRYPTION_KEY=' + require('crypto').randomBytes(32).toString('base64'))"
+node -e "console.log('BETTER_AUTH_SECRET=' + require('crypto').randomBytes(32).toString('base64'))"
+# paste both printed lines over the two empty lines in .env
+pnpm infra:up                      # PostgreSQL 18, Mailpit, ClamAV
+docker ps                          # wait until rogikotha-clamav-1 shows (healthy): its first start downloads ~300 MB
+pnpm db:reset && pnpm db:seed      # the fictional records and demo logins
+pnpm --filter @rogikotha/web build
+pnpm --filter @rogikotha/web start # http://localhost:3000/en and /bn
+```
+
+- Logins and the 10-step click path: [`docs/implementation/handoffs/demo-slice.md`](../implementation/handoffs/demo-slice.md).
+  Every seeded patient uses the password `demo-pass-2026!`, for example `abba_of_two@demo.rogikotha.local`.
+- Before showing it, run `pnpm demo:reset` (then restart `start`) so only the fictional records are there.
+- Uploads read "Ready" only while ClamAV is healthy; otherwise they stay "Scan pending" on purpose.
+- Port 3000 must be free. If another app uses it: `pnpm --filter @rogikotha/web start -- --port 3100`.
+- The production build is quicker to click through than `pnpm demo` (dev mode compiles each page on first open).
 
 ## 1. Set up the machine (once)
 
@@ -64,10 +93,10 @@ If one test fails only with "Timeout waiting for worker to respond", run it agai
    ```
    /aidlc --resume
    ```
-   AI-DLC continues at Code Generation for the demo slice. Each machine writes its own audit file under the intent's `audit/` folder; that is expected.
-3. Tell Claude where things stand. On 2026-10-30 at about 18:00, the code was done and AI-DLC's code review of the slice had been requested. Then the work moved to this machine. This is a ready prompt:
+   AI-DLC shows the Code Generation approval gate for the demo slice: the code is done and waits for your Approve. Each machine writes its own audit file under the intent's `audit/` folder; that is expected. All 14 plan steps are done and ticked in `construction/code-generation/code-generation-plan.md`; if a resume ever shows them as `[ ]`, take that file back from git and never rebuild.
+3. Tell Claude where things stand. On 2026-10-30 the code was done. On 2026-11-01 you tested the demo and the branch gained the write-form fix, FD-100 (add an unlisted doctor) and FD-101 (facility and topic pages); an AI-DLC reviewer read the add-a-doctor change (NOT-READY, two S2 fixed), and Code Generation was put at its approval gate. This is a ready prompt:
 
-   > Continue the demo slice on branch `bolt/demo-slice`. Read `docs/aidlc-migration/CONTINUE-ON-ANOTHER-DEVICE.md` and `docs/aidlc-migration/RESUME.md`. The code is complete and green. AI-DLC's code-generation review was requested on my other machine. If the review file under `aidlc/spaces/default/intents/261030-demo-slice/.aidlc-engine/reviews/code-generation/` is missing on this machine (that folder is not committed), request the review again with `aidlc engine log review --stage code-generation --reviewer aidlc-architecture-reviewer-agent --iteration <next>`, dispatch the reviewer, fix what it finds, and record the verdict. Then open the Code Generation gate and ask me to approve. After that, run Build and Test and the three local deployment stages, then squash-merge into main and push. Don't ask me questions except for approvals and permissions.
+   > Continue the demo slice on branch `bolt/demo-slice`. Read `docs/aidlc-migration/CONTINUE-ON-ANOTHER-DEVICE.md`, `docs/aidlc-migration/RESUME.md` and `docs/implementation/handoffs/demo-slice.md`. The code is complete and green, including the 2026-11-01 additions (FD-100, FD-101, ISS-392 to ISS-400), and Code Generation waits at its approval gate; the express scope has no stage reviewer, so do not request one. Do not rebuild: all 14 plan steps are done. Show me the gate and wait for my answer. After I approve, run Build and Test and the three local deployment stages. Keep the branch unmerged until I say merge; then squash-merge into main, run `pnpm check` on main and push. Don't ask me questions except for approvals and permissions.
 
 ## 5. What is left after the code
 
@@ -86,7 +115,7 @@ pnpm db:reset && pnpm db:seed
 pnpm demo          # migrates, seeds, runs the web app and the worker
 ```
 
-Then open `http://localhost:3000/en` (or `/bn`). Every seeded patient signs in with the password `demo-pass-2026!`. Their emails are in `packages/test-support/src/seed/seed-accounts.ts`, and once the build is done they are also listed in `docs/implementation/handoffs/demo-slice.md`, together with the click path.
+Then open `http://localhost:3000/en` (or `/bn`). Every seeded patient signs in with the password `demo-pass-2026!`. Their emails are in `packages/test-support/src/seed/seed-accounts.ts` and also listed in `docs/implementation/handoffs/demo-slice.md`, together with the click path (10 steps, including adding an unlisted doctor and the Hospitals & clinics and Health topics pages).
 
 ## Standing rules (they also live in `aidlc/spaces/default/memory/` and AGENTS.md)
 

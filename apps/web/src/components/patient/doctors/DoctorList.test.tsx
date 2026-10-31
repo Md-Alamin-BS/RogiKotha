@@ -80,4 +80,21 @@ describe('DoctorList', () => {
     expect(screen.getByTestId('doctor-list-count')).toHaveTextContent('১ জন ডাক্তার');
     expect(document.body.textContent).not.toMatch(/[0-9]/);
   });
+
+  it('marks a member-added doctor as not confirmed, in both languages, and no other doctor', () => {
+    const added = buildDoctorRow({ name: 'Dr. Typed In', memberAdded: true });
+    const seeded = buildDoctorRow({ name: 'Dr. Seeded' });
+    renderInLocale('en', <DoctorList doctors={[added, seeded]} />);
+    const entries = screen.getAllByTestId('doctor-entry');
+    expect(within(entries[0]!).getByTestId('member-added')).toHaveTextContent(
+      'Added by a member — not confirmed',
+    );
+    expect(within(entries[0]!).getByTestId('not-verified')).toBeVisible();
+    expect(within(entries[1]!).queryByTestId('member-added')).toBeNull();
+  });
+
+  it('marks a member-added doctor in Bengali', () => {
+    renderInLocale('bn', <DoctorList doctors={[buildDoctorRow({ memberAdded: true })]} />);
+    expect(screen.getByTestId('member-added')).toHaveTextContent('সদস্যের যোগ করা — নিশ্চিত নয়');
+  });
 });

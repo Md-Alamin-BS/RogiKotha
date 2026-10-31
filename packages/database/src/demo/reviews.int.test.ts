@@ -4,18 +4,21 @@ import { describe, expect, it } from 'vitest';
 
 import { accountProfiles } from '../schema/account';
 import { authUsers } from '../schema/auth';
-import { doctors } from '../schema/directory';
+import { doctorChambers, doctors, profileSubmissions } from '../schema/directory';
 import { evidenceItems } from '../schema/evidence';
 import { personaLinks, personas } from '../schema/identity';
 import { reviews, reviewVersions } from '../schema/review';
+import { taxonomyTerms } from '../schema/taxonomy';
 import { testDb } from '../test-setup';
 import {
   createPseudonymousPersona,
   createQuickReview,
+  createQuickReviewWithNewDoctor,
   getOwnReviewForEdit,
   getReviewByPublicId,
   updateOwnReview,
 } from './reviews';
+import { getDoctor, listDoctors } from './doctors';
 
 async function buildAccount() {
   const authUserId = newId();
@@ -248,5 +251,154 @@ describe('demo experience editing', () => {
       .from(reviewVersions)
       .where(eq(reviewVersions.reviewId, reviewId));
     expect(versions).toHaveLength(1);
+  });
+});
+
+describe('createQuickReviewWithNewDoctor (FD-100)', () => {
+  function aReviewWithout(author: { accountId: string; personaId: string }) {
+    const review: Partial<DemoCreateReviewInput> = aQuickReview(author, newId());
+    delete review.doctorId;
+    return review as Omit<DemoCreateReviewInput, 'doctorId'>;
+  }
+
+  it('creates the doctor published at once, marked as member-added, with the experience on it', async () => {
+    const author = await buildAccount();
+    const name = `Dr. Member Added ${newId().slice(-6)}`;
+
+    const created = await createQuickReviewWithNewDoctor(testDb, {
+      doctor: { name, specialtyId: null, chamber: 'Synthetic Clinic, Mirpur', bmdc: 'A-123' },
+      review: aReviewWithout(author),
+    });
+
+    expect(created.createdDoctor).toBe(true);
+    const detail = await getDoctor(testDb, created.doctorId, 'bn');
+    expect(detail).toMatchObject({ name, memberAdded: true, publishedReviewCount: 1 });
+    expect(detail?.chambers).toEqual([{ name: 'Synthetic Clinic, Mirpur', hours: null }]);
+    const [row] = await testDb.select().from(doctors).where(eq(doctors.id, created.doctorId));
+    expect(row?.bmdcNumber).toBeNull();
+    expect(row?.fieldProvenance).toMatchObject({ name_en: { source: 'community' } });
+    const [submission] = await testDb
+      .select()
+      .from(profileSubmissions)
+      .where(eq(profileSubmissions.createdDoctorId, created.doctorId));
+    expect(submission).toMatchObject({
+      kind: 'doctor',
+      status: 'pending',
+      submittedByAccountId: author.accountId,
+    });
+    expect(submission?.payload).toMatchObject({ bmdc: 'A-123', nameEn: name });
+    const [review] = await testDb
+      .select()
+      .from(reviews)
+      .where(eq(reviews.publicId, created.publicId));
+    expect(review?.doctorId).toBe(created.doctorId);
+  });
+
+  it('reuses a published doctor whose name matches without the "Dr." title, spaces or case', async () => {
+    const author = await buildAccount();
+    const suffix = newId().slice(-6);
+    const first = await createQuickReviewWithNewDoctor(testDb, {
+      doctor: { name: `Dr. Same Person ${suffix}`, specialtyId: null, chamber: null, bmdc: null },
+      review: aReviewWithout(author),
+    });
+
+    const second = await createQuickReviewWithNewDoctor(testDb, {
+      doctor: { name: `  same   PERSON ${suffix} `, specialtyId: null, chamber: null, bmdc: null },
+      review: aReviewWithout(author),
+    });
+
+    expect(second).toMatchObject({ doctorId: first.doctorId, createdDoctor: false });
+    const submissions = await testDb
+      .select()
+      .from(profileSubmissions)
+      .where(eq(profileSubmissions.createdDoctorId, first.doctorId));
+    expect(submissions).toHaveLength(1);
+  });
+
+  it('creates a separate doctor when the same name comes with a different specialty', async () => {
+    const author = await buildAccount();
+    const suffix = newId().slice(-6);
+    const [cardiology, neurology] = await testDb
+      .insert(taxonomyTerms)
+      .values(
+        ['Cardiology', 'Neurology'].map((name) => ({
+          publicId: newPublicId(),
+          kind: 'specialty' as const,
+          nameEn: `${name} ${suffix}`,
+          nameBn: `${name} ${suffix}`,
+          nameKeyEn: `${name.toLowerCase()}${suffix}`,
+          nameKeyBn: `${name.toLowerCase()}${suffix}`,
+          state: 'published' as const,
+        })),
+      )
+      .returning({ id: taxonomyTerms.id });
+    const first = await createQuickReviewWithNewDoctor(testDb, {
+      doctor: {
+        name: `Dr. Common Name ${suffix}`,
+        specialtyId: cardiology!.id,
+        chamber: null,
+        bmdc: null,
+      },
+      review: aReviewWithout(author),
+    });
+
+    const other = await createQuickReviewWithNewDoctor(testDb, {
+      doctor: {
+        name: `Prof. Dr. Common Name ${suffix}`,
+        specialtyId: neurology!.id,
+        chamber: null,
+        bmdc: null,
+      },
+      review: aReviewWithout(author),
+    });
+    const same = await createQuickReviewWithNewDoctor(testDb, {
+      doctor: { name: `common name ${suffix}`, specialtyId: null, chamber: null, bmdc: null },
+      review: aReviewWithout(author),
+    });
+
+    expect(other.createdDoctor).toBe(true);
+    expect(other.doctorId).not.toBe(first.doctorId);
+    expect(same).toMatchObject({ doctorId: first.doctorId, createdDoctor: false });
+  });
+
+  it('keeps "Dristy" apart from "Isty": only a real title is ignored', async () => {
+    const author = await buildAccount();
+    const suffix = newId().slice(-6);
+    const isty = await createQuickReviewWithNewDoctor(testDb, {
+      doctor: { name: `Isty Akter ${suffix}`, specialtyId: null, chamber: null, bmdc: null },
+      review: aReviewWithout(author),
+    });
+    const dristy = await createQuickReviewWithNewDoctor(testDb, {
+      doctor: { name: `Dristy Akter ${suffix}`, specialtyId: null, chamber: null, bmdc: null },
+      review: aReviewWithout(author),
+    });
+    expect(dristy.doctorId).not.toBe(isty.doctorId);
+  });
+
+  it("writes nothing when the persona is not the author's own", async () => {
+    const author = await buildAccount();
+    const other = await buildAccount();
+    const name = `Dr. Never Created ${newId().slice(-6)}`;
+
+    await expect(
+      createQuickReviewWithNewDoctor(testDb, {
+        doctor: { name, specialtyId: null, chamber: 'Nowhere', bmdc: null },
+        review: { ...aReviewWithout(author), authorPersonaId: other.personaId },
+      }),
+    ).rejects.toThrow();
+
+    const listed = await listDoctors(testDb, 'en');
+    expect(listed.some((d) => d.name === name)).toBe(false);
+    const chambers = await testDb
+      .select()
+      .from(doctorChambers)
+      .where(eq(doctorChambers.nameEn, 'Nowhere'));
+    expect(chambers).toHaveLength(0);
+  });
+
+  it('does not mark a seeded or staff-made doctor as member-added', async () => {
+    const doctor = await buildDoctor();
+    const detail = await getDoctor(testDb, doctor.id, 'en');
+    expect(detail?.memberAdded).toBe(false);
   });
 });

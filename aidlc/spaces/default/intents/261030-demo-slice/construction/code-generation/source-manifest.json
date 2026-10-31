@@ -143,6 +143,20 @@
     { "path": "packages/i18n/messages/bn.json" },
     { "path": "packages/i18n/messages/en.json" },
     { "path": "packages/i18n/src/keys.ts" },
-    { "path": "pnpm-lock.yaml" }
+    { "path": "pnpm-lock.yaml" },
+    { "path": "apps/web/src/components/patient/doctors/MemberAddedBadge.tsx" },
+    { "path": "apps/web/src/components/patient/facilities/FacilityEntry.tsx" },
+    { "path": "apps/web/src/components/patient/facilities/FacilityList.tsx" },
+    { "path": "apps/web/src/components/patient/facilities/FacilityProfile.tsx" },
+    { "path": "apps/web/src/components/patient/facilities/FacilityViews.test.tsx" },
+    { "path": "apps/web/src/components/patient/topics/TopicList.tsx" },
+    { "path": "apps/web/src/components/patient/topics/TopicProfile.tsx" },
+    { "path": "apps/web/src/components/patient/topics/TopicViews.test.tsx" },
+    { "path": "docs/status/decision-log.md" },
+    { "path": "packages/contracts/src/doctor-name.test.ts" },
+    { "path": "packages/contracts/src/doctor-name.ts" },
+    { "path": "packages/database/src/demo/facilities.int.test.ts" },
+    { "path": "packages/database/src/demo/facilities.ts" },
+    { "path": "packages/database/src/demo/topics.int.test.ts" }
   ]
 }

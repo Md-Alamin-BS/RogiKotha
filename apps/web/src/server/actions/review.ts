@@ -3,6 +3,8 @@
 // Write and edit an experience (FR4, plan Step 8). Every action reads the signed-in account on the
 // server, validates the form with zod and answers with i18n message keys, never with copy.
 import {
+  doctorNameLetterCount,
+  hasControlOrFormat,
   OUTCOMES,
   PUBLIC_ID_RE,
   RELATIONSHIPS,
@@ -27,12 +29,20 @@ export type ComposeField =
   | 'sentiment'
   | 'outcome'
   | 'identity'
-  | 'attestation';
+  | 'attestation'
+  | 'newDoctor'
+  | 'newDoctorName'
+  | 'newDoctorSpecialtyId'
+  | 'newDoctorChamber'
+  | 'newDoctorBmdc';
 
 export type EditField = 'title' | 'body' | 'sentiment' | 'outcome';
 
 /** The form as submitted, handed back so a refused submission keeps what the author typed. */
-export type ComposeValues = Record<Exclude<ComposeField, 'attestation'>, string>;
+export type ComposeValues = Record<Exclude<ComposeField, 'attestation'>, string> & {
+  /** `'on'` when the attestation box was ticked. */
+  attestation?: string;
+};
 export type EditValues = Record<EditField, string>;
 
 export interface ReviewFormState<F extends string, V> {
@@ -63,6 +73,11 @@ const COMPOSE_FIELDS = [
   'sentiment',
   'outcome',
   'identity',
+  'newDoctor',
+  'newDoctorName',
+  'newDoctorSpecialtyId',
+  'newDoctorChamber',
+  'newDoctorBmdc',
 ] as const satisfies readonly (keyof ComposeValues)[];
 const EDIT_FIELDS = [
   'title',
@@ -78,15 +93,22 @@ function optionalChoice<const T extends readonly [string, ...string[]]>(values: 
     .transform((v) => (v === '' ? null : v));
 }
 
+/** Line breaks and tabs are fine in a story; any other control or invisible character is not. */
+function plainText(v: string) {
+  return !hasControlOrFormat(v.replace(/[\n\r\t]/g, ''));
+}
+
 const titleField = z
   .string()
   .trim()
+  .refine(plainText, { error: 'errors.common.validation' })
   .min(1, { error: 'formErrors.compose.titleLength' })
   .max(TITLE_MAX, { error: 'formErrors.compose.titleLength' });
 
 const bodyField = z
   .string()
   .trim()
+  .refine(plainText, { error: 'errors.common.validation' })
   .min(BODY_MIN, { error: 'formErrors.compose.bodyTooShort' })
   .max(BODY_MAX, { error: 'formErrors.compose.bodyTooLong' });
 
@@ -111,12 +133,45 @@ const EditInput = z.object({
   outcome: optionalChoice(OUTCOMES),
 });
 
-const ComposeInput = EditInput.extend({
-  doctorId: z.uuid({ error: 'formErrors.compose.doctorRequired' }),
+const ComposeCommon = EditInput.extend({
   relationship: z.enum(RELATIONSHIPS, { error: 'formErrors.compose.relationshipRequired' }),
   period: periodField,
   identity: z.enum(['named', 'pseudonymous'], { error: 'formErrors.compose.identityRequired' }),
   attestation: z.literal('on', { error: 'errors.review.attestationRequired' }),
+});
+
+const ComposeInput = ComposeCommon.extend({
+  doctorId: z.uuid({ error: 'formErrors.compose.doctorRequired' }),
+});
+
+/** Empty text becomes null. */
+const blankToNull = (v: string) => (v === '' ? null : v);
+
+// ASSUMPTION(demo-slice): a member-added name has 3+ letters and at most 120 characters, the chamber at most 200 and a
+// BMDC number up to 20 letters, digits or dashes (FD-100).
+const NewDoctorInput = ComposeCommon.extend({
+  // At least three letters once a "Dr." title is removed, so "Dr." or "..." is never a doctor.
+  newDoctorName: z
+    .string()
+    .trim()
+    .max(120, { error: 'formErrors.compose.newDoctorName' })
+    .refine((v) => !hasControlOrFormat(v) && doctorNameLetterCount(v) >= 3, {
+      error: 'formErrors.compose.newDoctorName',
+    }),
+  newDoctorSpecialtyId: z
+    .union([z.literal(''), z.uuid()], { error: 'formErrors.compose.newDoctorSpecialty' })
+    .transform(blankToNull),
+  newDoctorChamber: z
+    .string()
+    .trim()
+    .max(200, { error: 'formErrors.compose.newDoctorChamber' })
+    .refine((v) => !hasControlOrFormat(v), { error: 'formErrors.compose.newDoctorChamber' })
+    .transform(blankToNull),
+  newDoctorBmdc: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9-]{0,20}$/, { error: 'formErrors.compose.newDoctorBmdc' })
+    .transform(blankToNull),
 });
 
 function readFields<const K extends string>(formData: FormData, fields: readonly K[]) {
@@ -181,24 +236,32 @@ export async function publishReview(
   const account = await requireAccount({ returnTo: '/write' });
   const locale = (await getLocale()) as Locale;
   const values = readFields(formData, COMPOSE_FIELDS);
-  const parsed = ComposeInput.safeParse({
-    ...values,
-    attestation: formData.get('attestation') ?? '',
-  });
-  if (!parsed.success) return refused(prev, values, fieldErrorsOf<ComposeField>(parsed.error));
+  const raw = { ...values, attestation: formData.get('attestation') ?? '' };
+  const addingDoctor = values.newDoctor === '1';
+  const parsed = addingDoctor ? NewDoctorInput.safeParse(raw) : ComposeInput.safeParse(raw);
+  const kept: ComposeValues = { ...values, attestation: raw.attestation === 'on' ? 'on' : '' };
+  if (!parsed.success) return refused(prev, kept, fieldErrorsOf<ComposeField>(parsed.error));
 
   const input = parsed.data;
-  const options = await doctors.listDoctorOptions(locale);
-  if (!options.some((option) => option.id === input.doctorId)) {
-    return refused(prev, values, { doctorId: 'formErrors.compose.doctorRequired' });
+  if ('doctorId' in input) {
+    const options = await doctors.listDoctorOptions(locale);
+    if (!options.some((option) => option.id === input.doctorId)) {
+      return refused(prev, kept, { doctorId: 'formErrors.compose.doctorRequired' });
+    }
+  } else if (input.newDoctorSpecialtyId) {
+    const specialties = await doctors.listSpecialtyOptions(locale);
+    if (!specialties.some((option) => option.id === input.newDoctorSpecialtyId)) {
+      return refused(prev, kept, {
+        newDoctorSpecialtyId: 'formErrors.compose.newDoctorSpecialty',
+      });
+    }
   }
 
   let publicId: string;
   try {
-    const created = await reviews.createQuickReview({
+    const review = {
       authorPersonaId: await personaFor(account, input.identity),
       authorAccountId: account.accountId,
-      doctorId: input.doctorId,
       relationship: input.relationship,
       periodYear: input.period.year,
       periodMonth: input.period.month,
@@ -208,11 +271,23 @@ export async function publishReview(
       outcome: input.outcome,
       identityMode: input.identity,
       language: languageOf(`${input.title} ${input.body}`),
-    });
+    };
+    const created =
+      'doctorId' in input
+        ? await reviews.createQuickReview({ ...review, doctorId: input.doctorId })
+        : await reviews.createQuickReviewWithNewDoctor({
+            doctor: {
+              name: input.newDoctorName,
+              specialtyId: input.newDoctorSpecialtyId,
+              chamber: input.newDoctorChamber,
+              bmdc: input.newDoctorBmdc,
+            },
+            review,
+          });
     publicId = created.publicId;
   } catch (error) {
     logFailure('review.publish', error);
-    return refused(prev, values, {}, 'errors.common.internal');
+    return refused(prev, kept, {}, 'errors.common.internal');
   }
 
   revalidatePath('/', 'layout');

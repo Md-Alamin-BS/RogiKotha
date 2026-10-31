@@ -30,7 +30,10 @@ export default async function ComposerPage({
   });
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations();
-  const options = await doctors.listDoctorOptions(locale);
+  const [options, specialties] = await Promise.all([
+    doctors.listDoctorOptions(locale),
+    doctors.listSpecialtyOptions(locale),
+  ]);
   // `?doctor=` may carry the uuid or the public id, as the doctor page's link chooses.
   const prefilled = options.find((d) => d.id === requestedDoctor || d.publicId === requestedDoctor);
   const now = new Date();
@@ -43,6 +46,7 @@ export default async function ComposerPage({
           id: d.id,
           label: d.specialty ? `${d.name} — ${d.specialty}` : d.name,
         }))}
+        specialties={specialties}
         periods={periodOptions(now, locale)}
         names={{
           named: account.displayName,
@@ -58,6 +62,11 @@ export default async function ComposerPage({
           outcome: '',
           // ASSUMPTION(demo-slice): the username is preselected, as in the prototype's composer.
           identity: 'pseudonymous',
+          newDoctor: '',
+          newDoctorName: '',
+          newDoctorSpecialtyId: '',
+          newDoctorChamber: '',
+          newDoctorBmdc: '',
         }}
       />
     </ViewShell>

@@ -5,6 +5,7 @@ export * from './result';
 export * from './errors';
 export * from './actor';
 export * from './ids';
+export * from './doctor-name';
 export * from './time';
 export * from './enums';
 export * from './page';

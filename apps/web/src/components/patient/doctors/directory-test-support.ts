@@ -5,7 +5,15 @@ import { createRequire } from 'node:module';
 import { createElement, type ReactElement } from 'react';
 import { render } from '@testing-library/react';
 import { NextIntlClientProvider, type AbstractIntlMessages } from 'next-intl';
-import type { DemoDoctorDetail, DemoDoctorListRow, DemoReviewCard } from '@rogikotha/contracts';
+import type {
+  DemoDoctorDetail,
+  DemoDoctorListRow,
+  DemoFacilityDetail,
+  DemoFacilityRow,
+  DemoReviewCard,
+  DemoTopicDetail,
+  DemoTopicRow,
+} from '@rogikotha/contracts';
 
 export type TestLocale = 'en' | 'bn';
 
@@ -48,6 +56,7 @@ export function buildDoctorRow(overrides: Partial<DemoDoctorListRow> = {}): Demo
     city: 'Dhaka',
     area: 'Dhanmondi',
     avatarHue: 210,
+    memberAdded: false,
     publishedReviewCount: 3,
     ...overrides,
   };
@@ -93,3 +102,66 @@ export function buildReviewCard(overrides: Partial<DemoReviewCard> = {}): DemoRe
 
 /** Characters and words that would make a number or symbol read as a quality score. */
 export const QUALITY_SCORE_PATTERN = /★|☆|\/\s*5\b|\/\s*10\b|\brating\b|\bscore\b|\bstars?\b/i;
+
+export function buildFacilityRow(overrides: Partial<DemoFacilityRow> = {}): DemoFacilityRow {
+  const n = nextSeq();
+  return {
+    publicId: `fac${String(n).padStart(7, '0')}`,
+    facilityName: `Synthetic Care Hospital ${n}`,
+    branchName: null,
+    type: 'hospital',
+    city: 'Dhaka',
+    area: 'Mirpur',
+    visitCount: 2,
+    ...overrides,
+  };
+}
+
+export function buildFacilityDetail(
+  overrides: Partial<DemoFacilityDetail> = {},
+): DemoFacilityDetail {
+  return {
+    ...buildFacilityRow(),
+    address: null,
+    visits: [
+      {
+        publicId: 'visit00001',
+        authorDisplayName: 'Rina Akter',
+        identityMode: 'named',
+        periodYear: 2026,
+        periodMonth: 2,
+        body: 'The reception was calm and the queue moved quickly.',
+        criteria: [
+          { criterion: 'staff', value: 'good' },
+          { criterion: 'overall', value: 'mixed' },
+        ],
+      },
+    ],
+    doctors: [
+      { id: 'doc-uuid-9', publicId: 'doc0000099', name: 'Dr. Synthetic Haque', specialty: null },
+    ],
+    siblings: [],
+    ...overrides,
+  };
+}
+
+export function buildTopicRow(overrides: Partial<DemoTopicRow> = {}): DemoTopicRow {
+  const n = nextSeq();
+  return {
+    publicId: `top${String(n).padStart(7, '0')}`,
+    name: `Synthetic condition ${n}`,
+    experienceCount: 3,
+    ...overrides,
+  };
+}
+
+export function buildTopicDetail(overrides: Partial<DemoTopicDetail> = {}): DemoTopicDetail {
+  const card = buildReviewCard();
+  return {
+    ...buildTopicRow(),
+    aliases: ['sugar', 'চিনি রোগ'],
+    experiences: [card],
+    doctors: [{ ...card.doctor, experienceCount: 1 }],
+    ...overrides,
+  };
+}

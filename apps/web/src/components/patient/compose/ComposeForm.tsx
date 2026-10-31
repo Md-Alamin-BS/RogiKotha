@@ -1,9 +1,14 @@
 'use client';
 
-import { useActionState, useId, useState } from 'react';
+import { startTransition, useActionState, useId, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { OUTCOMES, RELATIONSHIPS, SENTIMENTS } from '@rogikotha/contracts';
-import { publishReview, type ComposeFormState, type ComposeValues } from '@/server/actions/review';
+import {
+  publishReview,
+  type ComposeField,
+  type ComposeFormState,
+  type ComposeValues,
+} from '@/server/actions/review';
 import { ComposePreview } from './ComposePreview';
 import { FormErrorSummary } from './FormErrorSummary';
 import { OptionGroup } from './OptionGroup';
@@ -15,8 +20,15 @@ export interface DoctorChoice {
   label: string;
 }
 
+export interface SpecialtyChoice {
+  id: string;
+  name: string;
+}
+
 export interface ComposeFormProps {
   doctors: DoctorChoice[];
+  /** Choices for the add-a-doctor panel (FD-100). */
+  specialties: SpecialtyChoice[];
   periods: PeriodOption[];
   defaults: ComposeValues;
   /** The byline under each identity choice: the display name, and the username alias. */
@@ -30,14 +42,42 @@ const INITIAL_STATE: ComposeFormState = {
   formError: null,
 };
 const TONE: Record<string, string> = { positive: 'pos', mixed: 'mix', negative: 'neg' };
+const BODY_MIN = 20;
+
+/** The label of each refusable field, as the error summary lists them. */
+const FIELD_LABELS: Partial<Record<ComposeField, string>> = {
+  doctorId: 'compose.doctor',
+  newDoctorName: 'compose.addName',
+  newDoctorSpecialtyId: 'compose.addSpecialty',
+  newDoctorChamber: 'compose.addChamber',
+  newDoctorBmdc: 'compose.addBmdc',
+  relationship: 'compose.relationship',
+  period: 'compose.period',
+  title: 'compose.titleLabel',
+  body: 'compose.story',
+  sentiment: 'compose.sentiment',
+  outcome: 'compose.outcome',
+  identity: 'compose.identity.label',
+  attestation: 'compose.confirmTitle',
+};
 
 // Port of concept-04b's renderCompose() quick mode (STORY-REV-001): doctor, relationship, period,
 // title, story, optional sentiment and outcome, identity, the attestation tick and Publish.
 export function ComposeForm(props: ComposeFormProps) {
   const [state, formAction, pending] = useActionState(publishReview, INITIAL_STATE);
+  // React resets a form once its action settles, which put the doctor back to "Choose a doctor"
+  // after a refused submission; submitting through a transition skips that reset.
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    startTransition(() => formAction(data));
+  };
+  const refusedFields = (Object.keys(state.fieldErrors) as ComposeField[])
+    .map((field) => FIELD_LABELS[field])
+    .filter((label): label is string => Boolean(label));
   return (
-    <form action={formAction} noValidate data-testid="compose-form">
-      <FormErrorSummary attempt={state.attempt} error={state.formError} />
+    <form action={formAction} onSubmit={onSubmit} noValidate data-testid="compose-form">
+      <FormErrorSummary attempt={state.attempt} error={state.formError} fields={refusedFields} />
       {/* Remounts after a refused submission, so the fields start from what was sent. */}
       <ComposeFields
         key={state.attempt}
@@ -52,6 +92,7 @@ export function ComposeForm(props: ComposeFormProps) {
 
 function ComposeFields({
   doctors,
+  specialties,
   periods,
   names,
   initial,
@@ -67,39 +108,117 @@ function ComposeFields({
   const [values, setValues] = useState(initial);
   const set = (field: keyof ComposeValues) => (value: string) =>
     setValues((current) => ({ ...current, [field]: value }));
-  const doctorName = doctors.find((d) => d.id === values.doctorId)?.label ?? null;
+  const adding = values.newDoctor === '1';
+  const doctorName = adding
+    ? values.newDoctorName.trim() || null
+    : (doctors.find((d) => d.id === values.doctorId)?.label ?? null);
   const errorId = (field: string) => `${id}-${field}-error`;
 
   return (
     <div className="c-grid">
       <section className="panel">
-        <div className="field">
-          <label htmlFor={`${id}-doctor`}>
-            {t('compose.doctor')}
-            <span className="req">{t('compose.required')}</span>
-          </label>
-          <select
-            id={`${id}-doctor`}
-            name="doctorId"
-            value={values.doctorId}
-            onChange={(e) => set('doctorId')(e.target.value)}
-            aria-invalid={errors.doctorId ? true : undefined}
-            aria-describedby={errors.doctorId ? errorId('doctor') : undefined}
-            data-testid="compose-doctor"
-          >
-            <option value="">{t('compose.chooseDoctor')}</option>
-            {doctors.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.label}
-              </option>
-            ))}
-          </select>
-          {errors.doctorId ? (
-            <p className="field-error" id={errorId('doctor')}>
-              {t(errors.doctorId)}
+        <input type="hidden" name="newDoctor" value={values.newDoctor} />
+        {adding ? (
+          <div className="add-doctor" data-testid="compose-add-doctor">
+            <TextField
+              name="newDoctorName"
+              label={t('compose.addName')}
+              defaultValue={values.newDoctorName}
+              onChange={set('newDoctorName')}
+              error={errors.newDoctorName}
+            />
+            <div className="field">
+              <label htmlFor={`${id}-specialty`}>
+                {t('compose.addSpecialty')}
+                <span className="req optional">{t('compose.optional')}</span>
+              </label>
+              <select
+                id={`${id}-specialty`}
+                name="newDoctorSpecialtyId"
+                defaultValue={values.newDoctorSpecialtyId}
+                onChange={(e) => set('newDoctorSpecialtyId')(e.target.value)}
+                aria-invalid={errors.newDoctorSpecialtyId ? true : undefined}
+                aria-describedby={errors.newDoctorSpecialtyId ? errorId('specialty') : undefined}
+                data-testid="compose-newDoctorSpecialtyId"
+              >
+                <option value="">{t('compose.addSpecialtyNone')}</option>
+                {specialties.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              {errors.newDoctorSpecialtyId ? (
+                <p className="field-error" id={errorId('specialty')}>
+                  {t(errors.newDoctorSpecialtyId)}
+                </p>
+              ) : null}
+            </div>
+            <TextField
+              name="newDoctorChamber"
+              label={t('compose.addChamber')}
+              optional
+              defaultValue={values.newDoctorChamber}
+              onChange={set('newDoctorChamber')}
+              error={errors.newDoctorChamber}
+            />
+            <TextField
+              name="newDoctorBmdc"
+              label={t('compose.addBmdc')}
+              optional
+              defaultValue={values.newDoctorBmdc}
+              onChange={set('newDoctorBmdc')}
+              error={errors.newDoctorBmdc}
+            />
+            <p className="sub" data-testid="compose-add-doctor-note">
+              {t('compose.addNote')}
             </p>
-          ) : null}
-        </div>
+            <button
+              type="button"
+              className="btn ghost small"
+              onClick={() => set('newDoctor')('')}
+              data-testid="compose-add-doctor-cancel"
+            >
+              {t('compose.addCancel')}
+            </button>
+          </div>
+        ) : (
+          <div className="field">
+            <label htmlFor={`${id}-doctor`}>
+              {t('compose.doctor')}
+              <span className="req">{t('compose.required')}</span>
+            </label>
+            <select
+              id={`${id}-doctor`}
+              name="doctorId"
+              value={values.doctorId}
+              onChange={(e) => set('doctorId')(e.target.value)}
+              aria-invalid={errors.doctorId ? true : undefined}
+              aria-describedby={errors.doctorId ? errorId('doctor') : undefined}
+              data-testid="compose-doctor"
+            >
+              <option value="">{t('compose.chooseDoctor')}</option>
+              {doctors.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+            {errors.doctorId ? (
+              <p className="field-error" id={errorId('doctor')}>
+                {t(errors.doctorId)}
+              </p>
+            ) : null}
+            <button
+              type="button"
+              className="btn ghost small add-doctor-open"
+              onClick={() => set('newDoctor')('1')}
+              data-testid="compose-add-doctor-open"
+            >
+              {t('compose.addDoctor')}
+            </button>
+          </div>
+        )}
 
         <OptionGroup
           name="relationship"
@@ -156,6 +275,7 @@ function ComposeFields({
           multiline
           defaultValue={initial.body}
           onChange={set('body')}
+          minLength={BODY_MIN}
           error={errors.body}
         />
 
@@ -198,6 +318,7 @@ function ComposeFields({
               <input
                 type="checkbox"
                 name="attestation"
+                defaultChecked={initial.attestation === 'on'}
                 aria-invalid={errors.attestation ? true : undefined}
                 aria-describedby={errors.attestation ? errorId('attestation') : undefined}
                 data-testid="compose-attestation"

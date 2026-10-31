@@ -273,15 +273,19 @@ export type MessageKey =
   | 'compare.remove'
   | 'compare.title'
   | 'compose.addBmdc'
+  | 'compose.addCancel'
   | 'compose.addChamber'
   | 'compose.addDoctor'
   | 'compose.addName'
+  | 'compose.addNote'
   | 'compose.addPending'
   | 'compose.addSpecialty'
+  | 'compose.addSpecialtyNone'
   | 'compose.addSubmit'
   | 'compose.after'
   | 'compose.age'
   | 'compose.back'
+  | 'compose.bodyCount'
   | 'compose.chooseDoctor'
   | 'compose.claims'
   | 'compose.claimsNote'
@@ -298,6 +302,7 @@ export type MessageKey =
   | 'compose.edit.save'
   | 'compose.edit.title'
   | 'compose.edit.versionNote'
+  | 'compose.errorFields'
   | 'compose.evidence'
   | 'compose.evidenceOptional'
   | 'compose.fixNow'
@@ -358,9 +363,13 @@ export type MessageKey =
   | 'condition.alsoCalled'
   | 'condition.areas'
   | 'condition.districts'
+  | 'condition.doctorCount'
   | 'condition.doctors'
+  | 'condition.experienceCount'
   | 'condition.facilities'
   | 'condition.hospitals'
+  | 'condition.kicker'
+  | 'condition.listCount'
   | 'condition.medicines'
   | 'condition.mentionNote'
   | 'condition.noGeo'
@@ -543,16 +552,21 @@ export type MessageKey =
   | 'experience.writtenBy'
   | 'experience.yourExperience'
   | 'facility.accounts'
+  | 'facility.address'
   | 'facility.branch'
   | 'facility.criteria'
   | 'facility.doctorsHere'
   | 'facility.doctorsNote'
   | 'facility.kicker'
+  | 'facility.listCount'
+  | 'facility.noVisits'
+  | 'facility.orderNote'
   | 'facility.parent'
   | 'facility.separation'
   | 'facility.type.clinic'
   | 'facility.type.diagnostic'
   | 'facility.type.hospital'
+  | 'facility.visitCount'
   | 'facility.write'
   | 'filter.any'
   | 'filter.clear'
@@ -576,6 +590,10 @@ export type MessageKey =
   | 'formErrors.compose.bodyTooShort'
   | 'formErrors.compose.doctorRequired'
   | 'formErrors.compose.identityRequired'
+  | 'formErrors.compose.newDoctorBmdc'
+  | 'formErrors.compose.newDoctorChamber'
+  | 'formErrors.compose.newDoctorName'
+  | 'formErrors.compose.newDoctorSpecialty'
   | 'formErrors.compose.periodInvalid'
   | 'formErrors.compose.relationshipRequired'
   | 'formErrors.compose.titleLength'
@@ -603,6 +621,8 @@ export type MessageKey =
   | 'label.followUp'
   | 'label.limitedData'
   | 'label.limitedDataWhy'
+  | 'label.memberAdded'
+  | 'label.memberAddedWhy'
   | 'label.noDocuments'
   | 'label.notProvided'
   | 'label.notVerified'
@@ -1128,15 +1148,19 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compare.remove',
   'compare.title',
   'compose.addBmdc',
+  'compose.addCancel',
   'compose.addChamber',
   'compose.addDoctor',
   'compose.addName',
+  'compose.addNote',
   'compose.addPending',
   'compose.addSpecialty',
+  'compose.addSpecialtyNone',
   'compose.addSubmit',
   'compose.after',
   'compose.age',
   'compose.back',
+  'compose.bodyCount',
   'compose.chooseDoctor',
   'compose.claims',
   'compose.claimsNote',
@@ -1153,6 +1177,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.edit.save',
   'compose.edit.title',
   'compose.edit.versionNote',
+  'compose.errorFields',
   'compose.evidence',
   'compose.evidenceOptional',
   'compose.fixNow',
@@ -1213,9 +1238,13 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'condition.alsoCalled',
   'condition.areas',
   'condition.districts',
+  'condition.doctorCount',
   'condition.doctors',
+  'condition.experienceCount',
   'condition.facilities',
   'condition.hospitals',
+  'condition.kicker',
+  'condition.listCount',
   'condition.medicines',
   'condition.mentionNote',
   'condition.noGeo',
@@ -1398,16 +1427,21 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'experience.writtenBy',
   'experience.yourExperience',
   'facility.accounts',
+  'facility.address',
   'facility.branch',
   'facility.criteria',
   'facility.doctorsHere',
   'facility.doctorsNote',
   'facility.kicker',
+  'facility.listCount',
+  'facility.noVisits',
+  'facility.orderNote',
   'facility.parent',
   'facility.separation',
   'facility.type.clinic',
   'facility.type.diagnostic',
   'facility.type.hospital',
+  'facility.visitCount',
   'facility.write',
   'filter.any',
   'filter.clear',
@@ -1431,6 +1465,10 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'formErrors.compose.bodyTooShort',
   'formErrors.compose.doctorRequired',
   'formErrors.compose.identityRequired',
+  'formErrors.compose.newDoctorBmdc',
+  'formErrors.compose.newDoctorChamber',
+  'formErrors.compose.newDoctorName',
+  'formErrors.compose.newDoctorSpecialty',
   'formErrors.compose.periodInvalid',
   'formErrors.compose.relationshipRequired',
   'formErrors.compose.titleLength',
@@ -1458,6 +1496,8 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'label.followUp',
   'label.limitedData',
   'label.limitedDataWhy',
+  'label.memberAdded',
+  'label.memberAddedWhy',
   'label.noDocuments',
   'label.notProvided',
   'label.notVerified',

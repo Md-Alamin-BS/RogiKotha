@@ -46,6 +46,8 @@ vi.mock('@/i18n/routing', () => ({
 // a signed-in reader and fixed synthetic records stand in. Each page's own test covers its data.
 const RECORD = vi.hoisted(() => ({
   doctorName: 'Dr. Synthetic Haque',
+  facilityName: 'Synthetic Care Hospital',
+  topicName: 'Synthetic condition',
   experienceTitle: 'Clear advice after a long wait',
 }));
 
@@ -59,8 +61,14 @@ vi.mock('@/server/auth/session', async () => {
 });
 
 vi.mock('@/server/data', async () => {
-  const { buildDoctorDetail, buildDoctorRow } =
-    await import('@/components/patient/doctors/directory-test-support');
+  const {
+    buildDoctorDetail,
+    buildDoctorRow,
+    buildFacilityDetail,
+    buildFacilityRow,
+    buildTopicDetail,
+    buildTopicRow,
+  } = await import('@/components/patient/doctors/directory-test-support');
   const { buildReviewDetail } =
     await import('@/components/patient/experience/experience-test-support');
   const { buildProfile } = await import('@/components/patient/profile/profile-test-support');
@@ -72,6 +80,13 @@ vi.mock('@/server/data', async () => {
       getDoctor: resolve(buildDoctorDetail({ name: RECORD.doctorName })),
       listPublishedReviewsForDoctor: resolve([]),
       listDoctorOptions: resolve([]),
+      listSpecialtyOptions: resolve([]),
+      listTopics: resolve([buildTopicRow()]),
+      getTopic: resolve(buildTopicDetail({ name: RECORD.topicName })),
+    },
+    facilities: {
+      listFacilities: resolve([buildFacilityRow()]),
+      getFacility: resolve(buildFacilityDetail({ facilityName: RECORD.facilityName })),
     },
     reviews: {
       getReviewByPublicId: resolve(buildReviewDetail({ title: RECORD.experienceTitle })),
@@ -174,7 +189,9 @@ const ROUTES: RouteCase[] = [
     route: '/facilities/[id]',
     load: () => import('./[locale]/(patient)/facilities/[id]/page'),
     view: 'facility',
-    params: { id: 'fac-synthetic-1' },
+    params: { id: 'fac0000001' },
+    ownsHeading: true,
+    recordTitle: RECORD.facilityName,
   },
   { route: '/me', load: () => import('./[locale]/(patient)/me/page'), view: 'mine', noindex: true },
   {
@@ -231,7 +248,9 @@ const ROUTES: RouteCase[] = [
     route: '/topics/[id]',
     load: () => import('./[locale]/(patient)/topics/[id]/page'),
     view: 'condition',
-    params: { id: 'topic-synthetic-1' },
+    params: { id: 'top0000001' },
+    ownsHeading: true,
+    recordTitle: RECORD.topicName,
   },
   {
     route: '/verify-email',

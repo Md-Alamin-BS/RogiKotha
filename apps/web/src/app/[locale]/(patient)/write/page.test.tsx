@@ -28,7 +28,9 @@ vi.mock('@/i18n/routing', () => ({
 }));
 vi.mock('@/server/actions/review', () => ({ publishReview: vi.fn(), saveReviewEdit: vi.fn() }));
 vi.mock('@/server/auth/session', () => ({ requireAccount: vi.fn() }));
-vi.mock('@/server/data', () => ({ doctors: { listDoctorOptions: vi.fn() } }));
+vi.mock('@/server/data', () => ({
+  doctors: { listDoctorOptions: vi.fn(), listSpecialtyOptions: vi.fn(() => Promise.resolve([])) },
+}));
 
 function anAccount(): DemoCurrentAccount {
   return {
