@@ -47,6 +47,7 @@ You need:
 - Node 24.18 and pnpm 11.20 (`corepack enable`, then `corepack prepare pnpm@11.20.0 --activate`).
 - Docker Desktop, running.
 - Claude Code with the `aidlc` command available. The repo ships the `.claude/` shell, so approve its hooks when Claude Code asks, then restart Claude Code fully.
+- AI-DLC 2.11.0 registered for this folder. On a computer new to the project, run `aidlc config --pin 2.11.0` once in the repo folder (add `--download` first if that release is not installed: `aidlc config --download`). Without it every AI-DLC hook stops with "this project's 2.11.0 pin is not registered on this machine". `.aidlc-version` is already committed.
 
 ```bash
 git clone https://github.com/Md-Alamin-BS/RogiKotha.git rogikotha   # or: git fetch --all in an existing clone
@@ -85,7 +86,7 @@ If one test fails only with "Timeout waiting for worker to respond", run it agai
 
 ## 4. Continue in Claude Code
 
-1. Open the repo folder in Claude Code. The intent cursor is per machine, so select the demo-slice work first:
+1. Open the repo folder in Claude Code, started from a terminal inside that folder, and approve the project's hooks when it asks. The intent cursor is per machine, so select the demo-slice work first:
    ```
    /aidlc intent switch 261030-demo-slice
    ```
@@ -97,6 +98,8 @@ If one test fails only with "Timeout waiting for worker to respond", run it agai
 3. Tell Claude where things stand. On 2026-10-30 the code was done. On 2026-11-01 you tested the demo and the branch gained the write-form fix, FD-100 (add an unlisted doctor) and FD-101 (facility and topic pages); an AI-DLC reviewer read the add-a-doctor change (NOT-READY, two S2 fixed), and Code Generation was put at its approval gate. This is a ready prompt:
 
    > Continue the demo slice on branch `bolt/demo-slice`. Read `docs/aidlc-migration/CONTINUE-ON-ANOTHER-DEVICE.md`, `docs/aidlc-migration/RESUME.md` and `docs/implementation/handoffs/demo-slice.md`. The code is complete and green, including the 2026-11-01 additions (FD-100, FD-101, ISS-392 to ISS-400), and Code Generation waits at its approval gate; the express scope has no stage reviewer, so do not request one. Do not rebuild: all 14 plan steps are done. Show me the gate and wait for my answer. After I approve, run Build and Test and the three local deployment stages. Keep the branch unmerged until I say merge; then squash-merge into main, run `pnpm check` on main and push. Don't ask me questions except for approvals and permissions.
+
+   Checked on 2026-11-01 in a fresh clone of `bolt/demo-slice`: after `aidlc config --pin 2.11.0` and the intent switch, `aidlc engine status` reads "Awaiting your approval on Code Generation", 5 of 10 stages done. If `/aidlc` instead says Claude Code is not running AI-DLC's hooks, approve them (or set `"disableAllHooks": false` in `.claude/settings.local.json`) and run it again.
 
 ## 5. What is left after the code
 
