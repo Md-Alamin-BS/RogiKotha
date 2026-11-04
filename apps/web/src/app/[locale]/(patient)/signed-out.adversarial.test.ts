@@ -1,6 +1,6 @@
 // Adversarial tests (plan Step 13): reach the signed-in pages without a usable session, and open
-// another author's edit page. The real `server/auth/session.ts` runs; only Better Auth's session
-// lookup and the data layer are stubbed, so a page that skipped the check would read data here.
+// another author's edit page. The real `server/auth/session.ts` and `getActor()` run; only the
+// container's session lookup and the data layer are stubbed, so a page that skipped the check would read data here.
 import type { DemoCurrentAccount } from '@rogikotha/contracts';
 import { redirect as redirectToSignIn } from '@rogikotha/i18n';
 import { headers } from 'next/headers';
@@ -8,7 +8,7 @@ import { createElement, type ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { safeNextPath } from '@/server/actions/auth-form';
-import { getAuth } from '@/server/auth/instance';
+import { getContainer } from '@/server/container';
 import { accounts, doctors, reviews, session } from '@/server/data';
 import EditExperiencePage from './experiences/[id]/edit/page';
 import WorkspacePage from './me/page';
@@ -38,7 +38,7 @@ vi.mock('@/i18n/routing', () => ({
   usePathname: () => '/',
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
 }));
-vi.mock('@/server/auth/instance', () => ({ getAuth: vi.fn() }));
+vi.mock('@/server/container', () => ({ getContainer: vi.fn() }));
 vi.mock('@/server/actions/profile', () => ({
   updateDisplayNameAction: vi.fn(),
   updateLanguageAction: vi.fn(),
@@ -75,9 +75,50 @@ const ACCOUNTS_BY_AUTH_USER = new Map<string, DemoCurrentAccount>(
 );
 
 const getSession = vi.fn();
+const NOW = new Date('2026-11-04T09:00:00Z');
 
+/** The Better Auth user behind the request's session cookie; null means no cookie at all. */
 function sessionCookieOf(authUserId: string | null): void {
-  getSession.mockResolvedValue(authUserId ? { user: { id: authUserId }, session: {} } : null);
+  getSession.mockResolvedValue(
+    authUserId
+      ? {
+          sessionId: `session-${authUserId}`,
+          authUserId,
+          createdAt: NOW,
+          updatedAt: NOW,
+          expiresAt: new Date(NOW.getTime() + 86_400_000),
+        }
+      : null,
+  );
+}
+
+/** The container `getActor()` reads: the stubbed session and the synthetic profiles above. */
+function installContainer(): void {
+  const findProfileByAuthUserId = (_tx: unknown, authUserId: string) => {
+    const account = ACCOUNTS_BY_AUTH_USER.get(authUserId);
+    return Promise.resolve(
+      account
+        ? {
+            accountId: account.accountId,
+            authUserId: account.authUserId,
+            username: account.username,
+            displayName: account.displayName,
+            locale: account.locale,
+            status: account.status,
+          }
+        : null,
+    );
+  };
+  vi.mocked(getContainer).mockReturnValue({
+    env: { appMode: 'demo' },
+    ports: {
+      authGateway: { getSession, revokeSession: vi.fn(() => Promise.resolve()) },
+      unitOfWork: { read: (work: (tx: unknown) => unknown) => work({}) },
+      accounts: { findProfileByAuthUserId },
+      clock: { now: () => NOW },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+    },
+  } as unknown as ReturnType<typeof getContainer>);
 }
 
 function editPage(id: string) {
@@ -106,9 +147,7 @@ function nothingWasRead(): void {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(headers).mockResolvedValue(new Headers({ cookie: 'rk.session_token=forged' }));
-  vi.mocked(getAuth).mockReturnValue({ api: { getSession } } as unknown as ReturnType<
-    typeof getAuth
-  >);
+  installContainer();
   vi.mocked(session.getCurrentAccountByAuthUserId).mockImplementation((authUserId) =>
     Promise.resolve(ACCOUNTS_BY_AUTH_USER.get(authUserId) ?? null),
   );

@@ -1,42 +1,22 @@
 // Better Auth's Drizzle adapter owns these four tables (02-data-model.md
 // §1); application code reads them only through the account repository.
-// Better Auth generates its own row ids (not `newId()`/uuidv7), hence
-// `text` primary keys here, unlike every other table in this package.
+// The ids are `text` primary keys because the library writes them (the web
+// instance passes `newId()` as its id generator), unlike every other table here.
 //
-// T-101 must pass this exact `modelName`/`fields` mapping to the adapter so
-// the library's `user`/`session`/`account`/`verification` model names
-// resolve to these table names and snake_case columns:
+// Wiring the adapter (ISS-112, BR7.3): map only the model names, never a
+// `fields` block. The adapter finds a table by model name in the schema
+// object and a column by its Drizzle property name, and the property names
+// below already equal the library's field names; `casing: 'snake_case'`
+// turns them into the columns. Either key the schema object by the library's
+// model names (`{ user: authUsers, session: authSessions, account:
+// authAccounts, verification: authVerifications }`) or key it by these table
+// names and set each `modelName` to the table name, as
+// `apps/web/src/server/auth/instance.ts` does. A `fields` block that maps a
+// property to a snake_case column makes the adapter throw at start.
 //
-//   user: {
-//     modelName: 'auth_users',
-//     fields: { emailVerified: 'email_verified', createdAt: 'created_at', updatedAt: 'updated_at' },
-//   },
-//   session: {
-//     modelName: 'auth_sessions',
-//     fields: {
-//       userId: 'user_id', ipAddress: 'ip_address', userAgent: 'user_agent',
-//       expiresAt: 'expires_at', createdAt: 'created_at', updatedAt: 'updated_at',
-//     },
-//   },
-//   account: {
-//     modelName: 'auth_accounts',
-//     fields: {
-//       accountId: 'account_id', providerId: 'provider_id', userId: 'user_id',
-//       accessToken: 'access_token', refreshToken: 'refresh_token', idToken: 'id_token',
-//       accessTokenExpiresAt: 'access_token_expires_at', refreshTokenExpiresAt: 'refresh_token_expires_at',
-//       createdAt: 'created_at', updatedAt: 'updated_at',
-//     },
-//   },
-//   verification: {
-//     modelName: 'auth_verifications',
-//     fields: { expiresAt: 'expires_at', createdAt: 'created_at', updatedAt: 'updated_at' },
-//   },
-//
-// Verified against Better Auth's 1.7.x Drizzle-adapter docs and the fields
-// its core schema actually defines (docs/status/dependency-check-log.md);
-// no columns beyond this list are required for email/password auth with no
-// plugins.
-import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+// The property lists equal Better Auth 1.7.14's `getAuthTables({})` for
+// email and password with no plugins (pinned by `auth.test.ts`).
+import { boolean, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const authUsers = pgTable('auth_users', {
   id: text('id').primaryKey(),
@@ -48,42 +28,56 @@ export const authUsers = pgTable('auth_users', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const authSessions = pgTable('auth_sessions', {
-  id: text('id').primaryKey(),
-  token: text('token').notNull().unique(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  ipAddress: text('ip_address'),
-  userAgent: text('user_agent'),
-  userId: text('user_id')
-    .notNull()
-    .references(() => authUsers.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const authSessions = pgTable(
+  'auth_sessions',
+  {
+    id: text('id').primaryKey(),
+    token: text('token').notNull().unique(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    userId: text('user_id')
+      .notNull()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  // ISS-113: the session list and sign out everywhere look sessions up by user.
+  (t) => [index('auth_sessions_user_id_idx').on(t.userId)],
+);
 
-export const authAccounts = pgTable('auth_accounts', {
-  id: text('id').primaryKey(),
-  accountId: text('account_id').notNull(),
-  providerId: text('provider_id').notNull(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => authUsers.id, { onDelete: 'cascade' }),
-  accessToken: text('access_token'),
-  refreshToken: text('refresh_token'),
-  idToken: text('id_token'),
-  accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true }),
-  refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { withTimezone: true }),
-  scope: text('scope'),
-  password: text('password'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const authAccounts = pgTable(
+  'auth_accounts',
+  {
+    id: text('id').primaryKey(),
+    accountId: text('account_id').notNull(),
+    providerId: text('provider_id').notNull(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    accessToken: text('access_token'),
+    refreshToken: text('refresh_token'),
+    idToken: text('id_token'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true }),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { withTimezone: true }),
+    scope: text('scope'),
+    password: text('password'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('auth_accounts_user_id_idx').on(t.userId)],
+);
 
-export const authVerifications = pgTable('auth_verifications', {
-  id: text('id').primaryKey(),
-  identifier: text('identifier').notNull(),
-  value: text('value').notNull(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const authVerifications = pgTable(
+  'auth_verifications',
+  {
+    id: text('id').primaryKey(),
+    identifier: text('identifier').notNull(),
+    value: text('value').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  // ISS-113: reset tokens are found by `identifier` ('reset-password:<token>').
+  (t) => [index('auth_verifications_identifier_idx').on(t.identifier)],
+);

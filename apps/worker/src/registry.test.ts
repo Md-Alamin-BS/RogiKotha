@@ -57,4 +57,22 @@ describe('job registry', () => {
 
     await expect(JOBS['outbox.relay']?.handler(undefined, ctx)).rejects.toThrow('connection lost');
   });
+
+  it('registers mail.send as a queue-driven job that hands its delivery id to the use case', async () => {
+    const mail = JOBS['mail.send'];
+    const sent: unknown[] = [];
+    const ctx = {
+      sendEmail: (job: unknown) => {
+        sent.push(job);
+        return Promise.resolve();
+      },
+      logger: { info() {}, warn() {}, error() {} },
+    } as unknown as WorkerContainer;
+
+    await mail?.handler({ deliveryId: '0192d6a4-7c1e-7a3b-9f10-5d2c8e4b6a01' }, ctx);
+
+    expect(mail?.intervalMs).toBeUndefined();
+    expect(mail?.cron).toBeUndefined();
+    expect(sent).toEqual([{ deliveryId: '0192d6a4-7c1e-7a3b-9f10-5d2c8e4b6a01' }]);
+  });
 });

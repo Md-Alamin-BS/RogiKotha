@@ -410,6 +410,8 @@ export type MessageKey =
   | 'email.reset.subject'
   | 'email.security.passwordChanged.body'
   | 'email.security.passwordChanged.subject'
+  | 'email.security.severeSignInActivity.body'
+  | 'email.security.severeSignInActivity.subject'
   | 'email.staff.deviceApproval.body'
   | 'email.staff.deviceApproval.subject'
   | 'email.verify.body'
@@ -431,8 +433,12 @@ export type MessageKey =
   | 'errors.auth.accountSuspended'
   | 'errors.auth.ageRequired'
   | 'errors.auth.deviceUnapproved'
+  | 'errors.auth.displayNameRequired'
+  | 'errors.auth.emailInvalid'
   | 'errors.auth.emailUnverified'
   | 'errors.auth.invalidCredentials'
+  | 'errors.auth.passwordEqualsEmail'
+  | 'errors.auth.passwordTooLong'
   | 'errors.auth.passwordTooShort'
   | 'errors.auth.rateLimited'
   | 'errors.auth.stepUpRequired'
@@ -584,7 +590,7 @@ export type MessageKey =
   | 'filter.title'
   | 'formErrors.auth.displayNameInvalid'
   | 'formErrors.auth.emailInvalid'
-  | 'formErrors.auth.passwordTooLong'
+  | 'formErrors.auth.rateLimited'
   | 'formErrors.auth.registrationRefused'
   | 'formErrors.compose.bodyTooLong'
   | 'formErrors.compose.bodyTooShort'
@@ -1285,6 +1291,8 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'email.reset.subject',
   'email.security.passwordChanged.body',
   'email.security.passwordChanged.subject',
+  'email.security.severeSignInActivity.body',
+  'email.security.severeSignInActivity.subject',
   'email.staff.deviceApproval.body',
   'email.staff.deviceApproval.subject',
   'email.verify.body',
@@ -1306,8 +1314,12 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.auth.accountSuspended',
   'errors.auth.ageRequired',
   'errors.auth.deviceUnapproved',
+  'errors.auth.displayNameRequired',
+  'errors.auth.emailInvalid',
   'errors.auth.emailUnverified',
   'errors.auth.invalidCredentials',
+  'errors.auth.passwordEqualsEmail',
+  'errors.auth.passwordTooLong',
   'errors.auth.passwordTooShort',
   'errors.auth.rateLimited',
   'errors.auth.stepUpRequired',
@@ -1459,7 +1471,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'filter.title',
   'formErrors.auth.displayNameInvalid',
   'formErrors.auth.emailInvalid',
-  'formErrors.auth.passwordTooLong',
+  'formErrors.auth.rateLimited',
   'formErrors.auth.registrationRefused',
   'formErrors.compose.bodyTooLong',
   'formErrors.compose.bodyTooShort',

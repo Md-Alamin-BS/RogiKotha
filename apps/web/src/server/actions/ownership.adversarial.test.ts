@@ -1,7 +1,8 @@
 // @vitest-environment node
 // Adversarial tests (plan Step 13): a signed-in attacker forges another account's ids into the
 // write actions, and a visitor without a usable session calls them directly. Unlike the action
-// tests, the real `server/auth/session.ts` runs here; only Better Auth's session lookup is stubbed.
+// tests, the real `server/auth/session.ts` and `getActor()` run here; only the container's session
+// lookup and profile read are stubbed.
 // The data layer is an in-memory world that grants a write only to the account id it is handed,
 // so an action that trusted a forged id would change the victim's rows and fail these tests.
 import type { DemoCurrentAccount, DemoReviewEditRow } from '@rogikotha/contracts';
@@ -9,7 +10,7 @@ import { redirect as redirectToSignIn } from '@rogikotha/i18n';
 import { headers } from 'next/headers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getAuth } from '@/server/auth/instance';
+import { getContainer } from '@/server/container';
 import { accounts, comments, doctors, evidence, reviews, session } from '@/server/data';
 import type * as StorageModule from '@/server/storage';
 import { storeOriginal } from '@/server/storage';
@@ -32,7 +33,7 @@ vi.mock('@/i18n/routing', () => ({
     throw new Error('NEXT_REDIRECT');
   }),
 }));
-vi.mock('@/server/auth/instance', () => ({ getAuth: vi.fn() }));
+vi.mock('@/server/container', () => ({ getContainer: vi.fn() }));
 vi.mock('@/server/clamav', () => ({ scanBytes: vi.fn(() => Promise.resolve('clean')) }));
 vi.mock('@/server/crypto', () => ({
   encrypt: vi.fn(() => Buffer.from('sealed')),
@@ -193,10 +194,50 @@ function installWorld(): void {
 }
 
 const getSession = vi.fn();
+const NOW = new Date('2026-11-04T09:00:00Z');
 
 /** The Better Auth user behind the request's session cookie; null means no cookie at all. */
 function sessionCookieOf(authUserId: string | null): void {
-  getSession.mockResolvedValue(authUserId ? { user: { id: authUserId }, session: {} } : null);
+  getSession.mockResolvedValue(
+    authUserId
+      ? {
+          sessionId: `session-${authUserId}`,
+          authUserId,
+          createdAt: NOW,
+          updatedAt: NOW,
+          expiresAt: new Date(NOW.getTime() + 86_400_000),
+        }
+      : null,
+  );
+}
+
+/** The container `getActor()` reads: the stubbed session and the world's profiles. */
+function installContainer(): void {
+  const findProfileByAuthUserId = (_tx: unknown, authUserId: string) => {
+    const account = ACCOUNTS_BY_AUTH_USER.get(authUserId);
+    return Promise.resolve(
+      account
+        ? {
+            accountId: account.accountId,
+            authUserId: account.authUserId,
+            username: account.username,
+            displayName: account.displayName,
+            locale: account.locale,
+            status: account.status,
+          }
+        : null,
+    );
+  };
+  vi.mocked(getContainer).mockReturnValue({
+    env: { appMode: 'demo' },
+    ports: {
+      authGateway: { getSession, revokeSession: vi.fn(() => Promise.resolve()) },
+      unitOfWork: { read: (work: (tx: unknown) => unknown) => work({}) },
+      accounts: { findProfileByAuthUserId },
+      clock: { now: () => NOW },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+    },
+  } as unknown as ReturnType<typeof getContainer>);
 }
 
 function form(fields: Record<string, string | File>): FormData {
@@ -263,9 +304,7 @@ beforeEach(() => {
   world = freshWorld();
   installWorld();
   vi.mocked(headers).mockResolvedValue(new Headers({ cookie: 'rk.session_token=forged' }));
-  vi.mocked(getAuth).mockReturnValue({ api: { getSession } } as unknown as ReturnType<
-    typeof getAuth
-  >);
+  installContainer();
   vi.mocked(session.getCurrentAccountByAuthUserId).mockImplementation((authUserId) =>
     Promise.resolve(ACCOUNTS_BY_AUTH_USER.get(authUserId) ?? null),
   );

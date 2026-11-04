@@ -1,6 +1,13 @@
 // Form parsing and state shared by the auth actions (`auth.ts`) and the auth forms. Kept out of
 // the `'use server'` file, which may export only async functions.
-import { LOCALES, RegisterInput, type Locale } from '@rogikotha/contracts';
+import {
+  ACCOUNT_FIELD_ERROR_KEYS,
+  DISPLAY_NAME_MAX as CONTRACT_DISPLAY_NAME_MAX,
+  LOCALES,
+  RegisterInput,
+  SignInInput,
+  type Locale,
+} from '@rogikotha/contracts';
 
 export type RegisterField = 'email' | 'password' | 'username' | 'displayName' | 'age' | 'terms';
 export type SignInField = 'email' | 'password';
@@ -26,9 +33,14 @@ export const REGISTER_FIELD_ORDER: readonly RegisterField[] = [
   'terms',
 ];
 
-export const DISPLAY_NAME_MAX = 60;
-// Better Auth's default `maxPasswordLength`; checked here so the refusal names the field.
-export const PASSWORD_MAX = 128;
+/** The register form's `maxLength`, from the `account.register` schema. */
+export const DISPLAY_NAME_MAX = CONTRACT_DISPLAY_NAME_MAX;
+
+// The schema's own password keys, shown as they are; any other password issue reads as too short.
+const PASSWORD_ISSUE_KEYS: ReadonlySet<string> = new Set([
+  ACCOUNT_FIELD_ERROR_KEYS.passwordTooLong,
+  ACCOUNT_FIELD_ERROR_KEYS.passwordEqualsEmail,
+]);
 
 const FIELD_MESSAGE: Record<RegisterField, string> = {
   email: 'formErrors.auth.emailInvalid',
@@ -48,9 +60,7 @@ const SCHEMA_PATH_FIELD: Record<string, RegisterField> = {
   termsAccepted: 'terms',
 };
 
-const SignInForm = RegisterInput.pick({ email: true, password: true });
-
-export type RegistrationInput = ReturnType<typeof RegisterInput.parse>;
+export type RegistrationInput = RegisterInput;
 
 function text(form: FormData, name: string): string {
   const value = form.get(name);
@@ -84,7 +94,11 @@ export function parseRegistration(
   const fieldErrors = formLimitErrors(raw);
   for (const issue of result.success ? [] : result.error.issues) {
     const field = SCHEMA_PATH_FIELD[String(issue.path[0])];
-    if (field && !fieldErrors[field]) fieldErrors[field] = FIELD_MESSAGE[field];
+    if (!field || fieldErrors[field]) continue;
+    fieldErrors[field] =
+      field === 'password' && PASSWORD_ISSUE_KEYS.has(issue.message)
+        ? issue.message
+        : FIELD_MESSAGE[field];
   }
   if (result.success && Object.keys(fieldErrors).length === 0) {
     return { ok: true, data: result.data };
@@ -92,16 +106,12 @@ export function parseRegistration(
   return { ok: false, state: { fieldErrors: orderFields(fieldErrors), formError: null } };
 }
 
-/** The limits the form adds to the schema: a false tick is well-formed but refused (schema note). */
+/** The ticks the form refuses with their own keys, even when another field already failed. */
 function formLimitErrors(raw: {
-  password: string;
-  displayName: string;
   ageConfirmed: boolean;
   termsAccepted: boolean;
 }): Partial<Record<RegisterField, string>> {
   const errors: Partial<Record<RegisterField, string>> = {};
-  if (raw.password.length > PASSWORD_MAX) errors.password = 'formErrors.auth.passwordTooLong';
-  if (raw.displayName.length > DISPLAY_NAME_MAX) errors.displayName = FIELD_MESSAGE.displayName;
   if (!raw.ageConfirmed) errors.age = FIELD_MESSAGE.age;
   if (!raw.termsAccepted) errors.terms = FIELD_MESSAGE.terms;
   return errors;
@@ -125,7 +135,7 @@ function orderFields(
 export function parseSignIn(
   form: FormData,
 ): Parsed<{ email: string; password: string }, SignInField> {
-  const result = SignInForm.safeParse({
+  const result = SignInInput.safeParse({
     email: text(form, 'email').trim(),
     password: text(form, 'password'),
   });

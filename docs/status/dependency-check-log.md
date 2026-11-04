@@ -27,6 +27,36 @@ Rules:
 
 ## Entries
 
+### 2026-10-30 (U8 T-101 — Better Auth behind the application boundary)
+
+- Scope: T-101 installs Better Auth for the first time (`apps/web`), and the first `@node-rs/argon2`
+  and `nodemailer` uses in production code (`packages/adapters`). The Better Auth entry
+  (2026-09-10) and the `@node-rs/argon2` entry (2026-09-13) are older than 3 days, and nodemailer
+  had none (design F17, BR7.8).
+- Checked:
+  - `better-auth`: npm `latest` 1.7.14 (2026-10-26); 1.7.x patches from 1.7.3 (2026-09-06) to
+    1.7.14; `beta` 1.8.0-beta.3 (prerelease, not used). Peers on 1.7.14: `next ^14 || ^15 || ^16`,
+    `react ^18 || ^19`, `drizzle-orm ^0.45.2 || >=1.0.0-rc.1`, `pg ^8`, all met by the pins
+    (Next 16.3.4, React 19.3.0, drizzle-orm 0.45.2, pg 8.23). The GitHub security advisories
+    (github.com/better-auth/better-auth/security/advisories, read 2026-10-30) since 1.7.3 concern
+    plugins this Unit does not enable (SSO, OAuth proxy, magic link, device login, SCIM, Stripe),
+    plus one low-severity Drizzle-adapter advisory (GHSA-44jh-23m7-hpcf, concurrent requests pass
+    the library rate limit on PostgreSQL); the library limiter is only defence in depth here, the
+    `RateLimiter` port decides (BR7.5).
+  - `nodemailer`: npm `latest` 10.3.1 and 10.3.0 were both published on 2026-10-29, the day of
+    this check; 10.2.1 (2026-10-22) is the previous patch. CHANGELOG: 10.0.0 (Node 20+, TypeScript
+    with its own types, `NoAuth` renamed `ENOAUTH`, TLS validation on by default), 10.1.0 (security
+    hardening against resource exhaustion; no environment variables read at import), 10.2.0
+    (`err.permanent`), 10.2.1 (`stripComments`), 10.3.x (OTP header). No advisory open.
+  - `@node-rs/argon2`: npm `latest` 2.2.2 (2026-10-06); the lockfile already holds 2.2.1 for
+    `packages/test-support` (seed). No advisory; parameters m=65536, t=3, p=1 unaffected.
+- Findings: Better Auth 1.7.14 is the current stable line with its peers met; `pnpm add` printed no
+  peer warning. Nodemailer 10.3.x is a few hours old, so the previous patch is preferred; it ships
+  its own type declarations, so no `@types/nodemailer` is needed.
+- Decision: `better-auth@1.7.14` (exact) in `apps/web`; `nodemailer@10.2.1` (exact, one week old,
+  avoiding the same-day 10.3.x) and `@node-rs/argon2@^2.2.1` (the lockfile's 2.2.1, one copy with
+  the seed) in `packages/adapters`. The master plan's 1.7.3 pin is superseded by the 1.7.14 patch on
+  the same minor line.
 ### 2026-10-30 (demo slice — Better Auth and Argon2id in apps/web)
 
 - Scope: intent `261030-demo-slice` (FD-099), plan Step 2: first install of `better-auth` and `@node-rs/argon2` into `apps/web`.

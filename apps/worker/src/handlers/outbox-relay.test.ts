@@ -163,6 +163,19 @@ describe('RELAY / OUTBOX_EVENTS (ISS-145)', () => {
     // added, rather than silently never firing a job.
     expect(OUTBOX_EVENTS).not.toContain('review.publish');
   });
+
+  it('routes no account event to mail.send, because the command queues its own email (T-101 BR6.4)', () => {
+    const accountRoutes = Object.entries(RELAY).filter(([name]) => name.startsWith('account.'));
+
+    expect(accountRoutes.map(([name]) => name).sort()).toEqual([
+      'account.registered',
+      'account.securityEvent',
+    ]);
+    for (const [, jobs] of accountRoutes) {
+      expect(jobs).not.toContain('mail.send');
+    }
+    expect(RELAY['account.securityEvent']).toEqual(['notification.deliver']);
+  });
 });
 
 describe('relayOnce', () => {

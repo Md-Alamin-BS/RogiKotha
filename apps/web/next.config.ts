@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     '@rogikotha/application',
     '@rogikotha/domain',
     '@rogikotha/database',
+    '@rogikotha/adapters',
   ],
   // Stable since Next 15.5 (docs/status/dependency-check-log.md 2026-09-13 T-008 entry) —
   // top-level, not experimental.typedRoutes.

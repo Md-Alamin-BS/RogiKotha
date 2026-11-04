@@ -1,28 +1,29 @@
-// `AuditWriter` port fake (03-routes-and-contracts.md §3:
-// `write(tx, {stream, action, actor, target, details})`). Task step 5: "ListAuditWriter".
-export interface AuditRecord {
-  stream: string;
-  action: string;
-  actor: string;
-  target?: { kind: string; id: string };
-  details: Record<string, unknown>;
-}
+// `AuditWriter` port fake: keeps every entry in order; a rollback of `InMemoryUnitOfWork` drops
+// the entries its transaction wrote.
+import type { AuditEntry, AuditWriter, Tx } from '@rogikotha/application';
 
-export class ListAuditWriter {
-  readonly events: AuditRecord[] = [];
+import type { Transactional } from './unit-of-work.js';
 
-  write(
-    _tx: unknown,
-    entry: {
-      stream: string;
-      action: string;
-      actor: string;
-      target?: { kind: string; id: string };
-      details?: Record<string, unknown>;
-    },
-  ): Promise<void> {
+export type AuditRecord = AuditEntry;
+
+export class ListAuditWriter implements AuditWriter, Transactional {
+  events: AuditRecord[] = [];
+
+  write(_tx: Tx, entry: AuditEntry): Promise<void> {
     void _tx;
-    this.events.push({ ...entry, details: entry.details ?? {} });
+    this.events.push(JSON.parse(JSON.stringify(entry)) as AuditRecord);
     return Promise.resolve();
+  }
+
+  actions(): string[] {
+    return this.events.map((event) => event.action);
+  }
+
+  snapshot(): unknown {
+    return [...this.events];
+  }
+
+  restore(state: unknown): void {
+    this.events = [...(state as AuditRecord[])];
   }
 }

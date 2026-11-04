@@ -42,6 +42,17 @@ const contractsErrorsPath = path.join(__dirname, '../../contracts/src/errors.ts'
  */
 const IDENTICAL_VALUE_ALLOWLIST = [];
 
+/**
+ * Field-error keys (T-102 ENT-004) that a command puts in `fieldErrors` under the `validation`
+ * code, so no ErrorCode stands behind them (T-101 BR1.1).
+ * ASSUMPTION(T-101): listed here rather than given codes of their own; see the T-101 hand-off.
+ */
+const FIELD_ERROR_ONLY_KEYS = [
+  'errors.auth.displayNameRequired',
+  'errors.auth.emailInvalid',
+  'errors.auth.passwordTooLong',
+];
+
 function flatten(obj, prefix = '') {
   /** @type {[string, string][]} */
   const out = [];
@@ -148,7 +159,11 @@ function main() {
     // ported ahead of its ErrorCode (as errors.auth.accountSuspended was)
     // went undetected until a validator's manual cross-check found it.
     for (const key of enFlat.keys()) {
-      if (key.startsWith('errors.') && !expectedKeys.has(key)) {
+      if (
+        key.startsWith('errors.') &&
+        !expectedKeys.has(key) &&
+        !FIELD_ERROR_ONLY_KEYS.includes(key)
+      ) {
         problems.push(`i18n key "${key}" has no ERROR_CODES entry`);
       }
     }

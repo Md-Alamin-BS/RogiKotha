@@ -15,6 +15,7 @@ export const ERROR_CODES = [
   'auth.age_required',
   'auth.terms_required',
   'auth.account_suspended',
+  'auth.password_equals_email',
   'forbidden',
   'not_found',
   'conflict',

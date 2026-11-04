@@ -64,6 +64,13 @@
       "when": 1793137331033,
       "tag": "0008_worker_grant_review",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793775482676,
+      "tag": "0009_auth_indexes_and_email_dedupe",
+      "breakpoints": true
     }
   ]
 }

@@ -36,6 +36,8 @@ const elements = [
   element('database', 'packages/database/src'),
   element('adapters', 'packages/adapters/src'),
   element('i18n', 'packages/i18n/src'),
+  // FD-098: the message files alone, so the worker can render email copy without the next-intl code.
+  element('i18n-messages', 'packages/i18n/messages'),
   element('test-support-seed', 'packages/test-support/src/seed'),
   element('test-support', 'packages/test-support/src'),
   element('web-actions', 'apps/web/src/server/actions'),
@@ -99,7 +101,11 @@ const matrix = [
       'web-shared',
     ),
   },
-  { from: fromType('worker'), allow: to('application', 'contracts', 'database', 'adapters') },
+  {
+    from: fromType('worker'),
+    allow: to('application', 'contracts', 'database', 'adapters', 'i18n-messages'),
+  },
+  { from: fromType('i18n'), allow: to('i18n-messages') },
   // Package tests may use the shared fakes and builders; nothing in apps/* may (FD-040).
   {
     from: { element: { type: PACKAGE_TYPES }, file: { categories: 'test' } },

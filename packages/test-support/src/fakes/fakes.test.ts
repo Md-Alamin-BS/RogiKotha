@@ -15,7 +15,7 @@ import { PassthroughImageSanitiser } from './image-sanitiser.js';
 import { makeFakePorts } from './index.js';
 import { MemoryJobQueue } from './job-queue.js';
 import { CollectingLogger } from './logger.js';
-import { RecordingMailer } from './mailer.js';
+import { RecordingMailTransport } from './mailer.js';
 import { ListOutbox } from './outbox.js';
 import { AlwaysAllowRateLimiter } from './rate-limiter.js';
 import { ScriptedScanner } from './scanner.js';
@@ -57,19 +57,47 @@ describe('ScriptedScanner', () => {
 });
 
 describe('MemoryJobQueue', () => {
+  const tx = {} as never;
+
   it('drain runs handlers once per job', async () => {
     const queue = new MemoryJobQueue();
     let calls = 0;
     queue.work('evidence.process', () => {
       calls += 1;
     });
-    await queue.enqueue('evidence.process', { itemId: '1' });
-    await queue.enqueue('evidence.process', { itemId: '2' });
+    await queue.enqueue(tx, 'evidence.process', { itemId: '1' }, { key: 'evidence:1' });
+    await queue.enqueue(tx, 'evidence.process', { itemId: '2' }, { key: 'evidence:2' });
     await queue.drain();
     expect(calls).toBe(2);
     // A second drain with nothing pending runs nothing again.
     await queue.drain();
     expect(calls).toBe(2);
+  });
+
+  it('answers deduplicated for a second job with the same key, like a singleton key', async () => {
+    const queue = new MemoryJobQueue();
+
+    const first = await queue.enqueue(tx, 'mail.send', { deliveryId: 'd1' }, { key: 'k1' });
+    const second = await queue.enqueue(tx, 'mail.send', { deliveryId: 'd1' }, { key: 'k1' });
+
+    expect([first, second]).toEqual([
+      { ok: true, data: 'enqueued' },
+      { ok: true, data: 'deduplicated' },
+    ]);
+    expect(queue.enqueued).toHaveLength(1);
+  });
+
+  it('refuses the scripted number of enqueues and records the ensured queues', async () => {
+    const queue = new MemoryJobQueue();
+    await queue.ensure('mail.send');
+    queue.refuseEnqueues(1);
+
+    expect(await queue.enqueue(tx, 'mail.send', {}, { key: 'k' })).toEqual({
+      ok: false,
+      error: { code: 'job_not_enqueued' },
+    });
+    expect((await queue.enqueue(tx, 'mail.send', {}, { key: 'k' })).ok).toBe(true);
+    expect(queue.ensured).toEqual(['mail.send']);
   });
 });
 
@@ -89,7 +117,8 @@ describe('every other fake', () => {
   it('FakeCrypto round-trips and hashes', () => {
     const crypto = new FakeCrypto();
     const plain = Buffer.from('secret');
-    expect(crypto.decrypt(crypto.encrypt(plain)).equals(plain)).toBe(true);
+    const opened = crypto.decrypt(crypto.encrypt(plain));
+    expect(opened.ok && Buffer.from(opened.data).equals(plain)).toBe(true);
     expect(crypto.hash(plain)).toHaveLength(64);
   });
 
@@ -100,16 +129,17 @@ describe('every other fake', () => {
     expect(await hasher.verify('wrong', hash)).toBe(false);
   });
 
-  it('RecordingMailer records sends', async () => {
-    const mailer = new RecordingMailer();
-    const result = await mailer.send({
-      to: 'x@y.z',
-      category: 'verification',
-      messageKey: 'email.verify.body',
-      locale: 'en',
-    });
-    expect(result.ok).toBe(true);
-    expect(mailer.sent).toHaveLength(1);
+  it('RecordingMailTransport records sends and fails the scripted ones first', async () => {
+    const transport = new RecordingMailTransport();
+    const mail = { to: 'shirin.demo@example.test', subject: 'Subject', text: 'Body' };
+    transport.failWith('smtp_timeout');
+
+    const failed = await transport.send(mail);
+    const sent = await transport.send(mail);
+
+    expect(failed).toEqual({ ok: false, error: { code: 'smtp_timeout' } });
+    expect(sent.ok).toBe(true);
+    expect(transport.sent).toEqual([mail]);
   });
 
   it('PassthroughImageSanitiser returns a decodable 1x1 PNG', async () => {
@@ -122,8 +152,8 @@ describe('every other fake', () => {
 
   it('ListOutbox records events', async () => {
     const outbox = new ListOutbox();
-    await outbox.append(undefined, 'review.published', { reviewId: '1' });
-    expect(outbox.events).toEqual([{ name: 'review.published', payload: { reviewId: '1' } }]);
+    await outbox.append({} as never, 'account.registered', { accountId: 'a1' });
+    expect(outbox.events).toEqual([{ name: 'account.registered', payload: { accountId: 'a1' } }]);
   });
 
   it('NaiveSearchIndex substring-matches only published docs', async () => {
@@ -149,7 +179,10 @@ describe('every other fake', () => {
 
   it('AlwaysAllowRateLimiter always allows', async () => {
     const limiter = new AlwaysAllowRateLimiter();
-    expect((await limiter.hit('k', 1, 60)).allowed).toBe(true);
+    await limiter.reserveFailure('signin:email:k', 60);
+    await limiter.clear('signin:email:k');
+    expect((await limiter.hit('signin:email:k', 1, 60)).allowed).toBe(true);
+    expect((await limiter.reserveFailure('signin:email:k', 60)).earlier).toEqual([]);
   });
 
   it('CollectingLogger collects every level', () => {
@@ -160,15 +193,20 @@ describe('every other fake', () => {
     expect(logger.entries.map((e) => e.level)).toEqual(['info', 'warn', 'error']);
   });
 
-  it('StaticConfigProvider returns the default config, and can be swapped', () => {
+  it('StaticConfigProvider returns the default config, and can be swapped', async () => {
     const provider = new StaticConfigProvider();
-    expect(provider.current().limitedDataThreshold).toBe(5);
+    expect((await provider.current()).limitedDataThreshold).toBe(5);
   });
 
   it('ListAuditWriter records writes', async () => {
     const writer = new ListAuditWriter();
-    await writer.write(undefined, { stream: 'config', action: 'apply', actor: 'account:1' });
-    expect(writer.events).toHaveLength(1);
+    await writer.write({} as never, {
+      stream: 'config:1',
+      action: 'apply',
+      actor: 'account:1',
+      details: {},
+    });
+    expect(writer.actions()).toEqual(['apply']);
   });
 
   it('makeFakePorts() wires every fake together', () => {

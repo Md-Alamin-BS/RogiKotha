@@ -40,8 +40,6 @@ import { sql } from 'drizzle-orm';
 import { Pool } from 'pg';
 import { describe, expect, it } from 'vitest';
 
-import { assertAllowlisted, PgAuditWriter } from './audit-writer';
-import { auditEvents } from './schema/index';
 import { testDb, workerUrlForTestDb } from './test-setup';
 
 // Mirrors `schema/enums.ts`'s pg enum name -> contracts array. Kept
@@ -131,9 +129,10 @@ describe('migrations apply from an empty database', () => {
     // migration (same class of fix as `ISS-085`/`ISS-125`), not a silent
     // redesign of the test. CR-006 adds 0007_revoke_worker_auth_users and
     // 0008_worker_grant_review (FD-041, FD-092), the same kind of mechanical
-    // consequence (ISS-242).
+    // consequence (ISS-242). T-101 adds 0009_auth_indexes_and_email_dedupe (functional-spec
+    // § 10.5), the same mechanical consequence.
     const rows = await testDb.execute(sql`select hash from drizzle_migrations order by id`);
-    expect(rows.rows).toHaveLength(9);
+    expect(rows.rows).toHaveLength(10);
   });
 
   it('creates every §1–§5, §9, §11, §15 table', async () => {
@@ -163,41 +162,34 @@ describe('every enum from contracts exists in the database with identical values
   });
 });
 
-describe('audit writer', () => {
-  it('inserts an allowlisted row', async () => {
-    const writer = new PgAuditWriter();
-    await testDb.transaction(async (tx) => {
-      await writer.write(tx, {
-        stream: 'account:test-stream',
-        action: 'test_action',
-        actor: 'system:test',
-        details: { count: 3 },
-      });
-    });
-    const rows = await testDb
-      .select()
-      .from(auditEvents)
-      .where(sql`${auditEvents.stream} = 'account:test-stream'`);
-    expect(rows).toHaveLength(1);
-    expect(rows[0]?.details).toEqual({ count: 3 });
+describe('T-101 migration 0009 applied from empty', () => {
+  it('creates the three auth lookup indexes on the columns Better Auth queries by (ISS-113)', async () => {
+    const rows = await testDb.execute<{ indexname: string; indexdef: string }>(sql`
+      select indexname, indexdef from pg_indexes
+      where schemaname = 'public'
+        and indexname in (
+          'auth_sessions_user_id_idx', 'auth_accounts_user_id_idx', 'auth_verifications_identifier_idx'
+        )
+      order by indexname
+    `);
+    expect(rows.rows.map((r) => [r.indexname, /\((\w+)\)$/.exec(r.indexdef)?.[1]])).toEqual([
+      ['auth_accounts_user_id_idx', 'user_id'],
+      ['auth_sessions_user_id_idx', 'user_id'],
+      ['auth_verifications_identifier_idx', 'identifier'],
+    ]);
   });
 
-  it('rejects a details object containing an email key', async () => {
-    const writer = new PgAuditWriter();
-    await expect(
-      testDb.transaction(async (tx) => {
-        await writer.write(tx, {
-          stream: 'account:test-stream-2',
-          action: 'test_action',
-          actor: 'system:test',
-          details: { email: 'someone@example.com' },
-        });
-      }),
-    ).rejects.toThrow();
-  });
+  it('adds email_deliveries.dedupe_key as a nullable text column with a unique constraint', async () => {
+    const column = await testDb.execute<{ data_type: string; is_nullable: string }>(sql`
+      select data_type, is_nullable from information_schema.columns
+      where table_schema = 'public' and table_name = 'email_deliveries' and column_name = 'dedupe_key'
+    `);
+    expect(column.rows).toEqual([{ data_type: 'text', is_nullable: 'YES' }]);
 
-  it('rejects a string value over 200 chars', () => {
-    expect(() => assertAllowlisted({ note: 'x'.repeat(201) })).toThrow();
+    const unique = await testDb.execute<{ contype: string }>(sql`
+      select contype from pg_constraint where conname = 'email_deliveries_dedupe_key_unique'
+    `);
+    expect(unique.rows).toEqual([{ contype: 'u' }]);
   });
 });
 

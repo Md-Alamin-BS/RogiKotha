@@ -107,6 +107,10 @@ export interface PgBossQueueOptions {
   migrate?: boolean;
   createSchema?: boolean;
   reindex?: boolean;
+  /** Default pg-boss's own (`true`). The web only sends jobs, so it turns maintenance off. */
+  supervise?: boolean;
+  /** Default pg-boss's own (`true`). The web runs no cron schedules. */
+  schedule?: boolean;
 }
 
 /**
@@ -128,6 +132,8 @@ export class PgBossQueue {
       migrate: options.migrate ?? false,
       createSchema: options.createSchema ?? false,
       reindex: options.reindex ?? false,
+      ...(options.supervise !== undefined ? { supervise: options.supervise } : {}),
+      ...(options.schedule !== undefined ? { schedule: options.schedule } : {}),
     });
     this.boss.on('error', (err: unknown) => {
       this.logger.error('queue.error', {

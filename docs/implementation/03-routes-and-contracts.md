@@ -53,7 +53,7 @@ function named is the component to port.
 
 | Path | Method | Purpose | Auth |
 |---|---|---|---|
-| `/api/auth/[...all]` | * | Better Auth handler | — |
+| `/api/auth/[...all]` | * | Better Auth handler behind an allowlist: only `/api/auth/ok` reaches the library; every other path answers 404 with a JSON `null`, because every flow runs through an `account.*` command (T-101 BR7.1, narrowed in T-101 Step 15: `get-session` exposed the session token and the full address, ISS-430) | — |
 | `/api/health` | GET | `{ ok, db, queue, mail, scanner }` — scanner reported, not required | none |
 | (proxy) | — | `profile_redirects` lookup → 301 from an old public id after a merge | none |
 | `/api/evidence/upload` | POST multipart (streamed) | `evidence.intake` per file; returns item ids and states | verified account |
@@ -79,6 +79,7 @@ export type Capability =
 'auth.invalid_credentials' | 'auth.email_unverified' | 'auth.rate_limited' | 'auth.token_invalid' | 'auth.token_expired'
 | 'auth.step_up_required' | 'auth.device_unapproved' | 'auth.password_too_short' | 'auth.username_taken'
 | 'auth.username_invalid' | 'auth.age_required' | 'auth.terms_required' | 'auth.account_suspended'
+| 'auth.password_equals_email'
 | 'forbidden' | 'not_found' | 'conflict' | 'validation' | 'rate_limited' | 'internal'
 | 'review.min_fields' | 'review.attestation_required' | 'review.not_editable' | 'review.restore_expired'
 | 'evidence.too_many' | 'evidence.too_large' | 'evidence.total_too_large' | 'evidence.type_rejected' | 'evidence.not_previewable' | 'evidence.confirmation_required'
@@ -91,29 +92,38 @@ export type Capability =
 export interface PageMeta { cursor?: string; nextCursor?: string; total?: number; page?: number; pageSize?: number }
 ```
 
-Every command input is a zod schema in `contracts/schemas/<module>.ts` named `<VerbNoun>Input`; every view model is a plain serialisable type in `contracts/view-models/`. View models never contain `accountId`, emails, private linkage, or original filenames.
+Every command input is a zod schema in `contracts/schemas/<module>.ts` named `<VerbNoun>Input`; every view model is a plain serialisable type in `contracts/view-models/`. View models never contain `accountId`, emails, private linkage, or original filenames. One exception (FD-096): a signed-in account sees its own address only masked (`s****@example.test`: the first character of the local part, `****`, `@`, the domain), in `SecurityVM` and the pending-confirmation banner, built by `account.getOwnAccount` per request and never cached; no public, staff or worker projection carries even the masked form.
 
 ## 3. Ports (`packages/application/src/ports/`)
 
+The T-101 ports below are the shapes in `packages/application/src/ports/*.ts`; where this table and the code differ, the code wins. Ports return expected failures as a `PortResult` with a code local to the port (for example `email_exists`, `job_not_enqueued`); the command maps it to an `ErrorCode`. `Tx` is opaque in `application`, and `packages/database` casts it to its Drizzle executor.
+
 | Port | Methods | Real adapter | Fake |
 |---|---|---|---|
+| `UnitOfWork` (T-101) | `run(tx => HandlerResult)`: commits on `ok` or on an error marked `recorded`, rolls back otherwise; `read(tx => T)` without a transaction | `database/unit-of-work.ts` | in-memory, records commit or rollback |
+| `AuthGateway` (T-101, FD-093) | `createCredentialUser`, `deleteUser`, `issueVerificationToken`, `verifyEmailToken`, `issueResetToken`, `resetPassword`, `changePassword`, `createSession`, `getSession`, `listSessions`, `revokeSession`, `revokeSessions` | `apps/web/src/server/better-auth/gateway.ts` | `FakeAuthGateway` |
 | `Clock` | `now(): Date` | `adapters/clock` (system + `demo_clock` offset) | `FakeClock.set()` |
 | `IdGenerator` | `newId()`, `newPublicId()` | contracts/ids | deterministic sequence |
-| `Crypto` | `encrypt(bytes)`, `decrypt(bytes)`, `hash(bytes)` (sha256), `randomToken()` | `adapters/crypto` | same, test key |
-| `PasswordHasher` | `hash(pw)`, `verify(pw, phc)` | `@node-rs/argon2` (m=64 MiB, t=3, p=1 — benchmark in T-101) | fast fake |
-| `Mailer` | `send({ to, category, messageKey, params, locale })` → `Result<{deliveryId}>` | `adapters/mail-smtp` (nodemailer → Mailpit) | records sends |
+| `Sleeper` (T-101) | `sleep(ms)`, for the register, resend and reset timing floors | `setTimeout` in the containers | resolves at once |
+| `Crypto` | `encrypt(bytes \| text) → bytes`, `decrypt(bytes) → PortResult<bytes, 'decrypt_failed'>`, `decryptText`, `hash(value)` (sha256 hex), `randomToken()`, `hmac(purpose, value)` (HKDF key per purpose, only on an instance built with `macSecret`). Built from `{encryptionKey, macSecret?}`: web `crypto` (`APP_ENCRYPTION_KEY`) and `mailCrypto` (`MAIL_RECIPIENT_KEY`), worker `mailCrypto` only (FD-095) | `adapters/crypto` | same, test key |
+| `PasswordHasher` | `hash(pw)`, `verify(pw, phc)` (the caller applies NFC) | `@node-rs/argon2` (m=64 MiB, t=3, p=1 — benchmark in T-101) | fast fake |
+| `MailTransport` (T-101, worker only) | `send({to, subject, text}) → PortResult<{messageId}, 'smtp_unavailable' \| 'smtp_rejected' \| 'smtp_timeout'>` | `adapters/mail-smtp` (nodemailer → Mailpit) | records sends |
+| `Mailer` | superseded by `notification.queueEmail` (web, on the caller's transaction) plus `MailTransport` (worker) in T-101 | — | `RecordingMailer` until T-405 |
+| `AfterResponse` (T-101) | `run(task)` | Next `after()` in `server/after-response.ts` | runs at once |
+| `RecipientDirectory` (T-101, C2) | `contactFor(tx, accountId) → {toEmailEnc, locale, preferences} \| null` | `modules/account` over the repository and `mailCrypto` | — |
+| `AppSettings` (T-101) | `{appUrl, termsVersion}` | `server/env.ts` | literal |
 | `Storage` | `putQuarantine(stream, {itemId}) → key`, `getPrivate(key) → stream`, `putDerivative(bytes, meta) → key` (immutable), `head(key)`, `delete(key, {reason})` | `adapters/storage-fs` under `STORAGE_ROOT/{quarantine,private,public}` | in-memory map |
 | `MalwareScanner` | `scan(stream) → {status:'clean'|'detected'|'unavailable', signatureVersion?}` | `adapters/scanner-clamd` (INSTREAM to `CLAMD_HOST:3310`, 30 s timeout) | scripted |
 | `ImageSanitiser` | `sanitise(bytes, {maxPixels}) → {png: bytes, width, height, version}` | sharp: decode → strip metadata → re-encode PNG (or JPEG for photos > 2 MP) | passthrough |
 | `PdfRasteriser`, `PdfAssembler` | **Phase 2** (FD-036) — see `07-phase-2-document-evidence.md`; not created in Phase 1 | — | — |
-| `JobQueue` | `enqueue(name, payload, {key, retryLimit, startAfter})`, `work(name, handler)` | `database/queue` (pg-boss) | in-memory |
-| `Outbox` | `append(tx, name, payload)` | `database` | list |
+| `JobQueue` | `ensure(name)`; `enqueue(tx, name, payload, {key}) → PortResult<'enqueued' \| 'deduplicated', 'job_not_enqueued'>` (the worker's `work(name, handler)` stays in `database/queue`) | `database/queue` (pg-boss) | in-memory |
+| `Outbox` | `append(tx, name, payload)`, payload typed per event name | `database` | list |
 | `SearchIndex` | `upsert(doc)`, `remove(kind, refId)`, `search(query, filters, page)`, `suggest(q)` | `database/search` | naive in-memory |
-| `RateLimiter` | `hit(key, limit, windowSec) → {allowed, retryAfter}` | in-memory sliding window (per process; enough for the demo), keys `action:account:<id>` or `action:net:<hash>` | always allowed |
-| `Logger` | `info|warn|error(event, fields)` | pino-like JSON to stdout | collects |
-| `ConfigProvider` | `current() → ConfigValues` | `database` (cached 5 s) | static |
-| `AuditWriter` | `write(tx, {stream, action, actor, target, details})` | `database` | list |
-| Repositories | one per module (`AccountRepository`, `IdentityRepository`, `DirectoryRepository`, `TaxonomyRepository`, `ReviewRepository`, `EvidenceRepository`, `CommunityRepository`, `ModerationRepository`, `NotificationRepository`, `ConfigRepository`, `RetentionRepository`, `DataRequestRepository`) | `database/repositories` | `test-support/fakes` |
+| `RateLimiter` | `hit(key, limit, windowSec) → {allowed, retryAfter?}`; `reserveFailure(key, windowSec) → {earlier: Date[], release()}`, which counts the attempt and returns what was counted before it in one atomic step, released when the attempt is refused or succeeds (ISS-453); `clear(key)` | in-memory sliding window (per process; enough for the demo), keys `<scope>:<email\|net\|account>:<subject>` where email and net subjects are HMACs, never raw values | always allowed; a windowed fake |
+| `Logger` | `info|warn|error(event, fields)`, fields from a closed list (`LogFields`: ids, enums, counts, durations, error codes) | pino-like JSON to stdout | collects |
+| `ConfigProvider` | `current() → Promise<ConfigValues>` | `database` (cached 5 s; T-101's web container gives defaults only until T-105) | static |
+| `AuditWriter` | `write(tx, {stream, action, actor, targetKind?, targetId?, details})`, details of ids, enums, counts and booleans only (ISS-108) | `database` | list |
+| Repositories | one per module (`AccountRepository`, `IdentityRepository`, `DirectoryRepository`, `TaxonomyRepository`, `ReviewRepository`, `EvidenceRepository`, `CommunityRepository`, `ModerationRepository`, `NotificationRepository`, `ConfigRepository`, `RetentionRepository`, `DataRequestRepository`); T-101 adds `EmailDeliveryRepository` (the email-delivery methods of the notification repository). Every method takes `tx` first | `database/repositories` | `test-support/fakes` |
 
 ## 4. Command and query catalogue
 
@@ -122,17 +132,19 @@ Format: `name` — input → output · requires · audit stream · notes. "→ o
 ### account (T-101, T-102, T-103, T-105)
 
 - `account.register` — `{email, password, username, displayName, locale, ageConfirmed, termsAccepted}` → `{accountId}` (**same success shape even if the email exists** — the existing owner gets a "someone tried to register" security email instead) · anonymous · rate 5/hour/network · `account:<id>` · creates auth user via Better Auth, `account_profiles`, preferences, then calls `identity.createDefaultPersonas` (named + pseudonymous); enqueues verification mail → outbox `account.registered`
-- Rate limits (all via the RateLimiter port; keys `action:account:<id>` or `action:net:<hash>`): sign-in **6 failures per 15 min per email+network key** (the 7th attempt is refused even with the right password until the window passes), sign-up 5/hour/network, reset request 3/hour/email, resend verification 3/hour/email, step-up 5 failures/15 min/account
+- Rate limits (all via the RateLimiter port; email and network keys are HMACs, never raw values): sign-in **30 failures per 15 min per network, 10 failures per `signIn.windowMinutes` (default 15) per email, and the FD-063 progressive delay**, all checked before any read or password check (T-101 BR3.2); sign-up 5/hour/network; reset request and resend verification 3/hour/email and 10/hour/network; resend-own 3/hour/account; change password 5 failures/15 min/account; feedback 5/day/account; step-up 5 failures/15 min/account
 - `account.resendVerification` — `{email}` → `{}` · anonymous · rate limit 3/hour/email
-- `account.verifyEmail` — `{token}` → `{}` · anonymous · sets `status active`, signs the user in
-- `account.signIn` — via Better Auth; application hook maps session → Actor; refuses `suspended|banned`; `restricted` may sign in but commands check `notRestricted`
+- `account.resendOwnVerification` — `{}` → `{}` · account (pending) · rate 3/hour/account · takes no address (T-101 BR2.7, FD-096)
+- `account.verifyEmail` — `{token}` → `{}` · server action (POST) only, never a page render · sets `status active` for a pending account and signs the holder in through the library's guarded auto sign-in; suspended, banned or deleted get `auth.token_invalid` and no session
+- `account.signIn` — `{email, password}` → `{}` · anonymous · the command checks the limits and the password through `PasswordHasher` first (a dummy hash for unknown addresses), then asks `AuthGateway.createSession` only for a pending, active or restricted account; refuses `suspended|banned` with `auth.account_suspended`; `restricted` may sign in but commands check `notRestricted`; the library's own sign-in endpoint is closed
 - `account.signOut`, `account.signOutEverywhere` — revokes sessions · `account:<id>`
 - `account.requestPasswordReset` — `{email}` → `{}` (always) · rate limited
-- `account.resetPassword` — `{token, newPassword}` → `{}` · rotates password, revokes all sessions, security email
+- `account.resetPassword` — `{token, newPassword}` → `{}` · rotates password, revokes all sessions, security email · an expired link answers `auth.token_expired` before any other check, and a completed reset removes the account's other reset links (T-101, ISS-428, ISS-429)
 - `account.changePassword` — `{currentPassword, newPassword}` · account · revokes other sessions
-- `account.listSessions` (query) → `[{id, current, label, firstSeen, lastSeen}]`
+- `account.listSessions` (query) → `[{id, current, browser, os, firstSeen, lastSeen}]` (browser and os are family names or null; T-102 builds the label)
+- `account.getOwnAccount` (query) — `{}` → `{username, displayName, emailVerified, emailMasked}` · account · the holder's own address masked only, never cached (FD-096)
 - `account.updatePreferences` — `{interfaceLocale?, emailSecurity?, emailModeration?, emailEvidence?, emailDiscussion?}`
-- `account.submitFeedback` — `{body}` · account · rate 5/day
+- `account.submitFeedback` — `{body}` (1–2000 characters, stored with the writer's locale; text only in release 1, FD-097) · account · rate 5/day
 - `account.stepUp` — `{password}` → `{rechecked_at}` · account · sets a 5-minute signed step-up cookie; audit `account:<id>` action `step_up`
 - `staff.beginDeviceApproval` — `{deviceSecret}` (from cookie or newly minted) → `{}` · staff after credential check · emails approval link (30 min)
 - `staff.approveDevice` — `{token, password}` → `{}` · marks device approved; audit
@@ -247,8 +259,8 @@ Format: `name` — input → output · requires · audit stream · notes. "→ o
 
 | Event (outbox) | Payload (ids only) | Consumers (jobs) |
 |---|---|---|
-| `account.registered` | accountId | `mail.send` (verification) |
-| `account.securityEvent` | accountId, kind | `notification.deliver`, `mail.send` |
+| `account.registered` | accountId | none: the verification email is queued by `notification.queueEmail` on the command's own transaction (T-101 BR6.4, C15) |
+| `account.securityEvent` | accountId, kind | `notification.deliver` only; the security email is queued by the command (T-101 BR6.4) |
 | `review.published` / `review.changed` / `review.hidden` / `review.restored` / `review.deleted` | reviewId, doctorId, branchId? | `search.refresh`, `notification.deliver` |
 | `doctor.changed` / `facility.changed` / `term.changed` | id | `search.refresh` |
 | `evidence.received` | itemId | `evidence.process` |

@@ -1,10 +1,22 @@
-import { Pool } from 'pg';
+import { Pool, type PoolConfig } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
 import * as schema from './schema/index';
 
-export function createDb(url: string) {
-  const pool = new Pool({ connectionString: url });
+/**
+ * ISS-452: a bounded pool that gives up on a busy pool instead of waiting for ever, so running out
+ * of connections fails the request (`internal`) and the process keeps answering.
+ */
+export const DEFAULT_POOL_OPTIONS = {
+  max: 10,
+  connectionTimeoutMillis: 5_000,
+  idleTimeoutMillis: 30_000,
+} as const satisfies PoolConfig;
+
+export type PoolOptions = Pick<PoolConfig, 'max' | 'connectionTimeoutMillis' | 'idleTimeoutMillis'>;
+
+export function createDb(url: string, options: PoolOptions = {}) {
+  const pool = new Pool({ ...DEFAULT_POOL_OPTIONS, ...options, connectionString: url });
   const db = drizzle(pool, { schema, casing: 'snake_case' });
   return { db, pool };
 }

@@ -65,6 +65,36 @@ export default defineConfig({
           hookTimeout: 180_000,
         },
       },
+      // T-101 (functional-spec § 10.7): the app integration tests need compose PostgreSQL and
+      // Mailpit and use the seeded `DATABASE_URL_TEST`, so they run serially in group 3, after
+      // `database` (1) reset it and `test-support-seed` (2) seeded it.
+      {
+        resolve: { alias: { '@': path.join(ROOT, 'apps/web/src') } },
+        test: {
+          name: 'web-int',
+          root: './apps/web',
+          environment: 'node',
+          include: ['src/**/*.int.test.ts', 'src/**/*.int.smoke.test.ts'],
+          passWithNoTests: true,
+          fileParallelism: false,
+          sequence: { groupOrder: 3 },
+          testTimeout: 120_000,
+          hookTimeout: 120_000,
+        },
+      },
+      {
+        test: {
+          name: 'worker-int',
+          root: './apps/worker',
+          environment: 'node',
+          include: ['src/**/*.int.test.ts', 'src/**/*.int.smoke.test.ts'],
+          passWithNoTests: true,
+          fileParallelism: false,
+          sequence: { groupOrder: 3 },
+          testTimeout: 120_000,
+          hookTimeout: 120_000,
+        },
+      },
     ],
     coverage: {
       provider: 'v8',

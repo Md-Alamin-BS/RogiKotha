@@ -26,6 +26,9 @@ export const ALL_CAPABILITIES: readonly Capability[] = [
   'holds.manage',
 ];
 
+export const ACTOR_REFUSALS = ['suspended', 'banned'] as const;
+export type ActorRefusal = (typeof ACTOR_REFUSALS)[number];
+
 export interface Actor {
   kind: 'anonymous' | 'account';
   accountId?: string;
@@ -39,6 +42,11 @@ export interface Actor {
   capabilities: Capability[];
   /** present only after a password recheck (5-minute window) */
   stepUp?: { rechecked_at: string };
+  /**
+   * Only on an anonymous Actor whose session belongs to a suspended or banned account, so the
+   * sign-in page can show `errors.auth.accountSuspended` (T-101 BR4.3).
+   */
+  refusal?: ActorRefusal;
   locale: Locale;
   correlationId: string;
 }

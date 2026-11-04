@@ -2,6 +2,7 @@
 // under `handlers/` — nothing else in `main.ts` needs to change.
 import type { WorkOptions } from '@rogikotha/database';
 
+import { mailSendHandler } from './handlers/mail-send.js';
 import { outboxRelayHandler } from './handlers/outbox-relay.js';
 import type { WorkerContainer } from './container.js';
 
@@ -37,4 +38,6 @@ export interface JobDefinition {
 // whatever is present.
 export const JOBS: Partial<Record<JobName, JobDefinition>> = {
   'outbox.relay': { handler: outboxRelayHandler, intervalMs: 2000 },
+  // Queue-driven: `queueEmail` enqueues it on the command's transaction (T-101 WF12, WF13).
+  'mail.send': { handler: mailSendHandler },
 };
