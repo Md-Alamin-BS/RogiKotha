@@ -1,0 +1,54 @@
+{
+  "stage": "functional-design",
+  "unit": "t-104-identity-module",
+  "upstream_ids": ["AC3.3.1", "AC3.3.2", "AC3.3.3", "AC3.3.4", "AC3.3.5", "AC3.3.6"],
+  "coverage": [
+    {
+      "id": "AC3.3.1",
+      "status": "OK",
+      "target": "BR2.1, BR2.2, BR2.4, BR2.9, BR2.10, BR1.4 (the chosen persona is the same for the review and the author's comments in that thread; rendering is U47 and U49; reaction lists are deferred to release 2)"
+    },
+    {
+      "id": "AC3.3.2",
+      "status": "OK",
+      "target": "BR2.4, BR2.5, BR2.6, BR1.4, BR1.7 (one random alias per thread, unique, hue 0, no id or username in the projection)"
+    },
+    {
+      "id": "AC3.3.3",
+      "status": "OK",
+      "target": "BR1.4, BR1.6, BR3.1, BR3.3, BR3.4, BR3.6, BR3.7 (no anonymous persona is reachable by username, projection, action or worker; the profile and activity lists themselves are U47's)"
+    },
+    {
+      "id": "AC3.3.4",
+      "status": "N/A",
+      "target": "Reactions are deferred to release 2 (FD-105); identity stores no reaction data"
+    },
+    {
+      "id": "AC3.3.5",
+      "status": "Deferred",
+      "target": "The audited staff identity reveal is deferred to release 2 with U10 (FD-105, unit-of-work.md U11 Not in release 1)"
+    },
+    {
+      "id": "AC3.3.6",
+      "status": "OK",
+      "target": "BR5.2, BR5.1 (identity adds no anonymity or staff-access copy and no note field)"
+    }
+  ],
+  "reverse": [
+    { "id": "BR1.1", "status": "N/A", "target": "AD-3 schema invariant (T-104 threat 1)" },
+    { "id": "BR1.2", "status": "N/A", "target": "C4 createDefaultPersonas; register keeps working" },
+    { "id": "BR1.3", "status": "N/A", "target": "AD-3 immutable snapshot (T-104 threat 6)" },
+    { "id": "BR1.5", "status": "N/A", "target": "C4 publicProjection batch form, technical" },
+    { "id": "BR2.3", "status": "N/A", "target": "C4 personaFor release-1 rule 2, programmer-error guard" },
+    { "id": "BR2.7", "status": "N/A", "target": "Legacy seed rows, FD-024 language parity" },
+    { "id": "BR2.8", "status": "N/A", "target": "AD-3, T-104 threat 6" },
+    { "id": "BR3.2", "status": "N/A", "target": "T-104 step 6, container boundary" },
+    { "id": "BR3.5", "status": "N/A", "target": "C19 module wiring, contract-summary open question" },
+    { "id": "BR3.8", "status": "N/A", "target": "T-104 threat 8, logging allowlist" },
+    { "id": "BR4.1", "status": "N/A", "target": "C4 renameNamed, no release-1 story beyond the snapshot rule" },
+    { "id": "BR5.3", "status": "N/A", "target": "FD-105 deferred scope" },
+    { "id": "BR5.4", "status": "N/A", "target": "Forward-only migrations, swarm merge order" },
+    { "id": "BR6.1", "status": "N/A", "target": "team.md high-risk validation" },
+    { "id": "BR6.2", "status": "N/A", "target": "team.md cumulative smoke suite" }
+  ]
+}
