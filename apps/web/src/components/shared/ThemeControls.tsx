@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { Locale } from '@rogikotha/i18n';
 import { Link, usePathname } from '@/i18n/routing';
@@ -82,6 +83,10 @@ export function ThemeControls({
 }) {
   const t = useTranslations();
   const pathname = usePathname();
+  // Kept across the switch: `?next=` on sign-in and `?doctor=` on the write page carry the flow.
+  const searchParams = useSearchParams();
+  const query = searchParams ? Object.fromEntries(searchParams.entries()) : {};
+  const languageHref = Object.keys(query).length > 0 ? { pathname, query } : pathname;
   const announce = useAnnounce();
   const [, startTransition] = useTransition();
   const otherLocale: Locale = locale === 'bn' ? 'en' : 'bn';
@@ -121,7 +126,7 @@ export function ThemeControls({
        */}
       <Link
         id="lang"
-        href={pathname}
+        href={languageHref}
         locale={otherLocale}
         // A language switch swaps the page at once instead of running the route fade (BR6.1).
         transitionTypes={[LANGUAGE_SWITCH_TRANSITION]}

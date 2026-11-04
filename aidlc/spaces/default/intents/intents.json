@@ -6,5 +6,13 @@
     "scope": "classic",
     "status": "in-flight",
     "request": "863c5048"
+  },
+  {
+    "uuid": "01a18b34-f5e4-71bc-b717-5b2566130ad2",
+    "slug": "demo-slice",
+    "dirName": "261030-demo-slice",
+    "scope": "express",
+    "status": "in-flight",
+    "request": "1ebcb37d"
   }
 ]

@@ -4,23 +4,25 @@ import { Link } from '@/i18n/routing';
 import type { PatientTab } from '@/lib/cookies';
 import type { Theme, Motion } from '@/lib/cookies';
 import { Tabs } from './Tabs';
-import { Icon } from '../shared/Icon';
 import { ThemeControls } from '../shared/ThemeControls';
+import { AccountControl, type MastheadAccount } from './auth/AccountControl';
 
 // Port of concept-04b's <header class="masthead"> (index.html lines 31-90).
-// The ⌘ gallery link and ◇ demo button are dropped (task step 7); the
-// account control links to /sign-in instead of opening the demo session
-// simulation (T-102 replaces this with the real signed-in states).
+// The ⌘ gallery link and ◇ demo button are dropped (task step 7). The
+// account control shows the real signed-in state (FR1.4); the layout passes
+// the signed-in account, and only its display name reaches the client.
 export function Masthead({
   activeTab,
   locale,
   theme,
   motion,
+  account = null,
 }: {
   activeTab?: PatientTab | undefined;
   locale: Locale;
   theme: Theme;
   motion: Motion;
+  account?: MastheadAccount | null | undefined;
 }) {
   const t = useTranslations();
   return (
@@ -40,10 +42,7 @@ export function Masthead({
       </Link>
 
       <div className="controls">
-        {/* STORY-AUTH-001 (T-102 not built yet): signed-out glyph only. */}
-        <Link id="account" href="/sign-in" className="ctl" title={t('auth.signIn.title')}>
-          <Icon name="person" />
-        </Link>
+        <AccountControl account={account ? { displayName: account.displayName } : null} />
         <ThemeControls locale={locale} theme={theme} motion={motion} />
       </div>
     </header>

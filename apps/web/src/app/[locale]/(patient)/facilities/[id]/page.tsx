@@ -1,22 +1,35 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
+import type { Locale } from '@rogikotha/contracts';
 import { ViewShell } from '@/components/patient/ViewShell';
-import { titleForView, documentTitle } from '@/lib/titles';
+import { branchTitle } from '@/components/patient/facilities/FacilityEntry';
+import { FacilityProfile } from '@/components/patient/facilities/FacilityProfile';
+import { facilities } from '@/server/data';
+import { documentTitle } from '@/lib/titles';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations();
-  // TODO(T-203): replace with the real entity's name once its query exists.
-  return { title: documentTitle('facility', t) };
-}
+type Params = Promise<{ id: string }>;
 
-export default async function FacilityProfilePage({ params }: { params: Promise<{ id: string }> }) {
+// One lookup per request, shared by the metadata and the page.
+const loadFacility = cache((id: string, locale: Locale) => facilities.getFacility(id, locale));
+
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
   const t = await getTranslations();
+  const facility = await loadFacility(id, (await getLocale()) as Locale);
+  if (!facility) return { title: documentTitle('facility', t) };
+  return { title: `${branchTitle(facility)} — ${t('brand.name')}` };
+}
+
+export default async function FacilityProfilePage({ params }: { params: Params }) {
+  const { id } = await params;
+  const facility = await loadFacility(id, (await getLocale()) as Locale);
+  if (!facility) notFound();
   return (
-    <ViewShell view="facility" title={titleForView('facility', t)}>
-      <p className="note">
-        {t('shell.placeholder', { task: 'T-203' })} ({id})
-      </p>
+    // The hero brings the facility's name as the page's only h1.
+    <ViewShell view="facility" title="">
+      <FacilityProfile facility={facility} />
     </ViewShell>
   );
 }

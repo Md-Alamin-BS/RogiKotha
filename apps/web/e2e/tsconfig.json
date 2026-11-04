@@ -6,7 +6,7 @@
     "lib": ["dom", "dom.iterable", "ES2023"],
     "declaration": false,
     "noEmit": true,
-    "types": []
+    "types": ["node"]
   },
   "include": ["./**/*.ts", "../playwright.config.ts"]
 }

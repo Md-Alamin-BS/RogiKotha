@@ -6,7 +6,7 @@ _Rewritten by every session at its end. Keep under 40 lines. Read this first._
 > first. The resources are being converted into AI-DLC artifacts — see `docs/aidlc-migration/README.md`.
 > Keep this banner when rewriting this file until that migration says **Status: DONE**.
 
-**Updated:** 2026-10-11 · by: validate + merge session (Claude Code · claude-opus-5-5 · effort high)
+**Updated:** 2026-11-01 · by: demo-slice session
 
 ## Queue (machine-read by LOOP.md)
 ```
@@ -21,6 +21,10 @@ recommended: Claude Sonnet 5 or GPT-5.6 Terra or Opus 4.8 · effort high
 - **Phase 0 lane A:** T-010 is the last task; **CR-009 must run alone first** (it rewrites every
   import in `packages/database/src`). CR-011 (T-009 follow-ups) is due before the first real job handler.
 - The old loop is frozen while AI-DLC is adopted; the next build work runs through `/aidlc`.
+- The queue above is history. The live work is the demo slice (intent `261030-demo-slice`, FD-099 to FD-101,
+  ISS-324 to ISS-400) on branch `bolt/demo-slice`: pushed, not merged into `main`. Start from
+  `docs/aidlc-migration/RESUME.md` and `docs/implementation/handoffs/demo-slice.md`. CLAUDE.md sends agents
+  here first, so without this line they would pick up CR-009, which is already merged.
 
 ## Questions for the human
 - None open. The 2026-10-11 questions were decided by delegation from the owner: FD-038..FD-044 in

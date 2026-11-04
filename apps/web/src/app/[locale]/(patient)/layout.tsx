@@ -10,6 +10,7 @@ import { Colophon } from '@/components/patient/Colophon';
 import { RouteTransition } from '@/components/patient/motion/RouteTransition';
 import { readTheme, readMotion, activePatientTab } from '@/lib/cookies';
 import type { Locale } from '@/i18n/routing';
+import { getCurrentAccount } from '@/server/auth/session';
 
 // Task step 7: patient chrome (masthead, tabs, controls, colophon) around
 // every `(patient)` route. App Router only allows a global CSS import in a
@@ -28,7 +29,12 @@ export default async function PatientLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = (await params) as { locale: Locale };
-  const [theme, motion, headerStore] = await Promise.all([readTheme(), readMotion(), headers()]);
+  const [theme, motion, headerStore, account] = await Promise.all([
+    readTheme(),
+    readMotion(),
+    headers(),
+    getCurrentAccount(),
+  ]);
   const pathname = headerStore.get('x-pathname') ?? `/${locale}`;
   const activeTab = activePatientTab(pathname);
 
@@ -36,7 +42,13 @@ export default async function PatientLayout({
     <>
       <SkipLink />
       <DemoMarker />
-      <Masthead activeTab={activeTab} locale={locale} theme={theme} motion={motion} />
+      <Masthead
+        activeTab={activeTab}
+        locale={locale}
+        theme={theme}
+        motion={motion}
+        account={account}
+      />
       <div className="progress" aria-hidden="true">
         <i />
       </div>

@@ -23,6 +23,12 @@ const nextConfig: NextConfig = {
   // scoped pair nested inside apps/web would only confuse future agents
   // reading the tree. ASSUMPTION(T-008).
   agentRules: false,
+  // Evidence uploads go through a server action and the proxy: both default limits (1 MB and
+  // 10 MB) sit below a 10 MB file plus the form around it (MAX_EVIDENCE_BYTES, FR5).
+  experimental: {
+    serverActions: { bodySizeLimit: '11mb' },
+    proxyClientMaxBodySize: '11mb',
+  },
 };
 
 export default withNextIntl(nextConfig);

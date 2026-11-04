@@ -6,26 +6,17 @@ Draft written ahead of the stage, 2026-10-29. Questions are in `functional-desig
 
 A signed-in patient gets an in-app list of notices at `/<locale>/notifications` and an unread count in the account menu. Notices are created by the worker's `notification.deliver` job from outbox events: replies, comments and mentions on their writing, moderation outcomes on their content, evidence processing, security events, provider decisions, data requests and draft expiry. Each event gives each recipient exactly one notice. The worker never sends or queues email (FD-070). The optional discussion and moderation emails are queued by the publishing command in the web tier, through `queueEmail`, which this Unit extends with the preference check. `mail.send` gets a send-time re-check. Staff views are T-408's; this Unit writes only the `newReport` staff row and two thin staff queries that C2 binds here (Question 1).
 
-## 2. As is (`main` at `19fff92`) and what U8 leaves
+## 2. As is (`main` at `19fff92`) and what U8 and U9 leave
 
-- Tables `notifications`, `staff_notifications`, `email_deliveries`, `outbox_events` exist (T-005). `notifications` has only its unique `dedupe_key`; `email_deliveries.category` is a text column with a CHECK that lacks `discussion`.
-- `apps/worker/src/handlers/outbox-relay.ts` `RELAY` still routes every `review.*`, `comment.changed` and `appeal.decided` to `notification.deliver`. U8 removes the `mail.send` routes.
-- `contracts/schemas/notification.ts` has the inputs; `NotificationDeliverJobInput` is `z.unknown()` with `TODO(T-405)`. `view-models/notification.ts` has `NotificationVM` with `TODO(T-405)`.
-- `en.json`/`bn.json` have `mine.notifications`, `mine.notifNote`, `mine.empty` and five prototype `notif.*` keys (retired, Question 8).
-- `(patient)/notifications/page.tsx` is a placeholder naming T-405.
-- From U8 T-101: `defineCommand` (`sendsMail`), `UnitOfWork`, `Outbox`, `queueEmail` first version (WF12: `contactFor`, allowlist, dedupe, insert, enqueue), `RecipientDirectory.contactFor`, the `mail.send` use case with retries to 6 attempts and params clearing (WF13), the `email.*` catalogue in the worker (FD-097), and `account.securityEvent {accountId, kind: severeSignInActivity}` (WF5, FD-072). From U9 T-102: `AccountMenu` with `viewer.unreadCount` (BR8.6), `WorkspaceNav` with `current: 'notifications'`.
+- The four tables exist (T-005); `notifications` has only its unique `dedupe_key`, and the `email_deliveries.category` CHECK lacks `discussion`.
+- `RELAY` still routes every `review.*`, `comment.changed` and `appeal.decided` to `notification.deliver`. `NotificationDeliverJobInput` is `z.unknown()` and `NotificationVM` carries `TODO(T-405)`. The page is a placeholder. Five prototype `notif.*` keys exist (retired, Question 8).
+- U8 T-101 leaves `defineCommand` (`sendsMail`), `UnitOfWork`, `Outbox`, the first `queueEmail` (`contactFor`, allowlist, dedupe, insert, enqueue), `RecipientDirectory.contactFor`, `mail.send` with retries to 6 attempts and params clearing, and `account.securityEvent {kind: severeSignInActivity}` (FD-072). U9 T-102 leaves `AccountMenu` with `viewer.unreadCount` (its BR8.6) and `WorkspaceNav current="notifications"`.
 
 ## 3. Workflows
 
 ### WF1 — Code Generation order
 
-1. Domain: `routing.ts`, `policies.ts` (`emailAllowed`, `notificationCutoff`), `params.ts` (allowlists), tests.
-2. Contracts: `DeliverJobInput`, per-event payload schemas for routed events, `MarkNotificationsReadInput.ids.max(50)`, `NotificationVM.href`, `NotificationPageVM`, `NOTIFICATION_KINDS` + `provider`.
-3. Migration (§ 7), `PgNotificationRepository` methods, integration tests.
-4. Application: queries, `markRead`, `expire`, `deliver` use case (exported through `@rogikotha/application/worker`), the `queueEmail` and `sendEmailDelivery` extensions, staff list/ack.
-5. Worker: `notification-deliver.ts` handler, registry entry, `RELAY` changes (§ 5).
-6. Web: server action, page, `Notifications.tsx`, `MarkVisibleRead` island, the `.count` hunk in `AccountMenu`, i18n keys.
-7. Seed (six synthetic notices), smoke assertion, `pnpm check`, `pnpm smoke`.
+Domain (`routing.ts`, `policies.ts`, `params.ts`) → contracts (`DeliverJobInput` and the routed payload schemas, `ids.max(50)`, `NotificationVM.href`, `provider`) → migration and repository → application (queries, `markRead`, `expire`, `deliver` exported through `@rogikotha/application/worker`, the `queueEmail` and `sendEmailDelivery` extensions, staff list/ack) → worker handler, registry, `RELAY` → web (action, page, island, menu hunk, keys) → seed, smoke, `pnpm check`, `pnpm smoke`.
 
 ### WF2 — `notification.deliver {eventId, name, payload}` (worker)
 

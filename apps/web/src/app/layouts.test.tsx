@@ -10,6 +10,8 @@ import type * as NextIntl from 'next-intl';
 import { notFound } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
 import { MOTION_COOKIE, THEME_COOKIE } from '@/lib/cookies';
+import { buildCurrentAccount } from '@/components/patient/profile/profile-test-support';
+import { getCurrentAccount } from '@/server/auth/session';
 import LocaleLayout from './[locale]/layout';
 import PatientLayout from './[locale]/(patient)/layout';
 import AdminLayout, { metadata as adminMetadata } from './[locale]/admin/layout';
@@ -43,6 +45,8 @@ vi.mock('next/navigation', () => ({
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
   }),
+  // The masthead's language switch keeps the query string; these pages have none.
+  useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('next/headers', () => ({ cookies: vi.fn(), headers: vi.fn() }));
 vi.mock('next-intl/server', () => ({
@@ -93,6 +97,8 @@ vi.mock('@/server/actions/preferences', () => ({
   setMotion: vi.fn(() => Promise.resolve()),
   setLang: vi.fn(() => Promise.resolve()),
 }));
+// The patient layout asks who is signed in; no session exists under Vitest.
+vi.mock('@/server/auth/session', () => ({ getCurrentAccount: vi.fn(() => Promise.resolve(null)) }));
 
 // Builder: what the request carries for a layout to read.
 function givenRequest({
@@ -244,6 +250,24 @@ describe.each(LOCALES)('patient layout in %s', (locale) => {
       expect(part?.closest('.page-frame, [data-reveal-list], .reveal')).toBeNull();
       expect(part?.querySelector('[data-reveal-list], .reveal')).toBeNull();
     }
+  });
+
+  it('offers sign-in in the masthead to a signed-out reader', async () => {
+    await renderPatient({ pathname: `/${locale}` });
+    expect(screen.getByTestId('masthead-account-sign-in-link')).toHaveAttribute('href', '/sign-in');
+    expect(screen.queryByTestId('masthead-account-menu-button')).toBeNull();
+  });
+
+  it("shows the signed-in reader's account menu in the masthead", async () => {
+    vi.mocked(getCurrentAccount).mockResolvedValueOnce(
+      buildCurrentAccount({ displayName: 'Rina Akter' }),
+    );
+    await renderPatient({ pathname: `/${locale}` });
+    expect(screen.getByTestId('masthead-account-menu-button')).toHaveAttribute(
+      'title',
+      'Rina Akter',
+    );
+    expect(screen.queryByTestId('masthead-account-sign-in-link')).toBeNull();
   });
 
   it('highlights the tab for the current page', async () => {
