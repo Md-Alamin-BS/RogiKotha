@@ -41,37 +41,37 @@
     {
       "id": "US1.1",
       "status": "OK",
-      "target": "U2"
+      "target": "U50"
     },
     {
       "id": "US2.1",
       "status": "OK",
-      "target": "U43"
+      "target": "U50"
     },
     {
       "id": "US2.2",
       "status": "OK",
-      "target": "U42"
+      "target": "U50"
     },
     {
       "id": "US2.3",
       "status": "OK",
-      "target": "U42"
+      "target": "U50"
     },
     {
       "id": "US2.4",
       "status": "OK",
-      "target": "U45"
+      "target": "U50"
     },
     {
       "id": "US3.1",
       "status": "OK",
-      "target": "U8"
+      "target": "U9"
     },
     {
       "id": "US3.2",
       "status": "OK",
-      "target": "U8"
+      "target": "U9"
     },
     {
       "id": "US3.3",
@@ -81,42 +81,42 @@
     {
       "id": "US4.1",
       "status": "OK",
-      "target": "U14"
+      "target": "U46"
     },
     {
       "id": "US4.2",
       "status": "OK",
-      "target": "U15"
+      "target": "U46"
     },
     {
       "id": "US4.3",
       "status": "OK",
-      "target": "U14"
+      "target": "U46"
     },
     {
       "id": "US5.1",
-      "status": "OK",
-      "target": "U18"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): unified search is T-205 and T-206 (U18, U19)"
     },
     {
       "id": "US5.2",
-      "status": "OK",
-      "target": "U18"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): search filters, ranking and result cards are T-205 and T-206 (U18, U19)"
     },
     {
       "id": "US5.3",
       "status": "OK",
-      "target": "U14"
+      "target": "U46"
     },
     {
       "id": "US6.1",
       "status": "OK",
-      "target": "U21"
+      "target": "U47"
     },
     {
       "id": "US6.2",
       "status": "OK",
-      "target": "U21"
+      "target": "U47"
     },
     {
       "id": "US6.3",
@@ -126,82 +126,82 @@
     {
       "id": "US6.4",
       "status": "OK",
-      "target": "U14"
+      "target": "U46"
     },
     {
       "id": "US7.1",
       "status": "OK",
-      "target": "U23"
+      "target": "U48"
     },
     {
       "id": "US7.2",
-      "status": "OK",
-      "target": "U25"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): privacy preview, redaction and the public viewer are T-305 and T-308 (U25, U28)"
     },
     {
       "id": "US7.3",
-      "status": "OK",
-      "target": "U29"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): custody, retention, legal holds and staff removal are T-309 and T-407 (U29, U36)"
     },
     {
       "id": "US8.1",
       "status": "OK",
-      "target": "U30"
+      "target": "U49"
     },
     {
       "id": "US8.2",
-      "status": "OK",
-      "target": "U30"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): Like and Dislike reactions are T-401's reaction part"
     },
     {
       "id": "US9.1",
-      "status": "OK",
-      "target": "U32"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): reports and the temporary hide are T-403 (U32)"
     },
     {
       "id": "US9.2",
-      "status": "OK",
-      "target": "U33"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): the moderation queue is T-404 and T-406 (U33, U35)"
     },
     {
       "id": "US9.3",
-      "status": "OK",
-      "target": "U33"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): appeals, blocking and enforcement are T-404, T-406 and T-409 (U33, U35, U38)"
     },
     {
       "id": "US10.1",
-      "status": "OK",
-      "target": "U34"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): notifications are T-405 and T-408 (U34, U37)"
     },
     {
       "id": "US10.2",
       "status": "OK",
-      "target": "U27"
+      "target": "U47"
     },
     {
       "id": "US10.3",
-      "status": "OK",
-      "target": "U38"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): dashboard, preferences, feedback panel and data requests are T-409 and T-410 (U38, U39)"
     },
     {
       "id": "US11.1",
-      "status": "OK",
-      "target": "U10"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): runtime configuration and capabilities are T-103, T-105 and T-408 (U10, U12, U37); release 1 reads constants"
     },
     {
       "id": "US11.2",
-      "status": "OK",
-      "target": "U33"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): operational dashboards and bulk actions are T-404, T-406, T-407 and T-408 (U33, U35, U36, U37)"
     },
     {
       "id": "US12.1",
       "status": "OK",
-      "target": "U7"
+      "target": "U20"
     },
     {
       "id": "US12.2",
-      "status": "OK",
-      "target": "U40"
+      "status": "Deferred",
+      "target": "deferred to release 2 (FD-105): the PWA is T-501 (U40)"
     },
     {
       "id": "US12.3",

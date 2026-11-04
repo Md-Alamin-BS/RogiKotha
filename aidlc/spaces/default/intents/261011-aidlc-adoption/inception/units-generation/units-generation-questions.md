@@ -106,3 +106,128 @@ B. No new Unit; each UI Unit restyles its own pages
 X. Other (please specify)
 
 [Answer]: A
+
+## Revision 2026-11-04 (FD-105: release 1 in 10 Units)
+
+Context:
+- The owner chose release 1 = the backlog's R1 plus simple comments, in 10 Units, built in parallel where they do not collide (FD-105). The 9 merged Units stay as they are; Unit IDs are frozen (project.md Corrections).
+- The owner's standing instruction of 2026-11-04 is to decide by recommendation and ask only on big business changes. Each answer below is the recommended option, chosen under that instruction; the owner can change any of them at the plan approval or the stage gate.
+- The answers to Questions 1–9 still hold where FD-105 does not change them: one Unit per task for the Units that stay whole (Q1), merged work as the baseline (Q2), and FD-071, FD-072, FD-073, FD-074, FD-075 and FD-091 (Q4–Q9). Q3 changes: T-106 is deferred and its checks move into Build and Test (Q14), and T-505 is part of U50.
+
+## Question 10
+
+How are the tasks FD-105 combines represented, given that Unit IDs are frozen?
+
+A. Five new Units take the next free IDs, U46–U50 (directory, reviews, evidence, comments, release check), with kebab-case names `u46-directory`, `u47-reviews`, `u48-evidence`, `u49-comments`, `u50-release-check`. The Units they replace keep their IDs with the status "merged into U4x (FD-105)", and their task files stay the specification of their part (recommended: no ID is renumbered or reused, and the trace from task to Unit stays readable)
+B. Keep the lowest old ID of each group (for example U14 for the directory) and fold the others into it
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 11
+
+What does the DAG list, and what happens to edges that point at merged or deferred Units?
+
+A. The DAG lists only the 10 active Units. Merged Units are the baseline and get no edge. Every edge to a deferred Unit is cut, and `unit-of-work-dependency.md` lists each cut with how release 1 satisfies it: a constant, a dropped part, or an edge turned the other way (recommended: the swarm builds exactly the release-1 Units, and nothing waits on a release-2 Unit)
+B. Keep the deferred Units in the DAG so the topology stays complete
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 12
+
+The project rule forbids building two Units in parallel when they touch the same files. Almost every Unit appends to the i18n message files and `container.ts`, and several add a migration. What does "the same files" mean for the DAG?
+
+A. Owned paths must not overlap between Units that run in parallel; where two Units would edit the same file, the DAG has an edge between them. A short list of shared registry files (the i18n message files, `container.ts` wiring, `data.ts` bindings, `patient.css` `added:` blocks, package barrels, the worker registry, `ISSUES.md` rows) is append-only and not owned by any Unit, so touching it is not a collision; the swarm merges one Unit at a time and each rebases first. Migrations take the next free number at merge time (recommended: this is how the 2026-10-29 parallel batches were planned, and reading the rule literally would make every Unit serial)
+B. Treat every shared file as a collision and add an edge for it, so release 1 is built one Unit at a time
+X. Other (please specify)
+
+[Answer]: A. Written into `unit-of-work-dependency.md` ("Shared files and the collision rule"); listed as a point for the owner to confirm, because it reads a project rule.
+
+## Question 13
+
+Evidence (U48) attaches documents to a review, and the composer (U47) shows the upload. Which comes first?
+
+A. U48 after U47. Evidence attaches to the author's own review by `review_id`, and the intake checks authorship through the review module U47 builds. U47 keeps mounting the evidence components already on `main`, and U48 replaces their internals later without editing U47's files (recommended: the authorship check on a high-risk Unit never rests on a stub)
+B. U48 in parallel with U47, through an authorship port that U48 declares and a stub answers until U47 lands
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 14
+
+What happens to the checks of T-106 (deferred) and the settings of T-105 (deferred)?
+
+A. T-106's auth rows run in U9's Build and Test and its identity rows in U11's; its staff-access and configuration rows are deferred with T-103 and T-105. Every T-105 setting a release-1 Unit reads stays a constant: `DEFAULT_CONFIG_VALUES` through the defaults-only `ConfigProvider` U8 wired, or a named constant in its module; each is listed in `unit-of-work.md` and recorded as an `S4` row (recommended: no check is lost, and release 2 can find every constant)
+B. Keep T-106 as a validation Unit after U9 and U11
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 15
+
+How does FD-100's "Add a doctor who isn't listed" work in release 1 while T-204 is deferred?
+
+A. The command that creates the member-added doctor moves from the demo slice into U46's Directory module, which owns the doctors and submissions tables; U47's composer calls it, and U46's pages keep the "Added by a member — not confirmed" mark (recommended: one module writes its own tables, and the T-201 review's Major 2 is closed in the same Unit)
+B. Leave the demo slice's code in place until T-204
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 16
+
+Does FD-101's free-text topic match carry into the taxonomy counting rules of U46 (T-201 review, Major 1)?
+
+A. Yes. FD-101 is binding, and dropping the match would change the counts on pages already on `main`; dropping it later needs an FD entry first (recommended)
+B. No; count only term tags and record a new FD entry
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 17
+
+Which kind does each Unit get?
+
+A. U9 and U20 `ui`, U11 and U41 `library`, U50 `spec`; U22, U46, U47, U48 and U49 untagged, because each carries a domain module and its pages and needs the full Functional Design set (entities, rules, functional spec and frontend components) (recommended)
+B. Tag every Unit with its main kind
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 18
+
+How much of T-503's end-to-end scope does U50 keep?
+
+A. The release-1 storyboard parts walked in `en` and `bn` on Chromium at 360 px and desktop, axe on every walked page, keyboard runs of register, sign-in and the composer, reduced motion and `check:motion`, and the NFR13 gate on the home and experience pages (FD-091 made it a gate; removing it needs an FD). Deferred: Firefox and WebKit, the full viewport and screenshot matrix, the staff and workspace journeys, the search page, and `e2e.yml` (FD-102) (recommended)
+B. Keep all of T-503's suites, with steps for deferred pages marked as skipped
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 19
+
+What do the narrowed Units leave out where the brief did not say?
+
+A. U9 keeps all of T-102 (its Terms and Privacy pages stay U20's, already merged). U11 also defers `identity.deidentify`, whose only caller is T-410. U22 has no review deletion at all in release 1 (deletion with comments needs the deferred tombstone). U49 shows URLs as plain text, without the warned-link step. U20 drops the home search box. U41 also defers `assertAppMode` and the per-command rate-limit table; release-1 limits are module constants on T-101's limiter. U48's pipeline ends after a clean scan; originals stay in quarantine with no expiry job until T-309, recorded as an `S4` row (recommended: each is the narrower, reversible choice)
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 20
+
+Is U41 (security hardening) high risk?
+
+A. Yes: it changes the session cookie attributes and guards the evidence upload route, both in the high-risk classes, so it runs with collaborators on, 3–5 adversarial tests and the owner's sign-off (recommended)
+B. No, as in the earlier plan
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 21
+
+How is the demo slice's code retired when several Units replace parts of it?
+
+A. Each Unit retires the demo functions inside its owned paths once nothing outside them calls them, and removes only its own binding line in `data.ts`; U50 removes any demo function left without a caller (recommended: no Unit edits another Unit's files to delete code)
+X. Other (please specify)
+
+[Answer]: A

@@ -101,3 +101,69 @@ B. Build the patient pages on the old look first and restyle them all at the end
 X. Other (please specify)
 
 [Answer]: A
+
+## Revision 2026-11-04 (FD-105)
+
+The owner cut release 1 to the backlog's R1 plus simple comments: 10 active Units in 5 dependency levels, built in parallel where they do not collide (FD-105, FD-094). Units Generation and Contract Design were re-approved. The owner delegated approvals to the agent on 2026-11-04 (`docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`), so each question below is answered with the recommended option under that delegation; the owner can overturn any answer.
+
+Answers 1–9 above: Q1 (value-first), Q2 (no WSJF), Q3 (one Unit per Bolt), Q7 and Q8 still stand. Q4 (Bolt 0) and Q9 (T-011) are done. Q5 and Q6 move to release 2 with U39 and U29. The earlier "one Unit at a time" (D13) is replaced by FD-094.
+
+## Question 10
+
+Inside the five dependency levels, which Bolts go first?
+
+A. Critical-path-first: the chain U46 → U47 → U48 → U41 → U50 starts and merges as early as possible; U9, U11, U20, U22 and U49 fill the parallel slots beside it (recommended: the chain sets the finish date, the others do not)
+B. Strict level by level: every Bolt of a level merges before the next level starts
+X. Other (please specify)
+
+[Answer]: A (delegated by the owner on 2026-11-04)
+
+## Question 11
+
+How many Bolts run at the same time?
+
+A. At most three, the widest level, with the full `pnpm check` runs staggered (recommended: one 12-core PC also runs PostgreSQL, ClamAV and Mailpit; more parallel builds would slow every one of them)
+B. Up to six, one per test database
+X. Other (please specify)
+
+[Answer]: A (delegated by the owner on 2026-11-04)
+
+## Question 12
+
+In what order are the Bolts of a batch merged?
+
+A. One at a time, first ready first merged, except that a critical-path Bolt merges the moment it is ready; each rebases on the current `main`, takes the next free migration number, and reruns `pnpm check` before and after the squash merge (recommended)
+B. All Bolts of a batch together in a fixed order at the end of the batch
+X. Other (please specify)
+
+[Answer]: A (delegated by the owner on 2026-11-04)
+
+## Question 13
+
+U47 reviews is XL (14–18 h build) and on the critical path. Split it?
+
+A. Keep it as one Bolt, as Units Generation approved; settle its open points in Functional Design first, and commit in internal steps (module core, composer, experience page) on its branch; if it overruns by more than a day, propose a split as a Units Generation revision (recommended: a split now reopens two approved stages)
+B. Split it now into a module Bolt and a pages Bolt
+X. Other (please specify)
+
+[Answer]: A (delegated by the owner on 2026-11-04)
+
+## Question 14
+
+Who signs off the high-risk Units (U9, U11, U48, U41)?
+
+A. The agent writes the sign-off after the adversarial tests, labelled "delegated by the owner on 2026-11-04", never presented as the owner's own; the owner can reopen it (recommended: matches the delegation)
+B. Hold each high-risk merge for the owner's own sign-off
+X. Other (please specify)
+
+[Answer]: A (delegated by the owner on 2026-11-04)
+
+## Question 15
+
+Is anything outside the build going to hold it up now?
+
+A. Only the local machine: Docker with PostgreSQL, Mailpit and ClamAV, the six test databases, the PC staying on; the owner's Bengali copy review stays with the owner and does not block the build (recommended; see `external-dependency-map.md`)
+B. There is more (please specify under Other)
+X. Other (please specify)
+
+[Answer]: A (delegated by the owner on 2026-11-04)

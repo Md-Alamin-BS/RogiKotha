@@ -266,3 +266,67 @@ B. Remove the deferred operations from the contracts
 X. Other (please specify)
 
 [Answer]: A
+
+## Revision 2026-11-04 (FD-105)
+
+Context: FD-105 cuts release 1 to 10 active Units and defers 18 (`unit-of-work.md`, `unit-of-work-dependency.md`, both re-approved on 2026-11-04). Units Generation added seams so U22, U48 and U49 can be built in parallel. The owner delegated these answers on 2026-11-04: each is decided by its recommendation.
+
+## Question 23
+
+How does the contract summary carry FD-105?
+
+A. Give every contract a **Release** line (release 1 with its active provider and consumers, or "deferred to release 2 (FD-105)"), keep the text of every deferred contract and operation, write release-1 amendments as blocks after the original blocks, and give the new seams the next free IDs C16–C19 (recommended: contract IDs stay frozen and release 2 resumes from the same text)
+B. Rewrite the summary for release 1 only and move deferred contracts to an archive file
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 24
+
+Release-1 commands publish events whose consumers are deferred (search, notifications, moderation): `review.published`, `review.changed`, `doctor.changed`, `term.changed`, `evidence.stateChanged`, `comment.posted`. What do they do?
+
+A. Keep appending them through the Outbox in the same transaction, with `jobs: []` in the release-1 relay map and only the id and enum fields release 1 can fill; `repeatEpisode` and the recipient fields return in release 2 as additive fields (recommended: the outbox pattern stays uniform, and release 2 only adds routes and optional fields)
+B. Publish nothing until release 2 adds the consumers
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 25
+
+Shape of U47's seams `isReviewAuthor(reviewId, actor)` and `isReviewPublished(reviewId)`.
+
+A. Internal queries in the review module that run in the caller's transaction or read connection and return a plain boolean: false for an unknown id, a non-account actor or an unpublished review, never an error. The authorship check goes through Identity's private linkage, not a direct read of `persona_links` (recommended: nothing leaks whether another person's review exists, and U48 can check inside its intake transaction)
+B. `defineQuery` operations returning `Result` with `not_found` and `forbidden`
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 26
+
+Contract of the experience page slots `<CommentThread>`, `<EvidenceSection>`, `<ReviewHistory>` and of U9's gate.
+
+A. Async server components whose only prop is `reviewPublicId`; each reads its locale and actor and loads its own data, renders its own bilingual fallback and never throws into the page; name, path and props are frozen at U47's merge. The gate takes `{purpose: write | comment, returnTo}` and reads the actor itself (recommended: the owning Unit changes internals alone, which is what lets U22, U48 and U49 run in parallel)
+B. The page loads the data and passes it as props
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 27
+
+Contract of the `PublicEvidenceCount` port.
+
+A. `countPublicEvidence(reviewId): Promise<number>`, plus an optional batched `countPublicEvidenceByReview(reviewIds)` only if U46's Functional Design needs it; frozen at U46's merge; the interim binding keeps today's demo meaning, and after U48 it counts the states in `PUBLIC_EVIDENCE_STATES` in `packages/domain/src/evidence/`; no other module reads `evidence_items` (recommended: a single number keeps the public page to the note and the count, FR56)
+B. Return a breakdown per state
+X. Other (please specify)
+
+[Answer]: A
+
+## Question 28
+
+Shape of U46's member-added doctor command (FD-100).
+
+A. `directory.addMemberDoctor`, an internal command that runs inside `review.publish`'s transaction, returns `{doctorId, reused}`, reuses a matching published doctor by FD-100's rule, keeps the BMDC number in the submission payload only, and appends `doctor.changed` when it creates a doctor (recommended: the doctor, its pending submission and the review commit or fail together, as the demo slice does now)
+B. A separate command the composer calls before publishing
+X. Other (please specify)
+
+[Answer]: A

@@ -4,6 +4,8 @@ The formal contracts between the 44 Units of `unit-of-work.md`, along the edges 
 
 Answers: `contract-design-questions.md` Q1–Q21 (all A except Q10 = B and Q13 = B). Decisions: FD-076..FD-087 in `docs/status/decision-log.md`. Earlier decisions written in, not re-asked: FD-041, FD-050, FD-064..FD-075.
 
+**Revision 2026-11-04 (FD-105):** release 1 is built by 10 active Units (U9, U11, U46, U20, U47, U22, U48, U49, U41, U50) on the merged baseline (U1–U8, U45 and the demo slice); 18 Units are deferred to release 2 and 13 are merged into U46–U50 (`unit-of-work.md`). Each contract below carries a **Release** line: release 1 with its active provider and consumers, or "deferred to release 2 (FD-105)". A deferred contract or operation keeps its full text so release 2 resumes it unchanged; a "built by" that names a merged-into Unit (U14–U16, U21, U23, U24, U26, U27, U30, U31) now reads as its new Unit (U46, U47, U48, U49). Units Generation added the release-1 seams as C16–C19 and as new operations in C4, C7 and C9. Answers: Q23–Q28 (dated section of the questions file). Contract IDs C1–C15 are unchanged.
+
 ## How to read the contracts
 
 - **Grouping (Q1):** one contract per provider component (C1–C13), plus the external HTTP API (C14) and the outbox events and jobs (C15).
@@ -37,10 +39,18 @@ Answers: `contract-design-questions.md` Q1–Q21 (all A except Q10 = B and Q13 =
 | C13 | U39 T-410 | U41, U43 | in-process commands and queries; `data.export` and `data.delete` jobs | DataRequests (U39) |
 | C14 | U8, U18, U23, U25, U29, U39; `/api/health` is baseline (T-008) | External: public web (browser), External: staff console; U19, U26, U28, U36, U38, U41, U43 | synchronous HTTP (OpenAPI) | each route's builder; the OpenAPI block here is owned by Contract Design |
 | C15 | U34 T-405 (envelope, notification routes); U4 CR-011 (transactional relay); each publisher owns its event's payload | worker jobs; every publishing Unit | async events (AsyncAPI), outbox → pg-boss | Notification (U34) |
+| C16 | U47 reviews (the experience page and the three slots); slot internals U48, U49, U22; U9 T-102 (gate component) | U47 (mounts slots and gate), U49 (mounts gate), U48, U49, U22 (own slot internals) | UI composition: React server components with frozen props | Review (U47); each slot's internals by its owning Unit |
+| C17 | U46 directory (declares the port, interim binding); U48 evidence (implementation, swaps the binding) | U46 (doctor cards and profiles), U47 (`<EvidenceSection>`, experience cards) | in-process port | Directory (U46) declares; Evidence (U48) implements |
+| C18 | U8 T-101 (defaults-only `ConfigProvider`, merged); each reading Unit owns its module constant | U20, U46, U47, U48, U49, U41 | in-process constants and the `ConfigProvider` port | Administration (U12, release 2); release 1: the reading Unit |
+| C19 | U8 T-101 (merged baseline) | U9, U11, U46, U47, U48, U49, U41 | in-process ports and command helpers | Account (U8) |
 
 Edges without a runtime contract (build order only): edges to U1 CR-009, U2 CR-007, U3 T-010, U6 CR-012 and U7 CR-004 (tooling, seed and copy fixes); edges between UI Units (U9, U15, U16, U19, U20, U26, U27, U28, U31, U35, U36, U37, U38, U40), which share components and layouts, not domain contracts; and edges to U13, U41, U42 and U43 (validation and hardening Units). Edges to U4 CR-011 map to C15, and edges to U5 CR-006 map to C2 (mail recipients through `to_email_enc`, FD-041). U14 provides two components, so its edges map to C6 and C7.
 
+Release-1 edges (FD-105, `unit-of-work-dependency.md`): U47 → U46 maps to C6, C7, C9 (read-side stub) and C17; U47 → U11 to C4; U47 → U9 to C16 (gate); U20 → U46 to C6, C7 and C9 (`listExperienceCards`); U22 → U47 to C9 and C16; U48 → U47 to C9 (`isReviewAuthor`) and C16; U49 → U47 to C9 (`isReviewPublished`) and C16; U49 → U11 to C4; U49 → U9 to C16 (gate); U41 → U48 to C14; U50 → every active Unit is a release check with no runtime contract. Every active Unit uses C19 and, where it reads a setting, C18.
+
 ### C1 — Administration
+
+**Release:** deferred to release 2 (FD-105), with U12, U29, U33 and U37. Release 1 uses only the baseline: `AuditWriter` (every release-1 command writes its audit row) and U8's defaults-only `ConfigProvider.current()` (C18).
 
 ```yaml
 contract: C1 Administration
@@ -125,6 +135,8 @@ ports_declared:
 
 ### C2 — Notification
 
+**Release:** deferred to release 2 (FD-105), with U34. Release 1 keeps only what U8 merged: the essential-email queueing inside the account commands (verification, reset, security) and the worker's `mail.send` job; consumer U9, whose screens call those commands. No release-1 Unit queues discussion, moderation or evidence email.
+
 ```yaml
 contract: C2 Notification
 provider_component: Notification
@@ -198,6 +210,8 @@ ports_declared:
 ```
 
 ### C3 — Retention
+
+**Release:** deferred to release 2 (FD-105), with U29. Release 1 has no expiry job, no legal holds and no custody log; `retention.originalDays` is a constant that nothing enforces (C18).
 
 ```yaml
 contract: C3 Retention
@@ -281,6 +295,8 @@ ports_declared:
 
 ### C4 — Identity
 
+**Release:** release 1, provider U11. Consumers: U47 (`personaFor` and `publicProjection` for bylines and the composer's persona choice), U49 (`personaFor` and `publicProjection` for comment authors); U11 itself switches `account.register` to `createDefaultPersonas`. Deferred to release 2 (FD-105), with U10, U33, U34 and U39: `identity.reveal`, `identity.deidentify`, `identity.accountsOf`, `identity.personasOf` and the `RevealTarget` and `RevealContact` ports. The release-1 amendment of `personaFor` and the added `renameNamed` follow the block.
+
 ```yaml
 contract: C4 Identity
 provider_component: Identity
@@ -342,7 +358,34 @@ ports_declared:
     implemented_by: Account, built by U11 in modules/account
 ```
 
+Release-1 amendment (FD-105, Q25):
+
+```yaml
+contract: C4 Identity, release 1
+operations:
+  - name: identity.personaFor
+    kind: query (internal)
+    input: "{accountId, reviewId?, mode: IdentityMode}"
+    result: "{personaId}"
+    rules:
+      - "mode named or pseudonymous returns the account's default persona of that kind; reviewId is ignored"
+      - "mode anonymous requires reviewId (the thread scope); the same (accountId, reviewId) always returns the same alias, another reviewId never does (FD-015); created on first use in the caller's transaction"
+      - "a comment by the review's own author in an anonymous thread resolves with the review's reviewId, so it shows the thread alias"
+    errors: "none expected; a missing reviewId with mode anonymous is a programmer error"
+    callers: "U47 (composer publish, replacing the demo createPseudonymousPersona); U49 (comment.post)"
+    built_by: U11
+  - name: identity.renameNamed
+    kind: command
+    input: "{displayName}"
+    requires: account
+    audit: identity
+    built_by: U11
+    consumers: "none in release 1 beyond U11's own tests; the profile entry point comes with U38"
+```
+
 ### C5 — Account (with staff access)
+
+**Release:** release 1 for the account commands and queries and `actor_shape`, provided by U8 (merged); consumers U9 (screens), U11 (register), U47, U48 and U49 (the `Actor`, its `emailVerified` and `status`). The T-101 ports and helpers behind them are C19. Deferred to release 2 (FD-105): `stepUp`, the `staff.*` operations and `capabilitiesOf` (U10), `account.deleteAccountStep` (U39), `account.applyEnforcement` (U33) and `account.blocksBetween` (blocks are deferred with U49's deferred part).
 
 ```yaml
 contract: C5 Account
@@ -383,10 +426,12 @@ operations:
     result: "Capability[]"
     notes: "Super Admin fixed in code; only the Admin/Moderator identity.reveal and evidence.original toggles are configurable (FD-016, FD-022); retention.bulk super_admin only (FD-051)"
     built_by: U10
-actor_shape: "Actor {kind: anonymous | account | staff | system, accountId?, status?, verifiedEmail, staffRole?, capabilities, stepUpAt?}"
+actor_shape: "Actor {kind: anonymous | account, accountId?, personaId?, emailVerified?, status?, staffRole?, capabilities: Capability[], stepUp?: {rechecked_at}, refusal?: suspended | banned, locale, correlationId} (exactly packages/contracts/src/actor.ts; staff are accounts with a staffRole, there is no staff or system kind)"
 ```
 
 ### C6 — Taxonomy
+
+**Release:** release 1, provider U46. Consumers: U47 (`resolve`, `listSuggested` and `createProvisional` for the composer's condition tags), U20 (`listConditions`). The `ConditionStats` port is release 1, declared and implemented by U46 (read-side Review stub). `createProvisional` is limited by the C18 constant. Deferred to release 2 (FD-105): `taxonomy.mapProvisional`, a staff action (with U10 and U35).
 
 ```yaml
 contract: C6 Taxonomy
@@ -419,6 +464,8 @@ ports_declared:
 ```
 
 ### C7 — Directory
+
+**Release:** release 1 for the six directory queries and the `ProviderExperience` port, provider U46; consumers U20 and U47. U47 adds its review queries beside U46's read-side stub without rewriting it. Added for release 1: `directory.addMemberDoctor` (FD-100), consumer U47, specified after the block. Deferred to release 2 (FD-105), with U17 and U33: `submitProfile`, `claimProfile`, the `decide*` and `list*` operations, `proposeFieldChange`, `setProfileState`, `deidentify` and the `ProfileMergeParticipant` port.
 
 ```yaml
 contract: C7 Directory
@@ -463,7 +510,30 @@ ports_declared:
     implemented_by: Review, built by U17 in modules/review (FD-067; U17's owned paths change accordingly)
 ```
 
+Release-1 addition (FD-100, FD-105, Q28):
+
+```yaml
+contract: C7 Directory, release 1
+operations:
+  - name: directory.addMemberDoctor
+    kind: internal (runs in the caller's transaction)
+    input: "AddMemberDoctorInput {name, specialtyId?, practiceArea?, bmdcNumber?}"
+    result: "{doctorId, reused: boolean}"
+    rules:
+      - "reuse a published doctor whose name matches after trimming, lowercasing, collapsing spaces and removing a Dr./Prof./ডাঃ/ডা. title, with at least three letters left, when the specialties agree or one is blank; otherwise create the doctor published with community provenance and a pending profile_submissions row (FD-100)"
+      - "the name is stored as typed, not translated (FD-024); bmdcNumber stays in the submission payload only and is never returned or shown"
+      - "DoctorCardVM and DoctorProfileVM carry memberAddedNotConfirmed, derived from a pending profile_submissions.created_doctor_id, shown next to Registration not verified"
+    errors: [validation]
+    requires: "verified, checked by the calling command"
+    audit: "directory:<doctorId> action memberAdded (only when created)"
+    outbox: "doctor.changed {id} (only when created)"
+    caller: "review.publish (U47), so the doctor, the submission and the review commit or fail together; it replaces the demo createQuickReviewWithNewDoctor"
+    built_by: U46
+```
+
 ### C8 — Evidence
+
+**Release:** release 1 for `evidence.intake`, `getForAuthor`, `remove` by the owner and the `evidence.process` job (validate and scan only), provider U48. Consumers: U47 (mounts the evidence components and `server/actions/evidence.ts` with their current props), U41 (origin check and limit tests on the upload route). Added for release 1: `countPublicEvidence` (C17). The release-1 amendments follow the block. Deferred to release 2 (FD-105), with U25, U28, U29, U36 and U39: `applyRedaction`, `confirmPrivacy`, `getPublic`, `readOriginal`, `remove` by a moderator, `listForStaff`, `evidence.publish`, `evidence.presenceForReview`, and the sanitise and preview steps of the job.
 
 ```yaml
 contract: C8 Evidence
@@ -502,7 +572,32 @@ jobs:
 ports_implemented: "Retention.RetentionSubject (evidence, built by U29); Administration.OperationalCounts (evidence metrics, built by U37/U35); Search.EvidencePresence (U25)"
 ```
 
+Release-1 amendments (FD-105):
+
+```yaml
+contract: C8 Evidence, release 1
+operations:
+  - name: evidence.intake
+    input: "stream + IntakeEvidenceInput {reviewId, group, declaredMime, declaredName, bytes, idempotencyKey}"
+    changes: "takes the internal reviewId: the upload route (C14) resolves the form's reviewPublicId once through Review.reviewIdForPublicId (C9) and passes reviewId in; attaches to the author's own published review, not to a draft; authorship is checked with Review.isReviewAuthor(reviewId, actor) in the same transaction (C9); a review the actor did not write answers not_found; JPEG and PNG only (FD-036); limits from packages/domain/src/evidence/limits.ts (C18)"
+    errors: [evidence.too_many, evidence.too_large, evidence.total_too_large, evidence.type_rejected, not_found]
+    built_by: U48
+  - name: "evidence.getForAuthor | evidence.remove (owner)"
+    notes: "the author sees each item's state and, for a rejected or failed item, its reason, with Remove; nothing else shows it (FR66)"
+    built_by: U48
+  - name: evidence.countPublicEvidence
+    kind: query (implements C17)
+    built_by: U48
+jobs:
+  - name: evidence.process
+    behaviour: "validate (extension, MIME, magic bytes, size, decode), then scan through scanner-clamd; fails closed: scanner unavailable leaves the item where it is and the job retries; when the retries run out with the scanner still down, the item ends failed with fail_reason scan_unavailable, which its author sees as Could not be checked — try again later (an i18n key in both languages) and which is never public or counted; infected goes to rejected with a reason; the pipeline ends after a clean scan in the state U48's Functional Design names from EVIDENCE_STATES; appends evidence.stateChanged; no notification (FD-070 in-app part deferred); retryLimit 3, 120 s per item"
+    built_by: U48
+public_display: "only the note Documents attached — not medically validated and the count from C17; no file, preview or processed copy is served publicly, and no route serves an original (FR65)"
+```
+
 ### C9 — Review
+
+**Release:** release 1, providers U47 (drafts, publish, projection, the experience page and index) and U22 (`review.correct` and the history query); U46 builds the read-side stub (the distribution queries, `listExperienceCards`, and the `ProviderExperience` and `ConditionStats` implementations). Consumers: U20 (`listExperienceCards`), U22 (extends the module), U46 (through its ports), U48 (`isReviewAuthor`), U49 (`isReviewPublished`). Added for release 1: `reviewIdForPublicId`, `isReviewAuthor`, `isReviewPublished` and `review.getHistory`, specified after the block. Deferred to release 2 (FD-105): `addFollowUp`, `delete`, `restore`, `setState`, `redact`, `facilityReview.setState`, `deletionStep`, the `DiscussionPresence` port, the `repeatEpisode` flag (U47 stores nothing for it), and the `ProfileMergeParticipant`, `RevealTarget`, `RetentionSubject` and `OperationalCounts` implementations.
 
 ```yaml
 contract: C9 Review
@@ -556,7 +651,50 @@ ports_declared:
 ports_implemented: "Directory.ProviderExperience and ProfileMergeParticipant, Taxonomy.ConditionStats, Retention.RetentionSubject (built by U29), Identity.RevealTarget, Administration.OperationalCounts"
 ```
 
+Release-1 additions and amendments (FD-105, Q24, Q25):
+
+```yaml
+contract: C9 Review, release 1
+review_ids: "two ids, never mixed: reviewPublicId is the only id the browser, pages, slots, route handlers and server actions see; reviewId (internal uuid) is the only id module-to-module seams take. A boundary that receives reviewPublicId resolves it once through reviewIdForPublicId and passes reviewId inward; a null result is answered as not_found"
+operations:
+  - name: reviewIdForPublicId
+    kind: query (internal, modules/review/queries/review-id-for-public-id.ts)
+    input: "(read context, {publicId})"
+    result: "reviewId | null"
+    rules: "null for an unknown publicId; it says nothing about state or author (callers then ask isReviewPublished or isReviewAuthor); never an error"
+    callers: "U47 (experience page, edit link); U48 (upload route, EvidenceSection); U49 (comment.post, community.thread); U22 (ReviewHistory, review.correct)"
+    built_by: U47
+  - name: review.publish
+    changes: "refuses an account without a confirmed email in the application layer (requires verified); persona from identity.personaFor (C4); a new doctor through directory.addMemberDoctor in the same transaction (C7); no evidence step (U48 attaches afterwards); outbox review.published {reviewId, doctorId, branchId?} without repeatEpisode, which returns as an additive field in release 2; limit from the C18 constant"
+    built_by: U47
+  - name: isReviewAuthor
+    kind: query (internal, modules/review/queries/is-review-author.ts)
+    input: "(read context, {reviewId, actor: Actor})"
+    result: boolean
+    rules: "true only for an actor of kind account whose account owns the review's author_persona_id, checked through U11's PrivateIdentityRepository (persona_links is Identity's; the review module never reads it directly; see Open questions); false for an anonymous actor and for an unknown id; an account with a staffRole is judged like any account (no staff bypass); never an error, so it reveals nothing about other reviews; runs in the caller's transaction or read connection"
+    callers: [U47 (edit link on the experience page), U22 (review.correct), U48 (evidence.intake)]
+    built_by: U47
+  - name: isReviewPublished
+    kind: query (internal, modules/review/queries/is-review-published.ts)
+    input: "(read context, {reviewId})"
+    result: boolean
+    rules: "true only when the review is in the published state; false for an unknown id; never an error"
+    callers: [U49 (comment.post)]
+    built_by: U47
+  - name: review.correct
+    changes: "release 1 is FR69 only: a presentation edit sets editedAt; a material change to diagnosis, treatment or outcome adds a dated correction with the original still readable; every saved version is kept; authorship through isReviewAuthor; queues no email (FD-105); outbox review.changed {reviewId, doctorId, branchId?}"
+    built_by: U22
+  - name: review.getHistory
+    kind: query (modules/review/queries/get-history.ts)
+    input: "{reviewPublicId}, resolved once through reviewIdForPublicId; null answers not_found"
+    result: "{editedAt?, corrections: [{at, field}], versions: [{version, at}]} (versions for the author only)"
+    caller: "<ReviewHistory> slot (C16)"
+    built_by: U22
+```
+
 ### C10 — Community
+
+**Release:** release 1 for `comment.post` (narrowed), `comment.delete` by the author and `community.thread`, provider U49; the consumer is U49's own `<CommentThread>` slot (C16). The release-1 amendments follow the block. Deferred to release 2 (FD-105): mentions, `comment.edit`, `block.set`, `block.unset`, `community.reactionsOf`, `reaction.set`, `comment.setState`, `community.deletionStep`, the `ModerationSignals` port and the `DiscussionPresence` implementation.
 
 ```yaml
 contract: C10 Community
@@ -600,7 +738,32 @@ ports_declared:
 ports_implemented: "Review.DiscussionPresence, Identity.RevealTarget (comment), Retention.RetentionSubject (built by U29)"
 ```
 
+Release-1 amendments (FD-105, Q24):
+
+```yaml
+contract: C10 Community, release 1
+operations:
+  - name: comment.post
+    input: "PostCommentInput {reviewPublicId, parentId?, body}; supersedes the reviewId field of the block above for release 1"
+    changes: "resolves reviewPublicId once through Review.reviewIdForPublicId (C9), then works with reviewId only; plain text; one reply level; the review must be published, checked with Review.isReviewPublished(reviewId) (C9), else not_found (also for an unknown publicId); persona from identity.personaFor (C4) with the review's reviewId; no mentions, no blocks, no discussion email; limit from the C18 constant on T-101's RateLimiter; outbox comment.posted {commentId, reviewId} only, the recipient fields return additively in release 2 with T-405"
+    errors: [community.reply_depth, rate_limited, not_found]
+    requires: verified (confirmed email) + account status active
+    built_by: U49
+  - name: comment.delete
+    kind: command (author only)
+    behaviour: "a comment with replies becomes a Comment deleted placeholder; one without replies is removed (FR72)"
+    built_by: U49
+  - name: community.thread
+    kind: query
+    input: "{reviewPublicId}, resolved once through Review.reviewIdForPublicId (C9); an unknown or unpublished review gives an empty thread with no form"
+    result: "ThreadVM: comments with persona projections only, never an account id or an internal reviewId"
+    caller: "<CommentThread> slot (C16)"
+    built_by: U49
+```
+
 ### C11 — Moderation
+
+**Release:** deferred to release 2 (FD-105), with U32 and U33. Release 1 has no reports, cases, hides or appeals, which is why it is not for unrestricted public launch.
 
 ```yaml
 contract: C11 Moderation
@@ -665,6 +828,8 @@ ports_implemented: "Community.ModerationSignals, Identity.RevealTarget (report �
 
 ### C12 — Search
 
+**Release:** deferred to release 2 (FD-105), with U18 and U19. Release 1 has no search page and no search box; the home shows browse entry points.
+
 ```yaml
 contract: C12 Search
 provider_component: Search
@@ -702,6 +867,8 @@ ports_declared:
 ```
 
 ### C13 — DataRequests
+
+**Release:** deferred to release 2 (FD-105), with U39. Release 1 has no account export and no account deletion.
 
 ```yaml
 contract: C13 DataRequests
@@ -745,6 +912,8 @@ worker_grants: "no new grants for deletion (Q16); CR-006's FD-050 review judges 
 ```
 
 ### C14 — External HTTP API
+
+**Release:** release 1 for `/api/auth/{all}` (U8, merged), `/api/health` (baseline) and `/api/evidence/upload`, which U48 builds (the route does not exist on `main` yet; the demo slice uploads through a server action) and U41 hardens with the origin check and limit tests; consumers: U47's composer and U48's own author components. Deferred to release 2 (FD-105): the preview, artifact and original routes (U25), `/api/search/suggest` (U18), `/api/data-requests/{id}/download` (U39) and `/api/demo/clock` (U29). The release-1 amendment of the upload route follows the block.
 
 ```yaml
 openapi: 3.1.0
@@ -828,7 +997,11 @@ paths:
         '404': { description: in production mode }
 ```
 
+Release-1 amendment (FD-105): `/api/evidence/upload` is built by U48 (not U23). Its multipart form carries `reviewPublicId` (the author's own published review) instead of a draft id; the route resolves it once through `reviewIdForPublicId` (C9) and calls `evidence.intake` with the internal `reviewId`, one call per file. An unknown `reviewPublicId` answers `404`. U41 adds the origin check and refuses an oversized request before the body is read. Answers: `200` `[{itemId, state: quarantined}]`; `400` the four `evidence.*` codes; `401` signed out; `403` unconfirmed account or a failed origin check; `404` a review that is not the actor's own.
+
 ### C15 — Outbox events and jobs
+
+**Release:** release 1 for the relay (U4, merged), `mail.send` (U8, merged) and `evidence.process` (U48, validate and scan only). Release-1 publishers keep appending their events in the same transaction as the change (Q24): U8 `account.*` (merged), U46 `doctor.changed` and `term.changed`, U47 `review.published`, U22 `review.changed`, U48 `evidence.received` and `evidence.stateChanged`, U49 `comment.posted`. Every other event and job is deferred to release 2 (FD-105). The release-1 relay map follows the block.
 
 ```yaml
 asyncapi: 3.0.0
@@ -888,11 +1061,179 @@ jobs:
 
 Text fallback: the table above is the whole contract; the YAML adds the payload fields and job owners.
 
+Release-1 relay map (FD-105, Q24). Events not listed are not published in release 1.
+
+```yaml
+asyncapi: 3.0.0
+info:
+  title: RogiKotha outbox events and worker jobs, release 1
+  version: release-1
+channels:
+  account.registered:    { payload: '{accountId}', jobs: [], publisher: U8 (merged) }
+  account.securityEvent: { payload: 'as C15', jobs: [], publisher: U8 (merged), note: 'notification.deliver is release 2; the email is queued by the web command' }
+  doctor.changed:        { payload: '{id}', jobs: [], publisher: U46 (addMemberDoctor) }
+  term.changed:          { payload: '{id}', jobs: [], publisher: U46 (createProvisional) }
+  review.published:      { payload: '{reviewId, doctorId, branchId?}', jobs: [], publisher: U47 }
+  review.changed:        { payload: '{reviewId, doctorId, branchId?}', jobs: [], publisher: U22 }
+  evidence.received:     { payload: '{itemId}', jobs: [evidence.process], publisher: U48 }
+  evidence.stateChanged: { payload: '{itemId, reviewId?, state}', jobs: [], publisher: U48, note: 'no account id in release 1; uploaderAccountId returns with T-405 in release 2' }
+  comment.posted:        { payload: '{commentId, reviewId}', jobs: [], publisher: U49 }
+jobs:
+  outbox.relay:    { schedule: every 2 s, owner: U4 (merged) }
+  mail.send:       { owner: U8 (merged) }
+  evidence.process: { owner: U48, retry: '3, 120 s per item' }
+```
+
+Release 2 adds the routes and the payload fields of C15 above; both are additive (new jobs on an existing event, new optional fields), so release-1 rows stay valid.
+
+### C16 — Patient UI composition seams
+
+**Release:** release 1 (new, FD-105). Provider of the page and the three slots: U47; it hands each slot's folder to its owner when it merges. Slot internals: U48 (`<EvidenceSection>`), U49 (`<CommentThread>`), U22 (`<ReviewHistory>` and the edit route). Gate component: U9; consumers U47 (composer) and U49 (comment form).
+
+```yaml
+contract: C16 Patient UI composition seams
+mechanism: React server components mounted by the experience page; props frozen (Q26)
+slots:
+  - name: CommentThread
+    path: apps/web/src/components/patient/comments/CommentThread.tsx
+    props: "{reviewPublicId: string}"
+    data: "community.thread (C10); until U49 merges, the demo comments binding with today's behaviour"
+    shows: "the medical-advice disclaimer above the thread (FR75), the thread, and the comment form or U9's gate"
+    created_by: U47
+    internals_owned_by: U49
+  - name: EvidenceSection
+    path: apps/web/src/components/patient/evidence/EvidenceSection.tsx
+    props: "{reviewPublicId: string}"
+    data: "reviewIdForPublicId (C9), then PublicEvidenceCount.countPublicEvidence(reviewId) (C17)"
+    shows: "Documents attached — not medically validated with the exact count when it is above zero, No documents otherwise; never a file or a preview in release 1"
+    created_by: U47
+    internals_owned_by: U48
+  - name: ReviewHistory
+    path: apps/web/src/components/patient/review-history/
+    props: "{reviewPublicId: string}"
+    data: "review.getHistory (C9); U47's version shows the Edited date only"
+    created_by: U47
+    internals_owned_by: U22
+rules:
+  - "each slot is an async server component that loads its own data and reads the locale and the actor itself; the page passes nothing else"
+  - "slots only ever see reviewPublicId; a slot that needs a seam taking the internal reviewId (isReviewAuthor, isReviewPublished, countPublicEvidence) resolves it once through reviewIdForPublicId (C9) and renders its empty state when that returns null; no internal reviewId reaches the browser"
+  - "a slot never throws into the page: an expected failure renders its own bilingual fallback, so a broken slot leaves the rest of the experience page readable"
+  - "the owner changes a slot's internals only; changing its name, path or props is a breaking change under the ownership rules"
+  - "no slot returns or renders an account id, an email or an original filename"
+edit_link:
+  route: "/{locale}/experiences/{publicId}/edit (owned by U22)"
+  shown_when: "isReviewAuthor(reviewId, actor) is true (C9), with the reviewId the page resolved once from its publicId; the page does not call getOwnReviewForEdit"
+gate:
+  path: apps/web/src/components/patient/auth/
+  name: "set in U9's Functional Design"
+  props: "{purpose: write | comment, returnTo: string}"
+  behaviour: "reads the actor itself; a signed-out visitor is asked to sign in, an unconfirmed account to confirm its email; renders nothing for a confirmed account; the application layer refuses anyway (C9 publish, C10 comment.post)"
+  provided_by: U9
+  consumers: [U47 (composer), U49 (comment form)]
+composer_evidence: "U47 mounts the evidence components already on main (EvidenceUploader, AuthorEvidence) with their current props; U48 replaces their internals and keeps the props"
+```
+
+### C17 — Public evidence count
+
+**Release:** release 1 (new, FD-105). Declared by U46; interim binding by U46 in `container.ts`; implemented by U48, which swaps the binding. Consumers: U46 (doctor cards and profiles), U47 (`<EvidenceSection>` until U48 owns it, experience cards).
+
+```yaml
+contract: C17 PublicEvidenceCount
+mechanism: in-process port (packages/application/src/ports/public-evidence-count.ts)
+port:
+  name: PublicEvidenceCount
+  methods:
+    - "countPublicEvidence(reviewId: string): Promise<number>"
+    - "countPublicEvidenceByReview(reviewIds: readonly string[]): Promise<ReadonlyMap<string, number>> (optional addition, only if U46's Functional Design needs it for profile totals; a review absent from the map counts 0)"
+  frozen: "the signature is frozen once U46 merges (Q27)"
+  ids: "takes the internal reviewId only; callers holding a reviewPublicId (the EvidenceSection slot) resolve it first through Review.reviewIdForPublicId (C9)"
+meaning:
+  interim: "today's behaviour: items in DEMO_READY_EVIDENCE_STATES, through countReadyEvidence in packages/database/src/demo/evidence.ts (U48's file, unchanged until U48)"
+  release_1: "items that passed the scan, in PUBLIC_EVIDENCE_STATES, an as const list of EvidenceState values in packages/domain/src/evidence/ that U48's Functional Design fills from EVIDENCE_STATES without a new enum value where possible"
+rules:
+  - "no module other than Evidence reads evidence_items; the directory and review repositories count only through this port"
+  - "the number is a count of attached items only, never a quality signal; a review with none renders No documents, never 0"
+  - "the count never includes quarantined, failed, rejected or removed items"
+binding: "apps/web/src/server/container.ts; U48 replaces the interim binding with Evidence's implementation and deletes countReadyEvidence and DEMO_READY_EVIDENCE_STATE(S) with demo/evidence.ts"
+```
+
+### C18 — Constants that stand in for T-105
+
+**Release:** release 1 (new, FD-105). T-105 (U12) and with it C1's configuration commands are deferred. Each reading Unit owns its constant; settings already in the configuration schema are read through U8's defaults-only `ConfigProvider`. Release 2 moves them into T-105; each Unit records its constants as an `S4` row in `ISSUES.md`.
+
+```yaml
+contract: C18 Release-1 constants
+mechanism: "ConfigProvider.current() (defaults-only, U8) for schema keys; named constants for the rest"
+through_config_provider:
+  - { key: limitedDataThreshold, value: 5 (placeholder), readers: [U46, U47] }
+  - { key: "emergency.*", value: "999, 16263, crisis line, last verified 2026-08-21", readers: [U20, U46] }
+  - { key: featureVisibility.facilityAccounts, value: true, readers: [U46] }
+  - { key: "signIn.*", value: FD-063 values, readers: [U8 (merged)] }
+  - { key: retention.originalDays, value: 90, readers: none, note: not enforced in release 1 }
+module_constants:
+  - { name: sentiment optional (FR45), owner: U47, where: review domain }
+  - { name: "Reviewer's label suggestions (FR47)", owner: U47, where: "as const list in packages/contracts" }
+  - { name: provisional term limit, value: "30 per account per hour, per process", key: "taxonomy.createProvisional:account:<accountId>", owner: U46 }
+  - { name: review publish and draft-save limits, value: "set in U47's Functional Design", owner: U47 }
+  - { name: comment post limit, value: "set in U49's Functional Design", owner: U49 }
+  - { name: "evidence limits (FR61)", value: "10 files, 15 MB per file, 100 MB per review", owner: U48, readers: [U48, U41], where: packages/domain/src/evidence/limits.ts }
+rules:
+  - "limits run on T-101's in-memory RateLimiter (C19) and are per process"
+  - "a constant is read in one place per Unit, so release 2 swaps it for a ConfigProvider key without changing callers"
+```
+
+### C19 — Platform ports and command helpers from T-101 (baseline)
+
+**Release:** release 1, merged on `main` by U8 T-101. No release-1 Unit changes these signatures; a change is breaking under the ownership rules. Consumers: U9, U11, U46, U47, U48, U49 and U41.
+
+```yaml
+contract: C19 T-101 baseline
+mechanism: in-process ports (packages/application/src/ports/) and helpers (packages/application/src/command.ts)
+provides:
+  - name: AuthGateway
+    path: ports/auth-gateway.ts
+    notes: "Better Auth behind the account commands; only modules/account and server/auth.ts use it; U41 changes only the cookie attributes and trustedOrigins in server/auth.ts"
+  - name: Crypto
+    path: ports/crypto.ts
+    methods: "encrypt, decrypt, decryptText, hash, randomToken, hmac(purpose: email-key | network-key)"
+    notes: "two web instances (crypto, mailCrypto), worker mailCrypto only (FD-095)"
+  - name: RateLimiter
+    path: ports/rate-limiter.ts
+    methods: "hit(key, limit, windowSec), reserveFailure(key, windowSec), clear(key)"
+    key_shape: "<scope>:<email | net | account>:<subject>; never a raw address or IP"
+    consumers: "U46 (provisional terms); U47 (publish, draft save); U49 (comment post)"
+  - name: ConfigProvider
+    path: ports/config-provider.ts
+    methods: "current(): Promise<ConfigValues> (defaults-only until T-105)"
+  - name: "defineCommand, defineQuery"
+    path: command.ts
+    notes: "parse, authorize, load, decide, persist in one UnitOfWork transaction with the audit and outbox rows; libraryFirst: true is only for commands that call the auth library (they hold no connection while it works); release-1 Units write transactional commands"
+  - name: CommandPorts
+    path: command.ts
+    notes: "closed: T-101's set of shared ports (unitOfWork, authGateway, hasher, rateLimiter, config, crypto, mailCrypto, clock, ids, sleeper, jobQueue, outbox, audit, logger, afterResponse, accounts, deliveries, app); no release-1 Unit adds a field to it"
+  - name: getActor
+    path: apps/web/src/server/auth.ts
+    result: "Actor (C5 actor_shape, exactly packages/contracts/src/actor.ts: kind anonymous | account, emailVerified?, status?, staffRole?, capabilities, stepUp?)"
+    notes: "the only way web code learns who is asking; slots, pages and server actions call it, never the session directly"
+module_wiring:
+  pattern: "module factories wired in container.ts"
+  rules:
+    - "each module (identity, directory, taxonomy, review, evidence, community) defines its own ports interface in modules/<module>/ports.ts, listing its repositories and the cross-module seams it calls, and a factory create<Module>Commands(ports) that returns its commands and queries"
+    - "a module's commands are still built with defineCommand and defineQuery; the handler gets T-101's CommandPorts from the call and its own module ports from the factory closure"
+    - "apps/web/src/server/container.ts builds each module's repositories and calls its factory; it stays append-only shared: each Unit adds only its own module's block, and U48 also swaps the C17 binding"
+    - "no module extends or edits CommandPorts in command.ts, which stays T-101's; a new shared port needs this summary first"
+    - "a module reaches another module only through the seams named in this summary (for example review's isReviewAuthor, reviewIdForPublicId), passed into its factory, never by importing the other module's repository"
+```
+
 ## Contract ownership rules
 
 - **Who owns a spec:** the provider component's owning Unit (column Owner) owns its shared-schema block and the zod schemas and types behind it. A port declared for a cycle break (FD-067) is owned by the declaring component; its implementation is owned by the Unit named in `implemented_by`. Each event's payload is owned by its publisher; the envelope, the relay and the notification routes are owned by U34; the relay itself by U4.
-- **Breaking changes:** agreed in this summary before code changes. The changing Unit updates the block, names the affected Units, and changes them in the same Bolt (one repository, serial Construction, D13). A change to a hard rule, a data boundary or a worker grant also needs an FD entry first (project rule). A breaking event change takes a new event name.
+- **Breaking changes:** agreed in this summary before code changes. The changing Unit updates the block, names the affected Units, and changes them in the same Bolt (one repository; with the swarm, FD-094, Units merge one at a time, so a breaking change lands with its consumers or waits until they have merged). A change to a hard rule, a data boundary or a worker grant also needs an FD entry first (project rule). A breaking event change takes a new event name.
 - **Additive changes stay safe:** new optional fields, new events, new error codes and new enum values a consumer does not switch on exhaustively. Consumers ignore unknown fields; zod input schemas stay `.strict()` on the provider side only.
+- **Seams (FD-105):** a seam's creator owns it until its merge, then the named owner does: the three C16 slots pass from U47 to U48, U49 and U22; the C17 binding passes from U46's interim implementation to U48's. The props and signatures are frozen at the creator's merge, so the level-3 Units can be built in parallel against them.
+- **Module wiring (C19):** each module owns its ports interface and command factory; `container.ts` wires them and is append-only shared; `CommandPorts` in `command.ts` is closed and stays T-101's. Changing it, or adding a shared port, is a breaking change agreed here first.
+- **Review ids (C9):** browser-facing inputs and slot props carry `reviewPublicId` only; module seams take the internal `reviewId` only; each boundary resolves once through `reviewIdForPublicId`.
+- **Deferred contracts:** a contract or operation marked "deferred to release 2 (FD-105)" keeps its text as the release-2 specification. Release 2 resumes it by this summary's ownership rules; nothing in release 1 may implement part of it silently.
 - **Worker boundary:** the worker's grants are the list in `02-data-model.md` §16 as reviewed by CR-006, plus FD-080's moderation grant. Any further grant needs this summary and an FD entry first.
 
 ## Task-file amendments
@@ -927,11 +1268,45 @@ The Requirements, Stories, Domain and Units revisions change these contracts as 
 - **FD-090 (two narrow worker grants):** it settles both open questions below. Draft expiry takes their option B (the grant on `review_drafts`), and held deletions take their option A (the `SECURITY DEFINER` persona-link function). Under an account hold, the account closes at once while its data is kept.
 - **FD-091 (patient redesign) and U45 T-011:** presentation only. U45 has no runtime contract; its edges to the eleven patient UI Units are build order, like the other UI edges. C14 is unchanged.
 
+## Revision 2026-11-04 (FD-105)
+
+The Units revision for FD-105 changes these contracts as follows (answers Q23–Q28).
+
+| Contract | Release | Release-1 provider | Release-1 consumers |
+|---|---|---|---|
+| C1 Administration | deferred to release 2 (FD-105); baseline `AuditWriter` and defaults-only `ConfigProvider` stay in use | baseline, U8 (merged) | every release-1 command (audit); U20, U46, U47 (C18) |
+| C2 Notification | deferred to release 2 (FD-105); U8's essential email and `mail.send` stay | U8 (merged) | U9 |
+| C3 Retention | deferred to release 2 (FD-105) | — | — |
+| C4 Identity | release 1 (reveal, deidentify, accountsOf, personasOf and both ports deferred) | U11 | U47, U49 |
+| C5 Account | release 1 for the account operations and `Actor` (staff access, stepUp and the internal steps deferred) | U8 (merged) | U9, U11, U47, U48, U49 |
+| C6 Taxonomy | release 1 (`mapProvisional` deferred) | U46 | U20, U47 |
+| C7 Directory | release 1 for the queries, `ProviderExperience` and `addMemberDoctor` (submissions, claims, field changes, merge, de-identify deferred) | U46 | U20, U47 |
+| C8 Evidence | release 1 for intake, the author's list and removal, `evidence.process` to a clean scan, `countPublicEvidence` (redaction, publication, viewer, staff access deferred) | U48 | U47, U41; U46 and U47 through C17 |
+| C9 Review | release 1 for drafts, publish, projection, aggregates, `correct`, history, `reviewIdForPublicId`, `isReviewAuthor`, `isReviewPublished` (follow-ups, delete, restore, setState, redact, deletion step deferred) | U47, U22; U46 (read-side stub) | U20, U22, U46, U48, U49 |
+| C10 Community | release 1 for `comment.post`, the author's `comment.delete`, `community.thread` (mentions, edit, reactions, blocks, setState, deletion step deferred) | U49 | U49's slot (C16) |
+| C11 Moderation | deferred to release 2 (FD-105) | — | — |
+| C12 Search | deferred to release 2 (FD-105) | — | — |
+| C13 DataRequests | deferred to release 2 (FD-105) | — | — |
+| C14 External HTTP API | release 1 for `/api/auth/{all}`, `/api/health`, `/api/evidence/upload` (five routes deferred) | U8 (merged), baseline, U48 | browser; U47, U48, U41 |
+| C15 Outbox events and jobs | release 1 for the relay, `mail.send`, `evidence.process` and the nine events of the release-1 relay map (other events, jobs and routes deferred) | U4, U8 (merged), U46, U47, U22, U48, U49 | worker |
+| C16 Patient UI composition seams | release 1 (new) | U47; slot internals U48, U49, U22; gate U9 | U47, U49 |
+| C17 Public evidence count | release 1 (new) | U46 (port, interim), U48 (implementation) | U46, U47 |
+| C18 Constants that stand in for T-105 | release 1 (new) | U8 (merged) and each reading Unit | U20, U41, U46, U47, U48, U49 |
+| C19 T-101 baseline | release 1 (new entry for merged work) | U8 (merged) | U9, U11, U41, U46, U47, U48, U49 |
+
+Counts: 19 contracts. 6 are deferred to release 2 as whole contracts (C1, C2, C3, C11, C12, C13); of those, C1 and C2 keep in use only parts the baseline or U8 already merged, and no release-1 Unit builds anything in them. 9 contracts are release 1 with deferred operations kept in their text (C4–C10, C14, C15); 4 are new (C16–C19).
+
+- **Task-file amendments:** the rows of the 2026-10-27 table for deferred Units (U12, U17, U18, U25, U29, U32, U33, U34, U37, U39) apply in release 2. The rows for U21 and U30 now apply to U47 and U49 only where the operation is release 1: U21's `repeatEpisode` row is deferred (U47 stores nothing for it), and U30's recipient-filter row is deferred with the recipient fields. U22's row stands (it queues no email). The `## Amendments — release 1 (FD-105)` section each active Unit writes at Code Generation (`unit-of-work.md`) cites the contract changes above.
+- **No breaking change to merged code:** C5, C14's auth route, C15's `account.*` events and C19 are exactly what U8 merged.
+
 ## Open questions
 
-Both questions below were settled on 2026-10-27 (FD-090, Delivery Planning Q5 and Q6). They are kept as the record of what was asked.
+Both questions below were settled on 2026-10-27 (FD-090, Delivery Planning Q5 and Q6). They are kept as the record of what was asked. The rows after them are the open points of the 2026-11-04 revision.
 
 | Contract | Question | Blocks |
 |---|---|---|
 | C13, C3 | Deletion work that waits on a legal hold (an account hold, Q8; the persona link of a held post, Q17) must run when the hold ends. Holds end by `hold.release` (web) or by `expires_at` passing (noticed by the worker's hourly job), and the identity step can only run in the web tier (Q16). Options: A. a `SECURITY DEFINER` function that deletes given persona links without letting the worker read them, granted to `rk_worker` (suggested: the narrow pattern `fn_expire_audit` already uses); B. resume only from the web, when staff release a hold, and give holds no automatic end during a pending deletion; C. treat the kept link as part of the held record and delete it with that record's own deletion. Also: under an account hold, does the account still close at once (sessions revoked, sign-in refused, data kept)? Suggested: yes. | U39 T-410, U29 T-309 |
 | C9, C3 | Draft expiry: drafts expire after 30 days and `draft.expiring` warns 4 days before (T-405 routing), but the worker has no grant on `review_drafts`. Options: A. treat expired drafts as gone at read time, purge them in the web tier, and drop the warning; B. a narrow worker grant (`SELECT (id, account_id, expires_at)`, `DELETE`) on `review_drafts` with an FD entry. Suggested: B, since drafts are encrypted at rest and the warning is in the routing table. | U21 T-301, U29 T-309 |
+| C9, C4 | `isReviewAuthor` needs the private link from `author_persona_id` to the account, which is Identity's (`persona_links`). T-104 decides where `PrivateIdentityRepository` is injected. Suggested: U11 adds one narrow private query, `ownsPersona(accountId, personaId): boolean`, and injects it into the review module for this check only; the review module never reads `persona_links` itself. U11's Functional Design confirms the method; U47 builds against it. | U47 (and through it U22, U48) |
+| C16 | The gate component's exported name is not fixed (`unit-of-work.md` names only the gate sheet and callout). Its props `{purpose, returnTo}` are frozen here; U9's Functional Design names it before U47 and U49 start Code Generation. | U47, U49 |
+| C17 | Which `EVIDENCE_STATES` value ends the release-1 pipeline (and so fills `PUBLIC_EVIDENCE_STATES`) is U48's Functional Design. The interim binding counts today's `DEMO_READY_EVIDENCE_STATES`, which include `preview_ready`; if U48 picks another value, the seed's ready items move with it in `seed-evidence.ts`. | U48 |
