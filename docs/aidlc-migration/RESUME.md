@@ -19,7 +19,10 @@ Read this first when the session restarts. **On another computer, start with [CO
   - Batch 4: U41 T-502.
   - Batch 5: U50 release check.
 - Merged on `main`: 9 Units plus the demo slice. `main` is at `bc63889`. There is no CI (FD-102).
-- **In progress:** the Functional Design wave 1 (U9, U11, U46), with 3 architects running in parallel. Next: one review per Unit (one dispatch record at a time), then `aidlc engine state unit complete --wave --stage functional-design --unit <u>`, then `next` for the next wave.
+- **Functional Design progress (2026-11-04 night):**
+  - Waves 1 and 2 are complete, all reviewed READY and fixed: U9, U11, U46, U20, U47. Pushed at `f56e9fc`.
+  - Wave 3 (U22, U48, U49) is being written by 3 parallel architects. Then come reviews (one dispatch record at a time), fixes, and `unit complete --wave`.
+  - Then wave 4 (U41) and wave 5 (U50), then Code Generation in parallel batches. Each Unit's Code Generation must first append that Unit's proposed FD rows to the decision log; the next free number is FD-106.
 
 ## In flight when the session closed (cut off by the close; resume as below)
 
