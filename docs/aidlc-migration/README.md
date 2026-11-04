@@ -1,8 +1,9 @@
 # AI-DLC migration — in progress
 
 **Status:** IN PROGRESS. AI-DLC 2.11.0 is installed, the in-flight work is merged, and the source
-documents are in the knowledge catalog. The first intent `261011-aidlc-adoption` is at Inception → Requirements
-Analysis; Reverse Engineering and Practices Discovery are approved. Before the remaining stages run, read
+documents are in the knowledge catalog. The first intent `261011-aidlc-adoption` is in Construction (8 of 45
+Units merged) and paused for the demo slice, intent `261030-demo-slice` (FD-099); resume points are in
+`RESUME.md` and `CONTINUE-ON-ANOTHER-DEVICE.md`. Before the remaining stages run, read
 `docs/planning/research/aidlc-migration-2026-10-23/readiness-report.md` (FD-045..FD-055).
 **Decided:** 2026-10-04, by the project owner: from now on implementation follows AWS AI-DLC
 (`awslabs/aidlc-workflows`), not the BMAD / grill-me / `LOOP.md` process the existing docs were

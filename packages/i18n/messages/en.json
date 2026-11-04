@@ -307,7 +307,8 @@
       "resent": "A new link is on its way.",
       "title": "Confirm your email"
     },
-    "verifyPending": "Confirm your email"
+    "verifyPending": "Confirm your email",
+    "accountMenu": "Your account: {name}"
   },
   "brand": {
     "name": "RogiKotha",
@@ -420,7 +421,21 @@
     "tags": "Tag the health topic",
     "tagsRequired": "Add at least one tag, or choose “Not sure”.",
     "title": "Share your experience",
-    "treatment": "Treatment, tests and medicines"
+    "treatment": "Treatment, tests and medicines",
+    "chooseDoctor": "Choose a doctor",
+    "titleLabel": "Give it a short title",
+    "previewEmpty": "Your words will appear here.",
+    "edit": {
+      "title": "Edit your experience",
+      "intro": "You can change the title, your story and how you describe it. The doctor, the date and your name stay as they were published.",
+      "save": "Save changes",
+      "versionNote": "Each change is kept as a new version, and the experience shows “Edited”."
+    },
+    "addCancel": "Choose from the list instead",
+    "addNote": "The doctor appears straight away, marked “Added by a member — not confirmed”. RogiKotha has not checked that this doctor exists or that these details are right.",
+    "addSpecialtyNone": "Not sure",
+    "bodyCount": "{count} of at least {min} characters",
+    "errorFields": "Check these fields:"
   },
   "condition": {
     "accounts": "Experiences about this health topic",
@@ -440,7 +455,11 @@
     "symptoms": "Symptoms people described",
     "treatedAt": "Where this condition is treated",
     "treatedAtNote": "Districts, areas and hospitals pulled from the experiences above. Where someone actually went, not a directory.",
-    "treatments": "Treatments people mentioned"
+    "treatments": "Treatments people mentioned",
+    "kicker": "Health topic",
+    "listCount": "{n, plural, one {{count} health topic} other {{count} health topics}}",
+    "experienceCount": "{n, plural, one {{count} patient experience} other {{count} patient experiences}}",
+    "doctorCount": "{n, plural, one {{count} experience} other {{count} experiences}}"
   },
   "crit": {
     "admission": "Admission and discharge",
@@ -470,7 +489,9 @@
     "editorialNote": "Editorial note",
     "facilities": "Looking for a hospital or diagnostic centre?",
     "kicker": "Bangladesh · Public beta",
-    "latest": "From the latest accounts"
+    "latest": "From the latest accounts",
+    "browseDoctors": "Browse doctors",
+    "latestEmpty": "No experiences have been published yet."
   },
   "email": {
     "existing": {
@@ -575,6 +596,31 @@
       "restoreExpired": "The 30-day window to restore this has passed."
     }
   },
+  "formErrors": {
+    "auth": {
+      "displayNameInvalid": "Display name: enter a name of up to 60 characters.",
+      "emailInvalid": "Email: enter a valid email address.",
+      "passwordTooLong": "Password: use at most 128 characters.",
+      "registrationRefused": "We couldn't create an account with these details. If you already have an account, sign in instead."
+    },
+    "compose": {
+      "doctorRequired": "Doctor: choose a doctor from the list.",
+      "relationshipRequired": "Relationship: choose your relationship to the patient.",
+      "periodInvalid": "When: choose a month and year that is not in the future.",
+      "titleLength": "Title: write a title of up to 120 characters.",
+      "bodyTooShort": "What happened: write at least 20 characters.",
+      "bodyTooLong": "What happened: keep it under 10,000 characters.",
+      "identityRequired": "Name: choose how your name appears.",
+      "newDoctorName": "Doctor’s name: write the full name, 3 to 120 characters.",
+      "newDoctorSpecialty": "Specialty: choose one from the list, or “Not sure”.",
+      "newDoctorChamber": "Where they see patients: use 200 characters or fewer.",
+      "newDoctorBmdc": "BMDC number: use letters, numbers and dashes only, up to 20."
+    },
+    "profile": {
+      "displayNameRequired": "Display name: enter the name you want to appear.",
+      "displayNameTooLong": "Display name: use 60 characters or fewer."
+    }
+  },
   "ev": {
     "failNote": "Your words stayed published. Only this file was held back.",
     "remove": "Remove",
@@ -587,6 +633,37 @@
       "ready": "Published",
       "redact": "Waiting for you to hide private details",
       "scanning": "Scanning for malware"
+    },
+    "status": {
+      "ready": "Ready",
+      "pending": "Scan pending",
+      "rejected": "Not accepted"
+    },
+    "note": {
+      "count": "Files attached: {count}"
+    },
+    "upload": {
+      "hint": "JPG or PNG images only, up to {maxMb} MB each and {maxFiles} per experience. Each file is scanned for malware. Readers see only how many files are attached, never the files or their names.",
+      "fileLabel": "Choose an image",
+      "submit": "Upload",
+      "uploading": "Uploading…",
+      "listLabel": "Your attached files",
+      "limitReached": "You have attached the most files allowed ({maxFiles}).",
+      "pendingNote": "The scan could not run yet. The file stays private and is not counted.",
+      "rejectedNote": "The malware scan flagged this file, so it was not attached.",
+      "done": {
+        "ready": "File attached. It passed the malware scan.",
+        "pending": "File received. The scan could not run, so it stays private as Scan pending.",
+        "rejected": "The malware scan flagged this file, so it was not attached."
+      },
+      "errors": {
+        "signedOut": "Sign in to attach files.",
+        "notFound": "This experience was not found, or you cannot attach files to it.",
+        "noFile": "Choose a JPG or PNG image first.",
+        "tooLarge": "Each file must be {maxMb} MB or smaller.",
+        "tooMany": "You can attach up to {maxFiles} files per experience.",
+        "failed": "The file could not be uploaded. Please try again."
+      }
     }
   },
   "evidence": {
@@ -637,7 +714,16 @@
     "replyingTo": "Replying to",
     "saveComment": "Save changes",
     "timeline": "How this unfolded",
-    "writtenBy": "Written by"
+    "writtenBy": "Written by",
+    "commentDeleted": "Comment deleted.",
+    "commentLength": "Comment: write between {min} and {max} characters.",
+    "commentPosted": "Comment posted.",
+    "editExperience": "Edit this experience",
+    "outcomeLabel": "Afterwards",
+    "replyPost": "Post reply",
+    "sentimentLabel": "Overall",
+    "signInToComment": "Sign in to comment",
+    "yourExperience": "Your experience"
   },
   "facility": {
     "accounts": "Visits",
@@ -653,7 +739,12 @@
       "diagnostic": "Diagnostic centre",
       "hospital": "Hospital"
     },
-    "write": "Describe your visit"
+    "write": "Describe your visit",
+    "listCount": "{n, plural, one {{count} branch} other {{count} branches}}",
+    "orderNote": "Listed alphabetically by name. Never ranked, and never scored.",
+    "visitCount": "{n, plural, one {{count} visit described} other {{count} visits described}}",
+    "noVisits": "No one has described a visit here yet.",
+    "address": "Address"
   },
   "filter": {
     "any": "Any",
@@ -713,7 +804,9 @@
     "notVerified": "Registration not verified",
     "notVerifiedWhy": "RogiKotha does not yet check BMDC registration. This profile was submitted by the community.",
     "reviewerLabel": "Reviewer’s label",
-    "reviewerLabelWhy": "This is the author’s own claim. RogiKotha has not checked it and takes no position on it."
+    "reviewerLabelWhy": "This is the author’s own claim. RogiKotha has not checked it and takes no position on it.",
+    "memberAdded": "Added by a member — not confirmed",
+    "memberAddedWhy": "A member added this doctor while sharing an experience. RogiKotha has not checked that this doctor exists or that the details are right."
   },
   "mine": {
     "addFollowUp": "Add an update",
@@ -733,7 +826,23 @@
     "notifications": "Notifications",
     "published": "Published",
     "restore": "Restore",
-    "title": "My writing"
+    "title": "My writing",
+    "profile": {
+      "experiences": "Your experiences",
+      "heading": "Your profile",
+      "joined": "Joined {date}",
+      "languageNote": "Saved to your account. The site opens in this language.",
+      "nameNote": "A new name appears on what you write from now on. Experiences and comments you already published keep the name they were published under.",
+      "nameSaved": "Name saved.",
+      "posted": "Published {date}",
+      "saveName": "Save name",
+      "state": {
+        "hidden": "Hidden — not shown publicly",
+        "other": "Not published",
+        "removed": "Removed — not shown publicly"
+      },
+      "usernameNote": "Your username is permanent."
+    }
   },
   "nav": {
     "about": "About & methodology",
@@ -817,7 +926,14 @@
     "showing": "showing",
     "specialty": "Specialty",
     "total": "Total",
-    "write": "Write about your treatment"
+    "write": "Write about your treatment",
+    "experienceCount": "{n, plural, one {{count} patient experience} other {{count} patient experiences}}",
+    "list": {
+      "count": "{n, plural, one {{count} doctor} other {{count} doctors}}",
+      "orderNote": "Doctors are listed by how many people wrote about them, then by name. Never by how positive the experiences were."
+    },
+    "noExperiences": "No one has written about this doctor yet.",
+    "writeAbout": "Write about this doctor"
   },
   "prov": {
     "admin": "Admin checked",
@@ -871,7 +987,11 @@
     "readFull": "Read in full",
     "relationship": "Written by",
     "report": "Report",
-    "tags": "Tags"
+    "tags": "Tags",
+    "card": {
+      "comments": "{n, plural, one {{count} comment} other {{count} comments}}",
+      "documents": "{n, plural, one {{count} document} other {{count} documents}}"
+    }
   },
   "search": {
     "alsoSearched": "also matched as",

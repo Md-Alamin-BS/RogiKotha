@@ -152,9 +152,10 @@ test.describe('with motion on', () => {
 
 test.describe('switching the language', () => {
   test('swaps the page at once instead of running the route fade', async ({ page }) => {
-    await openPage(page, '/en/write');
+    // A public page: since the demo slice, /write sends a signed-out visitor to sign in.
+    await openPage(page, '/en/doctors');
     await page.locator('#lang').click();
-    await expect(page).toHaveURL(/\/bn\/write$/, { timeout: 20_000 });
+    await expect(page).toHaveURL(/\/bn\/doctors$/, { timeout: 20_000 });
     await expect(page.locator('html')).toHaveAttribute('lang', 'bn');
     expect(pseudoNames(await settledTransitions(page))).toEqual([]);
   });

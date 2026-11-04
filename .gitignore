@@ -1,6 +1,7 @@
 node_modules/
 package-lock.json
 .data/
+/var/
 .env
 .env.*.local
 **/.next/
@@ -60,3 +61,6 @@ aidlc/spaces/*/intents/*/.aidlc-*
 aidlc/diagnostics/
 .claude/settings.local.json
 # END AI-DLC:gitignore
+
+# Machine-local ledger of running background subagents; the managed AI-DLC block above omits it.
+aidlc/.aidlc-subagent-inflight

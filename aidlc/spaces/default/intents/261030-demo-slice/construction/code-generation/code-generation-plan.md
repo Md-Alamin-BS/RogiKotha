@@ -25,37 +25,37 @@ Branch `bolt/demo-slice` from `main`. Agents work in parallel only on files they
 
 **Phase 1 — foundation (one agent)**
 
-- [ ] **Step 1** — Baseline and runner: `pnpm infra:up`, `timeout 1500 pnpm check` and `timeout 600 pnpm smoke`, both green. Record the counts and the unit-scoped test commands in `unit-test-instructions.md`.
-- [ ] **Step 2** — Dependencies: `better-auth` (1.7.x stable) and `@node-rs/argon2` in `apps/web`. Reuse the 2026-10-30 T-101 entry in `docs/status/dependency-check-log.md` if it covers them, otherwise append one.
-- [ ] **Step 3** — Server foundation in `apps/web/src/server/`:
+- [x] **Step 1** — Baseline and runner: `pnpm infra:up`, `timeout 1500 pnpm check` and `timeout 600 pnpm smoke`, both green. Record the counts and the unit-scoped test commands in `unit-test-instructions.md`.
+- [x] **Step 2** — Dependencies: `better-auth` (1.7.x stable) and `@node-rs/argon2` in `apps/web`. Reuse the 2026-10-30 T-101 entry in `docs/status/dependency-check-log.md` if it covers them, otherwise append one.
+- [x] **Step 3** — Server foundation in `apps/web/src/server/`:
   - `db.ts`: the database client;
   - `crypto.ts`: AES-256-GCM with `APP_ENCRYPTION_KEY`, layout `iv|tag|ciphertext`;
   - `auth/instance.ts`: Better Auth on the `auth_*` tables through the Drizzle adapter. Email and password, no verification. Argon2id hashing with the seed's parameters (m=64 MiB, t=3, p=1) so seeded users sign in. httpOnly sameSite=lax cookies;
   - `auth/session.ts`: `getCurrentAccount()`, returning account id, username, display name, locale and current persona ids, or null;
   - `app/api/auth/[...all]/route.ts`.
   Then their tests.
-- [ ] **Step 4** — Data-function shapes in `packages/database/src/demo/{accounts,doctors,reviews,evidence,comments}.ts`. Each file exports typed functions whose bodies throw `not built yet`, plus `index.ts`, so the feature agents build against fixed signatures.
+- [x] **Step 4** — Data-function shapes in `packages/database/src/demo/{accounts,doctors,reviews,evidence,comments}.ts`. Each file exports typed functions whose bodies throw `not built yet`, plus `index.ts`, so the feature agents build against fixed signatures.
 
 **Phase 2 — features (six agents in parallel, each owns its files)**
 
 Each agent puts its new i18n keys in `packages/i18n/messages/_fragments/<feature>.{en,bn}.json`; the integrator merges them.
 
-- [ ] **Step 5** — Auth UI (FR1):
+- [x] **Step 5** — Auth UI (FR1):
   - the `register` and `sign-in` pages;
   - `server/actions/auth.ts` (register creates the auth user, the `account_profiles` row with `status = active`, and a named persona; neutral messages);
   - `components/patient/auth/**`;
   - the masthead account control.
-- [ ] **Step 6** — Profile (FR2): the `me` page, `server/actions/profile.ts`, `demo/accounts.ts` (a display-name change inserts a new named persona; the language preference), and `components/patient/profile/**`.
-- [ ] **Step 7** — Home and doctors (FR3, FR7): the home page, `doctors` and `doctors/[id]`, `demo/doctors.ts` (neutral order, "Registration not verified", published counts, the recent experiences), and `components/patient/doctors/**`.
-- [ ] **Step 8** — Write and edit (FR4): the `write` page and `experiences/[id]/edit`, `server/actions/review.ts`, `demo/reviews.ts` (create a published quick review with persona and attestation; an owner-only edit writes `review_versions`), and `components/patient/compose/**`.
-- [ ] **Step 9** — Attachments (FR5):
+- [x] **Step 6** — Profile (FR2): the `me` page, `server/actions/profile.ts`, `demo/accounts.ts` (a display-name change inserts a new named persona; the language preference), and `components/patient/profile/**`.
+- [x] **Step 7** — Home and doctors (FR3, FR7): the home page, `doctors` and `doctors/[id]`, `demo/doctors.ts` (neutral order, "Registration not verified", published counts, the recent experiences), and `components/patient/doctors/**`.
+- [x] **Step 8** — Write and edit (FR4): the `write` page and `experiences/[id]/edit`, `server/actions/review.ts`, `demo/reviews.ts` (create a published quick review with persona and attestation; an owner-only edit writes `review_versions`), and `components/patient/compose/**`.
+- [x] **Step 9** — Attachments (FR5):
   - `server/actions/evidence.ts`;
   - `server/storage.ts`, keeping originals under `var/evidence/` outside the web root;
   - `server/clamav.ts`, using the clamd TCP INSTREAM command against the compose ClamAV and failing closed;
   - `demo/evidence.ts`;
   - `components/patient/evidence/**`.
   The upload checks magic bytes, max 10 MB, and max 5 files.
-- [ ] **Step 10** — Experience page and comments (FR6):
+- [x] **Step 10** — Experience page and comments (FR6):
   - the pages `experiences/[id]` and `experiences`;
   - `server/actions/comments.ts` and `demo/comments.ts`, with one reply level and owner-only delete as a tombstone;
   - `components/patient/experience/**` and `components/patient/comments/**`.
@@ -63,8 +63,8 @@ Each agent puts its new i18n keys in `packages/i18n/messages/_fragments/<feature
 
 **Phase 3 — integrate, verify and harden**
 
-- [ ] **Step 11** — Integration: merge the i18n fragments into `en.json` and `bn.json`, remove `_fragments`, and fix the seams between features. Add one demo smoke assertion. Then `pnpm typecheck`, `pnpm lint`, `pnpm lint:boundaries`, `pnpm format:check`, `pnpm test:int`, and finally `timeout 1500 pnpm check` and `timeout 600 pnpm smoke`, all green.
-- [ ] **Step 12** — Run the app (`pnpm build`, `next start`, the worker not needed) and click through every flow in a real browser, in `en` and `bn`:
+- [x] **Step 11** — Integration: merge the i18n fragments into `en.json` and `bn.json`, remove `_fragments`, and fix the seams between features. Add one demo smoke assertion. Then `pnpm typecheck`, `pnpm lint`, `pnpm lint:boundaries`, `pnpm format:check`, `pnpm test:int`, and finally `timeout 1500 pnpm check` and `timeout 600 pnpm smoke`, all green.
+- [x] **Step 12** — Run the app (`pnpm build`, `next start`, the worker not needed) and click through every flow in a real browser, in `en` and `bn`:
   - register;
   - sign out, then sign in as a seeded patient;
   - edit the profile;
@@ -72,11 +72,11 @@ Each agent puts its new i18n keys in `packages/i18n/messages/_fragments/<feature
   - attach a PNG;
   - sign in as another user and comment, then reply.
   Fix what breaks.
-- [ ] **Step 13** — Adversarial tests, auth and evidence being high risk. Separate agents try to break the slice: edit or delete someone else's experience or comment; post while signed out; upload a disguised or oversized file; reach an original file publicly. Each attempt becomes a test, and anything that breaks is fixed.
+- [x] **Step 13** — Adversarial tests, auth and evidence being high risk. Separate agents try to break the slice: edit or delete someone else's experience or comment; post while signed out; upload a disguised or oversized file; reach an original file publicly. Each attempt becomes a test, and anything that breaks is fixed.
 
 **Phase 4 — records**
 
-- [ ] **Step 14** — `docs/implementation/ISSUES.md` rows (`Found in demo-slice`) for every assumption and finding. Write `code-summary.md`, `traceability.json` (FR1–FR7 and NFR1–NFR6, each mapped to the file that implements it) and `source-manifest.json` (literal paths only, no `[`, `]` or `*`). Add a short demo guide `docs/implementation/handoffs/demo-slice.md`: how to start, the demo accounts, and the click path.
+- [x] **Step 14** — `docs/implementation/ISSUES.md` rows (`Found in demo-slice`) for every assumption and finding. Write `code-summary.md`, `traceability.json` (FR1–FR7 and NFR1–NFR6, each mapped to the file that implements it) and `source-manifest.json` (literal paths only, no `[`, `]` or `*`). Add a short demo guide `docs/implementation/handoffs/demo-slice.md`: how to start, the demo accounts, and the click path.
 
 ## Testing Contract
 

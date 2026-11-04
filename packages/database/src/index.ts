@@ -20,3 +20,5 @@ export * from './repositories/data-requests';
 export * from './repositories/outbox';
 export * from './search/index';
 export * from './queue/index';
+// Demo slice (FD-099): replaced by the repositories above when the full Units resume.
+export * as demo from './demo/index';

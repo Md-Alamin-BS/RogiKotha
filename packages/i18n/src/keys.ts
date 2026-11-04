@@ -182,6 +182,7 @@ export type MessageKey =
   | 'appeal.target'
   | 'appeal.text'
   | 'appeal.title'
+  | 'auth.accountMenu'
   | 'auth.ageLabel'
   | 'auth.displayName'
   | 'auth.displayNameHint'
@@ -272,15 +273,20 @@ export type MessageKey =
   | 'compare.remove'
   | 'compare.title'
   | 'compose.addBmdc'
+  | 'compose.addCancel'
   | 'compose.addChamber'
   | 'compose.addDoctor'
   | 'compose.addName'
+  | 'compose.addNote'
   | 'compose.addPending'
   | 'compose.addSpecialty'
+  | 'compose.addSpecialtyNone'
   | 'compose.addSubmit'
   | 'compose.after'
   | 'compose.age'
   | 'compose.back'
+  | 'compose.bodyCount'
+  | 'compose.chooseDoctor'
   | 'compose.claims'
   | 'compose.claimsNote'
   | 'compose.confirm1'
@@ -292,6 +298,11 @@ export type MessageKey =
   | 'compose.doctorMissing'
   | 'compose.doctorMissingNote'
   | 'compose.draftSaved'
+  | 'compose.edit.intro'
+  | 'compose.edit.save'
+  | 'compose.edit.title'
+  | 'compose.edit.versionNote'
+  | 'compose.errorFields'
   | 'compose.evidence'
   | 'compose.evidenceOptional'
   | 'compose.fixNow'
@@ -314,6 +325,7 @@ export type MessageKey =
   | 'compose.period'
   | 'compose.periodNote'
   | 'compose.preview'
+  | 'compose.previewEmpty'
   | 'compose.publish'
   | 'compose.publishedNote'
   | 'compose.redact'
@@ -344,15 +356,20 @@ export type MessageKey =
   | 'compose.tags'
   | 'compose.tagsRequired'
   | 'compose.title'
+  | 'compose.titleLabel'
   | 'compose.treatment'
   | 'condition.accounts'
   | 'condition.acrossAll'
   | 'condition.alsoCalled'
   | 'condition.areas'
   | 'condition.districts'
+  | 'condition.doctorCount'
   | 'condition.doctors'
+  | 'condition.experienceCount'
   | 'condition.facilities'
   | 'condition.hospitals'
+  | 'condition.kicker'
+  | 'condition.listCount'
   | 'condition.medicines'
   | 'condition.mentionNote'
   | 'condition.noGeo'
@@ -380,11 +397,13 @@ export type MessageKey =
   | 'disclaimer.long'
   | 'disclaimer.short'
   | 'discover.browse'
+  | 'discover.browseDoctors'
   | 'discover.browseNote'
   | 'discover.editorialNote'
   | 'discover.facilities'
   | 'discover.kicker'
   | 'discover.latest'
+  | 'discover.latestEmpty'
   | 'email.existing.body'
   | 'email.existing.subject'
   | 'email.reset.body'
@@ -449,6 +468,7 @@ export type MessageKey =
   | 'errors.review.notEditable'
   | 'errors.review.restoreExpired'
   | 'ev.failNote'
+  | 'ev.note.count'
   | 'ev.remove'
   | 'ev.replace'
   | 'ev.state.checking'
@@ -458,6 +478,26 @@ export type MessageKey =
   | 'ev.state.ready'
   | 'ev.state.redact'
   | 'ev.state.scanning'
+  | 'ev.status.pending'
+  | 'ev.status.ready'
+  | 'ev.status.rejected'
+  | 'ev.upload.done.pending'
+  | 'ev.upload.done.ready'
+  | 'ev.upload.done.rejected'
+  | 'ev.upload.errors.failed'
+  | 'ev.upload.errors.noFile'
+  | 'ev.upload.errors.notFound'
+  | 'ev.upload.errors.signedOut'
+  | 'ev.upload.errors.tooLarge'
+  | 'ev.upload.errors.tooMany'
+  | 'ev.upload.fileLabel'
+  | 'ev.upload.hint'
+  | 'ev.upload.limitReached'
+  | 'ev.upload.listLabel'
+  | 'ev.upload.pendingNote'
+  | 'ev.upload.rejectedNote'
+  | 'ev.upload.submit'
+  | 'ev.upload.uploading'
   | 'evidence.group.later'
   | 'evidence.group.outcome'
   | 'evidence.group.reviewed'
@@ -469,16 +509,20 @@ export type MessageKey =
   | 'experience.bookmarked'
   | 'experience.cancelEdit'
   | 'experience.commentBox'
+  | 'experience.commentDeleted'
   | 'experience.commentGone'
   | 'experience.commentGoneWhy'
   | 'experience.commentHint'
+  | 'experience.commentLength'
   | 'experience.commentPost'
+  | 'experience.commentPosted'
   | 'experience.currentNote'
   | 'experience.currentStatus'
   | 'experience.dangerWarning'
   | 'experience.deleteComment'
   | 'experience.discussion'
   | 'experience.editComment'
+  | 'experience.editExperience'
   | 'experience.edited'
   | 'experience.episode'
   | 'experience.evidenceOnly'
@@ -488,6 +532,7 @@ export type MessageKey =
   | 'experience.linkWarning'
   | 'experience.openEvidence'
   | 'experience.otherAccounts'
+  | 'experience.outcomeLabel'
   | 'experience.ownComment'
   | 'experience.providerHere'
   | 'experience.providerNote'
@@ -498,21 +543,30 @@ export type MessageKey =
   | 'experience.reply'
   | 'experience.replyCancel'
   | 'experience.replyLevel'
+  | 'experience.replyPost'
   | 'experience.replyingTo'
   | 'experience.saveComment'
+  | 'experience.sentimentLabel'
+  | 'experience.signInToComment'
   | 'experience.timeline'
   | 'experience.writtenBy'
+  | 'experience.yourExperience'
   | 'facility.accounts'
+  | 'facility.address'
   | 'facility.branch'
   | 'facility.criteria'
   | 'facility.doctorsHere'
   | 'facility.doctorsNote'
   | 'facility.kicker'
+  | 'facility.listCount'
+  | 'facility.noVisits'
+  | 'facility.orderNote'
   | 'facility.parent'
   | 'facility.separation'
   | 'facility.type.clinic'
   | 'facility.type.diagnostic'
   | 'facility.type.hospital'
+  | 'facility.visitCount'
   | 'facility.write'
   | 'filter.any'
   | 'filter.clear'
@@ -528,6 +582,23 @@ export type MessageKey =
   | 'filter.sentiment'
   | 'filter.specialty'
   | 'filter.title'
+  | 'formErrors.auth.displayNameInvalid'
+  | 'formErrors.auth.emailInvalid'
+  | 'formErrors.auth.passwordTooLong'
+  | 'formErrors.auth.registrationRefused'
+  | 'formErrors.compose.bodyTooLong'
+  | 'formErrors.compose.bodyTooShort'
+  | 'formErrors.compose.doctorRequired'
+  | 'formErrors.compose.identityRequired'
+  | 'formErrors.compose.newDoctorBmdc'
+  | 'formErrors.compose.newDoctorChamber'
+  | 'formErrors.compose.newDoctorName'
+  | 'formErrors.compose.newDoctorSpecialty'
+  | 'formErrors.compose.periodInvalid'
+  | 'formErrors.compose.relationshipRequired'
+  | 'formErrors.compose.titleLength'
+  | 'formErrors.profile.displayNameRequired'
+  | 'formErrors.profile.displayNameTooLong'
   | 'hero.body'
   | 'hero.browse'
   | 'hero.cta'
@@ -550,6 +621,8 @@ export type MessageKey =
   | 'label.followUp'
   | 'label.limitedData'
   | 'label.limitedDataWhy'
+  | 'label.memberAdded'
+  | 'label.memberAddedWhy'
   | 'label.noDocuments'
   | 'label.notProvided'
   | 'label.notVerified'
@@ -571,6 +644,18 @@ export type MessageKey =
   | 'mine.empty'
   | 'mine.notifNote'
   | 'mine.notifications'
+  | 'mine.profile.experiences'
+  | 'mine.profile.heading'
+  | 'mine.profile.joined'
+  | 'mine.profile.languageNote'
+  | 'mine.profile.nameNote'
+  | 'mine.profile.nameSaved'
+  | 'mine.profile.posted'
+  | 'mine.profile.saveName'
+  | 'mine.profile.state.hidden'
+  | 'mine.profile.state.other'
+  | 'mine.profile.state.removed'
+  | 'mine.profile.usernameNote'
   | 'mine.published'
   | 'mine.restore'
   | 'mine.title'
@@ -630,6 +715,7 @@ export type MessageKey =
   | 'profile.claimNote'
   | 'profile.claimThis'
   | 'profile.conditions'
+  | 'profile.experienceCount'
   | 'profile.facilities'
   | 'profile.facilitySep'
   | 'profile.fee'
@@ -637,11 +723,15 @@ export type MessageKey =
   | 'profile.hasDocuments'
   | 'profile.kicker'
   | 'profile.languages'
+  | 'profile.list.count'
+  | 'profile.list.orderNote'
+  | 'profile.noExperiences'
   | 'profile.qualifications'
   | 'profile.showing'
   | 'profile.specialty'
   | 'profile.total'
   | 'profile.write'
+  | 'profile.writeAbout'
   | 'prov.admin'
   | 'prov.community'
   | 'prov.provider'
@@ -677,6 +767,8 @@ export type MessageKey =
   | 'results.noneBody'
   | 'results.tabDoctors'
   | 'results.tabFacilities'
+  | 'review.card.comments'
+  | 'review.card.documents'
   | 'review.comments'
   | 'review.episodeDate'
   | 'review.helpful'
@@ -965,6 +1057,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'appeal.target',
   'appeal.text',
   'appeal.title',
+  'auth.accountMenu',
   'auth.ageLabel',
   'auth.displayName',
   'auth.displayNameHint',
@@ -1055,15 +1148,20 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compare.remove',
   'compare.title',
   'compose.addBmdc',
+  'compose.addCancel',
   'compose.addChamber',
   'compose.addDoctor',
   'compose.addName',
+  'compose.addNote',
   'compose.addPending',
   'compose.addSpecialty',
+  'compose.addSpecialtyNone',
   'compose.addSubmit',
   'compose.after',
   'compose.age',
   'compose.back',
+  'compose.bodyCount',
+  'compose.chooseDoctor',
   'compose.claims',
   'compose.claimsNote',
   'compose.confirm1',
@@ -1075,6 +1173,11 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.doctorMissing',
   'compose.doctorMissingNote',
   'compose.draftSaved',
+  'compose.edit.intro',
+  'compose.edit.save',
+  'compose.edit.title',
+  'compose.edit.versionNote',
+  'compose.errorFields',
   'compose.evidence',
   'compose.evidenceOptional',
   'compose.fixNow',
@@ -1097,6 +1200,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.period',
   'compose.periodNote',
   'compose.preview',
+  'compose.previewEmpty',
   'compose.publish',
   'compose.publishedNote',
   'compose.redact',
@@ -1127,15 +1231,20 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.tags',
   'compose.tagsRequired',
   'compose.title',
+  'compose.titleLabel',
   'compose.treatment',
   'condition.accounts',
   'condition.acrossAll',
   'condition.alsoCalled',
   'condition.areas',
   'condition.districts',
+  'condition.doctorCount',
   'condition.doctors',
+  'condition.experienceCount',
   'condition.facilities',
   'condition.hospitals',
+  'condition.kicker',
+  'condition.listCount',
   'condition.medicines',
   'condition.mentionNote',
   'condition.noGeo',
@@ -1163,11 +1272,13 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'disclaimer.long',
   'disclaimer.short',
   'discover.browse',
+  'discover.browseDoctors',
   'discover.browseNote',
   'discover.editorialNote',
   'discover.facilities',
   'discover.kicker',
   'discover.latest',
+  'discover.latestEmpty',
   'email.existing.body',
   'email.existing.subject',
   'email.reset.body',
@@ -1232,6 +1343,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.review.notEditable',
   'errors.review.restoreExpired',
   'ev.failNote',
+  'ev.note.count',
   'ev.remove',
   'ev.replace',
   'ev.state.checking',
@@ -1241,6 +1353,26 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'ev.state.ready',
   'ev.state.redact',
   'ev.state.scanning',
+  'ev.status.pending',
+  'ev.status.ready',
+  'ev.status.rejected',
+  'ev.upload.done.pending',
+  'ev.upload.done.ready',
+  'ev.upload.done.rejected',
+  'ev.upload.errors.failed',
+  'ev.upload.errors.noFile',
+  'ev.upload.errors.notFound',
+  'ev.upload.errors.signedOut',
+  'ev.upload.errors.tooLarge',
+  'ev.upload.errors.tooMany',
+  'ev.upload.fileLabel',
+  'ev.upload.hint',
+  'ev.upload.limitReached',
+  'ev.upload.listLabel',
+  'ev.upload.pendingNote',
+  'ev.upload.rejectedNote',
+  'ev.upload.submit',
+  'ev.upload.uploading',
   'evidence.group.later',
   'evidence.group.outcome',
   'evidence.group.reviewed',
@@ -1252,16 +1384,20 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'experience.bookmarked',
   'experience.cancelEdit',
   'experience.commentBox',
+  'experience.commentDeleted',
   'experience.commentGone',
   'experience.commentGoneWhy',
   'experience.commentHint',
+  'experience.commentLength',
   'experience.commentPost',
+  'experience.commentPosted',
   'experience.currentNote',
   'experience.currentStatus',
   'experience.dangerWarning',
   'experience.deleteComment',
   'experience.discussion',
   'experience.editComment',
+  'experience.editExperience',
   'experience.edited',
   'experience.episode',
   'experience.evidenceOnly',
@@ -1271,6 +1407,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'experience.linkWarning',
   'experience.openEvidence',
   'experience.otherAccounts',
+  'experience.outcomeLabel',
   'experience.ownComment',
   'experience.providerHere',
   'experience.providerNote',
@@ -1281,21 +1418,30 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'experience.reply',
   'experience.replyCancel',
   'experience.replyLevel',
+  'experience.replyPost',
   'experience.replyingTo',
   'experience.saveComment',
+  'experience.sentimentLabel',
+  'experience.signInToComment',
   'experience.timeline',
   'experience.writtenBy',
+  'experience.yourExperience',
   'facility.accounts',
+  'facility.address',
   'facility.branch',
   'facility.criteria',
   'facility.doctorsHere',
   'facility.doctorsNote',
   'facility.kicker',
+  'facility.listCount',
+  'facility.noVisits',
+  'facility.orderNote',
   'facility.parent',
   'facility.separation',
   'facility.type.clinic',
   'facility.type.diagnostic',
   'facility.type.hospital',
+  'facility.visitCount',
   'facility.write',
   'filter.any',
   'filter.clear',
@@ -1311,6 +1457,23 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'filter.sentiment',
   'filter.specialty',
   'filter.title',
+  'formErrors.auth.displayNameInvalid',
+  'formErrors.auth.emailInvalid',
+  'formErrors.auth.passwordTooLong',
+  'formErrors.auth.registrationRefused',
+  'formErrors.compose.bodyTooLong',
+  'formErrors.compose.bodyTooShort',
+  'formErrors.compose.doctorRequired',
+  'formErrors.compose.identityRequired',
+  'formErrors.compose.newDoctorBmdc',
+  'formErrors.compose.newDoctorChamber',
+  'formErrors.compose.newDoctorName',
+  'formErrors.compose.newDoctorSpecialty',
+  'formErrors.compose.periodInvalid',
+  'formErrors.compose.relationshipRequired',
+  'formErrors.compose.titleLength',
+  'formErrors.profile.displayNameRequired',
+  'formErrors.profile.displayNameTooLong',
   'hero.body',
   'hero.browse',
   'hero.cta',
@@ -1333,6 +1496,8 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'label.followUp',
   'label.limitedData',
   'label.limitedDataWhy',
+  'label.memberAdded',
+  'label.memberAddedWhy',
   'label.noDocuments',
   'label.notProvided',
   'label.notVerified',
@@ -1354,6 +1519,18 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'mine.empty',
   'mine.notifNote',
   'mine.notifications',
+  'mine.profile.experiences',
+  'mine.profile.heading',
+  'mine.profile.joined',
+  'mine.profile.languageNote',
+  'mine.profile.nameNote',
+  'mine.profile.nameSaved',
+  'mine.profile.posted',
+  'mine.profile.saveName',
+  'mine.profile.state.hidden',
+  'mine.profile.state.other',
+  'mine.profile.state.removed',
+  'mine.profile.usernameNote',
   'mine.published',
   'mine.restore',
   'mine.title',
@@ -1413,6 +1590,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'profile.claimNote',
   'profile.claimThis',
   'profile.conditions',
+  'profile.experienceCount',
   'profile.facilities',
   'profile.facilitySep',
   'profile.fee',
@@ -1420,11 +1598,15 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'profile.hasDocuments',
   'profile.kicker',
   'profile.languages',
+  'profile.list.count',
+  'profile.list.orderNote',
+  'profile.noExperiences',
   'profile.qualifications',
   'profile.showing',
   'profile.specialty',
   'profile.total',
   'profile.write',
+  'profile.writeAbout',
   'prov.admin',
   'prov.community',
   'prov.provider',
@@ -1460,6 +1642,8 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'results.noneBody',
   'results.tabDoctors',
   'results.tabFacilities',
+  'review.card.comments',
+  'review.card.documents',
   'review.comments',
   'review.episodeDate',
   'review.helpful',
