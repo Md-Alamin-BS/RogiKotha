@@ -12,12 +12,12 @@ Read this first when the session restarts. **On another computer, start with [CO
 
 ## Progress
 
-- **2026-11-04: the full plan is running again** (intent `261011-aidlc-adoption`, active on this machine).
-  - The demo slice (`bolt/demo-slice`, kept exactly as it is, its intent paused at its Code Generation gate) was squash-merged into `main` as the base (`55d1173`). `pnpm check` on `main` is green: 160 files and 1,743 tests, smoke 28 tests.
-  - `main` was then merged into `bolt/t-101-better-auth-adapter` (`af214ea`), with the 4 expected conflicts resolved as the 2026-11-01 note says.
-  - T-101 Code Generation resumes at Step 5 as workflow `wf_5f406e07-590`. T-101 replaces the slice's sign-in shortcut (ISS-391) and keeps every demo flow working.
-- Merged Units of the full plan: 8 of 45, plus the demo slice. Remaining: 37 Units, T-101 first.
-- This machine keeps two stashes of its old demo-branch bookkeeping (`git stash list`). They are not needed; GitHub's `bolt/demo-slice` is the record.
+- **2026-11-04, the full plan is running** (intent `261011-aidlc-adoption`).
+  - Merged on `main`: 9 of 45 Units (CR-004, CR-009, CR-006, CR-007, CR-011, CR-012, T-010, T-011, T-101) plus the demo slice. `main` is at `87a87c5`; `pnpm check` is green with 2,282 tests.
+  - T-101 needs the owner's written sign-off before the phase gate (high-risk; listed in the review queue).
+  - GitHub Actions is removed (FD-102). Never add `.github/workflows` back.
+- **In progress:** U14 **T-201** Functional Design. The draft is copied into the record and the reviewer is dispatched. Next: the verdict, `unit complete`, then Code Generation through a parallel workflow, the same shape as T-101's.
+- The demo slice stays on `bolt/demo-slice`, with its intent paused at its Code Generation gate.
 
 ## In flight when the session closed (cut off by the close; resume as below)
 
