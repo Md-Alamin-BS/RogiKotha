@@ -2,7 +2,7 @@
 // connect lazily, so this needs no database.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { buildContainer } from './container.js';
+import { MailRetry, buildContainer } from './container.js';
 import type { WorkerEnv } from './env.js';
 
 function aWorkerEnv(overrides: Partial<WorkerEnv> = {}): WorkerEnv {
@@ -10,6 +10,7 @@ function aWorkerEnv(overrides: Partial<WorkerEnv> = {}): WorkerEnv {
     DATABASE_URL_WORKER: 'postgres://rk_worker:secret@127.0.0.1:1/rogikotha_unreachable',
     APP_MODE: 'demo',
     LOG_LEVEL: 'info',
+    MAIL_RECIPIENT_KEY: new Uint8Array(32).fill(7),
     STORAGE_ROOT: './.data/storage',
     CLAMD_HOST: 'localhost',
     CLAMD_PORT: 3310,
@@ -59,6 +60,48 @@ describe('buildContainer', () => {
     const container = buildContainer(aWorkerEnv());
 
     await expect(container.close()).resolves.toBeUndefined();
+  });
+
+  it('builds the mail crypto from the mail key alone, so it decrypts but has no MAC key (review point 6)', async () => {
+    const container = buildContainer(aWorkerEnv());
+
+    const sealed = container.mailCrypto.encrypt('shirin.demo@example.test');
+    const opened = container.mailCrypto.decryptText(sealed);
+    await container.close();
+
+    expect(opened).toEqual({ ok: true, data: 'shirin.demo@example.test' });
+    expect(() => container.mailCrypto.hmac('email-key', 'shirin.demo@example.test')).toThrow();
+  });
+
+  it('cannot open a recipient sealed under a different key', async () => {
+    const container = buildContainer(aWorkerEnv());
+    const other = buildContainer(aWorkerEnv({ MAIL_RECIPIENT_KEY: new Uint8Array(32).fill(9) }));
+
+    const sealed = other.mailCrypto.encrypt('shirin.demo@example.test');
+    const opened = container.mailCrypto.decryptText(sealed);
+    await container.close();
+    await other.close();
+
+    expect(opened.ok).toBe(false);
+  });
+
+  it('loads the email catalog in both languages from the message files', async () => {
+    const container = buildContainer(aWorkerEnv());
+    await container.close();
+
+    expect(container.emailCatalog.en['email.verify']?.body).toContain('{link}');
+    expect(container.emailCatalog.bn['email.verify']?.body).toContain('{link}');
+  });
+
+  it('asks for a retry with an error that names only the code and the attempt count', () => {
+    const retry = new MailRetry('smtp_unavailable', 2);
+
+    expect(retry).toBeInstanceOf(Error);
+    expect(retry.message).toBe('mail.send retry: smtp_unavailable after 2 attempts');
+    expect({ code: retry.errorCode, attempts: retry.attempts }).toEqual({
+      code: 'smtp_unavailable',
+      attempts: 2,
+    });
   });
 
   it('builds a separate set of adapters on every call', async () => {

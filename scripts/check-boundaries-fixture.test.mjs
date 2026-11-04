@@ -29,7 +29,8 @@ describe('the boundary fixture proof', () => {
 
     expect(failures).toEqual([]);
     expect(ok).toBe(true);
-    expect(expected).toBe(15);
+    // FX22 (T-101, FD-098) made it 16.
+    expect(expected).toBe(16);
   });
 
   it('fails when the element rule is switched off', async () => {
@@ -90,7 +91,8 @@ describe('the boundary rules on imports the fixture does not plant', () => {
   });
 
   it('refuse a workspace import that resolves to no source file', async () => {
-    const code = "import type { X } from '@rogikotha/application/worker';\nexport type Y = X;";
+    // `@rogikotha/application/worker` exists since T-101, so a subpath no package exports.
+    const code = "import type { X } from '@rogikotha/contracts/no-such-entry';\nexport type Y = X;";
 
     expect(await rulesFor('apps/worker/src/late.ts', code)).toEqual(['boundaries/dependencies']);
   });

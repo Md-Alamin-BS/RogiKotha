@@ -92,6 +92,8 @@ export const emailDeliveries = pgTable(
     attempts: integer('attempts').notNull().default(0),
     lastErrorCode: text('last_error_code'),
     sentAt: timestamp('sent_at', { withTimezone: true }),
+    // T-101 (C2, Question 3): one delivery per key; null for deliveries that need no de-duplication.
+    dedupeKey: text('dedupe_key').unique(),
     createdAt: createdAt(),
   },
   (t) => [

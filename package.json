@@ -18,7 +18,7 @@
     "format:check": "prettier --check .",
     "check:identity": "node scripts/check-identity.mjs",
     "test": "vitest run --config vitest.workspace.ts",
-    "test:int": "vitest run --config vitest.workspace.ts --project database",
+    "test:int": "vitest run --config vitest.workspace.ts --project database --project web-int --project worker-int",
     "test:coverage": "vitest run --config vitest.workspace.ts --coverage",
     "smoke": "vitest run --config vitest.workspace.ts smoke.test",
     "i18n:check": "pnpm --filter @rogikotha/i18n check",

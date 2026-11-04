@@ -2,6 +2,7 @@
 export * from './client';
 export * from './schema/index';
 export * from './audit-writer';
+export * from './unit-of-work';
 
 export * from './repositories/account';
 export * from './repositories/identity';
@@ -15,6 +16,7 @@ export * from './repositories/evidence';
 export * from './repositories/community';
 export * from './repositories/moderation';
 export * from './repositories/notification';
+export * from './repositories/email-delivery';
 export * from './repositories/retention';
 export * from './repositories/data-requests';
 export * from './repositories/outbox';

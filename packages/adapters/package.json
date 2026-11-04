@@ -8,7 +8,8 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "bench:argon2": "node scripts/bench-argon2.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.1",

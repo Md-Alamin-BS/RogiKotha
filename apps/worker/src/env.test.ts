@@ -18,4 +18,16 @@ describe('worker env loader', () => {
     expect(consoleLog).not.toHaveBeenCalled();
     expect(stdoutWrite).not.toHaveBeenCalled();
   });
+
+  it('removes the web encryption key and the auth secret from process.env as it loads (FD-095)', async () => {
+    vi.stubEnv('APP_ENCRYPTION_KEY', 'web-key-the-worker-must-not-hold');
+    vi.stubEnv('BETTER_AUTH_SECRET', 'web-secret-the-worker-must-not-hold');
+    vi.resetModules();
+
+    await import('./env.js');
+
+    expect(process.env).not.toHaveProperty('APP_ENCRYPTION_KEY');
+    expect(process.env).not.toHaveProperty('BETTER_AUTH_SECRET');
+    vi.unstubAllEnvs();
+  });
 });

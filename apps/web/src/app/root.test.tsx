@@ -21,6 +21,9 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 vi.mock('next/headers', () => ({ cookies: vi.fn(), headers: vi.fn() }));
+// The health route probes the database with `select 1`; the stand-in answers or fails.
+const probeQuery = vi.hoisted(() => vi.fn());
+vi.mock('@/server/db', () => ({ getDb: () => ({ $client: { query: probeQuery } }) }));
 vi.mock('@/i18n/routing', () => ({
   routing: { locales: ['en', 'bn'], defaultLocale: 'en' },
 }));
@@ -127,30 +130,41 @@ describe('not-found page', () => {
 describe('health route', () => {
   const originalMode = process.env.APP_MODE;
 
+  beforeEach(() => {
+    probeQuery.mockReset();
+    probeQuery.mockResolvedValue({ rows: [{ '?column?': 1 }] });
+  });
+
   afterEach(() => {
     if (originalMode === undefined) delete process.env.APP_MODE;
     else process.env.APP_MODE = originalMode;
   });
 
-  it('answers ok and reports every dependency as not yet probed', async () => {
-    const response = health();
+  it('answers ok when the database answers, and reports the other dependencies as not yet probed', async () => {
+    const response = await health();
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
-      db: 'unknown',
+      db: 'ok',
       queue: 'unknown',
       mail: 'unknown',
       scanner: 'unknown',
     });
   });
 
+  it('answers not ok with the database down when the probe fails', async () => {
+    probeQuery.mockRejectedValue(new Error('connection refused'));
+
+    await expect((await health()).json()).resolves.toMatchObject({ ok: false, db: 'down' });
+  });
+
   it('reports the running mode from APP_MODE', async () => {
     process.env.APP_MODE = 'demo';
-    await expect(health().json()).resolves.toMatchObject({ mode: 'demo' });
+    await expect((await health()).json()).resolves.toMatchObject({ mode: 'demo' });
   });
 
   it('reports the mode as unknown when APP_MODE is not set', async () => {
     delete process.env.APP_MODE;
-    await expect(health().json()).resolves.toMatchObject({ mode: 'unknown' });
+    await expect((await health()).json()).resolves.toMatchObject({ mode: 'unknown' });
   });
 });

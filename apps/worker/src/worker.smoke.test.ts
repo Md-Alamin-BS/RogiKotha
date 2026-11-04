@@ -15,8 +15,11 @@ import type {
 } from '@rogikotha/database';
 import { describe, expect, it } from 'vitest';
 
+import type { WorkerContainer } from './container.js';
+import { buildEmailCatalog } from './email-catalog.js';
 import { relayOnce } from './handlers/outbox-relay.js';
 import type { RelayQueue } from './handlers/outbox-relay.js';
+import { JOBS } from './registry.js';
 
 class ListRelayStore implements RelayStore {
   readonly enqueued: { name: string; data: unknown }[] = [];
@@ -57,5 +60,24 @@ describe('worker smoke', () => {
       'search.refresh',
     ]);
     expect(store.processed).toEqual(['evt-smoke-1']);
+  });
+
+  // T-101: the worker's `mail.send` entry hands each job to the use case and has copy in both languages.
+  it('registers mail.send, hands its delivery id over, and has the verification email in en and bn', async () => {
+    const sent: unknown[] = [];
+    const ctx = {
+      logger: noopLogger,
+      sendEmail: (job: unknown) => {
+        sent.push(job);
+        return Promise.resolve();
+      },
+    } as unknown as WorkerContainer;
+    const catalog = buildEmailCatalog();
+
+    await JOBS['mail.send']?.handler({ deliveryId: '0192d6a4-7c1e-7a3b-9f10-5d2c8e4b6a01' }, ctx);
+
+    expect(sent).toEqual([{ deliveryId: '0192d6a4-7c1e-7a3b-9f10-5d2c8e4b6a01' }]);
+    expect(catalog.en['email.verify']?.body).toContain('{link}');
+    expect(catalog.bn['email.verify']?.body).toContain('{link}');
   });
 });

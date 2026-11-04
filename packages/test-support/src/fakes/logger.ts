@@ -1,23 +1,28 @@
-// `Logger` port fake (03-routes-and-contracts.md §3:
-// `info|warn|error(event, fields)`). Task step 5: "CollectingLogger".
+// `Logger` port fake: collects every line so a test can assert on events and scan the fields.
+import type { LogFields, Logger } from '@rogikotha/application';
+
 export interface LogEntry {
   level: 'info' | 'warn' | 'error';
   event: string;
-  fields: Record<string, unknown>;
+  fields: LogFields;
 }
 
-export class CollectingLogger {
+export class CollectingLogger implements Logger {
   readonly entries: LogEntry[] = [];
 
-  info(event: string, fields: Record<string, unknown> = {}): void {
+  info(event: string, fields: LogFields = {}): void {
     this.entries.push({ level: 'info', event, fields });
   }
 
-  warn(event: string, fields: Record<string, unknown> = {}): void {
+  warn(event: string, fields: LogFields = {}): void {
     this.entries.push({ level: 'warn', event, fields });
   }
 
-  error(event: string, fields: Record<string, unknown> = {}): void {
+  error(event: string, fields: LogFields = {}): void {
     this.entries.push({ level: 'error', event, fields });
+  }
+
+  events(): string[] {
+    return this.entries.map((entry) => entry.event);
   }
 }

@@ -1,44 +1,99 @@
 /// <reference types="node" />
-// ISS-XXX: this package's automatic `@types/node` inclusion does not fire
-// under plain `tsc -p tsconfig.json` (root cause not identified; works for
-// every sibling package with an identical tsconfig) — worked around with
-// this file's own reference directive plus `--types node` on the package's
-// `typecheck` script, both narrower than editing the shared
-// `tsconfig.json` (outside this task's owned paths).
-// `Crypto` port fake (03-routes-and-contracts.md §3: `encrypt(bytes)`,
-// `decrypt(bytes)`, `hash(bytes)` (sha256), `randomToken()`). Task step 5
-// says "XOR-free: real AES with a fixed test key" — this uses real
-// `node:crypto` AES-256-GCM (the same algorithm `adapters/crypto` uses per
-// 02-data-model.md's header, "Encrypted columns use AES-256-GCM"), just
-// with a fixed, well-known test key instead of `APP_ENCRYPTION_KEY`, so
-// round-tripping in a test behaves exactly like production would.
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
+// `Crypto` port fake: real AES-256-GCM (`iv | tag | ciphertext`, the layout `adapters/crypto` uses)
+// and real HMAC-SHA256, with fixed test keys instead of APP_ENCRYPTION_KEY, MAIL_RECIPIENT_KEY and
+// BETTER_AUTH_SECRET. Two instances built with different `keyByte`s behave like `crypto` and
+// `mailCrypto`: a value sealed by one does not open with the other (FD-095).
+// Plain `Uint8Array`s throughout: `application`'s tests compile this file under a tsconfig whose
+// lib does not accept a `Buffer` where Node's typings ask for a `Uint8Array`.
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from 'node:crypto';
 
-const TEST_KEY = Buffer.from('0'.repeat(64), 'hex'); // 32 bytes, all zero — test-only.
+import {
+  portErr,
+  portOk,
+  type Crypto,
+  type HmacPurpose,
+  type PortResult,
+} from '@rogikotha/application';
 
-export class FakeCrypto {
-  encrypt(bytes: Buffer): Buffer {
-    const iv = randomBytes(12);
-    const cipher = createCipheriv('aes-256-gcm', TEST_KEY, iv);
-    const ciphertext = Buffer.concat([cipher.update(bytes), cipher.final()]);
-    const tag = cipher.getAuthTag();
-    return Buffer.concat([iv, tag, ciphertext]);
+export interface FakeCryptoOptions {
+  /** Every byte of the 32-byte test key; instances with different values cannot read each other. */
+  keyByte?: number;
+  /** Null builds an instance like the worker's `mailCrypto`, whose `hmac` refuses (review point 6). */
+  macSecret?: string | null;
+}
+
+const IV_BYTES = 12;
+const TAG_BYTES = 16;
+const encoder = new TextEncoder();
+const decoder = new TextDecoder('utf-8', { fatal: true });
+
+function bytesOf(value: Uint8Array | string): Uint8Array {
+  return typeof value === 'string' ? encoder.encode(value) : new Uint8Array(value);
+}
+
+function concat(...parts: Uint8Array[]): Uint8Array {
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+  let offset = 0;
+  for (const part of parts) {
+    out.set(part, offset);
+    offset += part.length;
+  }
+  return out;
+}
+
+export class FakeCrypto implements Crypto {
+  private readonly key: Uint8Array;
+  private readonly macSecret: string | null;
+
+  constructor(options: FakeCryptoOptions = {}) {
+    this.key = new Uint8Array(32).fill(options.keyByte ?? 0);
+    this.macSecret = options.macSecret === undefined ? 'test-mac-secret' : options.macSecret;
   }
 
-  decrypt(bytes: Buffer): Buffer {
-    const iv = bytes.subarray(0, 12);
-    const tag = bytes.subarray(12, 28);
-    const ciphertext = bytes.subarray(28);
-    const decipher = createDecipheriv('aes-256-gcm', TEST_KEY, iv);
-    decipher.setAuthTag(tag);
-    return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+  encrypt(plain: Uint8Array | string): Uint8Array {
+    const iv = new Uint8Array(randomBytes(IV_BYTES));
+    const cipher = createCipheriv('aes-256-gcm', this.key, iv);
+    const head = new Uint8Array(cipher.update(bytesOf(plain)));
+    const tail = new Uint8Array(cipher.final());
+    return concat(iv, new Uint8Array(cipher.getAuthTag()), head, tail);
   }
 
-  hash(bytes: Buffer): string {
-    return createHash('sha256').update(bytes).digest('hex');
+  decrypt(sealed: Uint8Array): PortResult<Uint8Array, 'decrypt_failed'> {
+    if (sealed.length < IV_BYTES + TAG_BYTES) return portErr('decrypt_failed');
+    try {
+      const decipher = createDecipheriv('aes-256-gcm', this.key, sealed.slice(0, IV_BYTES));
+      decipher.setAuthTag(sealed.slice(IV_BYTES, IV_BYTES + TAG_BYTES));
+      const head = new Uint8Array(decipher.update(sealed.slice(IV_BYTES + TAG_BYTES)));
+      return portOk(concat(head, new Uint8Array(decipher.final())));
+    } catch {
+      return portErr('decrypt_failed');
+    }
+  }
+
+  decryptText(sealed: Uint8Array): PortResult<string, 'decrypt_failed'> {
+    const result = this.decrypt(sealed);
+    if (!result.ok) return result;
+    try {
+      return portOk(decoder.decode(result.data));
+    } catch {
+      return portErr('decrypt_failed');
+    }
+  }
+
+  hash(value: Uint8Array | string): string {
+    return createHash('sha256').update(bytesOf(value)).digest('hex');
   }
 
   randomToken(): string {
-    return randomBytes(24).toString('hex');
+    return randomBytes(32).toString('base64url');
+  }
+
+  hmac(purpose: HmacPurpose, value: Uint8Array | string): string {
+    if (this.macSecret === null) {
+      throw new Error('FakeCrypto: hmac needs a macSecret; this instance has none');
+    }
+    // A per-purpose key, like the adapter's HKDF derivation, so purposes never collide.
+    const purposeKey = createHmac('sha256', this.macSecret).update(purpose).digest('hex');
+    return createHmac('sha256', purposeKey).update(bytesOf(value)).digest('hex');
   }
 }

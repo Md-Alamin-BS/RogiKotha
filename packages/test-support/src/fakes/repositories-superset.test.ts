@@ -27,6 +27,7 @@ import {
   FakeReviewRepository,
   FakeTaxonomyRepository,
 } from './repositories.js';
+import { FakeEmailDeliveryRepository } from './email-delivery-repository.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repositoriesDir = path.resolve(here, '../../../database/src/repositories');
@@ -40,7 +41,8 @@ const repositoriesDir = path.resolve(here, '../../../database/src/repositories')
  */
 function stubMethodNames(filePath: string): string[] {
   const source = fs.readFileSync(filePath, 'utf8');
-  const methodPattern = /^ {2}([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\([^]*?\)\s*:\s*Promise</gm;
+  // ISS-223: an `async` prefix is part of the shape too (`outbox.ts`, the T-101 repositories).
+  const methodPattern = /^ {2}(?:async\s+)?([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\([^]*?\)\s*:\s*Promise</gm;
   const names = new Set<string>();
   for (const match of source.matchAll(methodPattern)) names.add(match[1]!);
   return [...names];
@@ -66,6 +68,11 @@ const REPOSITORY_PAIRS: { file: string; FakeClass: new () => unknown }[] = [
   { file: 'retention.ts', FakeClass: FakeRetentionRepository },
   { file: 'review.ts', FakeClass: FakeReviewRepository },
   { file: 'taxonomy.ts', FakeClass: FakeTaxonomyRepository },
+  // T-101: the email-delivery methods have their own class (the port's `insert` would clash).
+  {
+    file: 'email-delivery.ts',
+    FakeClass: FakeEmailDeliveryRepository as unknown as new () => unknown,
+  },
 ];
 
 describe('every repository fake is a method-name superset of its Pg*Repository stub', () => {
@@ -83,7 +90,28 @@ describe('every repository fake is a method-name superset of its Pg*Repository s
     },
   );
 
-  it('covers all 13 repository fakes', () => {
-    expect(REPOSITORY_PAIRS).toHaveLength(13);
+  it('covers all 14 repository fakes', () => {
+    expect(REPOSITORY_PAIRS).toHaveLength(14);
+  });
+
+  it('pairs every repository file, so a new one cannot go unchecked (ISS-223)', () => {
+    // `outbox.ts` has its own fake shape (ListOutbox) and `not-implemented.ts` holds no repository.
+    const unpairedByDesign = new Set(['not-implemented.ts', 'outbox.ts']);
+    // Test helpers (`*-test-support.ts`) sit beside the repositories but are not repositories.
+    const repositoryFiles = fs
+      .readdirSync(repositoriesDir)
+      .filter((file) => file.endsWith('.ts') && !file.endsWith('.test.ts'))
+      .filter((file) => !file.endsWith('-test-support.ts'))
+      .filter((file) => !unpairedByDesign.has(file));
+
+    const paired = new Set(REPOSITORY_PAIRS.map((pair) => pair.file));
+
+    expect(repositoryFiles.filter((file) => !paired.has(file))).toEqual([]);
+  });
+
+  it('extracts async methods as well as plain ones', () => {
+    const methods = stubMethodNames(path.join(repositoriesDir, 'outbox.ts'));
+
+    expect(methods.length).toBeGreaterThan(0);
   });
 });

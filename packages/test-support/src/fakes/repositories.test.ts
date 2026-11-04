@@ -28,34 +28,148 @@ import {
 } from './repositories.js';
 
 describe('FakeAccountRepository', () => {
+  const tx = {} as never;
+
   async function withProfile(repo: FakeAccountRepository) {
     const username = seqId('user');
-    const profile = await repo.createProfile({ authUserId: seqId('auth'), username });
-    return { profile, id: profile.id as string, username };
+    const accountId = seqId('account');
+    const authUserId = seqId('auth');
+    repo.store.users.set(authUserId, {
+      authUserId,
+      email: `${username}@example.test`,
+      passwordHash: 'fasthash$x',
+      emailVerified: false,
+    });
+    await repo.createProfile(tx, {
+      accountId,
+      authUserId,
+      username,
+      displayName: 'Shirin Demo',
+      locale: 'en',
+      ageConfirmedAt: new Date(0),
+      termsVersion: '1',
+      termsAcceptedAt: new Date(0),
+    });
+    await repo.insertPreferences(tx, { accountId, interfaceLocale: 'en' });
+    return { accountId, authUserId, username, email: `${username}@example.test` };
   }
 
-  it('finds a created profile by auth user id and by username', async () => {
+  it('finds a created profile by auth user id, by id and by username, in any case', async () => {
     const repo = new FakeAccountRepository();
-    const { profile, username } = await withProfile(repo);
+    const { accountId, authUserId, username } = await withProfile(repo);
 
-    expect(await repo.findByAuthUserId(profile.authUserId as string)).toEqual(profile);
-    expect(await repo.findByUsername(username)).toEqual(profile);
+    expect(await repo.findProfileByAuthUserId(tx, authUserId)).toMatchObject({
+      accountId,
+      status: 'pending_verification',
+    });
+    expect((await repo.findProfileById(tx, accountId))?.username).toBe(username);
+    expect((await repo.findByAuthUserId(authUserId))?.accountId).toBe(accountId);
+    expect((await repo.findByUsername(username.toUpperCase()))?.accountId).toBe(accountId);
+    expect(await repo.usernameTaken(tx, username.toUpperCase())).toBe(true);
   });
 
-  it('returns nothing for an unknown auth user id or username', async () => {
+  it('returns nothing for an unknown auth user id, id, email or username', async () => {
     const repo = new FakeAccountRepository();
     await withProfile(repo);
 
+    expect(await repo.findProfileByAuthUserId(tx, 'missing')).toBeNull();
+    expect(await repo.findProfileById(tx, 'missing')).toBeNull();
+    expect(await repo.findByEmail(tx, 'nobody.demo@example.test')).toBeNull();
+    expect(await repo.findCredentialByAccountId(tx, 'missing')).toBeNull();
+    expect(await repo.findOwnEmail(tx, 'missing')).toBeNull();
+    expect(await repo.findResetTokenAccount(tx, 'no-token')).toBeNull();
     expect(await repo.findByAuthUserId('missing')).toBeUndefined();
     expect(await repo.findByUsername('missing')).toBeUndefined();
   });
 
+  it('reads the address and the credential through the library user behind the profile', async () => {
+    const repo = new FakeAccountRepository();
+    const { accountId, email } = await withProfile(repo);
+
+    expect(await repo.findByEmail(tx, email)).toMatchObject({ accountId });
+    expect(await repo.findCredentialByEmail(tx, email)).toMatchObject({
+      accountId,
+      passwordHash: 'fasthash$x',
+    });
+    expect((await repo.findCredentialByAccountId(tx, accountId))?.passwordHash).toBe('fasthash$x');
+    expect(await repo.findOwnEmail(tx, accountId)).toBe(email);
+  });
+
+  it('resolves a reset token to its account without consuming it', async () => {
+    const repo = new FakeAccountRepository();
+    const { accountId, authUserId, email } = await withProfile(repo);
+    const expiresAt = new Date('2026-11-01T10:00:00.000Z');
+    repo.store.resetTokens.set('reset-1', { token: 'reset-1', authUserId, expiresAt });
+
+    expect(await repo.findResetTokenAccount(tx, 'reset-1')).toEqual({
+      accountId,
+      authUserId,
+      status: 'pending_verification',
+      email,
+      expiresAt,
+    });
+    expect(repo.store.resetTokens.has('reset-1')).toBe(true);
+  });
+
+  it('refuses a taken or racing username on insert', async () => {
+    const repo = new FakeAccountRepository();
+    const { username } = await withProfile(repo);
+    repo.racingUsernames.add('racing_name');
+    const profile = {
+      accountId: 'a2',
+      authUserId: 'u2',
+      displayName: 'Other',
+      locale: 'en' as const,
+      ageConfirmedAt: new Date(0),
+      termsVersion: '1',
+      termsAcceptedAt: new Date(0),
+    };
+
+    expect(await repo.createProfile(tx, { ...profile, username })).toEqual({
+      ok: false,
+      error: { code: 'username_taken' },
+    });
+    expect(await repo.usernameTaken(tx, 'racing_name')).toBe(false);
+    expect((await repo.createProfile(tx, { ...profile, username: 'racing_name' })).ok).toBe(false);
+  });
+
   it('updates the status of an existing profile and ignores an unknown one', async () => {
     const repo = new FakeAccountRepository();
-    const { id } = await withProfile(repo);
+    const { accountId } = await withProfile(repo);
 
-    expect(await repo.updateStatus(id, 'suspended')).toMatchObject({ id, status: 'suspended' });
-    expect(await repo.updateStatus('missing', 'suspended')).toBeUndefined();
+    await repo.updateStatus(tx, accountId, 'suspended');
+    await repo.updateStatus(tx, 'missing', 'suspended');
+
+    expect((await repo.findProfileById(tx, accountId))?.status).toBe('suspended');
+    expect(repo.profiles.size).toBe(1);
+  });
+
+  it('writes the two default personas with the display name and the username', async () => {
+    const repo = new FakeAccountRepository();
+
+    await repo.insertDefaultPersonas(tx, {
+      accountId: 'a1',
+      username: 'shirin_88',
+      displayName: 'Shirin',
+      namedPersonaId: 'p1',
+      pseudonymousPersonaId: 'p2',
+    });
+
+    expect(repo.personas.map((p) => [p.kind, p.displayName])).toEqual([
+      ['named', 'Shirin'],
+      ['pseudonymous', 'shirin_88'],
+    ]);
+  });
+
+  it('restores its application rows on rollback but keeps the library user', async () => {
+    const repo = new FakeAccountRepository();
+    const state = repo.snapshot();
+    const { authUserId } = await withProfile(repo);
+
+    repo.restore(state);
+
+    expect(repo.profiles.size).toBe(0);
+    expect(repo.store.users.has(authUserId)).toBe(true);
   });
 
   it('lists only the devices of the asked account', async () => {
@@ -85,32 +199,31 @@ describe('FakeAccountRepository', () => {
     expect(await repo.consumeDeviceApproval('not-a-real-hash')).toBeUndefined();
   });
 
-  it('saves preferences onto an existing profile', async () => {
+  it('saves a partial preference change onto the stored preferences', async () => {
     const repo = new FakeAccountRepository();
-    const { id } = await withProfile(repo);
+    const { accountId } = await withProfile(repo);
 
-    const saved = await repo.savePreferences(id, { locale: 'bn' });
+    await repo.savePreferences(tx, accountId, { interfaceLocale: 'bn', emailDiscussion: false });
+    await repo.savePreferences(tx, 'ghost', { interfaceLocale: 'en' });
 
-    expect(saved).toMatchObject({ id, preferences: { locale: 'bn' } });
-  });
-
-  it('returns the preferences on their own when the profile does not exist yet', async () => {
-    const repo = new FakeAccountRepository();
-
-    expect(await repo.savePreferences('ghost', { locale: 'en' })).toEqual({
-      accountId: 'ghost',
-      preferences: { locale: 'en' },
+    expect(await repo.findPreferences(tx, accountId)).toMatchObject({
+      interfaceLocale: 'bn',
+      emailDiscussion: false,
+      emailSecurity: true,
     });
+    expect(await repo.findPreferences(tx, 'ghost')).toBeNull();
   });
 
-  it('gives feedback a fresh id and keeps its body', async () => {
+  it('keeps each feedback body with its locale', async () => {
     const repo = new FakeAccountRepository();
 
-    const first = await repo.insertFeedback('a1', 'Thanks');
-    const second = await repo.insertFeedback('a1', 'Again');
+    await repo.insertFeedback(tx, { id: 'f1', accountId: 'a1', body: 'Thanks', locale: 'en' });
+    await repo.insertFeedback(tx, { id: 'f2', accountId: 'a1', body: 'ধন্যবাদ', locale: 'bn' });
 
-    expect(first).toMatchObject({ accountId: 'a1', body: 'Thanks' });
-    expect(second.id).not.toBe(first.id);
+    expect(repo.feedback.map((f) => [f.body, f.locale])).toEqual([
+      ['Thanks', 'en'],
+      ['ধন্যবাদ', 'bn'],
+    ]);
   });
 
   it('adds, lists and removes a bookmark per account', async () => {

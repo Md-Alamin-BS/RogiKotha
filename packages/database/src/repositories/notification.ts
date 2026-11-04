@@ -1,7 +1,8 @@
 // Stubs only (task step 13) — every method throws `NotImplemented`, naming
 // the task that fills it in. Method names are this implementer's reading of
 // the `notification` command catalogue (03-routes-and-contracts.md §4), not
-// literal task text (same precedent as `ISS-091`).
+// literal task text (same precedent as `ISS-091`). The email-delivery methods
+// are the `EmailDeliveryRepository` port in `email-delivery.ts` (T-101).
 import { NotImplemented } from './not-implemented';
 
 export class PgNotificationRepository {
@@ -27,13 +28,5 @@ export class PgNotificationRepository {
 
   ackStaffNotification(id: string): Promise<unknown> {
     throw new NotImplemented('T-408', { id });
-  }
-
-  insertEmailDelivery(input: Record<string, unknown>): Promise<unknown> {
-    throw new NotImplemented('T-405', { input });
-  }
-
-  updateEmailDeliveryStatus(id: string, status: string, lastErrorCode?: string): Promise<unknown> {
-    throw new NotImplemented('T-405', { id, status, lastErrorCode });
   }
 }

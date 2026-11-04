@@ -198,7 +198,8 @@ describe('CR-006: rk_worker privilege boundary', () => {
         expect.arrayContaining(['0007_revoke_worker_auth_users', '0008_worker_grant_review']),
       );
       expect(applied.rows).toHaveLength(journal.entries.length);
-      expect(applied.rows).toHaveLength(9);
+      // T-101 adds 0009_auth_indexes_and_email_dedupe (same mechanical count change as ISS-242).
+      expect(applied.rows).toHaveLength(10);
     });
   });
 

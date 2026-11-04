@@ -89,14 +89,28 @@ describe('the register form', () => {
     });
   });
 
-  it('refuses a display name over 60 characters and a password over 128', () => {
+  it('refuses a display name over 60 characters and a password over 256', () => {
     const parsed = parseRegistration(
-      registerForm({ displayName: 'n'.repeat(61), password: 'p'.repeat(129) }),
+      registerForm({ displayName: 'n'.repeat(61), password: 'p'.repeat(257) }),
       'en',
     );
     expect(parsed.ok || parsed.state.fieldErrors).toEqual({
-      password: 'formErrors.auth.passwordTooLong',
+      password: 'errors.auth.passwordTooLong',
       displayName: 'formErrors.auth.displayNameInvalid',
+    });
+  });
+
+  it('accepts a password of exactly 256 characters, the account.register maximum', () => {
+    expect(parseRegistration(registerForm({ password: 'p'.repeat(256) }), 'en').ok).toBe(true);
+  });
+
+  it('refuses a password that is the email address, whatever its case', () => {
+    const parsed = parseRegistration(
+      registerForm({ email: 'new.reader@example.test', password: ' New.Reader@Example.test ' }),
+      'en',
+    );
+    expect(parsed.ok || parsed.state.fieldErrors).toEqual({
+      password: 'errors.auth.passwordEqualsEmail',
     });
   });
 

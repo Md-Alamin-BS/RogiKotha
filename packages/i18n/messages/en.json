@@ -506,6 +506,10 @@
       "passwordChanged": {
         "body": "Your password was changed and other devices were signed out. If this wasn't you, reset your password now: {link}",
         "subject": "Your RogiKotha password was changed"
+      },
+      "severeSignInActivity": {
+        "body": "We noticed many failed attempts to sign in to your account. If this was not you, you can reset your password here: {link}. No action is needed if it was you.",
+        "subject": "Many failed sign-in attempts on your RogiKotha account"
       }
     },
     "staff": {
@@ -605,7 +609,8 @@
       "displayNameInvalid": "Display name: enter a name of up to 60 characters.",
       "emailInvalid": "Email: enter a valid email address.",
       "passwordTooLong": "Password: use at most 128 characters.",
-      "registrationRefused": "We couldn't create an account with these details. If you already have an account, sign in instead."
+      "registrationRefused": "We couldn't create an account with these details. If you already have an account, sign in instead.",
+      "rateLimited": "Too many attempts. Wait a moment, then try again."
     },
     "compose": {
       "doctorRequired": "Doctor: choose a doctor from the list.",

@@ -43,21 +43,25 @@ describe('FakeClock', () => {
 });
 
 describe('StaticConfigProvider', () => {
-  it('serves the default config until it is replaced', () => {
-    expect(new StaticConfigProvider().current()).toBe(DEFAULT_CONFIG_VALUES);
+  it('serves the default config, asynchronously, until it is replaced', async () => {
+    await expect(new StaticConfigProvider().current()).resolves.toBe(DEFAULT_CONFIG_VALUES);
   });
 
-  it('serves the replacement after set', () => {
+  it('serves the replacement after set', async () => {
     const provider = new StaticConfigProvider();
     const replacement = aConfig({ limitedDataThreshold: 9 });
 
     provider.set(replacement);
 
-    expect(provider.current().limitedDataThreshold).toBe(9);
+    expect((await provider.current()).limitedDataThreshold).toBe(9);
   });
 });
 
 describe('FakeCrypto', () => {
+  function opened(result: ReturnType<FakeCrypto['decrypt']>): string | null {
+    return result.ok ? Buffer.from(result.data).toString('utf8') : null;
+  }
+
   it('encrypts the same bytes to different ciphertexts that both decrypt back', () => {
     const crypto = new FakeCrypto();
     const plain = Buffer.from('same input');
@@ -65,17 +69,43 @@ describe('FakeCrypto', () => {
     const first = crypto.encrypt(plain);
     const second = crypto.encrypt(plain);
 
-    expect(first.equals(second)).toBe(false);
-    expect(crypto.decrypt(first).equals(plain)).toBe(true);
-    expect(crypto.decrypt(second).equals(plain)).toBe(true);
+    expect(Buffer.from(first).equals(Buffer.from(second))).toBe(false);
+    expect(opened(crypto.decrypt(first))).toBe('same input');
+    expect(opened(crypto.decrypt(second))).toBe('same input');
   });
 
-  it('refuses ciphertext that was altered', () => {
+  it('refuses ciphertext that was altered, or that is too short to hold a tag', () => {
     const crypto = new FakeCrypto();
-    const sealed = crypto.encrypt(Buffer.from('secret'));
+    const sealed = crypto.encrypt('secret');
     sealed[sealed.length - 1] = (sealed[sealed.length - 1] ?? 0) ^ 0xff;
 
-    expect(() => crypto.decrypt(sealed)).toThrow();
+    expect(crypto.decrypt(sealed)).toEqual({ ok: false, error: { code: 'decrypt_failed' } });
+    expect(crypto.decryptText(new Uint8Array(4)).ok).toBe(false);
+  });
+
+  it('opens a string it sealed as text', () => {
+    const crypto = new FakeCrypto();
+
+    expect(crypto.decryptText(crypto.encrypt('shirin.demo@example.test'))).toEqual({
+      ok: true,
+      data: 'shirin.demo@example.test',
+    });
+  });
+
+  it('cannot open what an instance with another key sealed, like the app and mail keys', () => {
+    const appCrypto = new FakeCrypto({ keyByte: 1 });
+    const mailCrypto = new FakeCrypto({ keyByte: 2 });
+
+    expect(mailCrypto.decrypt(appCrypto.encrypt('a private date')).ok).toBe(false);
+  });
+
+  it('gives each purpose its own MAC and refuses hmac without a MAC secret', () => {
+    const crypto = new FakeCrypto();
+    const mailCrypto = new FakeCrypto({ macSecret: null });
+
+    expect(crypto.hmac('email-key', 'x')).toBe(crypto.hmac('email-key', 'x'));
+    expect(crypto.hmac('email-key', 'x')).not.toBe(crypto.hmac('network-key', 'x'));
+    expect(() => mailCrypto.hmac('email-key', 'x')).toThrow(/macSecret/);
   });
 
   it('hashes equal bytes to equal digests and different bytes to different ones', () => {
@@ -90,7 +120,7 @@ describe('FakeCrypto', () => {
 
     const first = crypto.randomToken();
 
-    expect(first).toMatch(/^[0-9a-f]{48}$/);
+    expect(first).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(crypto.randomToken()).not.toBe(first);
   });
 });

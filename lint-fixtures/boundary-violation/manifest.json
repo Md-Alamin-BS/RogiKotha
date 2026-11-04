@@ -141,6 +141,19 @@
       "kind": "control",
       "file": "apps/worker/src/worker-relative-types.ts",
       "proves": "BR3.5"
+    },
+    {
+      "id": "FX22",
+      "kind": "violation",
+      "file": "apps/worker/src/worker-i18n.ts",
+      "rule": "boundaries/dependencies",
+      "proves": "FD-098"
+    },
+    {
+      "id": "FX23",
+      "kind": "control",
+      "file": "apps/worker/src/worker-messages.ts",
+      "proves": "FD-098"
     }
   ]
 }

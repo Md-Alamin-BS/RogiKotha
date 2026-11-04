@@ -14,6 +14,11 @@ export * from './logger.js';
 export * from './config-provider.js';
 export * from './audit-writer.js';
 export * from './repositories.js';
+export * from './auth-store.js';
+export * from './auth-gateway.js';
+export * from './email-delivery-repository.js';
+export * from './unit-of-work.js';
+export * from './command-ports.js';
 
 import { ListAuditWriter } from './audit-writer.js';
 import { FakeClock } from './clock.js';
@@ -24,7 +29,7 @@ import { SequentialIds } from './ids.js';
 import { PassthroughImageSanitiser } from './image-sanitiser.js';
 import { MemoryJobQueue } from './job-queue.js';
 import { CollectingLogger } from './logger.js';
-import { RecordingMailer } from './mailer.js';
+import { RecordingMailTransport } from './mailer.js';
 import { ListOutbox } from './outbox.js';
 import { AlwaysAllowRateLimiter } from './rate-limiter.js';
 import {
@@ -58,7 +63,7 @@ export function makeFakePorts() {
     ids: new SequentialIds(),
     crypto: new FakeCrypto(),
     hasher: new FastHasher(),
-    mailer: new RecordingMailer(),
+    mailTransport: new RecordingMailTransport(),
     storage: new MemoryStorage(),
     scanner: new ScriptedScanner(),
     imageSanitiser: new PassthroughImageSanitiser(),

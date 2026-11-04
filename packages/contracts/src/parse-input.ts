@@ -54,7 +54,8 @@ export function parseInput<T>(
   const keys = Object.values(fieldErrors);
   const hasPathlessIssue = parsed.error.issues.some((issue) => issue.path.length === 0);
   const single = keys.length === 1 && !hasPathlessIssue ? keys[0] : undefined;
-  const code: ErrorCode = (single !== undefined ? FIELD_KEY_CODES[single] : undefined) ?? 'validation';
+  const code: ErrorCode =
+    (single !== undefined ? FIELD_KEY_CODES[single] : undefined) ?? 'validation';
 
   const errOpts: { fieldErrors?: Record<string, string>; correlationId?: string } = {};
   if (keys.length > 0) errOpts.fieldErrors = fieldErrors;

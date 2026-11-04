@@ -1,30 +1,27 @@
-// `Mailer` port fake (03-routes-and-contracts.md §3:
-// `send({to, category, messageKey, params, locale}) -> Result<{deliveryId}>`).
-import { ok, type Locale, type Result } from '@rogikotha/contracts';
+// `MailTransport` port fake (the worker's SMTP side, T-101 § 6.2; the old `Mailer` port became
+// `queueEmail` plus this transport). Records what was sent and can be scripted to fail.
+import {
+  portErr,
+  portOk,
+  type MailTransport,
+  type MailTransportErrorCode,
+  type OutgoingMail,
+  type PortResult,
+} from '@rogikotha/application';
 
-import { seqId } from '../builders/seq.js';
+export class RecordingMailTransport implements MailTransport {
+  readonly sent: OutgoingMail[] = [];
+  private readonly scripted: MailTransportErrorCode[] = [];
 
-export interface SentMail {
-  deliveryId: string;
-  to: string;
-  category: string;
-  messageKey: string;
-  params: Record<string, unknown>;
-  locale: Locale;
-}
+  /** The next sends fail with these codes, in order. */
+  failWith(...codes: MailTransportErrorCode[]): void {
+    this.scripted.push(...codes);
+  }
 
-export class RecordingMailer {
-  readonly sent: SentMail[] = [];
-
-  send(input: {
-    to: string;
-    category: string;
-    messageKey: string;
-    params?: Record<string, unknown>;
-    locale: Locale;
-  }): Promise<Result<{ deliveryId: string }>> {
-    const deliveryId = seqId('mail');
-    this.sent.push({ ...input, params: input.params ?? {}, deliveryId });
-    return Promise.resolve(ok({ deliveryId }));
+  send(mail: OutgoingMail): Promise<PortResult<{ messageId: string }, MailTransportErrorCode>> {
+    const failure = this.scripted.shift();
+    if (failure !== undefined) return Promise.resolve(portErr(failure));
+    this.sent.push({ ...mail });
+    return Promise.resolve(portOk({ messageId: `message-${this.sent.length}` }));
   }
 }

@@ -410,6 +410,8 @@ export type MessageKey =
   | 'email.reset.subject'
   | 'email.security.passwordChanged.body'
   | 'email.security.passwordChanged.subject'
+  | 'email.security.severeSignInActivity.body'
+  | 'email.security.severeSignInActivity.subject'
   | 'email.staff.deviceApproval.body'
   | 'email.staff.deviceApproval.subject'
   | 'email.verify.body'
@@ -589,6 +591,7 @@ export type MessageKey =
   | 'formErrors.auth.displayNameInvalid'
   | 'formErrors.auth.emailInvalid'
   | 'formErrors.auth.passwordTooLong'
+  | 'formErrors.auth.rateLimited'
   | 'formErrors.auth.registrationRefused'
   | 'formErrors.compose.bodyTooLong'
   | 'formErrors.compose.bodyTooShort'
@@ -1289,6 +1292,8 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'email.reset.subject',
   'email.security.passwordChanged.body',
   'email.security.passwordChanged.subject',
+  'email.security.severeSignInActivity.body',
+  'email.security.severeSignInActivity.subject',
   'email.staff.deviceApproval.body',
   'email.staff.deviceApproval.subject',
   'email.verify.body',
@@ -1468,6 +1473,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'formErrors.auth.displayNameInvalid',
   'formErrors.auth.emailInvalid',
   'formErrors.auth.passwordTooLong',
+  'formErrors.auth.rateLimited',
   'formErrors.auth.registrationRefused',
   'formErrors.compose.bodyTooLong',
   'formErrors.compose.bodyTooShort',

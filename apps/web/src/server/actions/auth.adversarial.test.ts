@@ -1,44 +1,35 @@
 // @vitest-environment node
-// Adversarial tests (plan Step 13): try to learn whether an email is registered, to keep a session
-// for a credential with no profile, and to be sent off-site after signing in. Unlike auth.test.ts
-// these run the real Better Auth instance from `server/auth/instance.ts`, its real error codes,
-// logger level and Argon2id hashing, on Better Auth's in-memory adapter instead of PostgreSQL.
-import type { DemoCurrentAccount } from '@rogikotha/contracts';
+// Adversarial tests: try to reach Better Auth around the commands (ISS-391, BR7.1, BR7.9), to
+// learn from the logs whether an email is registered (NFR3), and to be sent off-site after signing
+// in. They run the pinned library with this Unit's options on its memory adapter, as if the
+// `/api/auth` route's allowlist had let a request through; the commands' own rules are tested in
+// `@rogikotha/application`.
 import { redirect } from 'next/navigation';
-import type * as NextJsIntegration from 'better-auth/next-js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getAuth } from '../auth/instance';
-import { accounts, session } from '../data';
-import { register, signIn } from './auth';
+import { createAuthGateway } from '../better-auth/gateway';
+import {
+  buildTestLibrary,
+  emptyStore,
+  TEST_APP_URL,
+  type TestLibrary,
+} from '../better-auth/library-test-support';
+import { applySessionEffect, runCommand } from '../command-call';
+import { getContainer } from '../container';
+import { signIn } from './auth';
 import { INITIAL_AUTH_STATE, safeNextPath } from './auth-form';
 
-type Row = Record<string, unknown>;
-
 const memory = vi.hoisted(() => {
-  const state: { db: Record<string, Row[]> } = { db: {} };
+  const state: { store: Record<string, Record<string, unknown>[]> } = { store: {} };
   return state;
 });
 
 vi.mock('better-auth/adapters/drizzle', async () => {
   const { memoryAdapter } = await import('better-auth/adapters/memory');
-  return { drizzleAdapter: () => memoryAdapter(memory.db) };
+  return { drizzleAdapter: () => memoryAdapter(memory.store) };
 });
-// The cookie writer needs a live Next request; the tests read the session rows instead.
-vi.mock('better-auth/next-js', async (importOriginal) => ({
-  ...(await importOriginal<typeof NextJsIntegration>()),
-  nextCookies: () => ({ id: 'next-cookies' }),
-}));
-vi.mock('../db', () => ({ getDb: () => ({}) }));
-vi.mock('../env', () => ({
-  requireEnv: (name: string) =>
-    ({
-      APP_URL: 'http://localhost:3000',
-      BETTER_AUTH_SECRET: 'synthetic-adversarial-test-secret-0123456789',
-    })[name] ?? '',
-  optionalEnv: () => undefined,
-}));
-vi.mock('next/headers', () => ({ headers: vi.fn(), cookies: vi.fn() }));
+vi.mock('../container', () => ({ getContainer: vi.fn() }));
+vi.mock('../command-call', () => ({ runCommand: vi.fn(), applySessionEffect: vi.fn() }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(() => {
@@ -51,217 +42,118 @@ vi.mock('@/i18n/routing', () => ({
     throw new Error('NEXT_REDIRECT');
   }),
 }));
-vi.mock('../data', () => ({
-  accounts: {
-    createProfileForAuthUser: vi.fn(),
-    isUsernameTaken: vi.fn(),
-    removeAuthUserWithoutProfile: vi.fn(),
-  },
-  session: { getCurrentAccountByAuthUserId: vi.fn() },
-}));
 
-const APP_URL = 'http://localhost:3000';
 const EMAIL = 'nadia.islam@example.test';
 const PASSWORD = 'a long enough secret';
 const SLOW = 30_000;
 
-/** The profiles the fake data layer holds, by Better Auth user id. */
-const profiles = new Map<string, DemoCurrentAccount>();
+/** Every library path a command owns, as an attacker would call it past the forms. */
+const COMMAND_OWNED_PATHS = [
+  '/sign-up/email',
+  '/sign-in/email',
+  '/request-password-reset',
+  '/reset-password',
+  '/verify-email',
+  '/send-verification-email',
+  '/change-password',
+  '/update-user',
+  '/delete-user',
+  '/revoke-sessions',
+  '/list-sessions',
+];
 
-function freshMemoryDb(): Record<string, Row[]> {
-  // Both the default model names and the `auth_*` names the instance maps them to.
-  const tables = ['user', 'session', 'account', 'verification'];
-  return Object.fromEntries(
-    [...tables, ...tables.map((t) => `auth_${t}s`)].map((name) => [name, [] as Row[]]),
-  );
-}
+let library: TestLibrary;
 
-function rows(model: 'user' | 'session'): Row[] {
-  return [...(memory.db[model] ?? []), ...(memory.db[`auth_${model}s`] ?? [])];
-}
-
-function registerForm(overrides: Record<string, string> = {}): FormData {
-  const form = new FormData();
-  const values = {
-    email: EMAIL,
-    password: PASSWORD,
-    username: 'nadia_i',
-    displayName: 'Nadia Islam',
-    locale: 'en',
-    age: 'on',
-    terms: 'on',
-    ...overrides,
-  };
-  for (const [name, value] of Object.entries(values)) form.set(name, value);
-  return form;
-}
-
-function signInForm(email: string, password: string, extra: Record<string, string> = {}) {
-  const form = new FormData();
-  form.set('email', email);
-  form.set('password', password);
-  for (const [name, value] of Object.entries(extra)) form.set(name, value);
-  return form;
-}
-
-async function registerOnce(overrides: Record<string, string> = {}) {
-  await expect(register(INITIAL_AUTH_STATE, registerForm(overrides))).rejects.toThrow(
-    'NEXT_REDIRECT',
-  );
-}
-
-/** What `app/api/auth/[...all]/route.ts` does with every POST to /api/auth/*. */
-function postToAuthRoute(path: string, body: unknown): Promise<Response> {
-  return getAuth().handler(
-    new Request(`${APP_URL}/api/auth${path}`, {
+/** A POST straight to the library's handler, past the route's allowlist. */
+function postPastTheRoute(path: string, body: unknown): Promise<Response> {
+  return library.auth.handler(
+    new Request(`${TEST_APP_URL}/api/auth${path}`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', origin: APP_URL },
+      headers: { 'content-type': 'application/json', origin: TEST_APP_URL },
       body: JSON.stringify(body),
     }),
   );
 }
 
-function everythingLogged(spies: { mock: { calls: unknown[][] } }[]): string {
-  return JSON.stringify(spies.flatMap((spy) => spy.mock.calls)).toLowerCase();
-}
-
-beforeEach(async () => {
+beforeEach(() => {
   vi.clearAllMocks();
-  memory.db = freshMemoryDb();
-  profiles.clear();
-  delete (globalThis as { __rkAuth?: unknown }).__rkAuth;
-
-  const { headers, cookies } = await import('next/headers');
-  vi.mocked(headers).mockResolvedValue(new Headers({ origin: APP_URL }));
-  vi.mocked(cookies).mockResolvedValue({ delete: vi.fn(), get: vi.fn(), set: vi.fn() } as never);
-
-  vi.mocked(accounts.isUsernameTaken).mockImplementation((username: string) =>
-    Promise.resolve([...profiles.values()].some((p) => p.username === username)),
-  );
-  vi.mocked(accounts.createProfileForAuthUser).mockImplementation((input) => {
-    const n = profiles.size + 1;
-    const ids = { accountId: `account-${n}`, personaId: `persona-${n}` };
-    profiles.set(input.authUserId, {
-      accountId: ids.accountId,
-      authUserId: input.authUserId,
-      username: input.username,
-      displayName: input.displayName,
-      locale: input.locale,
-      status: 'active',
-      currentPersonaId: ids.personaId,
-      pseudonymousPersonaId: null,
-      pseudonymousDisplayName: null,
-    });
-    return Promise.resolve(ids);
-  });
-  vi.mocked(session.getCurrentAccountByAuthUserId).mockImplementation((authUserId: string) =>
-    Promise.resolve(profiles.get(authUserId) ?? null),
-  );
+  memory.store = emptyStore();
+  library = buildTestLibrary();
 });
 
-describe('learning whether an email is registered (FR1.1, NFR3)', () => {
-  it(
-    'answers a second registration with the same email, in other letter case, with the neutral message and creates nothing',
-    async () => {
-      await registerOnce();
-      expect(rows('user')).toHaveLength(1);
+describe('reaching Better Auth around the commands (BR7.1, BR7.9)', () => {
+  it.each(COMMAND_OWNED_PATHS)(
+    'answers 404 from the library itself for %s and writes no row',
+    async (path) => {
+      const response = await postPastTheRoute(path, {
+        email: EMAIL,
+        password: PASSWORD,
+        newPassword: PASSWORD,
+        name: 'Unchecked Name',
+      });
 
-      const state = await register(
-        INITIAL_AUTH_STATE,
-        registerForm({ email: 'Nadia.Islam@Example.TEST', username: 'someone_else' }),
-      );
-
-      expect(state).toEqual({ fieldErrors: {}, formError: 'formErrors.auth.registrationRefused' });
-      expect(JSON.stringify(state).toLowerCase()).not.toContain('nadia');
-      expect(rows('user')).toHaveLength(1);
-      expect(accounts.createProfileForAuthUser).toHaveBeenCalledTimes(1);
-      // The undo path must never run against the existing account's user.
-      expect(accounts.removeAuthUserWithoutProfile).not.toHaveBeenCalled();
+      expect(response.status).toBe(404);
+      expect(memory.store.auth_users).toEqual([]);
+      expect(memory.store.auth_sessions).toEqual([]);
     },
     SLOW,
   );
 
   it(
-    'never writes the used email or the password to the console',
+    'creates no user when server code calls the library sign-up directly, outside the gateway',
+    async () => {
+      await expect(
+        library.auth.api.signUpEmail({ body: { email: EMAIL, password: PASSWORD, name: '' } }),
+      ).rejects.toThrow();
+
+      expect(memory.store.auth_users).toEqual([]);
+    },
+    SLOW,
+  );
+
+  it(
+    'opens no session when server code calls the library sign-in directly with the right password',
+    async () => {
+      const gateway = createAuthGateway(library.auth, library.logger);
+      const created = await gateway.createCredentialUser({ email: EMAIL, password: PASSWORD });
+      if (!created.ok) throw new Error(created.error.code);
+      library.statuses.set(created.data.authUserId, 'active');
+
+      await expect(
+        library.auth.api.signInEmail({ body: { email: EMAIL, password: PASSWORD } }),
+      ).rejects.toThrow();
+
+      expect(memory.store.auth_sessions).toEqual([]);
+    },
+    SLOW,
+  );
+});
+
+describe('learning from the logs whether an email is registered (NFR3, BR8.1)', () => {
+  it(
+    'writes neither the address nor the password anywhere across a duplicate registration and a wrong sign-in',
     async () => {
       const spies = (['log', 'info', 'warn', 'error', 'debug'] as const).map((method) =>
         vi.spyOn(console, method).mockImplementation(() => undefined),
       );
-      await registerOnce();
+      const gateway = createAuthGateway(library.auth, library.logger);
 
-      await register(INITIAL_AUTH_STATE, registerForm({ username: 'someone_else' }));
+      await gateway.createCredentialUser({ email: EMAIL, password: PASSWORD });
+      const again = await gateway.createCredentialUser({
+        email: EMAIL,
+        password: 'other secret 1',
+      });
+      const wrong = await gateway.createSession({ email: EMAIL, password: 'not the right one' });
 
-      const logged = everythingLogged(spies);
+      const logged = JSON.stringify([
+        spies.flatMap((spy) => spy.mock.calls),
+        library.logger.lines,
+      ]).toLowerCase();
       for (const spy of spies) spy.mockRestore();
+      expect(again).toEqual({ ok: false, error: { code: 'email_exists' } });
+      expect(wrong).toEqual({ ok: false, error: { code: 'invalid_credentials' } });
       expect(logged).not.toContain(EMAIL);
       expect(logged).not.toContain(PASSWORD);
-    },
-    SLOW,
-  );
-
-  it(
-    'does not confirm a registered email through the public /api/auth sign-up endpoint',
-    async () => {
-      await registerOnce();
-
-      const response = await postToAuthRoute('/sign-up/email', {
-        email: EMAIL,
-        password: 'another long secret',
-        name: '',
-      });
-
-      expect(await response.text()).not.toMatch(/already exists|USER_ALREADY_EXISTS/i);
-    },
-    SLOW,
-  );
-
-  it(
-    'creates no Better Auth user through the public /api/auth sign-up endpoint, which skips the username, age and terms checks',
-    async () => {
-      await postToAuthRoute('/sign-up/email', {
-        email: 'no.terms@example.test',
-        password: 'another long secret',
-        name: 'Unchecked Name',
-      });
-
-      expect(rows('user')).toHaveLength(0);
-    },
-    SLOW,
-  );
-});
-
-describe('signing in with a credential that should not work (FR1.2)', () => {
-  it(
-    'gives an unknown email and a wrong password for a known email exactly the same answer',
-    async () => {
-      await registerOnce();
-
-      const unknown = await signIn(INITIAL_AUTH_STATE, signInForm('nobody@example.test', PASSWORD));
-      const wrongPassword = await signIn(
-        INITIAL_AUTH_STATE,
-        signInForm(EMAIL, 'not the right secret'),
-      );
-
-      expect(unknown).toEqual({ fieldErrors: {}, formError: 'errors.auth.invalidCredentials' });
-      expect(wrongPassword).toEqual(unknown);
-    },
-    SLOW,
-  );
-
-  it(
-    'removes the session Better Auth opened for a credential with no profile behind it',
-    async () => {
-      // A Better Auth user whose profile was never created, as a failed undo would leave it.
-      await getAuth().api.signUpEmail({
-        body: { email: 'orphan@example.test', password: PASSWORD, name: '' },
-      });
-      memory.db.session = [];
-      memory.db.auth_sessions = [];
-
-      const state = await signIn(INITIAL_AUTH_STATE, signInForm('orphan@example.test', PASSWORD));
-
-      expect(state).toEqual({ fieldErrors: {}, formError: 'errors.auth.invalidCredentials' });
-      expect(rows('session')).toHaveLength(0);
     },
     SLOW,
   );
@@ -276,19 +168,27 @@ describe('being sent off-site after signing in (FR1.2, open redirect)', () => {
     },
   );
 
-  it(
-    'never redirects a signed-in reader to another site when the action receives a dot-segment next',
-    async () => {
-      await registerOnce();
-      vi.mocked(redirect).mockClear();
+  it('never redirects a signed-in reader to another site when the action receives a dot-segment next', async () => {
+    vi.mocked(runCommand).mockResolvedValue({
+      ok: true,
+      data: { session: { kind: 'set', setCookies: [] } },
+    });
+    // The account's language, read when there is no page to return to.
+    vi.mocked(getContainer).mockReturnValue({
+      ports: {
+        accounts: { findByEmail: () => Promise.resolve(null) },
+        unitOfWork: { read: (work: (tx: unknown) => unknown) => work({}) },
+      },
+    } as unknown as ReturnType<typeof getContainer>);
+    const form = new FormData();
+    form.set('email', EMAIL);
+    form.set('password', PASSWORD);
+    form.set('next', '/.//evil.example');
 
-      await expect(
-        signIn(INITIAL_AUTH_STATE, signInForm(EMAIL, PASSWORD, { next: '/.//evil.example' })),
-      ).rejects.toThrow('NEXT_REDIRECT');
+    await expect(signIn(INITIAL_AUTH_STATE, form)).rejects.toThrow('NEXT_REDIRECT');
 
-      const targets = vi.mocked(redirect).mock.calls.map(([target]) => String(target));
-      expect(targets.filter((target) => target.startsWith('//'))).toEqual([]);
-    },
-    SLOW,
-  );
+    expect(applySessionEffect).toHaveBeenCalledTimes(1);
+    const targets = vi.mocked(redirect).mock.calls.map(([target]) => String(target));
+    expect(targets.filter((target) => target.startsWith('//'))).toEqual([]);
+  });
 });

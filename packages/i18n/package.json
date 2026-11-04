@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./format": "./src/format.ts",
     "./routing": "./src/routing.ts",
-    "./request": "./src/request.ts"
+    "./request": "./src/request.ts",
+    "./messages/*.json": "./messages/*.json"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
@@ -18,6 +19,11 @@
   },
   "peerDependencies": {
     "next-intl": "^4.14.4"
+  },
+  "peerDependenciesMeta": {
+    "next-intl": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^24.13.4",

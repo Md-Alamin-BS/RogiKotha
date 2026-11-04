@@ -2,21 +2,20 @@
 import type { DemoCurrentAccount } from '@rogikotha/contracts';
 import { redirect } from '@rogikotha/i18n';
 import { getLocale } from 'next-intl/server';
-import { headers } from 'next/headers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getRequestContext } from '../auth';
 import { session } from '../data';
-import { getAuth } from './instance';
+import { anonymousContext, signedInContext } from '../request-context-test-support';
 import { getCurrentAccount, requireAccount } from './session';
 
-vi.mock('next/headers', () => ({ headers: vi.fn() }));
 vi.mock('next-intl/server', () => ({ getLocale: vi.fn() }));
 vi.mock('@rogikotha/i18n', () => ({
   redirect: vi.fn(() => {
     throw new Error('NEXT_REDIRECT');
   }),
 }));
-vi.mock('./instance', () => ({ getAuth: vi.fn() }));
+vi.mock('../auth', () => ({ getRequestContext: vi.fn() }));
 vi.mock('../data', () => ({ session: { getCurrentAccountByAuthUserId: vi.fn() } }));
 
 function buildAccount(overrides: Partial<DemoCurrentAccount> = {}): DemoCurrentAccount {
@@ -34,20 +33,15 @@ function buildAccount(overrides: Partial<DemoCurrentAccount> = {}): DemoCurrentA
   };
 }
 
-const getSession = vi.fn();
-const requestHeaders = new Headers({ cookie: 'rk.session_token=abc' });
-
 function signedInAs(authUserId: string | null) {
-  getSession.mockResolvedValue(authUserId ? { user: { id: authUserId }, session: {} } : null);
+  vi.mocked(getRequestContext).mockResolvedValue(
+    authUserId ? signedInContext({ authUserId }) : anonymousContext('bn'),
+  );
 }
 
-describe('the current account', () => {
+describe('the current account of the demo pages (on getActor, ISS-391)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(headers).mockResolvedValue(requestHeaders);
-    vi.mocked(getAuth).mockReturnValue({ api: { getSession } } as unknown as ReturnType<
-      typeof getAuth
-    >);
     vi.mocked(getLocale).mockResolvedValue('bn');
   });
 
@@ -57,12 +51,11 @@ describe('the current account', () => {
     expect(session.getCurrentAccountByAuthUserId).not.toHaveBeenCalled();
   });
 
-  it('is the profile behind the session cookie, looked up by the Better Auth user id', async () => {
+  it('is the profile behind the Actor, looked up by the session user id', async () => {
     signedInAs('auth-user-1');
     vi.mocked(session.getCurrentAccountByAuthUserId).mockResolvedValue(buildAccount());
 
     await expect(getCurrentAccount()).resolves.toEqual(buildAccount());
-    expect(getSession).toHaveBeenCalledWith({ headers: requestHeaders });
     expect(session.getCurrentAccountByAuthUserId).toHaveBeenCalledWith('auth-user-1');
   });
 
@@ -76,17 +69,18 @@ describe('the current account', () => {
     );
   });
 
+  it('is null for a suspended account, which getActor resolves to anonymous', async () => {
+    vi.mocked(getRequestContext).mockResolvedValue({
+      ...anonymousContext('bn'),
+      actor: { ...anonymousContext('bn').actor, refusal: 'suspended' },
+    });
+    await expect(getCurrentAccount()).resolves.toBeNull();
+    expect(session.getCurrentAccountByAuthUserId).not.toHaveBeenCalled();
+  });
+
   it('is null for a session whose account has no profile', async () => {
     signedInAs('auth-user-without-profile');
     vi.mocked(session.getCurrentAccountByAuthUserId).mockResolvedValue(null);
-    await expect(getCurrentAccount()).resolves.toBeNull();
-  });
-
-  it('is null for a suspended account', async () => {
-    signedInAs('auth-user-1');
-    vi.mocked(session.getCurrentAccountByAuthUserId).mockResolvedValue(
-      buildAccount({ status: 'suspended' }),
-    );
     await expect(getCurrentAccount()).resolves.toBeNull();
   });
 

@@ -90,7 +90,8 @@ Lint-enforced by `eslint-plugin-boundaries` in `eslint.boundaries.mjs` (T-010), 
 | application | `packages/application/src` | domain, contracts | none |
 | database | `packages/database/src` | application (ports), contracts | any (drizzle, pg, pg-boss, dotenv, Node) |
 | adapters | `packages/adapters/src` | application (ports), contracts | any (each adapter's library) |
-| i18n | `packages/i18n/src` | nothing | `next-intl` only |
+| i18n | `packages/i18n/src` | i18n-messages | `next-intl` only |
+| i18n-messages | `packages/i18n/messages` (`en.json`, `bn.json`, exported as `@rogikotha/i18n/messages/*.json`) | nothing (data only, FD-098) | none |
 | test-support-seed | `packages/test-support/src/seed` | application, contracts, domain, test-support, **database** (dev-only, FD-040) | any |
 | test-support | `packages/test-support/src` (the rest) | application, contracts, domain (fakes implement ports) | any |
 | web-actions | `apps/web/src/server/actions` | application, contracts, i18n, web-server, web-shared | any |
@@ -98,11 +99,11 @@ Lint-enforced by `eslint-plugin-boundaries` in `eslint.boundaries.mjs` (T-010), 
 | web-components | `apps/web/src/components` | contracts, i18n, web-actions (server actions only, FD-093 (1)), web-shared | no Node built-ins, `pg`, `pg-boss`, `drizzle-orm`, `better-auth`, `sharp`, `pdfjs-dist`, `dotenv`, `@node-rs/argon2` |
 | web-shared | `apps/web/src/lib`, `apps/web/src/i18n` | contracts, i18n (FD-093 (6)) | as web-components: components import it (FD-093 (6)) |
 | web | `apps/web/src` (the rest: `app/`, `proxy.ts`) | application, contracts, i18n, web-components, web-actions, web-server, web-shared | any (next, react, next-intl) |
-| worker | `apps/worker/src` | application (only through a future `@rogikotha/application/worker` subpath, by no other specifier, a relative path included; type-only imports allowed), contracts, database, adapters | not `better-auth`, `drizzle-orm`, `pg` (AD-6, FD-093 (2), (3)) |
+| worker | `apps/worker/src` | application (only through the `@rogikotha/application/worker` subpath, by no other specifier, a relative path included; type-only imports allowed), contracts, database, adapters, i18n-messages (the message files only, never the `@rogikotha/i18n` root, FD-098) | not `better-auth`, `drizzle-orm`, `pg` (AD-6, FD-093 (2), (3)) |
 
 Test files (`*.test.ts(x)`, including smoke and int tests, `test-setup.ts`, `global-setup.ts`, `*-test-support.ts`) keep their element's row and may also import Node built-ins, `vitest`, `@vitest/*` and `@testing-library/*`; test files in `packages/*` may also import `test-support`. Nothing in `apps/*` imports `test-support`, in source or tests (FD-040).
 
-The worker and component bans also cover `import()` and `require()`. The worker bans match the specifier text, so they hold before Better Auth is installed, and a value import that reaches application code by any other specifier is refused after resolution; the worker's container-grep test stays as a second net (AD-6). `pnpm lint:boundaries` proves the rules on the fixture in `lint-fixtures/boundary-violation/`: fifteen violations, each refused once, and six allowed controls.
+The worker and component bans also cover `import()` and `require()`. The worker bans match the specifier text, so they hold before Better Auth is installed, and a value import that reaches application code by any other specifier is refused after resolution; the worker's container-grep test stays as a second net (AD-6). `pnpm lint:boundaries` proves the rules on the fixture in `lint-fixtures/boundary-violation/`: sixteen violations, each refused once, and seven allowed controls.
 
 ## 3. Commands, queries, results
 
@@ -218,7 +219,7 @@ Test names read as sentences: `it('hides content after five distinct confirmed a
 ## 11. Logging, secrets, safety
 
 - Logger port only; structured JSON; allowlisted fields (`event`, `correlationId`, opaque ids, enums, counts, durations). Never log emails, tokens, bodies, file names, search queries.
-- Secrets come from environment variables listed in `infra/compose/.env.example`; none are committed; the worker gets only `DATABASE_URL_WORKER` (a role without access to `auth_*`, `persona_links`, `identity_reveals`), `STORAGE_ROOT`, `CLAMD_HOST/PORT`, `SMTP_*`.
+- Secrets come from environment variables listed in `infra/compose/.env.example`; none are committed; the worker gets only `DATABASE_URL_WORKER` (a role without access to `auth_*`, `persona_links`, `identity_reveals`), `MAIL_RECIPIENT_KEY` (the mail-only key that decrypts `email_deliveries.to_email_enc`, FD-095), `STORAGE_ROOT`, `CLAMD_HOST/PORT`, `SMTP_*`, `MAIL_FROM`. The worker deletes `APP_ENCRYPTION_KEY` and `BETTER_AUTH_SECRET` from its environment right after loading the shared `.env`, and no worker file reads them. The web holds `APP_ENCRYPTION_KEY` (web only), `MAIL_RECIPIENT_KEY` (used only to encrypt recipients), `BETTER_AUTH_SECRET`, `APP_URL` and `TERMS_VERSION`; it refuses to start when one is missing or malformed, or when the two keys are equal, naming the variable and never its value (T-101 BR7.2, FD-095).
 - Anything that cannot run **fails closed**: scanner unreachable → item stays `scanning` with a custody event `scan_unavailable`, never advances; mail down → the verification command still succeeds and the job retries.
 
 ## 12. Git and commits

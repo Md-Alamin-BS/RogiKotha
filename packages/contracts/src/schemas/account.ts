@@ -72,7 +72,9 @@ export const RegisterInput = z
   .object({
     email: emailField(),
     password: newPasswordField(),
-    username: z.string({ error: K.usernameInvalid }).regex(USERNAME_RE, { error: K.usernameInvalid }),
+    username: z
+      .string({ error: K.usernameInvalid })
+      .regex(USERNAME_RE, { error: K.usernameInvalid }),
     displayName: z
       .string({ error: K.displayNameRequired })
       .trim()

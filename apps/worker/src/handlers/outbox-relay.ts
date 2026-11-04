@@ -56,8 +56,10 @@ export interface RelayDeps {
  * request kind they don't own. Logged as an `ISS-` row.
  */
 export const RELAY: Record<string, JobName[]> = {
-  'account.registered': ['mail.send'],
-  'account.securityEvent': ['notification.deliver', 'mail.send'],
+  // T-101 BR6.4: account emails are queued by the command on its own transaction, so no account
+  // event routes to `mail.send`; the relay would otherwise send each one twice.
+  'account.registered': [],
+  'account.securityEvent': ['notification.deliver'],
   'review.published': ['search.refresh', 'notification.deliver'],
   'review.changed': ['search.refresh', 'notification.deliver'],
   'review.hidden': ['search.refresh', 'notification.deliver'],

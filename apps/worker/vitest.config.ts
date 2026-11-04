@@ -5,6 +5,7 @@ export default defineConfig({
     name: 'worker',
     environment: 'node',
     passWithNoTests: true,
-    exclude: [...defaultExclude, '**/*.int.test.ts'],
+    // Integration files need compose and run in the `worker-int` project (vitest.workspace.ts).
+    exclude: [...defaultExclude, '**/*.int.test.ts', '**/*.int.smoke.test.ts'],
   },
 });

@@ -32,15 +32,22 @@ function uniqueSuffix(): string {
   return `${Date.now().toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`;
 }
 
+// Registering never signs in (BR1.4: a new and an existing address look the same), so the new
+// account signs in on the page the form sends it to and then lands on /me.
 async function register(page: Page, locale: Locale, username: string, displayName: string) {
+  const email = `${username}@demo.rogikotha.local`;
   await page.goto(`/${locale}/register`);
-  await page.locator('#f-register-email').fill(`${username}@demo.rogikotha.local`);
+  await page.locator('#f-register-email').fill(email);
   await page.locator('#f-register-password').fill('demo-pass-2026!');
   await page.locator('#f-register-username').fill(username);
   await page.locator('#f-register-displayName').fill(displayName);
   await page.locator('#f-register-age').check();
   await page.locator('#f-register-terms').check();
   await page.getByTestId('register-form-submit-button').click();
+  await expect(page).toHaveURL(new RegExp(`/${locale}/sign-in\\?next=%2F${locale}%2Fme$`));
+  await page.locator('#f-signin-email').fill(email);
+  await page.locator('#f-signin-password').fill('demo-pass-2026!');
+  await page.getByTestId('signin-form-submit-button').click();
   await expect(page).toHaveURL(new RegExp(`/${locale}/me$`));
 }
 

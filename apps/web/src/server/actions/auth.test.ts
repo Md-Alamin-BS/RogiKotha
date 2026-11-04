@@ -1,17 +1,17 @@
 // @vitest-environment node
-import type { DemoCurrentAccount } from '@rogikotha/contracts';
+// The demo's auth forms on T-101's commands (ISS-391): the commands themselves are tested in
+// `@rogikotha/application`; here only the mapping of form fields and results is under test.
+import type { Command, SessionCookieEffect } from '@rogikotha/application';
+import type { AppError, ErrorCode, Locale, Result } from '@rogikotha/contracts';
 import { redirect as redirectInLocale } from '@/i18n/routing';
-import { APIError } from 'better-auth/api';
-import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getAuth } from '../auth/instance';
-import { accounts, session } from '../data';
+import { applySessionEffect, runCommand } from '../command-call';
+import { getContainer } from '../container';
 import { register, signIn, signOut } from './auth';
 import { INITIAL_AUTH_STATE } from './auth-form';
 
-vi.mock('next/headers', () => ({ headers: vi.fn(), cookies: vi.fn() }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(() => {
@@ -24,38 +24,45 @@ vi.mock('@/i18n/routing', () => ({
     throw new Error('NEXT_REDIRECT');
   }),
 }));
-vi.mock('../auth/instance', () => ({ getAuth: vi.fn() }));
-vi.mock('../env', () => ({ optionalEnv: vi.fn(() => undefined) }));
-vi.mock('../data', () => ({
-  accounts: {
-    createProfileForAuthUser: vi.fn(),
-    isUsernameTaken: vi.fn(),
-    removeAuthUserWithoutProfile: vi.fn(),
-  },
-  session: { getCurrentAccountByAuthUserId: vi.fn() },
-}));
+vi.mock('../command-call', () => ({ runCommand: vi.fn(), applySessionEffect: vi.fn() }));
+vi.mock('../container', () => ({ getContainer: vi.fn() }));
 
 const EMAIL = 'nadia.islam@example.test';
 const PASSWORD = 'a long enough secret';
+const SESSION: SessionCookieEffect = { kind: 'set', setCookies: ['rk.session_token=t; Path=/'] };
 
-const api = { signUpEmail: vi.fn(), signInEmail: vi.fn(), signOut: vi.fn() };
-const deleteSession = vi.fn();
-const cookieStore = { delete: vi.fn() };
-const requestHeaders = new Headers({ origin: 'http://localhost:3000' });
+type Outcomes = Record<string, Result<unknown>>;
 
-function buildAccount(overrides: Partial<DemoCurrentAccount> = {}): DemoCurrentAccount {
-  return {
-    accountId: '0190f5a2-0000-7000-8000-000000000001',
-    authUserId: 'auth-user-1',
-    username: 'nadia_i',
-    displayName: 'Nadia Islam',
-    locale: 'bn',
-    status: 'active',
-    currentPersonaId: '0190f5a2-0000-7000-8000-0000000000aa',
-    pseudonymousPersonaId: null,
-    pseudonymousDisplayName: null,
-    ...overrides,
+function ok<T>(data: T): Result<T> {
+  return { ok: true, data };
+}
+
+function refused(code: ErrorCode, extra: Partial<AppError> = {}): Result<never> {
+  const error: AppError = { code, messageKey: `errors.${code}`, correlationId: 'corr-1', ...extra };
+  return { ok: false, error };
+}
+
+/** Answers each command by its name; a command with no outcome fails the test loudly. */
+function commandsAnswer(outcomes: Outcomes): void {
+  vi.mocked(runCommand).mockImplementation((command: Command<unknown, unknown>) => {
+    const outcome = outcomes[command.name];
+    if (!outcome) throw new Error(`unexpected command ${command.name}`);
+    return Promise.resolve(outcome as Result<never>);
+  });
+}
+
+function calledCommands(): string[] {
+  return vi.mocked(runCommand).mock.calls.map(([command]) => command.name);
+}
+
+function accountLocale(locale: Locale | null): void {
+  const accounts = {
+    findByEmail: vi.fn(() => Promise.resolve(locale ? { accountId: 'account-1' } : null)),
+    findProfileById: vi.fn(() => Promise.resolve(locale ? { locale } : null)),
   };
+  vi.mocked(getContainer).mockReturnValue({
+    ports: { accounts, unitOfWork: { read: (work: (tx: unknown) => unknown) => work({}) } },
+  } as unknown as ReturnType<typeof getContainer>);
 }
 
 function registerForm(overrides: Record<string, string> = {}): FormData {
@@ -82,132 +89,128 @@ function signInForm(extra: Record<string, string> = {}): FormData {
   return form;
 }
 
-function apiError(code: string, status: 'UNAUTHORIZED' | 'UNPROCESSABLE_ENTITY') {
-  return new APIError(status, { code, message: code });
-}
-
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(headers).mockResolvedValue(requestHeaders);
-  vi.mocked(cookies).mockResolvedValue(cookieStore as never);
-  vi.mocked(getAuth).mockReturnValue({
-    api,
-    $context: Promise.resolve({
-      internalAdapter: { deleteSession },
-      authCookies: {
-        sessionToken: { name: 'rk.session_token' },
-        sessionData: { name: 'rk.session_data' },
-      },
-    }),
-  } as unknown as ReturnType<typeof getAuth>);
-  vi.mocked(accounts.isUsernameTaken).mockResolvedValue(false);
-  vi.mocked(accounts.createProfileForAuthUser).mockResolvedValue({
-    accountId: 'account-1',
-    personaId: 'persona-1',
+  accountLocale('bn');
+  commandsAnswer({
+    'account.register': ok({ accountId: 'account-1' }),
+    'account.signIn': ok({ session: SESSION }),
+    'account.signOut': ok({ session: { kind: 'clear' } }),
   });
-  api.signUpEmail.mockResolvedValue({ token: 'token-1', user: { id: 'auth-user-1' } });
-  api.signInEmail.mockResolvedValue({ token: 'token-1', user: { id: 'auth-user-1' } });
 });
 
 describe('registering', () => {
-  it('creates the Better Auth user, then the active profile, and opens /me in the chosen language', async () => {
+  it('registers through account.register and sends the browser to sign-in in the chosen language, returning to /me', async () => {
     await expect(register(INITIAL_AUTH_STATE, registerForm())).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(api.signUpEmail).toHaveBeenCalledWith({
-      body: { email: EMAIL, password: PASSWORD, name: '' },
-      headers: requestHeaders,
-    });
-    expect(accounts.createProfileForAuthUser).toHaveBeenCalledWith({
-      authUserId: 'auth-user-1',
+    expect(calledCommands()).toEqual(['account.register']);
+    expect(vi.mocked(runCommand).mock.calls[0]?.[1]).toEqual({
+      email: EMAIL,
+      password: PASSWORD,
       username: 'nadia_i',
       displayName: 'Nadia Islam',
       locale: 'bn',
-      termsVersion: '1',
+      ageConfirmed: true,
+      termsAccepted: true,
     });
-    expect(redirectInLocale).toHaveBeenCalledWith({ href: '/me', locale: 'bn' });
+    expect(applySessionEffect).not.toHaveBeenCalled();
+    expect(redirect).toHaveBeenCalledWith('/bn/sign-in?next=%2Fbn%2Fme');
   });
 
-  it('returns to the same-site page it was sent from', async () => {
+  it('carries the same-site page it was sent from on to sign-in', async () => {
     await expect(register(INITIAL_AUTH_STATE, registerForm({ next: '/bn/write' }))).rejects.toThrow(
       'NEXT_REDIRECT',
     );
-    expect(redirect).toHaveBeenCalledWith('/bn/write');
+    expect(redirect).toHaveBeenCalledWith('/bn/sign-in?next=%2Fbn%2Fwrite');
   });
 
-  it('shows field errors and creates nothing when the form is incomplete', async () => {
+  it('drops a next path that leaves the site and returns to /me instead', async () => {
+    await expect(
+      register(INITIAL_AUTH_STATE, registerForm({ next: '//evil.example/me' })),
+    ).rejects.toThrow('NEXT_REDIRECT');
+    expect(redirect).toHaveBeenCalledWith('/bn/sign-in?next=%2Fbn%2Fme');
+  });
+
+  it('shows field errors and runs no command when the form is incomplete', async () => {
     const state = await register(INITIAL_AUTH_STATE, registerForm({ password: 'short' }));
 
     expect(state).toEqual({
       fieldErrors: { password: 'errors.auth.passwordTooShort' },
       formError: null,
     });
-    expect(api.signUpEmail).not.toHaveBeenCalled();
+    expect(runCommand).not.toHaveBeenCalled();
   });
 
-  it('names a taken username on its field before any user is created', async () => {
-    vi.mocked(accounts.isUsernameTaken).mockResolvedValue(true);
+  it('names a taken username on its field and does not sign in', async () => {
+    commandsAnswer({ 'account.register': refused('auth.username_taken') });
 
     const state = await register(INITIAL_AUTH_STATE, registerForm());
 
-    expect(state.fieldErrors).toEqual({ username: 'errors.auth.usernameTaken' });
-    expect(api.signUpEmail).not.toHaveBeenCalled();
+    expect(state).toEqual({
+      fieldErrors: { username: 'errors.auth.usernameTaken' },
+      formError: null,
+    });
+    expect(calledCommands()).toEqual(['account.register']);
   });
 
-  it('answers a used email with a neutral message and creates no profile', async () => {
-    api.signUpEmail.mockRejectedValue(
-      apiError('USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL', 'UNPROCESSABLE_ENTITY'),
-    );
+  it('answers the rate limit with the form-level message', async () => {
+    commandsAnswer({ 'account.register': refused('auth.rate_limited') });
 
     const state = await register(INITIAL_AUTH_STATE, registerForm());
 
-    expect(state).toEqual({ fieldErrors: {}, formError: 'formErrors.auth.registrationRefused' });
-    expect(JSON.stringify(state)).not.toContain(EMAIL);
-    expect(accounts.createProfileForAuthUser).not.toHaveBeenCalled();
+    expect(state).toEqual({ fieldErrors: {}, formError: 'formErrors.auth.rateLimited' });
   });
 
-  it('removes the new auth user and its session when the username is taken in a race', async () => {
-    vi.mocked(accounts.createProfileForAuthUser).mockRejectedValue(
-      Object.assign(new Error('insert failed'), { cause: { code: '23505' } }),
-    );
+  it('maps a field the command refused back onto the form field', async () => {
+    commandsAnswer({
+      'account.register': refused('validation', { fieldErrors: { ageConfirmed: 'x' } }),
+    });
 
     const state = await register(INITIAL_AUTH_STATE, registerForm());
 
-    expect(state.fieldErrors).toEqual({ username: 'errors.auth.usernameTaken' });
-    expect(deleteSession).toHaveBeenCalledWith('token-1');
-    expect(accounts.removeAuthUserWithoutProfile).toHaveBeenCalledWith('auth-user-1');
-    expect(cookieStore.delete).toHaveBeenCalledWith('rk.session_token');
-    expect(redirectInLocale).not.toHaveBeenCalled();
+    expect(state).toEqual({ fieldErrors: { age: 'errors.auth.ageRequired' }, formError: null });
   });
 
-  it('logs an unexpected failure by its code only, never the email or password', async () => {
-    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    api.signUpEmail.mockRejectedValue(new Error(`boom for ${EMAIL} ${PASSWORD}`));
+  it('never signs in from the register form, so an already-registered address looks like a new one', async () => {
+    commandsAnswer({
+      'account.register': ok({ accountId: 'never-persisted' }),
+      'account.signIn': refused('auth.invalid_credentials'),
+    });
+
+    await expect(register(INITIAL_AUTH_STATE, registerForm())).rejects.toThrow('NEXT_REDIRECT');
+
+    expect(calledCommands()).toEqual(['account.register']);
+    expect(applySessionEffect).not.toHaveBeenCalled();
+    expect(redirect).toHaveBeenCalledWith('/bn/sign-in?next=%2Fbn%2Fme');
+  });
+
+  it('shows the internal error when the command fails unexpectedly', async () => {
+    commandsAnswer({ 'account.register': refused('internal') });
 
     const state = await register(INITIAL_AUTH_STATE, registerForm());
 
-    expect(state.formError).toBe('errors.common.internal');
-    expect(log).toHaveBeenCalled();
-    expect(JSON.stringify(log.mock.calls)).not.toMatch(/nadia\.islam|long enough secret/);
-    log.mockRestore();
+    expect(state).toEqual({ fieldErrors: {}, formError: 'errors.common.internal' });
   });
 });
 
 describe('signing in', () => {
-  it('opens the home page in the account’s preferred language', async () => {
-    vi.mocked(session.getCurrentAccountByAuthUserId).mockResolvedValue(buildAccount());
-
+  it('signs in through account.signIn and opens the home page in the account’s language', async () => {
     await expect(signIn(INITIAL_AUTH_STATE, signInForm())).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(api.signInEmail).toHaveBeenCalledWith({
-      body: { email: EMAIL, password: PASSWORD },
-      headers: requestHeaders,
-    });
+    expect(calledCommands()).toEqual(['account.signIn']);
+    expect(applySessionEffect).toHaveBeenCalledWith(SESSION);
     expect(redirectInLocale).toHaveBeenCalledWith({ href: '/', locale: 'bn' });
   });
 
-  it('returns to a same-site page but ignores a link to another site', async () => {
-    vi.mocked(session.getCurrentAccountByAuthUserId).mockResolvedValue(buildAccount());
+  it('falls back to the active language when the account has no profile language', async () => {
+    accountLocale(null);
 
+    await expect(signIn(INITIAL_AUTH_STATE, signInForm())).rejects.toThrow('NEXT_REDIRECT');
+
+    expect(redirectInLocale).toHaveBeenCalledWith({ href: '/', locale: 'en' });
+  });
+
+  it('returns to a same-site page but ignores a link to another site', async () => {
     await expect(signIn(INITIAL_AUTH_STATE, signInForm({ next: '/en/write' }))).rejects.toThrow();
     expect(redirect).toHaveBeenCalledWith('/en/write');
 
@@ -219,50 +222,48 @@ describe('signing in', () => {
     expect(redirectInLocale).toHaveBeenLastCalledWith({ href: '/', locale: 'bn' });
   });
 
-  it('gives a wrong email or password one neutral message', async () => {
-    api.signInEmail.mockRejectedValue(apiError('INVALID_EMAIL_OR_PASSWORD', 'UNAUTHORIZED'));
+  it.each([
+    ['auth.invalid_credentials', 'errors.auth.invalidCredentials'],
+    ['validation', 'errors.auth.invalidCredentials'],
+    ['auth.account_suspended', 'errors.auth.accountSuspended'],
+    ['auth.rate_limited', 'formErrors.auth.rateLimited'],
+    ['internal', 'errors.common.internal'],
+  ] as const)('answers %s with %s and sets no cookie', async (code, key) => {
+    commandsAnswer({ 'account.signIn': refused(code) });
 
     await expect(signIn(INITIAL_AUTH_STATE, signInForm())).resolves.toEqual({
       fieldErrors: {},
+      formError: key,
+    });
+    expect(applySessionEffect).not.toHaveBeenCalled();
+  });
+
+  it('gives a malformed email the neutral refusal without running the command', async () => {
+    const form = signInForm();
+    form.set('email', 'nobody');
+
+    await expect(signIn(INITIAL_AUTH_STATE, form)).resolves.toEqual({
+      fieldErrors: {},
       formError: 'errors.auth.invalidCredentials',
     });
-  });
-
-  it('closes the session again for a suspended account and says so', async () => {
-    vi.mocked(session.getCurrentAccountByAuthUserId).mockResolvedValue(
-      buildAccount({ status: 'suspended' }),
-    );
-
-    const state = await signIn(INITIAL_AUTH_STATE, signInForm());
-
-    expect(state.formError).toBe('errors.auth.accountSuspended');
-    expect(deleteSession).toHaveBeenCalledWith('token-1');
-    expect(cookieStore.delete).toHaveBeenCalledWith('rk.session_token');
-  });
-
-  it('treats a credential with no profile behind it like a wrong password', async () => {
-    vi.mocked(session.getCurrentAccountByAuthUserId).mockResolvedValue(null);
-
-    const state = await signIn(INITIAL_AUTH_STATE, signInForm());
-
-    expect(state.formError).toBe('errors.auth.invalidCredentials');
-    expect(deleteSession).toHaveBeenCalledWith('token-1');
+    expect(runCommand).not.toHaveBeenCalled();
   });
 });
 
 describe('signing out', () => {
-  it('ends the Better Auth session, clears the cookies and goes home in the active language', async () => {
+  it('ends the session through account.signOut, clears the cookie and goes home', async () => {
     await expect(signOut()).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(api.signOut).toHaveBeenCalledWith({ headers: requestHeaders });
-    expect(cookieStore.delete).toHaveBeenCalledWith('rk.session_token');
+    expect(calledCommands()).toEqual(['account.signOut']);
+    expect(applySessionEffect).toHaveBeenCalledWith({ kind: 'clear' });
     expect(redirectInLocale).toHaveBeenCalledWith({ href: '/', locale: 'en' });
   });
 
-  it('still clears the cookies when there was no session to end', async () => {
-    api.signOut.mockRejectedValue(apiError('FAILED_TO_GET_SESSION', 'UNAUTHORIZED'));
+  it('still clears the cookie when there was no session to end', async () => {
+    commandsAnswer({ 'account.signOut': refused('forbidden') });
 
     await expect(signOut()).rejects.toThrow('NEXT_REDIRECT');
-    expect(cookieStore.delete).toHaveBeenCalledWith('rk.session_token');
+
+    expect(applySessionEffect).toHaveBeenCalledWith({ kind: 'clear' });
   });
 });

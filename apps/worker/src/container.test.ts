@@ -34,4 +34,16 @@ describe('worker source never imports auth, identity reveal or deletion commands
     );
     expect(offenders).toEqual([]);
   });
+
+  it('reads neither the web encryption key nor the auth secret anywhere (FD-095)', () => {
+    // env.ts names both once, in the scrub list that deletes them; any other mention is a read.
+    const srcDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
+    const mentions = listSourceFiles(srcDir).flatMap((file) =>
+      (readFileSync(file, 'utf8').match(/APP_ENCRYPTION_KEY|BETTER_AUTH_SECRET/g) ?? []).map(
+        (name) => `${path.basename(file)}:${name}`,
+      ),
+    );
+
+    expect(mentions.sort()).toEqual(['env.ts:APP_ENCRYPTION_KEY', 'env.ts:BETTER_AUTH_SECRET']);
+  });
 });

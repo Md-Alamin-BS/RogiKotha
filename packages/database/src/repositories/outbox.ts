@@ -1,17 +1,17 @@
 // Implemented, not stubbed (task step 13) — T-009's worker skeleton needs a
-// real outbox relay the moment its migration lands. `application`'s
-// `Outbox`/`JobQueue` ports do not exist yet; this class gets an
-// `implements` clause when they do (T-009 onward), same as every other
-// repository in this package.
+// real outbox relay the moment its migration lands. It implements the
+// application `Outbox` port (T-101); the relay methods below stay local.
 //
 // CR-011 (FD-038, ISS-144, ISS-185): the relay's operations run on the relay
 // transaction's own connection (`SqlExecutor`), so claiming, enqueuing and
 // marking commit or roll back together.
+import type { Outbox, Tx as AppTx } from '@rogikotha/application';
 import { count, isNull } from 'drizzle-orm';
 
 import type { Db, Tx } from '../client';
 import { outboxEvents } from '../schema/index';
 import type { SqlExecutor } from '../queue/sql-executor';
+import { executorOf } from '../unit-of-work';
 
 export interface OutboxRow {
   id: string;
@@ -50,10 +50,15 @@ function toOutboxRow(record: OutboxRecord): OutboxRow {
   };
 }
 
-export class PgOutbox {
-  /** Appended in the same transaction as the change it announces. */
-  async append(tx: Tx, name: string, payload: Record<string, unknown>): Promise<void> {
-    await tx.insert(outboxEvents).values({ name, payload });
+export class PgOutbox implements Outbox {
+  /**
+   * Appended in the same transaction as the change it announces. Takes the application's opaque
+   * `Tx` (commands) or a Drizzle transaction (the relay's tests); both are the same object.
+   */
+  async append(tx: AppTx | Tx, name: string, payload: object): Promise<void> {
+    await executorOf(tx as AppTx)
+      .insert(outboxEvents)
+      .values({ name, payload });
   }
 
   /**

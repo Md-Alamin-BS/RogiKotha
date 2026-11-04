@@ -5,7 +5,9 @@ every table has `id uuid primary key` (UUIDv7, app-generated), `created_at times
 and, where rows change, `updated_at timestamptz`. Public-facing entities additionally carry
 `public_id text unique not null` (10-char base32). Append-only tables have a trigger that raises on
 `UPDATE`/`DELETE` (§10). Encrypted columns use AES-256-GCM with the app key from `APP_ENCRYPTION_KEY`
-via the `Crypto` port; ciphertext is `bytea`.
+via the `Crypto` port; ciphertext is `bytea`. The one exception is `email_deliveries.to_email_enc`,
+encrypted with the mail-only key `MAIL_RECIPIENT_KEY` through a second `Crypto` instance, so the worker
+holds that key and no other (FD-095).
 
 Drizzle schema files live in `packages/database/src/schema/<module>.ts`; T-004 creates §1–§5 and §9–§11,
 T-005 creates §6–§8 and §12–§14.
@@ -62,9 +64,9 @@ account repository.
 | Table | Columns (beyond Better Auth defaults) | Notes |
 |---|---|---|
 | `auth_users` | `id text pk`, `email text unique`, `email_verified bool`, `name text`, `created_at`, `updated_at` | `name` unused; display name lives in `account_profiles` |
-| `auth_sessions` | `id`, `user_id fk`, `token text unique`, `expires_at`, `ip_address`, `user_agent`, `created_at`, `updated_at` | 30-day max, rolling; listed on `/me/security` |
+| `auth_sessions` | `id`, `user_id fk`, `token text unique`, `expires_at`, `ip_address`, `user_agent`, `created_at`, `updated_at` | absolute 30 days from `created_at` (AC3.2.4, T-101 BR4.1): the daily refresh only moves "last seen", and `getActor()` revokes a session past the cap; `ip_address` stays empty, no IP is stored (BR4.9); listed on `/me/security` |
 | `auth_accounts` | Better Auth credential row: `provider_id 'credential'`, `password text` (Argon2id PHC string) | no OAuth providers |
-| `auth_verifications` | `identifier`, `value`, `expires_at` | email verification (24 h) and reset tokens |
+| `auth_verifications` | `identifier`, `value`, `expires_at` | reset tokens only (1 h): `identifier = 'reset-password:<token>'`, `value` = the auth user id; a completed reset removes the user's other reset rows (ISS-428). Email-verification links are signed tokens (24 h) and write no row (T-101 spike) |
 
 ## 2. Accounts and staff (module `account`)
 

@@ -129,6 +129,9 @@ importers:
       '@rogikotha/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@rogikotha/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
