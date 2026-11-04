@@ -1,0 +1,524 @@
+{
+  "stage": "functional-design",
+  "unit": "u47-reviews",
+  "upstream_ids": [
+    "AC2.4.1",
+    "AC2.4.2",
+    "AC2.4.3",
+    "AC2.4.4",
+    "AC2.4.5",
+    "AC2.4.6",
+    "AC3.3.1",
+    "AC3.3.2",
+    "AC3.3.3",
+    "AC3.3.4",
+    "AC3.3.5",
+    "AC3.3.6",
+    "AC4.2.1",
+    "AC4.2.2",
+    "AC4.2.3",
+    "AC4.2.4",
+    "AC4.2.5",
+    "AC4.3.1",
+    "AC4.3.2",
+    "AC4.3.3",
+    "AC4.3.4",
+    "AC4.3.5",
+    "AC5.3.1",
+    "AC5.3.2",
+    "AC5.3.3",
+    "AC5.3.4",
+    "AC5.3.5",
+    "AC6.1.1",
+    "AC6.1.2",
+    "AC6.1.3",
+    "AC6.1.4",
+    "AC6.1.5",
+    "AC6.1.6",
+    "AC6.2.1",
+    "AC6.2.2",
+    "AC6.2.3",
+    "AC6.2.4",
+    "AC6.2.5",
+    "AC6.3.1",
+    "AC6.3.2",
+    "AC6.3.3",
+    "AC6.3.4",
+    "AC6.3.5",
+    "AC6.4.1",
+    "AC6.4.2",
+    "AC6.4.3",
+    "AC6.4.4",
+    "AC6.4.5",
+    "AC10.2.1",
+    "AC10.2.2",
+    "AC10.2.3",
+    "AC10.2.4",
+    "AC10.2.5",
+    "AC12.1.1",
+    "AC12.1.2",
+    "AC12.1.3",
+    "AC12.1.4",
+    "AC12.1.5",
+    "AC12.1.6"
+  ],
+  "coverage": [
+    {
+      "id": "AC2.4.1",
+      "status": "OK",
+      "target": "BR8.11"
+    },
+    {
+      "id": "AC2.4.2",
+      "status": "OK",
+      "target": "BR8.11"
+    },
+    {
+      "id": "AC2.4.3",
+      "status": "OK",
+      "target": "BR8.11"
+    },
+    {
+      "id": "AC2.4.4",
+      "status": "OK",
+      "target": "BR8.11, BR8.4"
+    },
+    {
+      "id": "AC2.4.5",
+      "status": "OK",
+      "target": "BR8.7"
+    },
+    {
+      "id": "AC2.4.6",
+      "status": "N/A",
+      "target": "The NFR13 Lighthouse gate on the /en and /bn experience pages is run by U50 (release check); U47 builds the page to BR8.11"
+    },
+    {
+      "id": "AC3.3.1",
+      "status": "OK",
+      "target": "BR3.5, BR4.2, BR5.7 (the review and its page; comments in the thread are U49's, reaction lists are release 2)"
+    },
+    {
+      "id": "AC3.3.2",
+      "status": "OK",
+      "target": "BR4.2, BR5.7, BR5.8, BR3.12 (no profile submission links the account to an anonymous review)"
+    },
+    {
+      "id": "AC3.3.3",
+      "status": "OK",
+      "target": "BR7.2, BR5.8 (anonymous reviews never on the profile or in other-by-author lists; reactions and mentions are release 2)"
+    },
+    {
+      "id": "AC3.3.4",
+      "status": "Deferred",
+      "target": "Reactions are deferred to release 2 (FD-105, T-402)"
+    },
+    {
+      "id": "AC3.3.5",
+      "status": "Deferred",
+      "target": "The audited staff identity reveal is deferred to release 2 (FD-105, T-103 and T-104's reveal)"
+    },
+    {
+      "id": "AC3.3.6",
+      "status": "OK",
+      "target": "BR8.12"
+    },
+    {
+      "id": "AC4.2.1",
+      "status": "Deferred",
+      "target": "Provider claims are T-204, deferred to release 2 (FD-105); U47 builds only FD-100's composer entry (BR3.11, BR8.9)"
+    },
+    {
+      "id": "AC4.2.2",
+      "status": "Deferred",
+      "target": "Claim decisions are T-204 and T-407, deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC4.2.3",
+      "status": "Deferred",
+      "target": "Field changes are T-204, deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC4.2.4",
+      "status": "Deferred",
+      "target": "Photo suggestions are T-204, deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC4.2.5",
+      "status": "Deferred",
+      "target": "Duplicate merge is T-204, deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC4.3.1",
+      "status": "N/A",
+      "target": "Organisation and branch pages are U46's"
+    },
+    {
+      "id": "AC4.3.2",
+      "status": "N/A",
+      "target": "The facility not-verified mark is U46's"
+    },
+    {
+      "id": "AC4.3.3",
+      "status": "N/A",
+      "target": "Separation of facility feedback from doctor summaries is enforced at query level by U46; U47 writes facility visits only into facility_reviews (BR4.8)"
+    },
+    {
+      "id": "AC4.3.4",
+      "status": "OK",
+      "target": "BR3.10, BR4.8, BR8.10"
+    },
+    {
+      "id": "AC4.3.5",
+      "status": "N/A",
+      "target": "Facility aggregates with no responses are U46's"
+    },
+    {
+      "id": "AC5.3.1",
+      "status": "OK",
+      "target": "BR3.3, BR8.6"
+    },
+    {
+      "id": "AC5.3.2",
+      "status": "OK",
+      "target": "BR4.3"
+    },
+    {
+      "id": "AC5.3.3",
+      "status": "Deferred",
+      "target": "Admin alias mapping is deferred to release 2 (FD-105, T-105, T-408)"
+    },
+    {
+      "id": "AC5.3.4",
+      "status": "Deferred",
+      "target": "Super Admin tag management is deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC5.3.5",
+      "status": "Deferred",
+      "target": "Super Admin tag management is deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC6.1.1",
+      "status": "OK",
+      "target": "BR3.2, BR3.3, BR5.10, BR8.5, BR9.4"
+    },
+    {
+      "id": "AC6.1.2",
+      "status": "OK",
+      "target": "BR2.1, BR2.3, BR2.4, BR2.6, BR8.2, BR8.3"
+    },
+    {
+      "id": "AC6.1.3",
+      "status": "OK",
+      "target": "BR3.1, BR3.2, BR2.5, BR8.6"
+    },
+    {
+      "id": "AC6.1.4",
+      "status": "Deferred",
+      "target": "The repeat-episode flag for moderator review is release 2 with U32 (T-403); C9 release 1 stores nothing for it"
+    },
+    {
+      "id": "AC6.1.5",
+      "status": "OK",
+      "target": "BR8.4, BR7.5"
+    },
+    {
+      "id": "AC6.1.6",
+      "status": "N/A",
+      "target": "Evidence attaches to the published review and shows Processing privately through U48 (C8, C16); U47 publishes without evidence"
+    },
+    {
+      "id": "AC6.2.1",
+      "status": "OK",
+      "target": "BR3.2, BR5.4"
+    },
+    {
+      "id": "AC6.2.2",
+      "status": "OK",
+      "target": "BR3.4, BR4.4, BR5.5"
+    },
+    {
+      "id": "AC6.2.3",
+      "status": "OK",
+      "target": "BR3.8, BR5.2 (the FR46 checkbox half is deferred by an FD row, Question 6)"
+    },
+    {
+      "id": "AC6.2.4",
+      "status": "OK",
+      "target": "BR5.3"
+    },
+    {
+      "id": "AC6.2.5",
+      "status": "Deferred",
+      "target": "Linking a later provider and the profile-submission offer are T-302's follow-ups and T-204, deferred to release 2 (FD-105); the later-care text shows as written (BR5.4)"
+    },
+    {
+      "id": "AC6.3.1",
+      "status": "N/A",
+      "target": "Edits are U22's (review.correct); U47 provides the ReviewHistory slot with the Edited date (BR6.7)"
+    },
+    {
+      "id": "AC6.3.2",
+      "status": "N/A",
+      "target": "Corrections with versions are U22's; U47 writes version 1 at publish (BR4.7)"
+    },
+    {
+      "id": "AC6.3.3",
+      "status": "Deferred",
+      "target": "Follow-ups are deferred to release 2 (FD-105, T-302)"
+    },
+    {
+      "id": "AC6.3.4",
+      "status": "Deferred",
+      "target": "Deletion with tombstones is deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC6.3.5",
+      "status": "Deferred",
+      "target": "Restore is deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC6.4.1",
+      "status": "N/A",
+      "target": "Doctor and condition summaries are U46's"
+    },
+    {
+      "id": "AC6.4.2",
+      "status": "N/A",
+      "target": "Limited data on summaries is U46's"
+    },
+    {
+      "id": "AC6.4.3",
+      "status": "N/A",
+      "target": "Query-level separation is U46's; U47 never writes facility feedback into reviews (BR4.8)"
+    },
+    {
+      "id": "AC6.4.4",
+      "status": "Deferred",
+      "target": "Removal and ineligible marking are moderation, deferred to release 2 (FD-105, U33)"
+    },
+    {
+      "id": "AC6.4.5",
+      "status": "N/A",
+      "target": "Summaries are U46's; U47's projection carries no weighting field (BR5.9)"
+    },
+    {
+      "id": "AC10.2.1",
+      "status": "OK",
+      "target": "BR7.2 (reviews; comments and reaction activity on the profile are release 2, T-409)"
+    },
+    {
+      "id": "AC10.2.2",
+      "status": "OK",
+      "target": "BR7.2"
+    },
+    {
+      "id": "AC10.2.3",
+      "status": "OK",
+      "target": "BR7.2"
+    },
+    {
+      "id": "AC10.2.4",
+      "status": "Deferred",
+      "target": "Bookmarks are deferred to release 2 (FD-105, T-409)"
+    },
+    {
+      "id": "AC10.2.5",
+      "status": "OK",
+      "target": "BR7.2"
+    },
+    {
+      "id": "AC12.1.1",
+      "status": "N/A",
+      "target": "First-visit language choice is the merged locale routing (U7) and U20"
+    },
+    {
+      "id": "AC12.1.2",
+      "status": "N/A",
+      "target": "Language switching is the merged locale routing"
+    },
+    {
+      "id": "AC12.1.3",
+      "status": "OK",
+      "target": "BR3.7, BR3.9, BR5.4 (author-written translation is future scope, FR92)"
+    },
+    {
+      "id": "AC12.1.4",
+      "status": "OK",
+      "target": "BR9.1"
+    },
+    {
+      "id": "AC12.1.5",
+      "status": "N/A",
+      "target": "The /emergency page is U20's"
+    },
+    {
+      "id": "AC12.1.6",
+      "status": "N/A",
+      "target": "Onboarding and policy pages are U20's and U9's; checked by U50"
+    }
+  ],
+  "reverse": [
+    {
+      "id": "BR1.1",
+      "status": "N/A",
+      "target": "Authorization of drafts (FR39, C9); supports AC6.1.2"
+    },
+    {
+      "id": "BR1.2",
+      "status": "N/A",
+      "target": "Application-layer refusal of unconfirmed or restricted publishers (C9 release 1, FR40)"
+    },
+    {
+      "id": "BR1.3",
+      "status": "N/A",
+      "target": "Publish rate limit, a C18 constant"
+    },
+    {
+      "id": "BR1.4",
+      "status": "N/A",
+      "target": "Draft-save rate limit, a C18 constant"
+    },
+    {
+      "id": "BR1.5",
+      "status": "N/A",
+      "target": "Privacy of the own list and the duplicate hint (T-104 BR3.4)"
+    },
+    {
+      "id": "BR2.2",
+      "status": "N/A",
+      "target": "Encryption at rest of drafts (FR39 encrypted autosave)"
+    },
+    {
+      "id": "BR3.6",
+      "status": "N/A",
+      "target": "Derived title for the NOT NULL column (technical rule, Question 10)"
+    },
+    {
+      "id": "BR3.11",
+      "status": "N/A",
+      "target": "FD-100 member-added doctor in the composer (US4.2 narrowed, no release-1 AC)"
+    },
+    {
+      "id": "BR4.1",
+      "status": "N/A",
+      "target": "Transaction order and rollback (C9, 01-conventions §3)"
+    },
+    {
+      "id": "BR4.5",
+      "status": "N/A",
+      "target": "Audit with the persona actor (Question 5, FD row)"
+    },
+    {
+      "id": "BR4.6",
+      "status": "N/A",
+      "target": "review.published outbox event (C9, C15)"
+    },
+    {
+      "id": "BR4.7",
+      "status": "N/A",
+      "target": "Version 1 for U22's history (FR69)"
+    },
+    {
+      "id": "BR4.9",
+      "status": "N/A",
+      "target": "Log hygiene (NFR10)"
+    },
+    {
+      "id": "BR5.1",
+      "status": "N/A",
+      "target": "Eligibility of the public page (FR50)"
+    },
+    {
+      "id": "BR5.6",
+      "status": "N/A",
+      "target": "Registration not verified and the FD-100 mark (PRODUCT.md hard rule)"
+    },
+    {
+      "id": "BR5.9",
+      "status": "N/A",
+      "target": "Projection key denylist (hard rules, C16)"
+    },
+    {
+      "id": "BR6.1",
+      "status": "N/A",
+      "target": "C9 seam reviewIdForPublicId for U22, U48, U49"
+    },
+    {
+      "id": "BR6.2",
+      "status": "N/A",
+      "target": "C9 seam isReviewAuthor for U22, U48"
+    },
+    {
+      "id": "BR6.3",
+      "status": "N/A",
+      "target": "C9 seam isReviewPublished for U49"
+    },
+    {
+      "id": "BR6.4",
+      "status": "N/A",
+      "target": "C16 slot rules"
+    },
+    {
+      "id": "BR6.5",
+      "status": "N/A",
+      "target": "C16 slot internals until handover; FD-099 demo flows kept"
+    },
+    {
+      "id": "BR6.6",
+      "status": "N/A",
+      "target": "C16 edit link and author tools"
+    },
+    {
+      "id": "BR6.7",
+      "status": "N/A",
+      "target": "Edited date before U22 (Question 25); supports AC6.3.1 in U22"
+    },
+    {
+      "id": "BR6.8",
+      "status": "N/A",
+      "target": "Seam freeze at merge (contract ownership rules)"
+    },
+    {
+      "id": "BR7.1",
+      "status": "N/A",
+      "target": "Experiences index (T-307, PRODUCT.md neutral order)"
+    },
+    {
+      "id": "BR7.3",
+      "status": "N/A",
+      "target": "Own-review list on /me (unit-of-work.md U47)"
+    },
+    {
+      "id": "BR7.4",
+      "status": "N/A",
+      "target": "Exact count on the index (PRODUCT.md exact counts)"
+    },
+    {
+      "id": "BR8.1",
+      "status": "N/A",
+      "target": "C16 gate on /write (T-102)"
+    },
+    {
+      "id": "BR8.8",
+      "status": "N/A",
+      "target": "Composer defaults (FD-014)"
+    },
+    {
+      "id": "BR8.9",
+      "status": "N/A",
+      "target": "FD-100 add-a-doctor panel (US4.2 narrowed, no release-1 AC)"
+    },
+    {
+      "id": "BR9.2",
+      "status": "N/A",
+      "target": "Demo-slice retirement (Question 16)"
+    },
+    {
+      "id": "BR9.3",
+      "status": "N/A",
+      "target": "Module boundaries (C19, FD-093)"
+    }
+  ]
+}
