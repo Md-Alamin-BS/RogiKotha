@@ -12,12 +12,14 @@ Read this first when the session restarts. **On another computer, start with [CO
 
 ## Progress
 
-- **2026-11-04, the full plan is running** (intent `261011-aidlc-adoption`).
-  - Merged on `main`: 9 of 45 Units (CR-004, CR-009, CR-006, CR-007, CR-011, CR-012, T-010, T-011, T-101) plus the demo slice. `main` is at `87a87c5`; `pnpm check` is green with 2,282 tests.
-  - T-101 needs the owner's written sign-off before the phase gate (high-risk; listed in the review queue).
-  - GitHub Actions is removed (FD-102). Never add `.github/workflows` back.
-- **In progress:** U14 **T-201** Functional Design. The draft is copied into the record and the reviewer is dispatched. Next: the verdict, `unit complete`, then Code Generation through a parallel workflow, the same shape as T-101's.
-- The demo slice stays on `bolt/demo-slice`, with its intent paused at its Code Generation gate.
+- **2026-11-04: release 1 was re-planned (FD-105)** and approved under the owner's delegation of the same day: the agent approves gates with the recommended option. The new plan is 10 active Units in 5 parallel batches; 18 Units are deferred to release 2. Construction runs stage-major with swarm. The plan's estimate is **2026-11-11** at about 12 hours a day, or about 2026-11-09 running nearly around the clock.
+  - Batch 1: U46 directory, U9 T-102, U11 T-104.
+  - Batch 2: U47 reviews, U20 T-207.
+  - Batch 3: U48 evidence, U22 T-302, U49 comments.
+  - Batch 4: U41 T-502.
+  - Batch 5: U50 release check.
+- Merged on `main`: 9 Units plus the demo slice. `main` is at `bc63889`. There is no CI (FD-102).
+- **In progress:** the Functional Design wave 1 (U9, U11, U46), with 3 architects running in parallel. Next: one review per Unit (one dispatch record at a time), then `aidlc engine state unit complete --wave --stage functional-design --unit <u>`, then `next` for the next wave.
 
 ## In flight when the session closed (cut off by the close; resume as below)
 
