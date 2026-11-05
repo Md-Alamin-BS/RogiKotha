@@ -18,11 +18,11 @@ Read this first when the session restarts. **On another computer, start with [CO
   - Batch 3: U48 evidence, U22 T-302, U49 comments.
   - Batch 4: U41 T-502.
   - Batch 5: U50 release check.
-- Merged on `main`: 9 Units plus the demo slice. `main` is at `bc63889`. There is no CI (FD-102).
-- **Functional Design progress (2026-11-04 night):**
-  - Waves 1 and 2 are complete, all reviewed READY and fixed: U9, U11, U46, U20, U47. Pushed at `f56e9fc`.
-  - Wave 3 (U22, U48, U49) is being written by 3 parallel architects. Then come reviews (one dispatch record at a time), fixes, and `unit complete --wave`.
-  - Then wave 4 (U41) and wave 5 (U50), then Code Generation in parallel batches. Each Unit's Code Generation must first append that Unit's proposed FD rows to the decision log; the next free number is FD-106.
+- Merged on `main`: 9 Units plus the demo slice. There is no CI (FD-102).
+- **Functional Design progress (2026-11-05):**
+  - Waves 1–3 are complete, reviewed and fixed: U9, U11, U46, U20, U47, U22, U49, U48. Pushed at `b1c68ad`. U48 was NOT-READY at review 1 (4 Major, 9 Minor) and was fixed; its limits are now C18's 15 MB / 10 files / 100 MB.
+  - Wave 4 (U41 T-502) is being written by one architect (started 2026-11-05 ~07:25Z). If the session is cut off, run `aidlc engine orchestrate next` to get its run-stage again and re-dispatch an architect; save-early files may already exist in `construction/t-502-security-hardening/functional-design/`.
+  - Then wave 5 (U50), then Code Generation in parallel batches. Each Unit's Code Generation must first append that Unit's proposed FD rows to the decision log; the next free number is FD-106 (U46 proposes FD-106–FD-108).
 
 ## In flight when the session closed (cut off by the close; resume as below)
 
