@@ -1,0 +1,186 @@
+{
+  "stage": "functional-design",
+  "unit": "t-502-security-hardening",
+  "upstream_ids": [
+    "AC12.3.3",
+    "AC12.4.1",
+    "AC12.4.2",
+    "AC12.4.3",
+    "AC7.1.3",
+    "AC7.1.6",
+    "AC3.1.5",
+    "FR61",
+    "FR99",
+    "NFR8",
+    "NFR10"
+  ],
+  "coverage": [
+    {
+      "id": "AC12.3.3",
+      "status": "OK",
+      "target": "BR6.1, BR6.2, BR6.3, BR6.4, BR6.5, BR6.6, BR6.7, BR6.8 (everything the application writes goes through the two loggers: key allowlist, identifier-shaped values only, event-name rule, no switch, no direct console output outside the loggers by lint; Next.js's own printing of unhandled errors is a documented residual; tests: log-policy.test.ts, both logger tests, server/log-scrub.int.test.ts, apps/worker/src/log-scrub.test.ts, the no-console guard; adversarial A4 with an unhandled throw; changed in Review 01 R-02)"
+    },
+    {
+      "id": "AC12.4.1",
+      "status": "OK",
+      "target": "BR1.3 (no host, scheme or wildcard source in any CSP directive; csp.test.ts enumerates every directive; security-headers.spec.ts records that no request leaves the app's origin)"
+    },
+    {
+      "id": "AC12.4.2",
+      "status": "OK",
+      "target": "BR5.2 (only the ENT-011 cookie inventory is set; e2e cookie check after sign-in and a language and theme switch; no consent banner exists)"
+    },
+    {
+      "id": "AC12.4.3",
+      "status": "OK",
+      "target": "BR1.3, BR6.2 (no third-party origin can be reached under the CSP; logs never carry search strings, medical text, file names or identifiers beyond opaque ids)"
+    },
+    {
+      "id": "AC7.1.3",
+      "status": "OK",
+      "target": "BR4.1, BR4.2, BR4.3, BR4.4, BR4.5 (request cap 15 794 176 bytes checked from Content-Length before reading and by a counting stream while reading; U48 keeps its per-file, per-review and count limits; tests: request-limits.test.ts, route.security.test.ts; adversarial A2); the 413 answer is listed in the C14 release-1 amendment and shown by messageKey in U48's uploader and U47's composer (consumer tests, Review 01 R-04)"
+    },
+    {
+      "id": "AC7.1.6",
+      "status": "OK",
+      "target": "BR6.1, BR6.2, BR6.6, BR2.2 (the log part: file names never reach either log, tested with a Bengali and an English synthetic file name; X-Robots-Tag on private paths; the search index and image metadata parts belong to U18 and T-305, release 2)"
+    },
+    {
+      "id": "AC3.1.5",
+      "status": "Deferred",
+      "target": "FD-105 defers the FD-072 sign-in-delay adversarial test to release 2; U8 (T-101) already ran adversarial tests on the delay; U41 builds no FD-058 code (BR8.1)"
+    },
+    {
+      "id": "FR61",
+      "status": "OK",
+      "target": "BR4.1, BR4.2, BR4.3, BR4.5 (U41 refuses an oversized request before expensive processing; U48 owns the per-file, per-review and count limits)"
+    },
+    {
+      "id": "FR99",
+      "status": "OK",
+      "target": "BR1.3, BR6.2 (release-1 guard: no analytics origin is allowed by the CSP, and logs carry no sensitive values)"
+    },
+    {
+      "id": "NFR8",
+      "status": "OK",
+      "target": "BR2.2 (X-Robots-Tag noindex, nofollow on user, auth, staff and /api surfaces, in addition to the pages' noindex metadata)"
+    },
+    {
+      "id": "NFR10",
+      "status": "OK",
+      "target": "BR6.1, BR6.2, BR6.3, BR6.4, BR6.5, BR6.6, BR6.7, BR6.8 (structured scrubbed logs with allowlisted fields; direct console output routed through the loggers; Review 01 R-02)"
+    }
+  ],
+  "reverse": [
+    {
+      "id": "BR1.1",
+      "status": "N/A",
+      "target": "traces to the requirements Constraint 'Security, privacy and audit' (strict nonce CSP), which has no stable ID; T-502 step 1; Review 01 R-01 (dotted page paths now covered) and R-07 (header fallback on next-intl's bare response)"
+    },
+    {
+      "id": "BR1.2",
+      "status": "N/A",
+      "target": "traces to the Constraint 'Security, privacy and audit' (strict nonce CSP); T-502 step 1 narrowed by FD-105"
+    },
+    {
+      "id": "BR1.4",
+      "status": "N/A",
+      "target": "technical rule required by the nonce CSP (Next 16 CSP guide: nonce pages must render dynamically)"
+    },
+    {
+      "id": "BR1.5",
+      "status": "N/A",
+      "target": "traces to the Constraint 'Security, privacy and audit' (strict nonce CSP); T-502 steps 1 and 9"
+    },
+    {
+      "id": "BR1.6",
+      "status": "N/A",
+      "target": "defence-in-depth rule for /api responses; T-502 step 2 extended"
+    },
+    {
+      "id": "BR2.1",
+      "status": "N/A",
+      "target": "traces to the Constraint 'Security, privacy and audit' (PRD §9.1 security baseline); T-502 step 2"
+    },
+    {
+      "id": "BR2.3",
+      "status": "N/A",
+      "target": "T-502 step 2 (no framework advertisement); already on main, pinned by a test"
+    },
+    {
+      "id": "BR2.4",
+      "status": "N/A",
+      "target": "T-502 step 2 (HSTS only on https); inactive in the local http demo"
+    },
+    {
+      "id": "BR3.1",
+      "status": "N/A",
+      "target": "configuration rule for the Constraint 'Security, privacy and audit' (CSRF and origin checks); T-502 step 3"
+    },
+    {
+      "id": "BR3.2",
+      "status": "N/A",
+      "target": "traces to the Constraint 'Security, privacy and audit' (origin checks); T-502 step 3 (unknown Host refused); applies_to aligned with § 2 in Review 01 R-03"
+    },
+    {
+      "id": "BR3.3",
+      "status": "N/A",
+      "target": "traces to the Constraint 'Security, privacy and audit' (CSRF and origin checks); T-502 step 3"
+    },
+    {
+      "id": "BR3.4",
+      "status": "N/A",
+      "target": "technical rule from Next 16 proxyClientMaxBodySize behaviour (a proxied body is truncated silently) and from SLUGGED_PUBLIC_ID_RE (page ids accept dots), so only named files are excluded; protects BR1.1 on every page and AC7.1.3 uploads; Review 01 R-01 and R-03"
+    },
+    {
+      "id": "BR3.5",
+      "status": "N/A",
+      "target": "T-502 step 3 (serverActions.allowedOrigins from APP_ALLOWED_ORIGINS)"
+    },
+    {
+      "id": "BR3.6",
+      "status": "N/A",
+      "target": "C14 error body and T-502 step 3 ('403, no body'); no new i18n key"
+    },
+    {
+      "id": "BR3.7",
+      "status": "N/A",
+      "target": "T-101 BR4.2 and FD-104; T-502 step 3 trustedOrigins, kept narrow"
+    },
+    {
+      "id": "BR4.6",
+      "status": "N/A",
+      "target": "technical rule: body limits return to Next.js defaults once U48 removes the demo upload action"
+    },
+    {
+      "id": "BR5.1",
+      "status": "N/A",
+      "target": "traces to the Constraint 'Security, privacy and audit' (secure, HttpOnly, SameSite cookies); T-502 step 6 narrowed"
+    },
+    {
+      "id": "BR7.1",
+      "status": "N/A",
+      "target": "technical validation rule: invalid security settings fail closed (T-101 BR7.2 style, construction.md fail fast)"
+    },
+    {
+      "id": "BR7.2",
+      "status": "N/A",
+      "target": "technical rule: settings read at first use, never at module load (T-101 BR7.2)"
+    },
+    {
+      "id": "BR7.3",
+      "status": "N/A",
+      "target": "architecture rule from FD-093 (6): lib/ is the web-shared element"
+    },
+    {
+      "id": "BR8.1",
+      "status": "N/A",
+      "target": "scope guard from FD-105, FD-102 and FD-104"
+    },
+    {
+      "id": "BR8.2",
+      "status": "N/A",
+      "target": "documentation rule from T-502 'Threat notes' and AD-16"
+    }
+  ]
+}
