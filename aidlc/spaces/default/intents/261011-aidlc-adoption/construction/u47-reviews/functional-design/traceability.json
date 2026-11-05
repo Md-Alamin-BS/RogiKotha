@@ -519,6 +519,11 @@
       "id": "BR9.3",
       "status": "N/A",
       "target": "Module boundaries (C19, FD-093)"
+    },
+    {
+      "id": "BR6.9",
+      "status": "N/A",
+      "target": "C9 seam authorIdentityModeOf for U49 (thread alias for an anonymous author's comments)"
     }
   ]
 }

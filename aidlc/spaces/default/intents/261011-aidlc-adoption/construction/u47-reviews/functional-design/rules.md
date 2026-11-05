@@ -415,6 +415,14 @@ rules:
     logic: "a later change is breaking under the contract ownership rules and is agreed in contract-summary.md first"
     violation: "U22, U48 or U49 built against a moved seam"
     source: "C16 rules, contract ownership rules (FD-105 seams)"
+  - id: BR6.9
+    statement: "authorIdentityModeOf returns the identity mode of a review's author, named, pseudonymous or anonymous, or null for an unknown id; it never returns or exposes the persona id or the account id, and never errors."
+    category: constraint
+    applies_to: "modules/review/queries/author-identity-mode-of.ts (ReviewSeams)"
+    trigger: "U49 comment.post and community.thread, so an anonymous review's author comments under that thread's alias"
+    logic: "reviews.identity_mode of reviewId, in any state; IF no row for reviewId THEN null; the result is the bare enum value only; a test asserts anonymous for an anonymous review and that the result holds no persona or account id"
+    violation: "A seam that hands another module the author persona or account of an anonymous review (FD-015)"
+    source: "C9 release 1 (additive, for U49), FD-015"
 
   # BR7 — Lists and pages
   - id: BR7.1
@@ -600,7 +608,7 @@ rules:
 | BR3 Publish validation | BR3.1–BR3.12 | Attestation; minimum fields in a fixed order; the tag rule; period and private date; identity modes; the derived title; detected language; optional judgements and three labels; text as written; facility visits; the member-added doctor; no new doctor on an anonymous review. |
 | BR4 Publish persistence | BR4.1–BR4.9 | One transaction. The persona comes from Identity. The doctor and terms come from their modules. The exact date is encrypted. The audit actor is the persona. There is one event. Version 1 is written. Facility visits are kept apart. Logs are clean. |
 | BR5 Projection | BR5.1–BR5.10 | Eligible reviews only. "Not provided". "Reviewer's label". Text as written. Month and year only. "Registration not verified". Bylines per mode. Related lists through U46. A key denylist. The preview uses the same function. |
-| BR6 Seams | BR6.1–BR6.8 | `reviewIdForPublicId`, `isReviewAuthor` and `isReviewPublished`. Self-fetching slots that keep today's behaviour. Author tools only for the author. The Edited date. The seams freeze at merge. |
+| BR6 Seams | BR6.1–BR6.9 | `reviewIdForPublicId`, `isReviewAuthor`, `isReviewPublished` and `authorIdentityModeOf`. Self-fetching slots that keep today's behaviour. Author tools only for the author. The Edited date. The seams freeze at merge. |
 | BR7 Lists and pages | BR7.1–BR7.5 | The index (cursor, exact count). The author page (no anonymous reviews, no existence oracle). The own list. The count. The duplicate hint. |
 | BR8 Composer | BR8.1–BR8.12 | The gate, the four steps, autosave, the pattern checks, the preview, the publish summary, a calm confirmation, defaults, add-a-doctor, the facility target, motion, and no staff-access caveat. |
 | BR9 Platform | BR9.1–BR9.4 | Bilingual keys, demo retirement, module boundaries and the hard rules. |

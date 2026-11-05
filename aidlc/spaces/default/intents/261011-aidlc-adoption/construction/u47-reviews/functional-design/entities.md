@@ -221,6 +221,7 @@ entities:
       - { name: reviewIdForPublicId, type: "(tx: Tx, {publicId: string}) => Promise<string | null>", required: true }
       - { name: isReviewAuthor, type: "(tx: Tx, {reviewId: string, actor: Actor}) => Promise<boolean>", required: true }
       - { name: isReviewPublished, type: "(tx: Tx, {reviewId: string}) => Promise<boolean>", required: true }
+      - { name: authorIdentityModeOf, type: "(tx: Tx, {reviewId: string}) => Promise<'named' | 'pseudonymous' | 'anonymous' | null>", required: true, constraints: "for U49; the mode only, never the persona id or the account id; null for an unknown id (BR6.9)" }
       - { name: lastEditedAt, type: "(tx: Tx, {reviewId: string}) => Promise<string | null>", required: true, constraints: "ReviewModule only, not in ReviewSeams" }
       - { name: "commands and queries", type: "Command<I, O> (defineCommand, defineQuery)", required: true, constraints: "saveDraft, discardDraft, publish, facilityReviewPublish, getDraft, listOwnDrafts, preview, getExperience, countExperiences, authorCards, listOwnReviews, hasOwnReviewOfDoctor; run by runCommand in server/command-call.ts" }
     constraints:

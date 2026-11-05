@@ -1,0 +1,130 @@
+{
+  "stage": "functional-design",
+  "unit": "t-302-review-changes-and-tombstones",
+  "upstream_ids": [
+    "AC6.2.1",
+    "AC6.2.2",
+    "AC6.2.3",
+    "AC6.2.4",
+    "AC6.2.5",
+    "AC6.3.1",
+    "AC6.3.2",
+    "AC6.3.3",
+    "AC6.3.4",
+    "AC6.3.5"
+  ],
+  "coverage": [
+    {
+      "id": "AC6.2.1",
+      "status": "OK",
+      "target": "BR2.2, BR5.1"
+    },
+    {
+      "id": "AC6.2.2",
+      "status": "OK",
+      "target": "BR1.3, BR3.4"
+    },
+    {
+      "id": "AC6.2.3",
+      "status": "OK",
+      "target": "BR2.4"
+    },
+    {
+      "id": "AC6.2.4",
+      "status": "OK",
+      "target": "BR2.4"
+    },
+    {
+      "id": "AC6.2.5",
+      "status": "Deferred",
+      "target": "Later providers are follow-ups, deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC6.3.1",
+      "status": "OK",
+      "target": "BR3.1, BR3.2, BR4.1"
+    },
+    {
+      "id": "AC6.3.2",
+      "status": "OK",
+      "target": "BR1.1, BR3.1, BR3.3, BR3.4, BR4.2, BR4.3 (the original stays readable to every reader through Show original; prior versions are retained, never changed)"
+    },
+    {
+      "id": "AC6.3.3",
+      "status": "Deferred",
+      "target": "Follow-ups are deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC6.3.4",
+      "status": "Deferred",
+      "target": "Delete with tombstones is deferred to release 2 (FD-105)"
+    },
+    {
+      "id": "AC6.3.5",
+      "status": "Deferred",
+      "target": "Restore is deferred to release 2 (FD-105)"
+    }
+  ],
+  "reverse": [
+    {
+      "id": "BR1.2",
+      "status": "N/A",
+      "target": "contribution gate shared with publishing (C9)"
+    },
+    {
+      "id": "BR1.4",
+      "status": "N/A",
+      "target": "abuse limit, Question 6"
+    },
+    {
+      "id": "BR2.1",
+      "status": "N/A",
+      "target": "publish minimum kept on edit (U47 BR3.2)"
+    },
+    {
+      "id": "BR2.3",
+      "status": "N/A",
+      "target": "title, language and text rules reused from U47"
+    },
+    {
+      "id": "BR3.5",
+      "status": "N/A",
+      "target": "concurrency safety, Question 5"
+    },
+    {
+      "id": "BR3.6",
+      "status": "N/A",
+      "target": "append-only and no email (FD-105)"
+    },
+    {
+      "id": "BR4.4",
+      "status": "N/A",
+      "target": "anonymity and C16 safety of the history query"
+    },
+    {
+      "id": "BR4.5",
+      "status": "N/A",
+      "target": "C16 slot rules"
+    },
+    {
+      "id": "BR5.2",
+      "status": "N/A",
+      "target": "U47 BR6.6 handover of the edit link"
+    },
+    {
+      "id": "BR5.3",
+      "status": "N/A",
+      "target": "en and bn parity (ADR 0011)"
+    },
+    {
+      "id": "BR5.4",
+      "status": "N/A",
+      "target": "web action result mapping"
+    },
+    {
+      "id": "BR6.1",
+      "status": "N/A",
+      "target": "demo code retirement (U47 § 9)"
+    }
+  ]
+}

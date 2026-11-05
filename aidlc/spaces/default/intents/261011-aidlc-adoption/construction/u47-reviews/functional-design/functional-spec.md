@@ -27,6 +27,7 @@ The review module goes from U46's read-side stub to a full module. It adds draft
 | `reviewIdForPublicId` | `queries/review-id-for-public-id.ts` | internal seam | `(tx, {publicId})` → `reviewId \| null` | BR6.1 |
 | `isReviewAuthor` | `queries/is-review-author.ts` | internal seam | `(tx, {reviewId, actor})` → `boolean` | BR6.2 |
 | `isReviewPublished` | `queries/is-review-published.ts` | internal seam | `(tx, {reviewId})` → `boolean` | BR6.3 |
+| `authorIdentityModeOf` | `queries/author-identity-mode-of.ts` | internal seam | `(tx, {reviewId})` → `'named' \| 'pseudonymous' \| 'anonymous' \| null` | BR6.9 |
 | `lastEditedAt` | `queries/last-edited-at.ts` | internal | `(tx, {reviewId})` → `ISO date \| null` | BR6.7 |
 
 ### 2.1 The calling convention (pinned; frozen when U47 merges, BR6.8)
@@ -39,6 +40,7 @@ interface ReviewSeams {
   reviewIdForPublicId(tx: Tx, input: {publicId: string}): Promise<string | null>;
   isReviewAuthor(tx: Tx, input: {reviewId: string; actor: Actor}): Promise<boolean>;
   isReviewPublished(tx: Tx, input: {reviewId: string}): Promise<boolean>;
+  authorIdentityModeOf(tx: Tx, input: {reviewId: string}): Promise<IdentityMode | null>;   -- U49
 }
 interface ReviewModule extends ReviewSeams {
   saveDraft, discardDraft, publish, facilityReviewPublish: Command<…>;     -- defineCommand
@@ -254,7 +256,7 @@ U46's `listExperienceCards` gains the optional `personaIds` and `excludePublicId
 - `ports/audit-writer.ts` (baseline C1 and C19, additive): `AuditActor` gains `persona:${string}`.
 - `errors.ts` (shared contracts, additive): the error code `review.anonymous_new_doctor` (BR3.12).
 - Dated notes in `contract-summary.md`:
-  - C9: the release-1 operations above, `discardDraft`, `authorCards`, `lastEditedAt` and the `listExperienceCards` filters. It also pins the calling convention of § 2.1 (`ReviewSeams`, `Tx` first, reached through `getContainer().review` and factory deps). It states that `isReviewPublished` uses U46's imported eligibility predicate (U46 BR1.3), doctor join included, rather than "in the published state".
+  - C9: the release-1 operations above, `authorIdentityModeOf` (for U49), `discardDraft`, `authorCards`, `lastEditedAt` and the `listExperienceCards` filters. It also pins the calling convention of § 2.1 (`ReviewSeams`, `Tx` first, reached through `getContainer().review` and factory deps). It states that `isReviewPublished` uses U46's imported eligibility predicate (U46 BR1.3), doctor join included, rather than "in the published state".
   - C7: `addMemberDoctor` is never called for an anonymous review (BR3.12). C6 (`taxonomy.listSpecialties`), C1 and C19 (the `AuditActor` widening), and C16 (the slots created, frozen at merge).
 
 ## 7. Owned paths and recorded additions
@@ -310,7 +312,7 @@ The header of `demo/reviews.ts` is rewritten to list its remaining functions and
   - `publish`: the happy path in each identity mode; each refusal (unconfirmed, restricted, rate limited, attestation, every `min_fields` item, a bad exact date, a bad label); rollback when `addMemberDoctor` or `ensureProvisionalTerm` fails; five `min_fields` refusals followed by a valid publish succeeds (the limiter is hit only after validation, BR1.3); anonymous mode with a new doctor refused with `review.anonymous_new_doctor` and `addMemberDoctor` never called; one audit assertion with the `persona:` actor; the outbox payload.
   - `facilityReview.publish`: happy path, feature off, anonymous refused.
   - Projection: Not provided, Reviewer's label, section order, month and year only, each byline kind, `otherByAuthor` empty for anonymous, and a key-denylist deep scan over generated reviews (BR5.9).
-  - The three seams, including `isReviewAuthor` false for another account's anonymous review and for an unknown id.
+  - The four seams, including `isReviewAuthor` false for another account's anonymous review and for an unknown id, and `authorIdentityModeOf` returning `anonymous` for an anonymous review, `null` for an unknown id, and a bare string that never carries the persona id or the account id.
 - **Database (`*.int.test.ts`):** every repository method. Publish and rollback in one transaction leave no persona, term or doctor behind. A seeded plaintext draft is unreadable but not deleted. `exact_date_enc` is never selected by a public read.
 - **Component (en and bn):** each wizard step, the gate state, the summary of missing fields, `ExperienceBody` in page and preview modes, each byline, the three slots including their empty states, the index and the author page empty state.
 - **Smoke (`*.smoke.test.ts(x)`, at least one):** publish a quick review through the module and read it back through `getExperience`; the experience page renders its three slots.
@@ -388,7 +390,7 @@ Text version: a persona authors many reviews and facility visit accounts. A doct
 | BR3 | BR3.1–BR3.12 | Attestation, the minimum fields, tags, period, identity, title, language, optional judgements, text as written, facility visits, the member-added doctor, no new doctor on an anonymous review. |
 | BR4 | BR4.1–BR4.9 | One transaction. Persona, doctor and terms come through their modules. The audit actor is the persona. One event. Version 1. Facility visits are kept apart. Clean logs. |
 | BR5 | BR5.1–BR5.10 | Eligible only. Not provided. Reviewer's label. Text as written. Month and year. Registration not verified. Bylines. Related lists. The denylist. The preview. |
-| BR6 | BR6.1–BR6.8 | The three seams, the slots, author tools for the author only, the Edited date, frozen at merge. |
+| BR6 | BR6.1–BR6.9 | The four seams, the slots, author tools for the author only, the Edited date, frozen at merge. |
 | BR7 | BR7.1–BR7.5 | The index, the author page, the own list, the exact count, the duplicate hint. |
 | BR8 | BR8.1–BR8.12 | Gate, steps, autosave, checks, preview, refusals, calm confirmation, defaults, add-a-doctor, facility target, motion, no caveat. |
 | BR9 | BR9.1–BR9.4 | Bilingual keys, demo retirement, boundaries, hard rules. |
