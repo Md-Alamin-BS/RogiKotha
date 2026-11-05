@@ -1,0 +1,481 @@
+{
+  "stage": "functional-design",
+  "unit": "u50-release-check",
+  "upstream_ids": [
+    "NFR13",
+    "AC1.1.1",
+    "AC1.1.2",
+    "AC1.1.3",
+    "AC1.1.4",
+    "AC1.1.5",
+    "AC2.1.1",
+    "AC2.1.2",
+    "AC2.1.3",
+    "AC2.1.4",
+    "AC2.2.1",
+    "AC2.2.2",
+    "AC2.2.3",
+    "AC2.3.1",
+    "AC2.3.2",
+    "AC2.3.3",
+    "AC2.3.4",
+    "AC2.3.5",
+    "AC2.3.6",
+    "AC2.4.1",
+    "AC2.4.2",
+    "AC2.4.3",
+    "AC2.4.4",
+    "AC2.4.5",
+    "AC2.4.6",
+    "AC12.1.1",
+    "AC12.1.2",
+    "AC12.1.3",
+    "AC12.1.4",
+    "AC12.1.5",
+    "AC12.1.6",
+    "AC12.3.1",
+    "AC12.3.2",
+    "AC12.3.3",
+    "AC12.3.4",
+    "AC12.3.5"
+  ],
+  "coverage": [
+    {
+      "id": "NFR13",
+      "status": "OK",
+      "target": "BR5.1, BR5.2, BR5.3, BR5.4, BR5.5 (the /en and /bn home and r1 experience pages; the search page leaves the gate while T-206 is deferred, FD-105); BR4.1-BR4.6 for the motion half"
+    },
+    {
+      "id": "AC1.1.1",
+      "status": "OK",
+      "target": "BR10.4, BR11.2 (pnpm check from a clean clone and on the final main)"
+    },
+    {
+      "id": "AC1.1.2",
+      "status": "OK",
+      "target": "BR10.4, BR8.8, BR1.3 (migrations from empty in every reset; /en and /bn render in P1.0 and P1.1)"
+    },
+    {
+      "id": "AC1.1.3",
+      "status": "OK",
+      "target": "BR11.2 (the 80% floor in test:coverage rerun on the final main; never lowered)"
+    },
+    {
+      "id": "AC1.1.4",
+      "status": "OK",
+      "target": "BR11.1 (gate rows citing U48's storage-port and U41's tests, rerun on main); verified, not rebuilt, by U50"
+    },
+    {
+      "id": "AC1.1.5",
+      "status": "OK",
+      "target": "BR2.8 (log scan for the run's sentinels in web.log and worker.log)"
+    },
+    {
+      "id": "AC2.1.1",
+      "status": "OK",
+      "target": "BR1.3, BR8.8, BR11.2 (seed from empty every e2e run and every reset; the seed integration test rerun on main)"
+    },
+    {
+      "id": "AC2.1.2",
+      "status": "OK",
+      "target": "BR8.8, BR10.3"
+    },
+    {
+      "id": "AC2.1.3",
+      "status": "OK",
+      "target": "BR2.5 (the demo marker on every walked page, both locales, with the structural no-rating check); staff pages are release 2"
+    },
+    {
+      "id": "AC2.1.4",
+      "status": "OK",
+      "target": "BR8.1, BR8.8, BR1.3 (demo, reset and the e2e setup refuse APP_MODE=production)"
+    },
+    {
+      "id": "AC2.2.1",
+      "status": "N/A",
+      "target": "Retired by FD-091; its successor AC2.4.1 is covered"
+    },
+    {
+      "id": "AC2.2.2",
+      "status": "OK",
+      "target": "BR11.3 (gate matrix part B: the live prototype gallery shows only 04b and the staff console)"
+    },
+    {
+      "id": "AC2.2.3",
+      "status": "OK",
+      "target": "BR11.3 (earlier concepts open from ui-design-prototype/.archive/ and are absent from the gallery)"
+    },
+    {
+      "id": "AC2.3.1",
+      "status": "OK",
+      "target": "BR3.6, BR1.1 (360 px and 1280 px in both locales with the longest strings; the 390, 768 and 1440 px viewports are deferred to release 2, FD-105, ISS row R2)"
+    },
+    {
+      "id": "AC2.3.2",
+      "status": "OK",
+      "target": "BR3.8, BR4.1 (reduced motion on Part 1 and the composer, where motion happens)"
+    },
+    {
+      "id": "AC2.3.3",
+      "status": "OK",
+      "target": "BR3.1, BR3.2, BR3.3"
+    },
+    {
+      "id": "AC2.3.4",
+      "status": "OK",
+      "target": "BR3.4"
+    },
+    {
+      "id": "AC2.3.5",
+      "status": "Deferred",
+      "target": "Firefox, WebKit and the real Safari/iOS smoke are deferred to release 2 (FD-105, ISS rows R2 and R3); the Chromium part passes under BR1.1 and BR1.6"
+    },
+    {
+      "id": "AC2.3.6",
+      "status": "OK",
+      "target": "BR5.6 (recorded once against the ~3 s reference, no gate; over 3 s becomes an S3 row)"
+    },
+    {
+      "id": "AC2.4.1",
+      "status": "OK",
+      "target": "BR11.3 (no Tailwind, CSS-in-JS or animation library in any package.json), BR12.1 OR3 (the owner's look review of the tokens in en and bn)"
+    },
+    {
+      "id": "AC2.4.2",
+      "status": "OK",
+      "target": "BR4.4 (check:motion), BR14.7 (T-011 motion.spec.ts kept under the new config)"
+    },
+    {
+      "id": "AC2.4.3",
+      "status": "OK",
+      "target": "BR4.1 (OS setting on Part 1, the P3.11 composer and the motion-switch spec, review 01 R-13), BR4.2 (the app's switch)"
+    },
+    {
+      "id": "AC2.4.4",
+      "status": "OK",
+      "target": "BR4.3, BR4.6"
+    },
+    {
+      "id": "AC2.4.5",
+      "status": "OK",
+      "target": "BR4.5"
+    },
+    {
+      "id": "AC2.4.6",
+      "status": "OK",
+      "target": "BR5.1-BR5.5, BR4.4 (home and experience pages; the search page deferred with T-206, FD-105)"
+    },
+    {
+      "id": "AC12.1.1",
+      "status": "OK",
+      "target": "BR3.5 (P1.0 with a bn-BD browser lands on /bn with lang=bn and the switch visible)"
+    },
+    {
+      "id": "AC12.1.2",
+      "status": "OK",
+      "target": "BR3.5 (P1.0 stored English choice wins over browser detection)"
+    },
+    {
+      "id": "AC12.1.3",
+      "status": "OK",
+      "target": "BR2.3, BR7.1 (P3.11 about WRITE_TARGET_DOCTOR: mixed Bengali, English and Banglish shown exactly as written; the author-written translation is whatever U47 ships)"
+    },
+    {
+      "id": "AC12.1.4",
+      "status": "OK",
+      "target": "BR11.2 (pnpm i18n:check inside pnpm check on the final main), BR15.4"
+    },
+    {
+      "id": "AC12.1.5",
+      "status": "OK",
+      "target": "BR2.1 (P1.1b /emergency signed out in both locales)"
+    },
+    {
+      "id": "AC12.1.6",
+      "status": "OK",
+      "target": "BR2.1 (P1.1c), BR3.1, BR3.3, BR3.5 (terms, privacy, about and emergency: lang, landmarks, headings, focus, axe)"
+    },
+    {
+      "id": "AC12.3.1",
+      "status": "OK",
+      "target": "BR9.1, BR9.2, BR2.9 (queue, mail and scanner probes wired by U50; ISS row R5)"
+    },
+    {
+      "id": "AC12.3.2",
+      "status": "OK",
+      "target": "BR9.1, BR9.3, BR10.3 (stopped ClamAV and stopped Mailpit walked by hand; probe unit tests)"
+    },
+    {
+      "id": "AC12.3.3",
+      "status": "OK",
+      "target": "BR2.8 (sentinels for review text, file names, comments and run emails absent from both logs)"
+    },
+    {
+      "id": "AC12.3.4",
+      "status": "OK",
+      "target": "BR10.5 (rollback drill in a scratch worktree)"
+    },
+    {
+      "id": "AC12.3.5",
+      "status": "OK",
+      "target": "BR5.6"
+    }
+  ],
+  "reverse": [
+    {
+      "id": "BR1.2",
+      "status": "N/A",
+      "target": "Technical rule: how the suite starts the production build and worker (Q2); supports every journey row"
+    },
+    {
+      "id": "BR1.4",
+      "status": "N/A",
+      "target": "Technical rule: test naming and locale order; supports AC12.1.1 and FD-024 parity"
+    },
+    {
+      "id": "BR1.5",
+      "status": "N/A",
+      "target": "Technical rule: per-test helpers and the one describe.serial exception (review 01 R-01, R-07; construction.md Testing Standards)"
+    },
+    {
+      "id": "BR1.6",
+      "status": "N/A",
+      "target": "Process rule: the gate's clean-run definition (Q22)"
+    },
+    {
+      "id": "BR1.7",
+      "status": "N/A",
+      "target": "Technical rule: condition-based waits against flakiness"
+    },
+    {
+      "id": "BR1.8",
+      "status": "N/A",
+      "target": "Process rule: root scripts; pnpm smoke stays Vitest-only, browser smoke in pnpm e2e (Q3 revised, review 01 R-11, ISS row R18)"
+    },
+    {
+      "id": "BR1.9",
+      "status": "N/A",
+      "target": "Technical rule: the suite's config test in the web Vitest project (review 01 R-04)"
+    },
+    {
+      "id": "BR2.2",
+      "status": "N/A",
+      "target": "Verification of U9's acceptance rows (US3.1, US3.2, AC2.3.4) end to end; owned stories are U9's"
+    },
+    {
+      "id": "BR2.4",
+      "status": "N/A",
+      "target": "Verification of U49's acceptance (US8.1) end to end; owned stories are U49's"
+    },
+    {
+      "id": "BR2.6",
+      "status": "N/A",
+      "target": "Technical rule: copy from message files and in-test digit comparison (project.md Mandated, review 01 R-02, R-08)"
+    },
+    {
+      "id": "BR2.7",
+      "status": "N/A",
+      "target": "Process rule: release-2 steps recorded, not tested (FD-105)"
+    },
+    {
+      "id": "BR3.7",
+      "status": "N/A",
+      "target": "Verification of CR-004's live-region announcements on walked pages (U50 responsibility from unit-of-work.md)"
+    },
+    {
+      "id": "BR6.1",
+      "status": "N/A",
+      "target": "Technical rule: Mailpit link extraction for the contributor journey"
+    },
+    {
+      "id": "BR6.2",
+      "status": "N/A",
+      "target": "Technical rule: shared Mailpit is never cleared by tests"
+    },
+    {
+      "id": "BR6.3",
+      "status": "N/A",
+      "target": "Verification of email language and no tool identity (project.md Forbidden)"
+    },
+    {
+      "id": "BR7.2",
+      "status": "N/A",
+      "target": "Technical rule: seeded facts by name and the write-target doctor no reading test asserts (review 01 R-02)"
+    },
+    {
+      "id": "BR7.3",
+      "status": "N/A",
+      "target": "Technical rule: fixtures by path; the oversize file built in memory"
+    },
+    {
+      "id": "BR7.4",
+      "status": "N/A",
+      "target": "Technical rule: team.md boundary (nothing in apps imports test-support)"
+    },
+    {
+      "id": "BR8.2",
+      "status": "N/A",
+      "target": "Technical rule: service readiness waits (T-504 step 1.2, Q11)"
+    },
+    {
+      "id": "BR8.3",
+      "status": "N/A",
+      "target": "Technical rule: migrate always, seed only empty (T-504 seed idempotence row)"
+    },
+    {
+      "id": "BR8.4",
+      "status": "N/A",
+      "target": "Technical rule: demo builds by default (Q10)"
+    },
+    {
+      "id": "BR8.5",
+      "status": "N/A",
+      "target": "Technical rule: child process handling (T-504 Ctrl+C row)"
+    },
+    {
+      "id": "BR8.6",
+      "status": "N/A",
+      "target": "Technical rule: presenter banner (operator output, not product UI)"
+    },
+    {
+      "id": "BR8.7",
+      "status": "N/A",
+      "target": "Technical rule: demo:down, demo:logs, demo:serve"
+    },
+    {
+      "id": "BR8.9",
+      "status": "N/A",
+      "target": "Technical rule: compose file unchanged without a need (Q11)"
+    },
+    {
+      "id": "BR8.10",
+      "status": "N/A",
+      "target": "Technical rule: shared readiness helper"
+    },
+    {
+      "id": "BR8.11",
+      "status": "N/A",
+      "target": "Deferral: demo:clock to release 2 (Q9, ISS row R1)"
+    },
+    {
+      "id": "BR8.12",
+      "status": "N/A",
+      "target": "Technical rule: tests of the demo scripts"
+    },
+    {
+      "id": "BR10.1",
+      "status": "N/A",
+      "target": "Documentation rule: DEMO.md shape (T-504 step 4, US2.1 presenter need)"
+    },
+    {
+      "id": "BR10.2",
+      "status": "N/A",
+      "target": "Process rule: walk-through record format (T-504 step 7, team.md phase gate G5)"
+    },
+    {
+      "id": "BR10.6",
+      "status": "N/A",
+      "target": "Documentation fix: ISS-261 storyboard correction (Q19)"
+    },
+    {
+      "id": "BR10.7",
+      "status": "N/A",
+      "target": "Process rule: record the Bengali body font used (ISS row R7)"
+    },
+    {
+      "id": "BR11.1",
+      "status": "N/A",
+      "target": "Process rule: release-1 gate matrix part A (T-505, Q13)"
+    },
+    {
+      "id": "BR11.4",
+      "status": "N/A",
+      "target": "Process rule: verdict table (Q14, team.md S1/S2 blocking)"
+    },
+    {
+      "id": "BR11.5",
+      "status": "N/A",
+      "target": "Process rule: page-by-page hard-rule review (T-505 step 4)"
+    },
+    {
+      "id": "BR12.1",
+      "status": "N/A",
+      "target": "Process rule: the owner's review checklist (OWNER-REVIEW-QUEUE.md, U9 Q13, FD-042)"
+    },
+    {
+      "id": "BR12.2",
+      "status": "N/A",
+      "target": "Process rule: delegated approvals never presented as the owner's"
+    },
+    {
+      "id": "BR13.1",
+      "status": "N/A",
+      "target": "Documentation rule: U50's record (T-505 step 8)"
+    },
+    {
+      "id": "BR13.2",
+      "status": "N/A",
+      "target": "Documentation rule: status and planning close-out without tool or product-doc edits (T-505 steps 5-7, review 01 R-12)"
+    },
+    {
+      "id": "BR13.4",
+      "status": "N/A",
+      "target": "Documentation rule: release-1 task amendments (FD-074, FD-105)"
+    },
+    {
+      "id": "BR13.5",
+      "status": "N/A",
+      "target": "Verification of the identity rule (project.md Forbidden)"
+    },
+    {
+      "id": "BR14.1",
+      "status": "N/A",
+      "target": "Clean-up rule: leftover inventory (OWNER-REVIEW-QUEUE.md 2026-11-05)"
+    },
+    {
+      "id": "BR14.2",
+      "status": "N/A",
+      "target": "Clean-up rule: delete zero-caller items only; the rest is ISS row R13 for release 2 (Q16 revised, review 01 R-12)"
+    },
+    {
+      "id": "BR14.7",
+      "status": "N/A",
+      "target": "Clean-up rule: demo.spec.ts mapped then deleted (Q8)"
+    },
+    {
+      "id": "BR15.1",
+      "status": "N/A",
+      "target": "Process rule: owned paths and recorded additions"
+    },
+    {
+      "id": "BR15.2",
+      "status": "N/A",
+      "target": "Constraint: no CI workflow (FD-102)"
+    },
+    {
+      "id": "BR15.3",
+      "status": "N/A",
+      "target": "Constraint: no tool or model identity (project.md Forbidden, Q21)"
+    },
+    {
+      "id": "BR15.4",
+      "status": "N/A",
+      "target": "Constraint: bilingual keys (project.md Mandated)"
+    },
+    {
+      "id": "BR15.5",
+      "status": "N/A",
+      "target": "Process rule: start after all dependencies merged"
+    },
+    {
+      "id": "BR15.6",
+      "status": "N/A",
+      "target": "Process rule: dependency check before first installs (project.md Mandated)"
+    },
+    {
+      "id": "BR2.10",
+      "status": "N/A",
+      "target": "Verification of the no-rating hard rule over the message files (project.md Forbidden, review 01 R-03); complements BR2.5"
+    }
+  ]
+}
