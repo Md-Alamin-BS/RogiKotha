@@ -94,3 +94,4 @@ export function makeFakePorts() {
     },
   };
 }
+export * from './community-repository.js';
