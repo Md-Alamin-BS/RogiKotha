@@ -16,7 +16,6 @@ export interface QueueDeclarationEntry {
 }
 
 // FD-076: 5 retries with exponential backoff.
-// ASSUMPTION(CR-011): `expireInSeconds` stays 300 for every job until its owner sets its own (U24 first, for `evidence.process`).
 export const DEFAULT_QUEUE_DECLARATION: QueueDeclarationEntry = Object.freeze({
   policy: 'exclusive',
   retryLimit: 5,
@@ -30,7 +29,14 @@ export const DEFAULT_QUEUE_DECLARATION: QueueDeclarationEntry = Object.freeze({
  * empty key, so a producer that needs concurrent jobs gives each its own key
  * (BR3.2, BR3.3). */
 export const QUEUE_DECLARATION: Readonly<Record<string, QueueDeclarationEntry>> = Object.freeze({
-  'evidence.process': Object.freeze({ ...DEFAULT_QUEUE_DECLARATION, retryLimit: 3 }),
+  // U48 (BR4.6): 300 s only catches a hung or crashed worker; the handler's own 120 s budget and
+  // the 15 s scan timeout bound a live attempt. Written out so a stored queue needs no change.
+  'evidence.process': Object.freeze({
+    ...DEFAULT_QUEUE_DECLARATION,
+    retryLimit: 3,
+    expireInSeconds: 300,
+  }),
+  'evidence.sweep': DEFAULT_QUEUE_DECLARATION,
   'search.refresh': DEFAULT_QUEUE_DECLARATION,
   'notification.deliver': DEFAULT_QUEUE_DECLARATION,
   'mail.send': DEFAULT_QUEUE_DECLARATION,

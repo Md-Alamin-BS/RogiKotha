@@ -11,7 +11,8 @@ import { Pool } from 'pg';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { PgBossQueue, QueuePolicyMismatchError } from './pg-boss-queue';
-import type { QueueLogger } from './pg-boss-queue';
+import type { JobAttempt, QueueLogger } from './pg-boss-queue';
+import { DEFAULT_QUEUE_DECLARATION } from './queue-declaration';
 import { clientExecutor } from './sql-executor';
 import {
   createStandardQueue,
@@ -88,6 +89,31 @@ describe('pg-boss PgBossQueue (rk_worker, migrate: false)', () => {
     await waitFor(() => invocations >= 2, 20_000);
     expect(invocations).toBe(2);
     expect(logger.entries.some((e) => e.event === 'job.failed')).toBe(true);
+  }, 25_000);
+
+  it('a job that fails once arrives with retryCount 0, then 1, the declared retryLimit and an abort signal', async () => {
+    const logger = new CollectingLogger();
+    const queue = new PgBossQueue(workerUrlForTestDb(), logger);
+    queues.push(queue);
+    await queue.start();
+
+    const name = `u48.attempt.${randomUUID()}`;
+    const attempts: JobAttempt[] = [];
+    await queue.work(name, (_payload, attempt) => {
+      attempts.push(attempt);
+      if (attempts.length === 1) throw new Error('fails once');
+    });
+    await queue.enqueue(name, {}, { retryDelay: 1, retryBackoff: false });
+
+    await waitFor(() => attempts.length >= 2, 20_000);
+    expect(attempts.map((a) => a.retryCount)).toEqual([0, 1]);
+    expect(attempts.map((a) => a.retryLimit)).toEqual([
+      DEFAULT_QUEUE_DECLARATION.retryLimit,
+      DEFAULT_QUEUE_DECLARATION.retryLimit,
+    ]);
+    expect(attempts[0]?.jobId).toEqual(attempts[1]?.jobId);
+    expect(attempts[0]?.jobId).toMatch(/^[0-9a-f-]{36}$/);
+    for (const attempt of attempts) expect(attempt.signal).toBeInstanceOf(AbortSignal);
   }, 25_000);
 
   it('stop is graceful', async () => {
