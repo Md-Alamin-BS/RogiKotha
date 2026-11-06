@@ -27,6 +27,59 @@ Rules:
 
 ## Entries
 
+### 2026-11-06 (U41 T-502 — security headers, nonce CSP, origin checks, log policy)
+
+- Scope: U41 adds a nonce CSP and HSTS in `proxy.ts`, static headers from `next.config.ts`,
+  Host and Origin checks, `serverActions.allowedOrigins`, an upload body cap, lower body limits
+  and one log policy. The 2026-11-05 entry covers `next` and `next-intl` as versions, but not the
+  proxy, CSP and body-limit behaviour this Unit depends on. The plan asks for a focused re-check.
+  No new dependency is added.
+- Checked:
+  - `next`: installed 16.3.4 (lockfile); npm `latest` 16.4.5 (2026-11-03); `canary` is
+    16.5.0-canary.42. No release after 16.4.5. Its seven advisories are the ones listed on
+    2026-11-05; none concerns proxy, CSP nonces, server-action origin checks or body limits.
+  - Nonce CSP (nextjs.org CSP guide, updated 2026-03-20): the proxy sets the policy on the
+    forwarded request (`NextResponse.next({request: {headers}})`) and on the response. Next.js
+    reads the nonce from the request's `Content-Security-Policy` during SSR and stamps its own
+    scripts. Pages must render dynamically; a prerendered page has no nonce (`await connection()`
+    forces dynamic rendering). That is the BR1.4 risk on the root not-found page. Dev needs
+    `'unsafe-eval'`; production does not.
+  - `proxy.ts` (API reference, updated 2026-09-04): Node.js runtime by default, and setting
+    `runtime` throws. Matchers must be constants, can use negative lookahead and `has`/`missing`.
+    The proxy still runs for `/_next/data/*` even when a matcher excludes it. Order:
+    `next.config` `headers` first, then `redirects`, then the proxy. Server actions are POSTs to
+    the page route, so a matcher that excludes a path also skips the proxy for actions on it.
+  - `experimental.serverActions` (API reference, updated 2026-08-26): `allowedOrigins` holds
+    hosts (hostname plus port, no scheme; `*` and `**` wildcards). Next.js compares the `Origin`
+    host with `x-forwarded-host` or `host`. A request with no `Origin` header is let through
+    with a warning, so the proxy's own Origin check (BR3.3) is the strict one. The docs do not
+    say whether the list is read at build or start time, so Step 27(b) trial stays.
+    `bodySizeLimit` defaults to 1 MB and counts the raw multipart body.
+  - `experimental.proxyClientMaxBodySize` (experimental, default 10 MB): when a body is larger,
+    Next.js buffers only up to the limit, logs a warning and passes the truncated body on. It
+    never refuses the request. This is why the upload route is left out of the matcher (R-01)
+    and why the cap is the route's own counting stream (WF3).
+  - `next-intl`: installed 4.14.4; `latest` 4.14.9. The 4.14.5–4.14.9 notes (2026-11-05 entry)
+    do not change middleware request-header handling. The R-07 fallback stays: the proxy test
+    checks the forwarded headers.
+  - `better-auth`: installed 1.7.14 (lockfile, range `~1.7.14`); npm `latest` 1.7.18
+    (2026-11-05). 1.7.15–1.7.18 are security patches. They fix: revoked sessions rejected
+    through the cookie cache and secondary storage; email verification and change links bound to
+    the issuing account; email OTP guessing under concurrency; wildcard `trustedOrigins` held to
+    scheme, host and path boundaries; and built-in OAuth providers no longer following redirects.
+    No change to the default cookie attributes (`httpOnly`, `sameSite`, `__Secure-` prefix) is
+    listed. This app uses a single exact `trustedOrigins` entry, not a wildcard.
+  - Node: 24.18.0 locally. Its undici `Request` accepts a stream body with `duplex: 'half'`, and
+    `TransformStream` is global. Both are confirmed at Step 16 by `request-limits.test.ts`.
+- Findings: nothing the design relies on has changed, and nothing blocks U41. The no-`Origin`
+  pass-through and the truncating `proxyClientMaxBodySize` confirm R-01 and BR3.3 rather than
+  change them. The Better Auth patches fix flows U8 and U9 own, not anything U41 changes.
+- Decision: keep `next` 16.3.4, `next-intl` 4.14.4 and `better-auth` 1.7.14 for this Unit, since a
+  framework or library bump is its own task. U41 changes no hard rule, data boundary or founder
+  decision beyond the FD-next row the design already plans (design § 9), so no FD entry is needed
+  before code. Proposed for the owner: an `ISS-` row to bump `better-auth` to 1.7.18 (security
+  patches), next to the 16.4.5 `next` bump proposed on 2026-11-05.
+
 ### 2026-11-05 (U9 T-102 — patient auth screens)
 
 - Scope: T-102 builds the pending, confirm, reset and security screens as forms on server actions
