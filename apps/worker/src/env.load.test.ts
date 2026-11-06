@@ -21,13 +21,31 @@ function aWorkerEnv(overrides: Record<string, string> = {}): NodeJS.ProcessEnv {
   };
 }
 
+interface EnvInvalidLine {
+  level: string;
+  event: string;
+  code: string;
+  variables: string[];
+}
+
+// Step 9 (U41): these cases read the `worker.env_invalid` log line instead of a stderr sentence,
+// because the old sentences carried zod's issue text, which can quote a value (BR6.7).
 describe('loadEnv', () => {
   let stderr: string[];
+  let lines: string[];
+
+  function logged(index = 0): EnvInvalidLine {
+    return JSON.parse(lines[index] ?? '{}') as EnvInvalidLine;
+  }
 
   beforeEach(() => {
     stderr = [];
+    lines = [];
     vi.spyOn(console, 'error').mockImplementation((message: unknown) => {
       stderr.push(String(message));
+    });
+    vi.spyOn(console, 'log').mockImplementation((line: unknown) => {
+      lines.push(String(line));
     });
     vi.spyOn(process, 'exit').mockImplementation((code) => {
       throw new ExitCalled(code);
@@ -54,6 +72,7 @@ describe('loadEnv', () => {
       MAIL_FROM: 'RogiKotha <no-reply@demo.rogikotha.local>',
     });
     expect(stderr).toEqual([]);
+    expect(lines).toEqual([]);
   });
 
   it('turns port strings into numbers and keeps the values it is given', () => {
@@ -77,8 +96,14 @@ describe('loadEnv', () => {
     delete source.DATABASE_URL_WORKER;
 
     expect(() => loadEnv(source)).toThrow(new ExitCalled(1));
-    expect(stderr).toHaveLength(1);
-    expect(stderr[0]).toContain('DATABASE_URL_WORKER is required');
+    expect(lines).toHaveLength(1);
+    expect(logged()).toMatchObject({
+      level: 'error',
+      event: 'worker.env_invalid',
+      code: 'database_url_worker_required',
+      variables: ['DATABASE_URL_WORKER'],
+    });
+    expect(stderr).toEqual([]);
   });
 
   it('never falls back to the application role URL', () => {
@@ -88,21 +113,27 @@ describe('loadEnv', () => {
     delete source.DATABASE_URL_WORKER;
 
     expect(() => loadEnv(source)).toThrow(ExitCalled);
-    expect(stderr[0]).toContain('never falls back to DATABASE_URL');
+    expect(logged().code).toBe('database_url_worker_required');
+    expect(lines[0]).not.toContain('rk_app');
   });
 
   it('exits with code 1 and names APP_MODE when the mode is not recognised', () => {
     expect(() => loadEnv(aWorkerEnv({ APP_MODE: 'staging' }))).toThrow(new ExitCalled(1));
-    expect(stderr[0]).toContain('worker environment invalid');
-    expect(stderr[0]).toContain('APP_MODE');
+    expect(logged()).toMatchObject({
+      event: 'worker.env_invalid',
+      code: 'env_invalid',
+      variables: ['APP_MODE'],
+    });
+    expect(lines[0]).not.toContain('staging');
+    expect(stderr).toEqual([]);
   });
 
   it('exits with code 1 and names the variable when a port is not a positive integer', () => {
     expect(() => loadEnv(aWorkerEnv({ CLAMD_PORT: 'abc' }))).toThrow(new ExitCalled(1));
-    expect(stderr[0]).toContain('CLAMD_PORT');
+    expect(logged(0).variables).toEqual(['CLAMD_PORT']);
 
     expect(() => loadEnv(aWorkerEnv({ SMTP_PORT: '0' }))).toThrow(new ExitCalled(1));
-    expect(stderr[1]).toContain('SMTP_PORT');
+    expect(logged(1).variables).toEqual(['SMTP_PORT']);
   });
 
   it('lists every invalid variable in one message', () => {
@@ -110,9 +141,8 @@ describe('loadEnv', () => {
       ExitCalled,
     );
 
-    expect(stderr).toHaveLength(1);
-    expect(stderr[0]).toContain('APP_MODE');
-    expect(stderr[0]).toContain('LOG_LEVEL');
+    expect(lines).toHaveLength(1);
+    expect([...logged().variables].sort()).toEqual(['APP_MODE', 'LOG_LEVEL']);
   });
 
   it('exits with code 1 and names MAIL_RECIPIENT_KEY when it is missing (FD-095)', () => {
@@ -120,23 +150,22 @@ describe('loadEnv', () => {
     delete source.MAIL_RECIPIENT_KEY;
 
     expect(() => loadEnv(source)).toThrow(new ExitCalled(1));
-    expect(stderr[0]).toContain('MAIL_RECIPIENT_KEY');
+    expect(logged().variables).toEqual(['MAIL_RECIPIENT_KEY']);
   });
 
   it('refuses a MAIL_RECIPIENT_KEY that is not 32 bytes and never prints the value', () => {
     const shortKey = Buffer.alloc(16, 7).toString('base64');
 
     expect(() => loadEnv(aWorkerEnv({ MAIL_RECIPIENT_KEY: shortKey }))).toThrow(new ExitCalled(1));
-    expect(stderr[0]).toContain('MAIL_RECIPIENT_KEY');
-    expect(stderr[0]).toContain('32 bytes');
-    expect(stderr[0]).not.toContain(shortKey);
+    expect(logged().variables).toEqual(['MAIL_RECIPIENT_KEY']);
+    expect(lines[0]).not.toContain(shortKey);
   });
 
   it('refuses a MAIL_RECIPIENT_KEY of the right length that is not base64', () => {
     const notBase64 = `${'!'.repeat(43)}=`;
 
     expect(() => loadEnv(aWorkerEnv({ MAIL_RECIPIENT_KEY: notBase64 }))).toThrow(ExitCalled);
-    expect(stderr[0]).toContain('MAIL_RECIPIENT_KEY');
+    expect(logged().variables).toEqual(['MAIL_RECIPIENT_KEY']);
   });
 
   it('keeps neither web secret in the parsed environment, even when the source has them', () => {

@@ -16,6 +16,8 @@ import path from 'node:path';
 import { config } from 'dotenv';
 import { z } from 'zod';
 
+import { JsonLogger } from './logger.js';
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..', '..', '..');
 
@@ -61,23 +63,26 @@ const EnvSchema = z.object({
 export type WorkerEnv = z.infer<typeof EnvSchema>;
 
 /**
- * Parses `process.env` into a validated `WorkerEnv`. On failure it prints a
- * clear message to stderr and exits the process with code 1 — the worker
+ * Parses `process.env` into a validated `WorkerEnv`. On failure it logs one
+ * `worker.env_invalid` line and exits the process with code 1 — the worker
  * must never start against the wrong role or an unrecognised `APP_MODE`
  * (acceptance check: `DATABASE_URL_WORKER= pnpm dev:worker` exits 1 with
- * "DATABASE_URL_WORKER is required"). Messages name variables, never values.
+ * `code: database_url_worker_required`). The line names variables, never
+ * values, and never zod's issue text, which can quote the value (BR6.7).
  */
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): WorkerEnv {
   if (!source.DATABASE_URL_WORKER) {
-    console.error('DATABASE_URL_WORKER is required (the worker never falls back to DATABASE_URL)');
+    // The worker never falls back to DATABASE_URL (the rk_app role).
+    new JsonLogger().error('worker.env_invalid', {
+      code: 'database_url_worker_required',
+      variables: ['DATABASE_URL_WORKER'],
+    });
     return process.exit(1);
   }
   const result = EnvSchema.safeParse(source);
   if (!result.success) {
-    const messages = result.error.issues
-      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-      .join('; ');
-    console.error(`worker environment invalid: ${messages}`);
+    const variables = [...new Set(result.error.issues.map((issue) => String(issue.path[0])))];
+    new JsonLogger().error('worker.env_invalid', { code: 'env_invalid', variables });
     return process.exit(1);
   }
   return result.data;

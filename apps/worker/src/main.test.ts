@@ -264,7 +264,7 @@ describe('worker entry point', () => {
         code: 'queue_policy_mismatch',
         expectedPolicy: 'exclusive',
         actualPolicy: 'standard',
-        fix: 'pnpm db:reset',
+        fix: 'db.reset_required',
       });
       expect(world.closed).toBe(1);
       expect(exitCodes).toEqual([1]);
@@ -331,12 +331,25 @@ describe('worker entry point', () => {
   });
 
   describe('when the queue cannot start', () => {
-    it('writes the error to stderr and sets a failing exit code instead of crashing', async () => {
-      world.failStartWith = new Error('database is down');
+    // Step 9 (U41): the crash is a `worker.crashed` line with the error name only, no longer the
+    // whole error on stderr, whose message and stack can quote user input (BR6.7).
+    it('logs worker.crashed with the error name and sets a failing exit code', async () => {
+      const lines: string[] = [];
+      vi.spyOn(console, 'log').mockImplementation((line: unknown) => {
+        lines.push(String(line));
+      });
+      world.failStartWith = new TypeError('database is down at /tmp/x');
 
       await start({ 'outbox.relay': { handler: () => Promise.resolve(), intervalMs: 2000 } });
 
-      expect(stderr).toEqual([new Error('database is down')]);
+      expect(stderr).toEqual([]);
+      expect(lines).toHaveLength(1);
+      expect(JSON.parse(lines[0] ?? '{}')).toMatchObject({
+        level: 'error',
+        event: 'worker.crashed',
+        errorName: 'TypeError',
+      });
+      expect(lines[0]).not.toContain('database is down');
       expect(process.exitCode).toBe(1);
       expect(world.events()).not.toContain('worker.started');
     });
