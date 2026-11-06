@@ -32,6 +32,8 @@ export const ERROR_CODES = [
   'evidence.type_rejected',
   'evidence.not_previewable',
   'evidence.confirmation_required',
+  'evidence.rate_limited',
+  'evidence.upload_failed',
   'community.reply_depth',
   'community.blocked',
   'community.mention_anonymous',

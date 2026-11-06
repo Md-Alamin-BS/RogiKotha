@@ -33,3 +33,33 @@ export interface ViewerDocVM {
   pages: EvidencePageRefVM[];
   downloadUrl: string;
 }
+
+// U48 (ENT-008 to ENT-010): the author's own list and the public note. `OwnEvidenceList` and
+// `OwnEvidenceFile` keep the names and fields of `apps/web/src/server/actions/evidence.ts`; the
+// status union only widens (`failed`) and `reasonKey` is optional, so `EvidenceUploader` keeps its props.
+
+export type OwnEvidenceStatus = 'ready' | 'pending' | 'rejected' | 'failed';
+
+/** One of the author's files, as the uploader shows it. No storage key, hash or internal id. */
+export interface OwnEvidenceFile {
+  publicId: string;
+  /** The opened original file name; null when it is empty or cannot be opened. */
+  name: string | null;
+  status: OwnEvidenceStatus;
+  size: number;
+  /** The i18n key of the reason, for `rejected` and `failed` only (BR6.2). */
+  reasonKey?: string;
+}
+
+export interface OwnEvidenceList {
+  reviewPublicId: string;
+  /** Oldest first; removed and expired items are not listed. */
+  files: OwnEvidenceFile[];
+  maxFiles: number;
+  maxBytes: number;
+}
+
+/** The public part of `EvidenceSection`: a count only; 0 renders "No documents", never 0. */
+export interface EvidenceNoteVM {
+  count: number;
+}

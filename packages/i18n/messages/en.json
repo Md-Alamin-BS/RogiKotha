@@ -608,10 +608,12 @@
     "evidence": {
       "confirmationRequired": "Confirm this file is safe to attach before publishing.",
       "notPreviewable": "This file could not be prepared for preview.",
+      "rateLimited": "Too many uploads in a short time. Please wait and try again.",
       "tooLarge": "Each file must be 15 MB or smaller.",
       "tooMany": "You can attach up to 10 files per draft.",
       "totalTooLarge": "All files together must stay under 100 MB.",
-      "typeRejected": "Only JPG and PNG images are accepted."
+      "typeRejected": "Only JPG and PNG images are accepted.",
+      "uploadFailed": "The file could not be uploaded. Please try again."
     },
     "hold": {
       "active": "This item is on hold and can't be changed."

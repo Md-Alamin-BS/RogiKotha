@@ -485,10 +485,12 @@ export type MessageKey =
   | 'errors.config.outOfRange'
   | 'errors.evidence.confirmationRequired'
   | 'errors.evidence.notPreviewable'
+  | 'errors.evidence.rateLimited'
   | 'errors.evidence.tooLarge'
   | 'errors.evidence.tooMany'
   | 'errors.evidence.totalTooLarge'
   | 'errors.evidence.typeRejected'
+  | 'errors.evidence.uploadFailed'
   | 'errors.hold.active'
   | 'errors.moderation.duplicateReport'
   | 'errors.moderation.narrativeLocked'
@@ -1400,10 +1402,12 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.config.outOfRange',
   'errors.evidence.confirmationRequired',
   'errors.evidence.notPreviewable',
+  'errors.evidence.rateLimited',
   'errors.evidence.tooLarge',
   'errors.evidence.tooMany',
   'errors.evidence.totalTooLarge',
   'errors.evidence.typeRejected',
+  'errors.evidence.uploadFailed',
   'errors.hold.active',
   'errors.moderation.duplicateReport',
   'errors.moderation.narrativeLocked',
