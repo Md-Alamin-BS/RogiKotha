@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getRequestContext } from '../auth';
 import { session } from '../data';
 import { anonymousContext, signedInContext } from '../request-context-test-support';
-import { getCurrentAccount, requireAccount } from './session';
+import { getCurrentAccount, requireAccount, requireContributor } from './session';
 
 vi.mock('next-intl/server', () => ({ getLocale: vi.fn() }));
 vi.mock('@rogikotha/i18n', () => ({
@@ -105,5 +105,54 @@ describe('the current account of the demo pages (on getActor, ISS-391)', () => {
       href: { pathname: '/sign-in', query: { next: '/bn/write' } },
       locale: 'bn',
     });
+  });
+});
+
+describe('the write actions’ own refusal (requireContributor, BR8.1)', () => {
+  function signedInWithStatus(status: DemoCurrentAccount['status']) {
+    vi.mocked(getRequestContext).mockResolvedValue(
+      signedInContext({ authUserId: 'auth-user-1', status }),
+    );
+    vi.mocked(session.getCurrentAccountByAuthUserId).mockResolvedValue(buildAccount({ status }));
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getLocale).mockResolvedValue('bn');
+  });
+
+  it('returns a confirmed, active account', async () => {
+    signedInWithStatus('active');
+    await expect(requireContributor({ returnTo: '/write' })).resolves.toEqual(buildAccount());
+    expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it('sends a signed-out visitor to sign in with the return path, as requireAccount does', async () => {
+    signedInAs(null);
+    await expect(requireContributor({ returnTo: '/write' })).rejects.toThrow('NEXT_REDIRECT');
+    expect(redirect).toHaveBeenCalledWith({
+      href: { pathname: '/sign-in', query: { next: '/write' } },
+      locale: 'bn',
+    });
+  });
+
+  it('sends a signed-in account with an unconfirmed address to the confirm screen', async () => {
+    signedInWithStatus('pending_verification');
+    await expect(requireContributor({ returnTo: '/write' })).rejects.toThrow('NEXT_REDIRECT');
+    expect(redirect).toHaveBeenCalledWith({ href: '/verify-email', locale: 'bn' });
+  });
+
+  it('sends any other account state to its own page, never to a form', async () => {
+    signedInWithStatus('restricted');
+    await expect(requireContributor()).rejects.toThrow('NEXT_REDIRECT');
+    expect(redirect).toHaveBeenCalledWith({ href: '/me', locale: 'bn' });
+  });
+
+  it('leaves requireAccount open to an unconfirmed account, so it reaches its own pages', async () => {
+    signedInWithStatus('pending_verification');
+    await expect(requireAccount({ returnTo: '/me/security' })).resolves.toEqual(
+      buildAccount({ status: 'pending_verification' }),
+    );
+    expect(redirect).not.toHaveBeenCalled();
   });
 });

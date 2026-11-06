@@ -36,7 +36,13 @@ export function RegisterForm({ next }: { next: string | null }) {
         formError={state.formError}
         summaryRef={summaryRef}
       />
-      <form id="register-form" noValidate action={formAction} onSubmit={onSubmit}>
+      <form
+        id="register-form"
+        noValidate
+        action={formAction}
+        onSubmit={onSubmit}
+        aria-busy={pending}
+      >
         {next ? <input type="hidden" name="next" value={next} /> : null}
         <AuthField
           form={FORM}

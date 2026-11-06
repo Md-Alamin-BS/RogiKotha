@@ -97,6 +97,37 @@ vi.mock('@/server/data', async () => {
   };
 });
 
+// U9's auth pages read the request (the Actor, the `rk.pending` cookie, the holder's own account and
+// sessions); an anonymous reader with no cookie and empty results stand in. Their own tests cover
+// each state.
+vi.mock('@/server/auth', () => ({
+  getActor: vi.fn(() =>
+    Promise.resolve({
+      kind: 'anonymous',
+      capabilities: [],
+      locale: active.locale,
+      correlationId: 'pages-test',
+    }),
+  ),
+}));
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(() => Promise.resolve({ get: () => undefined })),
+}));
+vi.mock('@/server/actions/account', () => ({
+  getOwnAccount: vi.fn(() =>
+    Promise.resolve({
+      ok: true,
+      data: {
+        username: 'synthetic_reader',
+        displayName: 'Synthetic Reader',
+        emailVerified: true,
+        emailMasked: 's****@example.test',
+      },
+    }),
+  ),
+  listSessions: vi.fn(() => Promise.resolve({ ok: true, data: [] })),
+}));
+
 const require = createRequire(import.meta.url);
 const i18nPackageRoot = path.resolve(path.dirname(require.resolve('@rogikotha/i18n')), '..');
 const LOCALES = ['en', 'bn'] as const;

@@ -4853,3 +4853,62 @@ html:lang(bn) .field-error {
   gap: var(--space-2);
   margin-top: var(--space-2);
 }
+
+/* ==========================================================================
+   U9 T-102 patient auth screens. Static only: no motion of its own (BR9.2).
+   ========================================================================== */
+
+/* added: U9 T-102 the joining strip on /register and /verify-email (BR9.3) */
+.join-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--ink-muted);
+  counter-reset: join-step;
+}
+.join-steps li {
+  counter-increment: join-step;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.join-steps li::before {
+  content: counter(join-step) ". ";
+}
+html:lang(bn) .join-steps li::before {
+  content: counter(join-step, bengali) ". ";
+}
+.join-steps li[aria-current="step"] {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* added: U9 T-102 the session list on /me/security (BR6.3) */
+.session-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  margin-bottom: var(--space-3);
+}
+.session-table th,
+.session-table td {
+  border-bottom: 1px solid var(--rule);
+  padding: var(--space-2);
+  text-align: start;
+  vertical-align: top;
+}
+.session-table th {
+  color: var(--ink-muted);
+  font-weight: 600;
+}

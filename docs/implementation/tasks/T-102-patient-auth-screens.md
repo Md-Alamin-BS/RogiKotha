@@ -23,6 +23,16 @@ These decisions are binding and override the text below where they differ; the s
 - **FD-053** — The D-001 auth-screen review (both locales, both themes, 360 px) is an explicit gate on this Unit: the owner's approval must be recorded in this Unit's record. Changes "Depends on" and the acceptance checks.
 - **FD-057** — The security page ships the session list and "Sign out everywhere" only, on top of T-101's 30-day sessions. Recent successful logins and failed-login alerts are deferred and get no UI. Changes Not in scope, step 8 and the acceptance checks.
 
+## Amendments — U9 Functional Design and build (2026-11-04 to 2026-11-06)
+
+These are binding and override the text below where they differ. The design is in `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-102-patient-auth-screens/functional-design/` (Q1–Q18 and review points R-01 to R-08, decided under the owner's delegation of 2026-11-04). The rows labelled `FD-0nn:` at the end of the acceptance table replace the original rows of the same name (FD-074).
+
+- **FD-103 / Q17, Q18** — registering does not sign in. The pending screen is `/verify-email` with the typed address carried in the `rk.pending` cookie, and the emailed link opens a Confirm button (POST), whose done panel is `/verify-email?confirmed=1`, not `/me?welcome=1`.
+- **Q7 / BR6.4** — "Sign out everywhere" asks for an explicit `<details>` confirmation, not a password: `account.signOutEverywhere` takes `{}` (ISS-440).
+- **Q5 / BR4.2** — the rate-limit copy follows `retryAfterSec`: seconds under 60 s, whole minutes from 60 s (ISS-436).
+- **Q16 / C16** — `ContributionGate {purpose, returnTo}` and `getContributionAccess()` are the one contribution rule; the demo write actions also refuse an unconfirmed account (`requireContributor`, ISS-484).
+- **Q13** — the owner's FD-053 content review and FD-091 look review of these screens move to the U50 release check and stay on `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`.
+
 ## Goal
 
 Implement the patient-side auth screens and the masthead account entry exactly as `docs/design/auth-screens-spec.md` §1–§3 and the D-001 prototype show them, on top of the T-101 actions: `/register`, `/sign-in`, `/verify-email`, `/reset-password`, `/sign-out`, `/me/security`, the gate callout on `/write`, and a reusable gate sheet that later tasks trigger from comment/react/bookmark/report/claim controls.
@@ -97,6 +107,12 @@ Implement the patient-side auth screens and the masthead account entry exactly a
 | FD-091: reduced-motion journey (AC2.4.3) | walk this Unit's pages with the OS reduced-motion setting, then with `data-motion="reduced"` | no slide, scale, stagger, route movement or scroll reveal; every step still completes; the disclaimer, emergency guidance and demo marker are never animated (AC2.4.4) |
 | FD-091: detector and contrast on the new styles | `npx impeccable detect apps/web/src --no-advisory`; `pnpm contrast` | zero findings |
 | FD-091: auth screens re-reviewed on the T-011 look | the owner reviews `/register`, `/sign-in`, `/verify-email`, `/reset-password` and `/me/security` in `en` and `bn`, in both themes, at 360 px, on the T-011 look | explicit gate before T-102 closes: the owner's approval is recorded in this Unit's record with its date; the earlier D-001 approval (FD-053) was given on the 04b look and does not cover it |
+| FD-103: Spec §6 flow (Q17, replaces "Spec §6 flow") | manual in browser + Mailpit | register → pending screen showing the address → Mailpit → Confirm (POST) → `/verify-email?confirmed=1` with `auth.verify.done` |
+| FD-103: same-email register (replaces "Same-email register") | register twice with one address | identical pending screen, redirect and `rk.pending` cookie; no sign-in; "someone tried" mail |
+| FD-074: `next` safety (BR1.5, R-03, R-04, replaces "`next` safety") | `/sign-in?next=https://evil.example`; `next=/sign-in`, `/en/Admin`, `/en/%61dmin`; `next=/en/experiences/abc` | the first four go to `/{locale}/me`; the last is honoured |
+| FD-063: rate limit copy (Q5, replaces "Rate limit copy") | failed sign-ins from the 3rd, then past the 10-in-15-minutes limit | the seconds copy (`formErrors.auth.rateLimitedSeconds`) under 60 s; the minutes copy (`errors.auth.rateLimited`) from 60 s, in the active language's numerals |
+| FD-057: sign out everywhere (Q7, replaces the password wording above) | two browsers, `/me/security`, open "Sign out everywhere" and confirm | both browsers are signed out; no password is asked |
+| FD-053, FD-091: owner reviews (Q13) | the two owner review rows above | moved to the U50 release check; on `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md` |
 
 ## Tests to write
 
@@ -117,9 +133,37 @@ Implement the patient-side auth screens and the masthead account entry exactly a
 
 ## Hand-off (implementer fills in)
 
+Filled in by U9 `t-102-patient-auth-screens` on 2026-11-06. The full record is `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-102-patient-auth-screens/code-generation/code-summary.md`.
+
 ### What changed
+
+- The patient account path on T-101's commands: the `/verify-email` pending screen and POST-only confirm, the done and expired panels; `/reset-password` request and set-new-password; `/me/security` (masked address, change password, sessions, sign out everywhere); the account entry with grapheme-safe initials and Security and Confirm links; `ContributionGate` and `getContributionAccess()` (C16) for U47 and U49.
+- Register no longer signs in (FD-103); `next` goes through `safeAuthNext`; the rate-limit copy follows `retryAfterSec`.
+- The demo comment, publish and edit actions refuse an unconfirmed account through `requireContributor` (ISS-484).
+- 902 i18n keys in `en` and `bn`; U9's section of `patient.css`.
+
 ### Not done and why
+
+- The browser-only acceptance rows (live Mailpit flow, No-JS, focus, two-browser sessions, 360 px overflow, reduced-motion journey) were not walked in the worktree, because the development database and ports belong to the other worktrees (ISS-498). Build and Test or U50 walks them.
+- The owner's FD-053 content review and FD-091 look review move to the U50 release check (Q13).
+
 ### Questions for the human
+
+- Confirm the severity of ISS-484 (an unconfirmed account could comment and publish, fixed in U9). It is recorded as S1, following BR8.1's violation wording.
+
 ### Follow-ups
+
+- ISS-482 (`/me` not session-aware, FD-096 banner), ISS-483 (release 2 `restricted` in C9 and C10), ISS-486, ISS-493, ISS-498; the unused `auth.gate.body` key (ISS-481) for U50.
+
 ### `pnpm check` output summary
+
+2026-11-06 on `bolt/t-102-patient-auth-screens`: `pnpm check` exit 0, 230 test files, 2,541 passed and 2 expected fail; i18n parity 902 keys; contrast, `contrast:patient` and `check:motion` pass; one lint warning outside U9 (ISS-493). Line coverage: all files 97.75%, `apps/web` 97.09%. `pnpm smoke` exit 0, 18 files, 36 tests. At Step 13: `pnpm test:int` 41 files, 284 passed and 2 expected fail; `npx impeccable detect apps/web/src --no-advisory` no findings.
+
 ### Hard-rule evidence
+
+- Every string in both languages: i18n parity passes at 902 keys; every component test runs in `en` and `bn`, with numerals in the active language.
+- noindex on all auth and `/me/*` pages: asserted by the five page tests; `no-referrer` on `/verify-email` and `/reset-password`.
+- Anti-enumeration: register, resend and reset give the same answer for any address (adversarial test 1, `register-enumeration.adversarial.test.ts`).
+- Errors are text, summary and inline; no typed value is returned in the form state (BR1.2, BR10.1).
+- Reading unaffected: no public page gained an auth requirement; only the contribution actions refuse.
+- Synthetic data only (`example.test` addresses); no tool, model or agent identity in any file or commit.

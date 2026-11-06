@@ -3,12 +3,12 @@ import type { DemoCurrentAccount, DemoReviewDetail } from '@rogikotha/contracts'
 import { revalidatePath } from 'next/cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { requireAccount } from '@/server/auth/session';
+import { requireAccount, requireContributor } from '@/server/auth/session';
 import { comments, reviews } from '@/server/data';
 import { deleteComment, postComment, type CommentActionState } from './comments';
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
-vi.mock('@/server/auth/session', () => ({ requireAccount: vi.fn() }));
+vi.mock('@/server/auth/session', () => ({ requireAccount: vi.fn(), requireContributor: vi.fn() }));
 vi.mock('@/server/data', () => ({
   comments: { addComment: vi.fn(), deleteOwnComment: vi.fn() },
   reviews: { getReviewByPublicId: vi.fn() },
@@ -52,7 +52,7 @@ const review = { id: '0190f5a2-0000-7000-8000-0000000000r1' } as DemoReviewDetai
 describe('posting a comment', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(requireAccount).mockResolvedValue(buildAccount());
+    vi.mocked(requireContributor).mockResolvedValue(buildAccount());
     vi.mocked(reviews.getReviewByPublicId).mockResolvedValue(review);
     vi.mocked(comments.addComment).mockResolvedValue({
       ok: true,
@@ -80,19 +80,21 @@ describe('posting a comment', () => {
   });
 
   it('asks a signed-out visitor to sign in and come back, and posts nothing', async () => {
-    vi.mocked(requireAccount).mockRejectedValue(new Error('NEXT_REDIRECT'));
+    vi.mocked(requireContributor).mockRejectedValue(new Error('NEXT_REDIRECT'));
 
     await expect(postComment(IDLE, commentForm())).rejects.toThrow('NEXT_REDIRECT');
-    expect(requireAccount).toHaveBeenCalledWith({ returnTo: `/experiences/${REVIEW_PUBLIC_ID}` });
+    expect(requireContributor).toHaveBeenCalledWith({
+      returnTo: `/experiences/${REVIEW_PUBLIC_ID}`,
+    });
     expect(comments.addComment).not.toHaveBeenCalled();
   });
 
   it('never passes a malformed experience id on as the sign-in return path', async () => {
-    vi.mocked(requireAccount).mockRejectedValue(new Error('NEXT_REDIRECT'));
+    vi.mocked(requireContributor).mockRejectedValue(new Error('NEXT_REDIRECT'));
     await expect(
       postComment(IDLE, commentForm({ reviewPublicId: '//evil.example' })),
     ).rejects.toThrow();
-    expect(requireAccount).toHaveBeenCalledWith({});
+    expect(requireContributor).toHaveBeenCalledWith({});
   });
 
   it.each([

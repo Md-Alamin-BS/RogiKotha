@@ -27,6 +27,34 @@ Rules:
 
 ## Entries
 
+### 2026-11-05 (U9 T-102 — patient auth screens)
+
+- Scope: T-102 builds the pending, confirm, reset and security screens as forms on server actions
+  (`useActionState`, `redirect()` and `cookies().set` inside an action, native form POST without
+  JavaScript). The entry covering `next`, `react` and `next-intl` (2026-10-29) is older than 3
+  days. No new dependency is added.
+- Checked:
+  - `next`: installed 16.3.4; npm `latest` 16.4.5 (2026-11-03), 16.4.4 (2026-11-02). The 16.4.5
+    release notes fix seven moderate advisories: `'use cache'` disclosure and poisoning
+    (GHSA-mfr8-8qww-v76h, GHSA-vc7v-qv4w-wrv8, GHSA-vvgp-ww4w-46vf, GHSA-rhh4-g77r-r9qj), response
+    injection when a self-hosted app forwards fetched responses (GHSA-pc58-hwjq-p385), an SVG
+    rejection bypass in image optimisation (GHSA-7qx7-33qx-rqx2), and an HttpOnly cookie exposure
+    through an internal header on Edge runtime routes (GHSA-f3mh-rxg3-f5g2).
+  - `react`/`react-dom`: installed 19.3.0; npm `latest` 19.3.1.
+  - `next-intl`: installed 4.14.4; npm `latest` 4.14.9 (2026-10-02). 4.14.5–4.14.9 change
+    `useExtracted`, the SWC plugin, a peer dependency and pathname reads in `useRouter`/`Link`;
+    none touches `getLocale`, `getTranslations`, `createTranslator` or `redirect`.
+- Findings: `useActionState` with a server function as its action keeps progressive enhancement
+  (the form posts natively before hydration and the page renders the returned state), and
+  `redirect()` and `cookies().set()`/`delete()` inside a server action are the documented pattern
+  on Next 16. None of the 16.4.5 advisories is on a path this Unit uses: no `'use cache'`, no image
+  optimisation, no Edge runtime route, no forwarded fetch response. The cookie exposure is
+  Edge-runtime only; the app runs on Node.
+- Decision: keep `next` 16.3.4, `react`/`react-dom` 19.3.0 and `next-intl` 4.14.4 for this Unit
+  (a framework bump is its own task, as on 2026-10-29). No new FD entry is needed: U9 changes no
+  hard rule, data boundary or founder decision (FD-053, FD-057, FD-096, FD-103, FD-104 cover it).
+  A `next` patch bump to 16.4.5 is proposed as a separate issue row.
+
 ### 2026-10-30 (U8 T-101 — Better Auth behind the application boundary)
 
 - Scope: T-101 installs Better Auth for the first time (`apps/web`), and the first `@node-rs/argon2`

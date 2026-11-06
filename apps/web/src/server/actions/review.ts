@@ -17,7 +17,7 @@ import { getLocale } from 'next-intl/server';
 import { z } from 'zod';
 
 import { redirect } from '@/i18n/routing';
-import { requireAccount, type CurrentAccount } from '@/server/auth/session';
+import { requireContributor, type CurrentAccount } from '@/server/auth/session';
 import { doctors, reviews } from '@/server/data';
 
 export type ComposeField =
@@ -233,7 +233,7 @@ export async function publishReview(
   prev: ComposeFormState,
   formData: FormData,
 ): Promise<ComposeFormState> {
-  const account = await requireAccount({ returnTo: '/write' });
+  const account = await requireContributor({ returnTo: '/write' });
   const locale = (await getLocale()) as Locale;
   const values = readFields(formData, COMPOSE_FIELDS);
   const raw = { ...values, attestation: formData.get('attestation') ?? '' };
@@ -302,7 +302,7 @@ export async function saveReviewEdit(
   const rawPublicId = formData.get('publicId');
   const publicId =
     typeof rawPublicId === 'string' && PUBLIC_ID_RE.test(rawPublicId) ? rawPublicId : null;
-  const account = await requireAccount({
+  const account = await requireContributor({
     returnTo: publicId ? `/experiences/${publicId}/edit` : '/me',
   });
   const locale = (await getLocale()) as Locale;

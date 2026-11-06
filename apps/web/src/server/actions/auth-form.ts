@@ -2,26 +2,103 @@
 // the `'use server'` file, which may export only async functions.
 import {
   ACCOUNT_FIELD_ERROR_KEYS,
+  ChangePasswordInput,
   DISPLAY_NAME_MAX as CONTRACT_DISPLAY_NAME_MAX,
   LOCALES,
   RegisterInput,
+  ResendVerificationInput,
+  ResetPasswordInput,
   SignInInput,
   type Locale,
 } from '@rogikotha/contracts';
 
 export type RegisterField = 'email' | 'password' | 'username' | 'displayName' | 'age' | 'terms';
 export type SignInField = 'email' | 'password';
+export type EmailField = 'email';
+export type SetPasswordField = 'newPassword' | 'confirmPassword';
+export type ChangePasswordField = 'currentPassword' | 'newPassword';
 
-/** What a failed submission returns: i18n message keys, never the submitted values (NFR3). */
+/** An i18n key with raw numbers only; the form formats them for the active locale (R-01). */
+export interface AuthMessage {
+  key: string;
+  params?: Record<string, number>;
+}
+
+/**
+ * What an auth action returns: message keys, numbers and flags, never a submitted value (BR1.2,
+ * BR10.1). `notice` is a confirmation that replaces the form; `expired` asks for the expired panel.
+ */
 export interface AuthFormState<F extends string = string> {
-  fieldErrors: Partial<Record<F, string>>;
-  formError: string | null;
+  status: 'idle' | 'refused' | 'done';
+  formError: AuthMessage | null;
+  fieldErrors: Partial<Record<F, AuthMessage>>;
+  notice?: AuthMessage;
+  expired?: true;
 }
 
 export type RegisterFormState = AuthFormState<RegisterField>;
 export type SignInFormState = AuthFormState<SignInField>;
+export type EmailFormState = AuthFormState<EmailField>;
+export type SetPasswordFormState = AuthFormState<SetPasswordField>;
+export type ChangePasswordFormState = AuthFormState<ChangePasswordField>;
 
-export const INITIAL_AUTH_STATE: AuthFormState<never> = { fieldErrors: {}, formError: null };
+export const INITIAL_AUTH_STATE: AuthFormState<never> = {
+  status: 'idle',
+  formError: null,
+  fieldErrors: {},
+};
+
+/** The C16 gate's answer (BR8.1). */
+export type { ContributionAccess } from '../auth/contribution-access';
+
+/** The flash cookie that carries the typed address from register to the pending screen (BR2.2). */
+export const PENDING_EMAIL_COOKIE = 'rk.pending';
+export const PENDING_EMAIL_MAX_AGE_SEC = 1800;
+
+export function message(key: string, params?: Record<string, number>): AuthMessage {
+  return params ? { key, params } : { key };
+}
+
+/** A form-level refusal. */
+export function refusedForm<F extends string = never>(
+  key: string,
+  params?: Record<string, number>,
+): AuthFormState<F> {
+  return { status: 'refused', formError: message(key, params), fieldErrors: {} };
+}
+
+/** A refusal with one message per field. */
+export function refusedFields<F extends string>(
+  fieldErrors: Partial<Record<F, AuthMessage>>,
+): AuthFormState<F> {
+  return { status: 'refused', formError: null, fieldErrors };
+}
+
+/** A confirmation that replaces the form. */
+export function doneWith<F extends string = never>(key: string): AuthFormState<F> {
+  return { status: 'done', formError: null, fieldErrors: {}, notice: message(key) };
+}
+
+const RATE_LIMITED_UNKNOWN = 'formErrors.auth.rateLimited';
+const SECONDS_PER_MINUTE = 60;
+
+/**
+ * BR4.2: the wait in the unit `retryAfterSec` calls for, seconds under a minute and whole minutes
+ * (rounded up) from there; without a figure, the unit-free message.
+ */
+export function rateLimitMessage(retryAfterSec: number | undefined): AuthMessage {
+  if (retryAfterSec === undefined || !Number.isFinite(retryAfterSec) || retryAfterSec <= 0) {
+    return message(RATE_LIMITED_UNKNOWN);
+  }
+  if (retryAfterSec < SECONDS_PER_MINUTE) {
+    const seconds = Math.ceil(retryAfterSec);
+    // ASSUMPTION(U9): under `formErrors`, not the design's `errors.auth.*`, because the parity
+    // check refuses an `errors.*` key with no ErrorCode behind it.
+    return message('formErrors.auth.rateLimitedSeconds', { count: seconds, seconds });
+  }
+  const minutes = Math.ceil(retryAfterSec / SECONDS_PER_MINUTE);
+  return message('errors.auth.rateLimited', { count: minutes, minutes });
+}
 
 /** The visual order of the register form, so the error summary and the tab order agree. */
 export const REGISTER_FIELD_ORDER: readonly RegisterField[] = [
@@ -42,7 +119,8 @@ const PASSWORD_ISSUE_KEYS: ReadonlySet<string> = new Set([
   ACCOUNT_FIELD_ERROR_KEYS.passwordEqualsEmail,
 ]);
 
-const FIELD_MESSAGE: Record<RegisterField, string> = {
+/** The register form's own key per field, also used when the command refuses a field. */
+export const REGISTER_FIELD_MESSAGE: Record<RegisterField, string> = {
   email: 'formErrors.auth.emailInvalid',
   password: 'errors.auth.passwordTooShort',
   username: 'errors.auth.usernameInvalid',
@@ -51,7 +129,8 @@ const FIELD_MESSAGE: Record<RegisterField, string> = {
   terms: 'errors.auth.termsRequired',
 };
 
-const SCHEMA_PATH_FIELD: Record<string, RegisterField> = {
+/** The register schema's paths, by form field. */
+export const REGISTER_SCHEMA_PATH_FIELD: Record<string, RegisterField> = {
   email: 'email',
   password: 'password',
   username: 'username',
@@ -93,17 +172,17 @@ export function parseRegistration(
   const result = RegisterInput.safeParse(raw);
   const fieldErrors = formLimitErrors(raw);
   for (const issue of result.success ? [] : result.error.issues) {
-    const field = SCHEMA_PATH_FIELD[String(issue.path[0])];
+    const field = REGISTER_SCHEMA_PATH_FIELD[String(issue.path[0])];
     if (!field || fieldErrors[field]) continue;
     fieldErrors[field] =
       field === 'password' && PASSWORD_ISSUE_KEYS.has(issue.message)
         ? issue.message
-        : FIELD_MESSAGE[field];
+        : REGISTER_FIELD_MESSAGE[field];
   }
   if (result.success && Object.keys(fieldErrors).length === 0) {
     return { ok: true, data: result.data };
   }
-  return { ok: false, state: { fieldErrors: orderFields(fieldErrors), formError: null } };
+  return { ok: false, state: refusedFields(orderRegisterFields(fieldErrors)) };
 }
 
 /** The ticks the form refuses with their own keys, even when another field already failed. */
@@ -112,25 +191,26 @@ function formLimitErrors(raw: {
   termsAccepted: boolean;
 }): Partial<Record<RegisterField, string>> {
   const errors: Partial<Record<RegisterField, string>> = {};
-  if (!raw.ageConfirmed) errors.age = FIELD_MESSAGE.age;
-  if (!raw.termsAccepted) errors.terms = FIELD_MESSAGE.terms;
+  if (!raw.ageConfirmed) errors.age = REGISTER_FIELD_MESSAGE.age;
+  if (!raw.termsAccepted) errors.terms = REGISTER_FIELD_MESSAGE.terms;
   return errors;
 }
 
-function orderFields(
+/** The register field errors in the form's order, as messages. */
+export function orderRegisterFields(
   errors: Partial<Record<RegisterField, string>>,
-): Partial<Record<RegisterField, string>> {
-  const ordered: Partial<Record<RegisterField, string>> = {};
+): Partial<Record<RegisterField, AuthMessage>> {
+  const ordered: Partial<Record<RegisterField, AuthMessage>> = {};
   for (const field of REGISTER_FIELD_ORDER) {
-    const message = errors[field];
-    if (message) ordered[field] = message;
+    const key = errors[field];
+    if (key) ordered[field] = message(key);
   }
   return ordered;
 }
 
 /**
  * Validates the sign-in form. Any malformed input gets the same neutral refusal as a wrong
- * password, so the form never says which half was wrong (FR1.2).
+ * password, so the form never says which half was wrong (BR4.1).
  */
 export function parseSignIn(
   form: FormData,
@@ -140,7 +220,67 @@ export function parseSignIn(
     password: text(form, 'password'),
   });
   if (result.success) return { ok: true, data: result.data };
-  return { ok: false, state: { fieldErrors: {}, formError: 'errors.auth.invalidCredentials' } };
+  return { ok: false, state: refusedForm('errors.auth.invalidCredentials') };
+}
+
+/** The resend and reset-request forms: one address, normalised by the account email schema. */
+export function parseEmailOnly(form: FormData): Parsed<{ email: string }, EmailField> {
+  const result = ResendVerificationInput.safeParse({ email: text(form, 'email') });
+  if (result.success) return { ok: true, data: result.data };
+  return {
+    ok: false,
+    state: refusedFields<EmailField>({ email: message(ACCOUNT_FIELD_ERROR_KEYS.emailInvalid) }),
+  };
+}
+
+const TOKEN_EXPIRED = 'errors.auth.tokenExpired';
+
+/**
+ * The set-new-password form (BR5.2): the two fields must match before any command runs, and the
+ * new one must pass the schema's password rule. A missing token reads as an expired link.
+ */
+export function parseSetPassword(
+  form: FormData,
+): Parsed<{ token: string; newPassword: string }, SetPasswordField> {
+  const newPassword = text(form, 'newPassword');
+  const result = ResetPasswordInput.safeParse({ token: text(form, 'token'), newPassword });
+  const fieldErrors: Partial<Record<SetPasswordField, AuthMessage>> = {};
+  let tokenRefused = false;
+  for (const issue of result.success ? [] : result.error.issues) {
+    if (issue.path[0] === 'token') tokenRefused = true;
+    else if (issue.path[0] === 'newPassword' && !fieldErrors.newPassword) {
+      fieldErrors.newPassword = message(issue.message);
+    }
+  }
+  if (newPassword !== text(form, 'confirmPassword')) {
+    fieldErrors.confirmPassword = message('auth.reset.mismatch');
+  }
+  if (tokenRefused) {
+    return { ok: false, state: { ...refusedForm(TOKEN_EXPIRED), fieldErrors, expired: true } };
+  }
+  if (result.success && Object.keys(fieldErrors).length === 0) {
+    return { ok: true, data: result.data };
+  }
+  return { ok: false, state: refusedFields(fieldErrors) };
+}
+
+/** The change-password form on `/me/security` (BR6.5). */
+export function parseChangePassword(
+  form: FormData,
+): Parsed<{ currentPassword: string; newPassword: string }, ChangePasswordField> {
+  const result = ChangePasswordInput.safeParse({
+    currentPassword: text(form, 'currentPassword'),
+    newPassword: text(form, 'newPassword'),
+  });
+  if (result.success) return { ok: true, data: result.data };
+  const fieldErrors: Partial<Record<ChangePasswordField, AuthMessage>> = {};
+  for (const issue of result.error.issues) {
+    const field = issue.path[0];
+    if ((field === 'currentPassword' || field === 'newPassword') && !fieldErrors[field]) {
+      fieldErrors[field] = message(issue.message);
+    }
+  }
+  return { ok: false, state: refusedFields(fieldErrors) };
 }
 
 const NEXT_PATH_MAX = 512;
@@ -166,4 +306,67 @@ export function safeNextPath(raw: unknown): string | null {
   // Dot segments normalise '/.//evil.example' to '//evil.example', so the raw check above is not enough.
   if (url.pathname.startsWith('//')) return null;
   return `${url.pathname}${url.search}${url.hash}`;
+}
+
+/** Second path segments a return target may never name: the auth pages, the API and staff. */
+const REFUSED_SECTIONS: ReadonlySet<string> = new Set([
+  'register',
+  'sign-in',
+  'verify-email',
+  'reset-password',
+  'api',
+  'admin',
+]);
+
+/**
+ * BR1.5: a `next` or `returnTo` target is a same-site path with a locale prefix that is not an
+ * auth page, `/api` or `/admin`. The path is decoded once and compared in lower case, so
+ * `/en/%61dmin` and `/bn/SIGN-IN` are refused; the original, undecoded path is returned.
+ */
+export function safeAuthNext(raw: unknown): string | null {
+  const path = safeNextPath(raw);
+  if (path === null) return null;
+  const pathname = path.split(/[?#]/, 1)[0] ?? '';
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
+  if (decoded.includes('%') || decoded.includes('\\') || decoded.includes('//')) return null;
+  const segments = decoded.toLowerCase().split('/');
+  if (!isLocale(segments[1] ?? '')) return null;
+  if (REFUSED_SECTIONS.has(segments[2] ?? '')) return null;
+  return path;
+}
+
+export interface PendingEmail {
+  email: string;
+  next: string | null;
+}
+
+/** The cookie value register writes: the normalised address and the sanitised `next`. */
+export function serialisePendingCookie(pending: PendingEmail): string {
+  return JSON.stringify(
+    pending.next ? { email: pending.email, next: pending.next } : { email: pending.email },
+  );
+}
+
+/**
+ * BR2.2: reads `rk.pending` on every use. A value that does not parse, or an address the account
+ * email schema refuses, makes the whole cookie count as absent; an unsafe `next` is dropped.
+ */
+export function readPendingCookie(value: string | undefined): PendingEmail | null {
+  if (!value) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    return null;
+  }
+  if (typeof parsed !== 'object' || parsed === null) return null;
+  const { email, next } = parsed as { email?: unknown; next?: unknown };
+  const checked = ResendVerificationInput.safeParse({ email });
+  if (!checked.success) return null;
+  return { email: checked.data.email, next: safeAuthNext(next) };
 }

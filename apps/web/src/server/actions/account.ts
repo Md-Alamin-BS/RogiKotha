@@ -25,7 +25,10 @@ import {
 } from '@rogikotha/application';
 import type { Result } from '@rogikotha/contracts';
 
+import { getActor } from '../auth';
+import { contributionAccessOf, type ContributionAccess } from '../auth/contribution-access';
 import { runCommand, runSessionCommand } from '../command-call';
+import { getContainer } from '../container';
 
 export async function registerAccount(raw: unknown): Promise<Result<RegisterOutput>> {
   return runCommand(registerCommand, raw);
@@ -83,4 +86,20 @@ export async function listSessions(raw: unknown): Promise<Result<ListSessionsOut
 /** The holder's own account, with the address masked (FD-096); never cached. */
 export async function getOwnAccount(raw: unknown): Promise<Result<GetOwnAccountOutput>> {
   return runCommand(getOwnAccountQuery, raw);
+}
+
+/**
+ * C16 (U9): the one access rule the gate and its consumers (U47 composer, U49 comment form) share.
+ * It fails closed: an error while reading the Actor answers `signed-out` and is logged with no
+ * personal field (BR8.3). The commands still refuse on their own (C9 publish, C10 comment.post).
+ */
+export async function getContributionAccess(): Promise<ContributionAccess> {
+  try {
+    return contributionAccessOf(await getActor());
+  } catch (error: unknown) {
+    getContainer().ports.logger.error('auth.contribution_access_failed', {
+      errorCode: error instanceof Error ? error.name : 'unknown',
+    });
+    return 'signed-out';
+  }
 }

@@ -7,7 +7,7 @@ import { CommentDeleteInput, CommentPostInput, LOCALES, PUBLIC_ID_RE } from '@ro
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
-import { requireAccount } from '@/server/auth/session';
+import { requireAccount, requireContributor } from '@/server/auth/session';
 import { comments, reviews } from '@/server/data';
 
 /** The state a comment form keeps between submissions; message keys are i18n keys. */
@@ -66,7 +66,7 @@ export async function postComment(
   formData: FormData,
 ): Promise<CommentActionState> {
   const reviewPublicId = field(formData, 'reviewPublicId');
-  const account = await requireAccount(returnTo(reviewPublicId));
+  const account = await requireContributor(returnTo(reviewPublicId));
 
   const body = field(formData, 'body').trim();
   const parsed = PostCommentForm.safeParse({
@@ -109,6 +109,7 @@ export async function deleteComment(
   formData: FormData,
 ): Promise<CommentActionState> {
   const reviewPublicId = field(formData, 'reviewPublicId');
+  // ASSUMPTION(U9): removing one's own comment is not contributing, so any signed-in account may.
   const account = await requireAccount(returnTo(reviewPublicId));
 
   const parsed = DeleteCommentForm.safeParse({

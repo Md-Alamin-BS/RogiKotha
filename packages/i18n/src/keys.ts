@@ -183,6 +183,7 @@ export type MessageKey =
   | 'appeal.text'
   | 'appeal.title'
   | 'auth.accountMenu'
+  | 'auth.accountMenuUnconfirmed'
   | 'auth.ageLabel'
   | 'auth.displayName'
   | 'auth.displayNameHint'
@@ -190,18 +191,23 @@ export type MessageKey =
   | 'auth.errorSummary'
   | 'auth.forgot'
   | 'auth.gate.body'
+  | 'auth.gate.commentBody'
   | 'auth.gate.register'
   | 'auth.gate.title'
+  | 'auth.gate.unavailable'
   | 'auth.gate.verifyToAct'
   | 'auth.gate.verifyToPublish'
   | 'auth.gate.writeBody'
   | 'auth.haveAccount'
   | 'auth.hidePassword'
+  | 'auth.hidePasswordLabel'
   | 'auth.kicker'
   | 'auth.language'
   | 'auth.noAccount'
   | 'auth.password'
+  | 'auth.passwordHidden'
   | 'auth.passwordHint'
+  | 'auth.passwordShown'
   | 'auth.privacyLink'
   | 'auth.register.lede'
   | 'auth.register.submit'
@@ -211,6 +217,7 @@ export type MessageKey =
   | 'auth.reset.lede'
   | 'auth.reset.mismatch'
   | 'auth.reset.newPassword'
+  | 'auth.reset.requestAgain'
   | 'auth.reset.sent'
   | 'auth.reset.setSubmit'
   | 'auth.reset.submit'
@@ -218,6 +225,8 @@ export type MessageKey =
   | 'auth.security.changePassword'
   | 'auth.security.currentPassword'
   | 'auth.security.device'
+  | 'auth.security.deviceLabel'
+  | 'auth.security.deviceUnknown'
   | 'auth.security.email'
   | 'auth.security.emailNote'
   | 'auth.security.firstSeen'
@@ -227,28 +236,41 @@ export type MessageKey =
   | 'auth.security.passwordChanged'
   | 'auth.security.sessions'
   | 'auth.security.signOutAll'
+  | 'auth.security.signOutAllConfirm'
   | 'auth.security.signOutAllNote'
+  | 'auth.security.signedOutAll'
   | 'auth.security.thisDevice'
   | 'auth.security.title'
   | 'auth.security.unverified'
   | 'auth.security.verified'
   | 'auth.showPassword'
+  | 'auth.showPasswordLabel'
   | 'auth.signIn.label'
   | 'auth.signIn.lede'
   | 'auth.signIn.submit'
   | 'auth.signIn.title'
   | 'auth.signOut'
+  | 'auth.steps.confirm'
+  | 'auth.steps.create'
+  | 'auth.steps.label'
+  | 'auth.steps.position'
+  | 'auth.steps.write'
   | 'auth.termsLabel'
   | 'auth.termsLink'
   | 'auth.username'
   | 'auth.usernameHint'
   | 'auth.verify.body'
+  | 'auth.verify.bodyNoEmail'
+  | 'auth.verify.confirm'
+  | 'auth.verify.confirmLede'
+  | 'auth.verify.continue'
   | 'auth.verify.devInbox'
   | 'auth.verify.done'
   | 'auth.verify.expired'
   | 'auth.verify.expires'
   | 'auth.verify.resend'
   | 'auth.verify.resent'
+  | 'auth.verify.startWriting'
   | 'auth.verify.title'
   | 'auth.verifyPending'
   | 'brand.name'
@@ -591,6 +613,7 @@ export type MessageKey =
   | 'formErrors.auth.displayNameInvalid'
   | 'formErrors.auth.emailInvalid'
   | 'formErrors.auth.rateLimited'
+  | 'formErrors.auth.rateLimitedSeconds'
   | 'formErrors.auth.registrationRefused'
   | 'formErrors.compose.bodyTooLong'
   | 'formErrors.compose.bodyTooShort'
@@ -1064,6 +1087,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'appeal.text',
   'appeal.title',
   'auth.accountMenu',
+  'auth.accountMenuUnconfirmed',
   'auth.ageLabel',
   'auth.displayName',
   'auth.displayNameHint',
@@ -1071,18 +1095,23 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'auth.errorSummary',
   'auth.forgot',
   'auth.gate.body',
+  'auth.gate.commentBody',
   'auth.gate.register',
   'auth.gate.title',
+  'auth.gate.unavailable',
   'auth.gate.verifyToAct',
   'auth.gate.verifyToPublish',
   'auth.gate.writeBody',
   'auth.haveAccount',
   'auth.hidePassword',
+  'auth.hidePasswordLabel',
   'auth.kicker',
   'auth.language',
   'auth.noAccount',
   'auth.password',
+  'auth.passwordHidden',
   'auth.passwordHint',
+  'auth.passwordShown',
   'auth.privacyLink',
   'auth.register.lede',
   'auth.register.submit',
@@ -1092,6 +1121,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'auth.reset.lede',
   'auth.reset.mismatch',
   'auth.reset.newPassword',
+  'auth.reset.requestAgain',
   'auth.reset.sent',
   'auth.reset.setSubmit',
   'auth.reset.submit',
@@ -1099,6 +1129,8 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'auth.security.changePassword',
   'auth.security.currentPassword',
   'auth.security.device',
+  'auth.security.deviceLabel',
+  'auth.security.deviceUnknown',
   'auth.security.email',
   'auth.security.emailNote',
   'auth.security.firstSeen',
@@ -1108,28 +1140,41 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'auth.security.passwordChanged',
   'auth.security.sessions',
   'auth.security.signOutAll',
+  'auth.security.signOutAllConfirm',
   'auth.security.signOutAllNote',
+  'auth.security.signedOutAll',
   'auth.security.thisDevice',
   'auth.security.title',
   'auth.security.unverified',
   'auth.security.verified',
   'auth.showPassword',
+  'auth.showPasswordLabel',
   'auth.signIn.label',
   'auth.signIn.lede',
   'auth.signIn.submit',
   'auth.signIn.title',
   'auth.signOut',
+  'auth.steps.confirm',
+  'auth.steps.create',
+  'auth.steps.label',
+  'auth.steps.position',
+  'auth.steps.write',
   'auth.termsLabel',
   'auth.termsLink',
   'auth.username',
   'auth.usernameHint',
   'auth.verify.body',
+  'auth.verify.bodyNoEmail',
+  'auth.verify.confirm',
+  'auth.verify.confirmLede',
+  'auth.verify.continue',
   'auth.verify.devInbox',
   'auth.verify.done',
   'auth.verify.expired',
   'auth.verify.expires',
   'auth.verify.resend',
   'auth.verify.resent',
+  'auth.verify.startWriting',
   'auth.verify.title',
   'auth.verifyPending',
   'brand.name',
@@ -1472,6 +1517,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'formErrors.auth.displayNameInvalid',
   'formErrors.auth.emailInvalid',
   'formErrors.auth.rateLimited',
+  'formErrors.auth.rateLimitedSeconds',
   'formErrors.auth.registrationRefused',
   'formErrors.compose.bodyTooLong',
   'formErrors.compose.bodyTooShort',

@@ -13,7 +13,20 @@ import { getContainer } from '../container';
 import { register } from './auth';
 import { INITIAL_AUTH_STATE } from './auth-form';
 
+// T-102: the pending screen's `rk.pending` cookie is part of what the browser observes.
+const cookieWrites = vi.hoisted(() => [] as { name: string; value: string; options: unknown }[]);
+
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
+vi.mock('next/headers', () => ({
+  cookies: () =>
+    Promise.resolve({
+      get: () => undefined,
+      set: (name: string, value: string, options: unknown) => {
+        cookieWrites.push({ name, value, options });
+      },
+      delete: () => undefined,
+    }),
+}));
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(() => {
     throw new Error('NEXT_REDIRECT');
@@ -84,11 +97,21 @@ function registerForm(email: string): FormData {
 async function observe(email: string): Promise<unknown> {
   vi.mocked(redirect).mockClear();
   vi.mocked(redirectInLocale).mockClear();
+  cookieWrites.length = 0;
+  // The cookie carries the address the browser itself typed, so only that part may differ.
+  const cookies = () =>
+    cookieWrites.map(({ name, value, options }) => ({
+      name,
+      options,
+      holdsTypedAddressOnly: value === JSON.stringify({ email }),
+    }));
   try {
-    return { state: await register(INITIAL_AUTH_STATE, registerForm(email)) };
-  } catch {
+    return { state: await register(INITIAL_AUTH_STATE, registerForm(email)), cookies: cookies() };
+  } catch (error: unknown) {
     return {
+      thrown: error instanceof Error ? error.message : 'unknown',
       redirected: [...vi.mocked(redirect).mock.calls, ...vi.mocked(redirectInLocale).mock.calls],
+      cookies: cookies(),
     };
   }
 }
@@ -98,6 +121,7 @@ beforeEach(() => {
   credentials = new Map([[REGISTERED_EMAIL, OWNER_PASSWORD]]);
   freshIds = 0;
   vi.mocked(getContainer).mockReturnValue({
+    env: { appUrl: 'http://localhost:3000' },
     ports: {},
   } as unknown as ReturnType<typeof getContainer>);
   commandsBehaveAsSpecified();
@@ -109,5 +133,12 @@ describe('account enumeration through the register form (BR1.4, NFR3)', () => {
     const forRegistered = await observe(REGISTERED_EMAIL);
 
     expect(forRegistered).toEqual(forFresh);
+    // Guards against both observations failing the same way: each is a real redirect with the
+    // pending cookie.
+    expect(forFresh).toMatchObject({
+      thrown: 'NEXT_REDIRECT',
+      redirected: [['/en/verify-email']],
+      cookies: [{ name: 'rk.pending', holdsTypedAddressOnly: true }],
+    });
   });
 });

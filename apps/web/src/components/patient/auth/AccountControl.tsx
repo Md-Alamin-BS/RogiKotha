@@ -7,21 +7,36 @@ import { signOut } from '@/server/actions/auth';
 import { Icon } from '../../shared/Icon';
 import { Sheet } from '../../shared/Sheet';
 
-/** What the masthead may know about the reader: the display name only, never ids or the email. */
+/**
+ * What the masthead may know about the reader: the display name and whether the address is still
+ * unconfirmed, never ids, the email or the status value itself (BR7.2).
+ */
 export interface MastheadAccount {
   displayName: string;
+  unconfirmed?: boolean;
 }
 
-/** Port of app.js's initials(): first letters of the first and last word, case kept as written. */
+const GRAPHEMES = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+
+function firstGrapheme(word: string): string {
+  for (const { segment } of GRAPHEMES.segment(word)) return segment;
+  return '';
+}
+
+/**
+ * Port of app.js's initials(): the first letters of the first and last word, case kept as written.
+ * A letter is a grapheme cluster, so a Bengali conjunct or a vowel sign is never cut in half (BR7.1).
+ */
 export function accountInitials(displayName: string): string {
   const words = displayName.trim().split(/\s+/).filter(Boolean);
-  const first = Array.from(words[0] ?? '')[0] ?? '';
-  const last = words.length > 1 ? (Array.from(words[words.length - 1] ?? '')[0] ?? '') : '';
+  const first = firstGrapheme(words[0] ?? '');
+  const last = words.length > 1 ? firstGrapheme(words[words.length - 1] ?? '') : '';
   return first + last;
 }
 
 // Port of app.js's renderAccountEntry() and its `#account` menu sheet (concept-04b, lines ~2328
-// and ~3202). The menu keeps the slice's links only: the workspace and sign out.
+// and ~3202). The menu holds My writing, Security, Confirm your email while unconfirmed, and Sign
+// out (BR7.2).
 export function AccountControl({ account }: { account: MastheadAccount | null }) {
   const t = useTranslations();
   const [open, setOpen] = useState(false);
@@ -41,15 +56,18 @@ export function AccountControl({ account }: { account: MastheadAccount | null })
     );
   }
 
+  const unconfirmed = account.unconfirmed === true;
   return (
     <>
       <button
         id="account"
         type="button"
         className="ctl account"
-        data-verified="true"
+        data-verified={unconfirmed ? 'false' : 'true'}
         title={account.displayName}
-        aria-label={t('auth.accountMenu', { name: account.displayName })}
+        aria-label={t(unconfirmed ? 'auth.accountMenuUnconfirmed' : 'auth.accountMenu', {
+          name: account.displayName,
+        })}
         aria-haspopup="dialog"
         aria-expanded={open}
         data-testid="masthead-account-menu-button"
@@ -63,6 +81,28 @@ export function AccountControl({ account }: { account: MastheadAccount | null })
             {t('nav.mine')}
           </Link>
         </p>
+        <p className="sub" style={{ marginTop: '10px' }}>
+          <Link
+            className="link-btn"
+            href="/me/security"
+            onClick={close}
+            data-testid="account-menu-security-link"
+          >
+            {t('auth.security.nav')}
+          </Link>
+        </p>
+        {unconfirmed ? (
+          <p className="sub" style={{ marginTop: '10px' }}>
+            <Link
+              className="link-btn"
+              href="/verify-email"
+              onClick={close}
+              data-testid="account-menu-verify-link"
+            >
+              {t('auth.verifyPending')}
+            </Link>
+          </p>
+        ) : null}
         <form action={signOut}>
           <p className="sub" style={{ marginTop: '10px' }}>
             <button

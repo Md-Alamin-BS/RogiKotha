@@ -240,7 +240,9 @@
       "title": "Sign in to take part",
       "verifyToAct": "Confirm your email to do this.",
       "verifyToPublish": "Confirm your email to publish. Your draft is saved.",
-      "writeBody": "Sign in with a confirmed account to publish. You can read everything without one."
+      "writeBody": "Sign in with a confirmed account to publish. You can read everything without one.",
+      "commentBody": "Comments need a confirmed account so they stay accountable. Reading does not.",
+      "unavailable": "Your account can't take part right now."
     },
     "haveAccount": "Already have an account? Sign in",
     "hidePassword": "Hide",
@@ -264,7 +266,8 @@
       "sent": "If that email has an account, a reset link is on its way. It expires in 1 hour.",
       "setSubmit": "Change password",
       "submit": "Send reset link",
-      "title": "Reset your password"
+      "title": "Reset your password",
+      "requestAgain": "Ask for a new reset link"
     },
     "security": {
       "changePassword": "Change password",
@@ -283,7 +286,11 @@
       "thisDevice": "This device",
       "title": "Security",
       "unverified": "Not confirmed",
-      "verified": "Confirmed"
+      "verified": "Confirmed",
+      "deviceLabel": "{browser} on {os}",
+      "deviceUnknown": "Unknown device",
+      "signOutAllConfirm": "Yes, sign out everywhere",
+      "signedOutAll": "You have been signed out everywhere."
     },
     "showPassword": "Show",
     "signIn": {
@@ -305,10 +312,27 @@
       "expires": "The link expires in 24 hours. You can ask for a new one at any time.",
       "resend": "Send a new link",
       "resent": "A new link is on its way.",
-      "title": "Confirm your email"
+      "title": "Confirm your email",
+      "bodyNoEmail": "We sent a confirmation link to the address you registered with. Open it to finish creating your account.",
+      "confirmLede": "Press the button to confirm this email address.",
+      "confirm": "Confirm my email",
+      "startWriting": "Write about a doctor",
+      "continue": "Continue where you were"
     },
     "verifyPending": "Confirm your email",
-    "accountMenu": "Your account: {name}"
+    "accountMenu": "Your account: {name}",
+    "steps": {
+      "label": "Joining steps",
+      "create": "Create account",
+      "confirm": "Confirm email",
+      "write": "Start writing",
+      "position": "Step {step} of {total}"
+    },
+    "showPasswordLabel": "Show password",
+    "hidePasswordLabel": "Hide password",
+    "passwordShown": "Your password is shown.",
+    "passwordHidden": "Your password is hidden.",
+    "accountMenuUnconfirmed": "Your account: {name}, email not confirmed"
   },
   "brand": {
     "name": "RogiKotha",
@@ -543,7 +567,7 @@
   },
   "errors": {
     "auth": {
-      "accountSuspended": "This account is suspended. You can appeal from your workspace.",
+      "accountSuspended": "This account is suspended, so it can't sign in right now.",
       "ageRequired": "Age: you must confirm that you are 18 or older.",
       "deviceUnapproved": "This device is not approved yet. Check your staff email.",
       "displayNameRequired": "Display name: enter the name you want to show, up to 60 characters.",
@@ -553,7 +577,7 @@
       "passwordEqualsEmail": "Password: it can't be the same as your email.",
       "passwordTooLong": "Password: use 256 characters or fewer.",
       "passwordTooShort": "Password: use at least 10 characters.",
-      "rateLimited": "Too many attempts. Try again in {minutes} minutes.",
+      "rateLimited": "Too many attempts. Try again in {count, plural, one {{minutes} minute} other {{minutes} minutes}}.",
       "stepUpRequired": "Confirm your password to continue.",
       "termsRequired": "Terms: you must accept the Terms and the Privacy Policy.",
       "tokenExpired": "That link has expired.",
@@ -609,7 +633,8 @@
       "displayNameInvalid": "Display name: enter a name of up to 60 characters.",
       "emailInvalid": "Email: enter a valid email address.",
       "registrationRefused": "We couldn't create an account with these details. If you already have an account, sign in instead.",
-      "rateLimited": "Too many attempts. Wait a moment, then try again."
+      "rateLimited": "Too many attempts. Wait a moment, then try again.",
+      "rateLimitedSeconds": "Too many attempts. Try again in {count, plural, one {{seconds} second} other {{seconds} seconds}}."
     },
     "compose": {
       "doctorRequired": "Doctor: choose a doctor from the list.",

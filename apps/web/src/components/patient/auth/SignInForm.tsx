@@ -8,8 +8,8 @@ import { useAuthForm } from './use-auth-form';
 
 const FORM = 'signin';
 
-// Port of app.js's renderSignin() form (concept-04b, lines ~2173-2198). The reset-password link is
-// left out: password reset is outside the demo slice.
+// Port of app.js's renderSignin() form (concept-04b, lines ~2173-2198), with its "Forgot your
+// password?" link now that T-102 builds the reset screens.
 export function SignInForm({ next }: { next: string | null }) {
   const t = useTranslations();
   const { state, formAction, pending, onSubmit, summaryRef } = useAuthForm(signIn);
@@ -22,7 +22,7 @@ export function SignInForm({ next }: { next: string | null }) {
         formError={state.formError}
         summaryRef={summaryRef}
       />
-      <form id="signin-form" noValidate action={formAction} onSubmit={onSubmit}>
+      <form id="signin-form" noValidate action={formAction} onSubmit={onSubmit} aria-busy={pending}>
         {next ? <input type="hidden" name="next" value={next} /> : null}
         <AuthField
           form={FORM}
@@ -48,6 +48,11 @@ export function SignInForm({ next }: { next: string | null }) {
         </button>
       </form>
       <p className="sub" style={{ marginTop: '14px' }}>
+        <Link className="link-btn" href="/reset-password" data-testid="signin-form-forgot-link">
+          {t('auth.forgot')}
+        </Link>
+      </p>
+      <p className="sub" style={{ marginTop: '6px' }}>
         <Link
           className="link-btn"
           href={next ? { pathname: '/register', query: { next } } : '/register'}

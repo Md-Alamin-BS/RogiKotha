@@ -33,7 +33,7 @@ timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps
 timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web "apps/web/src/app/[locale]/(patient)/register/" "apps/web/src/app/[locale]/(patient)/sign-in/" "apps/web/src/app/[locale]/(patient)/verify-email/" "apps/web/src/app/[locale]/(patient)/reset-password/" "apps/web/src/app/[locale]/(patient)/me/security/" apps/web/src/app/pages.test.tsx
 
 # Integration against the assigned test database and Mailpit (register -> Mailpit -> confirm -> allowed):
-timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project web-int apps/web/src/server/auth-screens.int.test.ts
+timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project web-int apps/web/src/server/actions/auth-screens.int.test.ts
 
 # The Unit's smoke file, then the whole cumulative smoke suite:
 timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/components/patient/auth/auth-screens.smoke.test.tsx

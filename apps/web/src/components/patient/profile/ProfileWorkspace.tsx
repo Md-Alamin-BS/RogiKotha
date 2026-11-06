@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import type { DemoOwnReviewRow, DemoProfile, Locale } from '@rogikotha/contracts';
 import { formatDate } from '@rogikotha/i18n/format';
+import { Link } from '@/i18n/routing';
 
 import { dhakaIsoDate } from './dates';
 import { DisplayNameForm } from './DisplayNameForm';
@@ -49,6 +50,11 @@ export function ProfileWorkspace({
           {t('user2.preferences')}
         </h2>
         <LanguageForm current={profile.locale} />
+        <p className="sub" style={{ marginTop: '14px' }}>
+          <Link className="link-btn" href="/me/security" data-testid="profile-security-link">
+            {t('auth.security.nav')}
+          </Link>
+        </p>
       </section>
     </>
   );

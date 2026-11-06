@@ -31,6 +31,10 @@ vi.mock('better-auth/adapters/drizzle', async () => {
 vi.mock('../container', () => ({ getContainer: vi.fn() }));
 vi.mock('../command-call', () => ({ runCommand: vi.fn(), applySessionEffect: vi.fn() }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
+// T-102: a successful sign-in also deletes the `rk.pending` cookie.
+vi.mock('next/headers', () => ({
+  cookies: () => Promise.resolve({ get: () => undefined, set: vi.fn(), delete: vi.fn() }),
+}));
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(() => {
     throw new Error('NEXT_REDIRECT');

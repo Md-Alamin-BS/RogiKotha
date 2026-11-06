@@ -53,10 +53,9 @@ describe.each(LOCALES)('the register form in %s', (locale) => {
     const t = renderIn(locale, <RegisterForm next={null} />);
 
     expect(screen.getByLabelText(new RegExp(t('auth.email')))).toHaveAttribute('type', 'email');
-    expect(screen.getByLabelText(new RegExp(t('auth.password')))).toHaveAttribute(
-      'type',
-      'password',
-    );
+    expect(
+      screen.getByLabelText(new RegExp(t('auth.password')), { selector: 'input' }),
+    ).toHaveAttribute('type', 'password');
     expect(screen.getByLabelText(new RegExp(t('auth.username')))).toBeInTheDocument();
     expect(screen.getByLabelText(new RegExp(t('auth.displayName')))).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: t('auth.ageLabel') })).toBeInTheDocument();
@@ -86,9 +85,10 @@ describe.each(LOCALES)('the register form in %s', (locale) => {
 
   it('shows each refused field next to the field and in the summary, in the active language', async () => {
     vi.mocked(register).mockResolvedValue({
+      status: 'refused',
       fieldErrors: {
-        password: 'errors.auth.passwordTooShort',
-        username: 'errors.auth.usernameTaken',
+        password: { key: 'errors.auth.passwordTooShort' },
+        username: { key: 'errors.auth.usernameTaken' },
       },
       formError: null,
     });
@@ -100,7 +100,7 @@ describe.each(LOCALES)('the register form in %s', (locale) => {
     const summary = await screen.findByRole('alert');
     expect(summary).toHaveTextContent(t('auth.errorSummary'));
     expect(summary).toHaveFocus();
-    const password = screen.getByLabelText(new RegExp(t('auth.password')));
+    const password = screen.getByLabelText(new RegExp(t('auth.password')), { selector: 'input' });
     expect(password).toHaveAttribute('aria-invalid', 'true');
     expect(password).toHaveAccessibleDescription(t('errors.auth.passwordTooShort'));
     expect(screen.getAllByText(t('errors.auth.usernameTaken'))).toHaveLength(2);
@@ -108,8 +108,9 @@ describe.each(LOCALES)('the register form in %s', (locale) => {
 
   it('shows the neutral message when registration is refused as a whole', async () => {
     vi.mocked(register).mockResolvedValue({
+      status: 'refused',
       fieldErrors: {},
-      formError: 'formErrors.auth.registrationRefused',
+      formError: { key: 'formErrors.auth.registrationRefused' },
     });
     const user = userEvent.setup();
     const t = renderIn(locale, <RegisterForm next={null} />);
@@ -123,7 +124,8 @@ describe.each(LOCALES)('the register form in %s', (locale) => {
 
   it('keeps what the reader typed after a refusal', async () => {
     vi.mocked(register).mockResolvedValue({
-      fieldErrors: { terms: 'errors.auth.termsRequired' },
+      status: 'refused',
+      fieldErrors: { terms: { key: 'errors.auth.termsRequired' } },
       formError: null,
     });
     const user = userEvent.setup();
@@ -143,7 +145,9 @@ describe.each(LOCALES)('the sign-in form in %s', (locale) => {
     const t = renderIn(locale, <SignInForm next={null} />);
 
     expect(screen.getByLabelText(new RegExp(t('auth.email')))).toBeInTheDocument();
-    expect(screen.getByLabelText(new RegExp(t('auth.password')))).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(new RegExp(t('auth.password')), { selector: 'input' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: t('auth.noAccount') })).toHaveAttribute(
       'href',
       '/register',
@@ -152,8 +156,9 @@ describe.each(LOCALES)('the sign-in form in %s', (locale) => {
 
   it('shows one neutral message for a wrong email or password', async () => {
     vi.mocked(signIn).mockResolvedValue({
+      status: 'refused',
       fieldErrors: {},
-      formError: 'errors.auth.invalidCredentials',
+      formError: { key: 'errors.auth.invalidCredentials' },
     });
     const user = userEvent.setup();
     const t = renderIn(locale, <SignInForm next={null} />);
@@ -176,11 +181,11 @@ describe.each(LOCALES)('the sign-in form in %s', (locale) => {
   it('shows and hides the password on request', async () => {
     const user = userEvent.setup();
     const t = renderIn(locale, <SignInForm next={null} />);
-    const password = screen.getByLabelText(new RegExp(t('auth.password')));
+    const password = screen.getByLabelText(new RegExp(t('auth.password')), { selector: 'input' });
 
-    await user.click(screen.getByRole('button', { name: t('auth.showPassword') }));
+    await user.click(screen.getByRole('button', { name: t('auth.showPasswordLabel') }));
     expect(password).toHaveAttribute('type', 'text');
-    await user.click(screen.getByRole('button', { name: t('auth.hidePassword') }));
+    await user.click(screen.getByRole('button', { name: t('auth.hidePasswordLabel') }));
     expect(password).toHaveAttribute('type', 'password');
   });
 });
