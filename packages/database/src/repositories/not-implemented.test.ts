@@ -55,6 +55,23 @@ const IMPLEMENTED: Record<string, readonly string[]> = {
     'savePreferences',
     'insertFeedback',
   ],
+  // U48 implements the EvidenceRepository port; evidence.int.test.ts proves it on the database.
+  PgEvidenceRepository: [
+    'lockReview',
+    'countCounting',
+    'findByIdempotencyKey',
+    'insertQuarantined',
+    'listForAuthor',
+    'findOwned',
+    'processingFacts',
+    'stuckItems',
+    'latestCustody',
+    'transition',
+    'appendCustody',
+    'markOriginalDeleted',
+    'countPublic',
+    'countPublicByReview',
+  ],
 };
 
 function stubMethodNamesOf(name: string, repository: object): string[] {
