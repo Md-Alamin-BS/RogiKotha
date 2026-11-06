@@ -4,18 +4,6 @@
   "version": 1,
   "writes": [
     {
-      "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u46-directory/code-generation/code-generation-plan.md"
-    },
-    {
-      "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u46-directory/code-generation/code-summary.md"
-    },
-    {
-      "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u46-directory/code-generation/traceability.json"
-    },
-    {
-      "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/inception/contract-design/contract-summary.md"
-    },
-    {
       "path": "apps/web/src/app/pages.test.tsx"
     },
     {

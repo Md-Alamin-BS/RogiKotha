@@ -3,76 +3,203 @@
   "unit": "t-104-identity-module",
   "version": 1,
   "writes": [
-    { "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-104-identity-module/code-generation/code-generation-plan.md" },
-    { "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-104-identity-module/code-generation/code-summary.md" },
-    { "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-104-identity-module/code-generation/source-manifest.json" },
-    { "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-104-identity-module/code-generation/traceability.json" },
-    { "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/inception/contract-design/contract-summary.md" },
-    { "path": "apps/web/src/server/container.test.ts" },
-    { "path": "apps/web/src/server/container.ts" },
-    { "path": "apps/web/src/server/identity-boundary.adversarial.test.ts" },
-    { "path": "apps/web/src/server/identity-boundary.test.ts" },
-    { "path": "docs/aidlc-migration/OWNER-REVIEW-QUEUE.md" },
-    { "path": "docs/implementation/ISSUES.md" },
-    { "path": "docs/implementation/tasks/T-104-identity-module.md" },
-    { "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-identity.ts" },
-    { "path": "lint-fixtures/boundary-violation/manifest.json" },
-    { "path": "packages/application/src/fakes-test-support.ts" },
-    { "path": "packages/application/src/index.ts" },
-    { "path": "packages/application/src/modules/account/commands/register.ts" },
-    { "path": "packages/application/src/modules/identity/audit.ts" },
-    { "path": "packages/application/src/modules/identity/commands/rename-named.test.ts" },
-    { "path": "packages/application/src/modules/identity/commands/rename-named.ts" },
-    { "path": "packages/application/src/modules/identity/default-personas.ts" },
-    { "path": "packages/application/src/modules/identity/identity.adversarial.test.ts" },
-    { "path": "packages/application/src/modules/identity/identity.smoke.test.ts" },
-    { "path": "packages/application/src/modules/identity/index.ts" },
-    { "path": "packages/application/src/modules/identity/log-capture.test.ts" },
-    { "path": "packages/application/src/modules/identity/ownership.test.ts" },
-    { "path": "packages/application/src/modules/identity/ownership.ts" },
-    { "path": "packages/application/src/modules/identity/persona-for.test.ts" },
-    { "path": "packages/application/src/modules/identity/persona-for.ts" },
-    { "path": "packages/application/src/modules/identity/ports.ts" },
-    { "path": "packages/application/src/modules/identity/projection.test.ts" },
-    { "path": "packages/application/src/modules/identity/projection.ts" },
-    { "path": "packages/contracts/src/index.ts" },
-    { "path": "packages/contracts/src/schemas/identity.test.ts" },
-    { "path": "packages/contracts/src/schemas/identity.ts" },
-    { "path": "packages/contracts/src/view-models/persona.ts" },
-    { "path": "packages/database/src/global-setup.ts" },
-    { "path": "packages/database/src/index.ts" },
-    { "path": "packages/database/src/migrations.int.test.ts" },
-    { "path": "packages/database/src/migrations/0010_identity_constraints.sql" },
-    { "path": "packages/database/src/migrations/meta/_journal.json" },
-    { "path": "packages/database/src/migrations/meta/0010_snapshot.json" },
-    { "path": "packages/database/src/repositories/account.ts" },
-    { "path": "packages/database/src/repositories/identity.int.test.ts" },
-    { "path": "packages/database/src/repositories/identity.ts" },
-    { "path": "packages/database/src/repositories/identity-private.adversarial.int.test.ts" },
-    { "path": "packages/database/src/repositories/identity-private.int.test.ts" },
-    { "path": "packages/database/src/repositories/identity-private.ts" },
-    { "path": "packages/database/src/repositories/not-implemented.test.ts" },
-    { "path": "packages/database/src/repositories/persona-links-allowlist.test.ts" },
-    { "path": "packages/database/src/repositories/persona-links-scan.adversarial.test.ts" },
-    { "path": "packages/database/src/reset.ts" },
-    { "path": "packages/database/src/reset-guard.int.test.ts" },
-    { "path": "packages/database/src/schema/foreign-keys.int.test.ts" },
-    { "path": "packages/database/src/schema/identity.ts" },
-    { "path": "packages/database/src/validator-probes.int.test.ts" },
-    { "path": "packages/domain/src/identity/alias.test.ts" },
-    { "path": "packages/domain/src/identity/alias.ts" },
-    { "path": "packages/domain/src/identity/persona.ts" },
-    { "path": "packages/domain/src/identity/projection.test.ts" },
-    { "path": "packages/domain/src/identity/projection.ts" },
-    { "path": "packages/domain/src/index.ts" },
-    { "path": "packages/test-support/src/builders/persona.ts" },
-    { "path": "packages/test-support/src/fakes/identity.test.ts" },
-    { "path": "packages/test-support/src/fakes/identity.ts" },
-    { "path": "packages/test-support/src/fakes/index.ts" },
-    { "path": "packages/test-support/src/fakes/repositories.test.ts" },
-    { "path": "packages/test-support/src/fakes/repositories.ts" },
-    { "path": "packages/test-support/src/fakes/repositories-superset.test.ts" },
-    { "path": "packages/test-support/src/seed/seed-content.ts" },
-    { "path": "scripts/check-boundaries-fixture.test.mjs" }
+    {
+      "path": "apps/web/src/server/container.test.ts"
+    },
+    {
+      "path": "apps/web/src/server/container.ts"
+    },
+    {
+      "path": "apps/web/src/server/identity-boundary.adversarial.test.ts"
+    },
+    {
+      "path": "apps/web/src/server/identity-boundary.test.ts"
+    },
+    {
+      "path": "docs/aidlc-migration/OWNER-REVIEW-QUEUE.md"
+    },
+    {
+      "path": "docs/implementation/ISSUES.md"
+    },
+    {
+      "path": "docs/implementation/tasks/T-104-identity-module.md"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/apps/worker/src/worker-identity.ts"
+    },
+    {
+      "path": "lint-fixtures/boundary-violation/manifest.json"
+    },
+    {
+      "path": "packages/application/src/fakes-test-support.ts"
+    },
+    {
+      "path": "packages/application/src/index.ts"
+    },
+    {
+      "path": "packages/application/src/modules/account/commands/register.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/audit.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/commands/rename-named.test.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/commands/rename-named.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/default-personas.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/identity.adversarial.test.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/identity.smoke.test.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/index.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/log-capture.test.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/ownership.test.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/ownership.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/persona-for.test.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/persona-for.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/ports.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/projection.test.ts"
+    },
+    {
+      "path": "packages/application/src/modules/identity/projection.ts"
+    },
+    {
+      "path": "packages/contracts/src/index.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/identity.test.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/identity.ts"
+    },
+    {
+      "path": "packages/contracts/src/view-models/persona.ts"
+    },
+    {
+      "path": "packages/database/src/global-setup.ts"
+    },
+    {
+      "path": "packages/database/src/index.ts"
+    },
+    {
+      "path": "packages/database/src/migrations.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/migrations/0010_identity_constraints.sql"
+    },
+    {
+      "path": "packages/database/src/migrations/meta/_journal.json"
+    },
+    {
+      "path": "packages/database/src/migrations/meta/0010_snapshot.json"
+    },
+    {
+      "path": "packages/database/src/repositories/account.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/identity.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/identity.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/identity-private.adversarial.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/identity-private.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/identity-private.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/not-implemented.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/persona-links-allowlist.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/persona-links-scan.adversarial.test.ts"
+    },
+    {
+      "path": "packages/database/src/reset.ts"
+    },
+    {
+      "path": "packages/database/src/reset-guard.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/schema/foreign-keys.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/schema/identity.ts"
+    },
+    {
+      "path": "packages/database/src/validator-probes.int.test.ts"
+    },
+    {
+      "path": "packages/domain/src/identity/alias.test.ts"
+    },
+    {
+      "path": "packages/domain/src/identity/alias.ts"
+    },
+    {
+      "path": "packages/domain/src/identity/persona.ts"
+    },
+    {
+      "path": "packages/domain/src/identity/projection.test.ts"
+    },
+    {
+      "path": "packages/domain/src/identity/projection.ts"
+    },
+    {
+      "path": "packages/domain/src/index.ts"
+    },
+    {
+      "path": "packages/test-support/src/builders/persona.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/identity.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/identity.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/index.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/repositories.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/repositories.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/repositories-superset.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed-content.ts"
+    },
+    {
+      "path": "scripts/check-boundaries-fixture.test.mjs"
+    }
   ]
 }

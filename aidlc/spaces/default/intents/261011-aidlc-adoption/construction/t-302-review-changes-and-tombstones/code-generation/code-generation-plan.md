@@ -1,0 +1,224 @@
+# Code Generation plan — U22 `t-302-review-changes-and-tombstones` (T-302, release 1)
+
+## Summary
+
+- Builds: author corrections of a published review (FR69, FD-105): the `review.correct` command, the `review.getOwnForEdit` and `review.getHistory` queries, the pure `versioning.ts` rules, the edit route and `EditForm` for quick and detailed reviews, the `correctReviewAction` server action, and the new internals of U47's `<ReviewHistory reviewPublicId>` slot ("Edited" date, dated correction lines with "Show original", the author's version list); deletes the demo edit code only U22 calls
+- Touches: U22's owned paths only (`packages/domain/src/review/versioning.ts`, `modules/review/{commands/correct.ts,queries/get-own-for-edit.ts,queries/get-history.ts}`, the U22 extensions of U47's `module.ts`, review port, `review-module.ts` repository, review fake, `schemas/review.ts` and `view-models/experience.ts`, `experiences/[id]/edit/`, `compose/EditForm.tsx`, `review-history/`, the new `server/actions/review-edit.ts`), plus the append-only shared files listed below and the records; no table, column, migration, worker code or dependency
+- Tests: domain tests for `versioning.ts`, application tests with `test-support` fakes for the command and both queries (every refusal, one audit assertion, the anonymity equality checks), database `*.int.test.ts` for the new repository methods, one `web-int` test for concurrency and anonymity against the real database, action and component tests in `en` and `bn`, and one smoke file (correct the outcome of a detailed review and read back Edited, its correction line and the original)
+
+## Inputs
+
+- Functional Design (reviewed READY, iteration 1): `construction/t-302-review-changes-and-tombstones/functional-design/`: `functional-spec.md` (WF1–WF3, §§ 4–10), `rules.md` (BR1.1–BR6.1), `entities.md` (ENT-101–ENT-106), `frontend-components.md`, `functional-design-questions.md` (Q1–Q11, decided under the owner's delegation of 2026-11-04), `traceability.json` and `reviews/review-01.md` (two Major and six Minor findings, all written into the design; see below).
+- Unit entry U22 in `inception/units-generation/unit-of-work.md` (owned paths, FD-049 corrections part, FD-105), and U47's design in `construction/u47-reviews/functional-design/` for the module, seams and slot it hands over.
+- Task file `docs/implementation/tasks/T-302-review-changes-and-tombstones.md`, and `main` as merged with U47.
+
+## Review points already settled in the design
+
+1. **R-01:** after a material correction the version just before it stays readable to every reader under "Show original"; a title-only edit keeps no public original (BR4.2; Steps 9, 26).
+2. **R-02:** the shared demo files and the merge-time caller grep (BR6.1; Steps 18, 19, 33).
+3. **R-03:** one check order everywhere: `reviewIdForPublicId` → `isReviewPublished` → `isReviewAuthor`, every failure the same `not_found` (Steps 13, 16).
+4. **R-04:** review-specific messages `errors.review.correctionsLimit` (no minutes) and `errors.review.editConflict` (Step 22).
+5. **R-05:** a missing `corrected` key reads as `[]` (Step 8).
+6. **R-06:** the audit action is `review.corrected` (Step 13).
+7. **R-07:** `RateLimiter.reserveFailure`, released on refusal or rollback, kept only after commit (Step 13).
+8. **R-08:** the projection is not extended; the repository file is `review-module.ts`; the note goes into the C9 note (Step 30).
+
+## Where it runs
+
+- Built in batch 3, after U47 has merged into `main`. The Unit runs in its own git worktree on its own Bolt branch `bolt/t-302-review-changes-and-tombstones`, cut from `main` after U47's merge, under the swarm (FD-094), in parallel with U48 and U49. The orchestrator assigns one test database; `DATABASE_URL_TEST` in the worktree points at that one database only (follow the naming U9 recorded: a name ending in `_test`, for example `rogikotha_wN_test`), never at another worktree's database.
+- Run only one database-touching command at a time in the worktree (`pnpm check`, `pnpm test`, `pnpm test:coverage`, `pnpm test:int`, `pnpm smoke`).
+- There is no GitHub Actions workflow and no CI (FD-102). The gate is local only: `pnpm check` and `pnpm smoke` on the Bolt branch, then `pnpm check` again on `main` after the squash merge.
+- Commits carry only the human's own git identity. Never run `git reset --hard`, `git checkout --` or `git clean`. Commit only owned paths and the listed shared files, after reading `git diff --cached`.
+- Not a high-risk Unit (no auth, identity, evidence, moderation, retention or deletion class), so no separate adversarial agent or owner sign-off is required; the anonymity checks of design § 9 are still written (Steps 14, 17, 21).
+
+## Steps (test-after, per the Testing Contract)
+
+**Phase A — baseline and runner**
+
+- [ ] **Step 1** — Baseline in the worktree on `bolt/t-302-review-changes-and-tombstones`. Confirm that U47's files are on the branch: `packages/application/src/modules/review/module.ts`, `packages/application/src/ports/repositories/review.ts`, `packages/database/src/repositories/review-module.ts`, `packages/test-support/src/fakes/review-repository.ts`, `apps/web/src/components/patient/review-history/ReviewHistory.tsx`, and U47's `isReviewAuthor`, `isReviewPublished`, `reviewIdForPublicId` and `insertVersion`. If any is missing, stop: U47 has not merged. Confirm `DATABASE_URL_TEST`. Run `pnpm infra:up`, then `timeout 1200 pnpm check` and `timeout 600 pnpm smoke`, both green. Record the file and test counts and the line coverage of `domain`, `application`, `database`, `contracts` and `apps/web`. Read the open `ISSUES.md` rows in the review area (grep `U47`, `T-302`, `review`). An open `S1` in the area stops the Unit.
+- [ ] **Step 2** — Dependency and decision check. U22 adds no dependency and uses only what U47 and U9 already use (`next`, `react`, `zod`, `next-intl`). Read `docs/status/dependency-check-log.md`; add an entry only if no entry for those packages exists at all. Confirm that no new FD entry is needed: FD-049 (corrections part, amended in the task file) and FD-105 cover the scope, and U22 changes no hard rule or data boundary.
+- [ ] **Step 3** — Verify the test runner (Vitest 4 through `vitest.workspace.ts`: the `domain`, `contracts`, `application`, `database`, `web` and `web-int` projects) and record the exact unit-scoped commands in `unit-test-instructions.md`. Run U47's review tests with the unit-scoped commands (`packages/domain/src/review/`, `packages/application/src/modules/review/`, `apps/web/src/components/patient/review-history/`, `apps/web/src/components/patient/compose/EditForm.test.tsx`) and record the counts before any change.
+
+**Phase B — contracts and data model (no table, no migration)**
+
+- [ ] **Step 4** — Contracts. In `packages/contracts/src/schemas/review.ts`: `CORRECTION_FIELDS` (`as const`, ENT-103 order), `CorrectionField`, the strict `CorrectReviewInput` (ENT-104, replacing the T-003 stub: `publicId`, `expectedVersion` ≥ 1, `title` 0..120, `content` union `{kind: 'quick', story} | {kind: 'detailed', sections}`, optional `sentiment` and `outcome`, `claims` as a list of text with duplicates refused), `GetOwnForEditInput {publicId}`, `GetHistoryInput {reviewPublicId}`. In `packages/contracts/src/view-models/experience.ts`: `EditReviewVM` (ENT-105), `OriginalTextVM`, `ReviewCorrectionVM {at, fields, original}`, `ReviewVersionVM {version, at, kind, fields}` and `ReviewHistoryVM` (ENT-106). Export through the existing barrel (append-only). In `packages/database/src/schema/review.ts`: change only the `actor_id` comment to "the author persona id for `author`" (Question 8; no migration).
+- [ ] **Step 5** — Write and run `packages/contracts/src/schemas/review.test.ts` (new, or extend U47's file): `CorrectReviewInput` accepts a quick and a detailed input; refuses an extra key (`doctorId`, `identityMode`, `tags`, `personaId`, `accountId`), `expectedVersion` 0, a title over 120 graphemes, a mixed content kind, duplicate claims; `CORRECTION_FIELDS` keeps the fixed order.
+
+**Phase C — business logic (domain)**
+
+- [ ] **Step 6** — Implement `packages/domain/src/review/versioning.ts`, part 1 (pure, imports only sibling domain files): the local `CorrectionField` type and order, `normaliseContent(input)` (trim, drop empty sections, derived title by U47's BR3.6 function and language by U47's BR3.7 function from `packages/domain/src/review/`, refuse invisible control characters by BR3.9), `validateCorrectionContent(content, storedKind)` returning field errors for BR2.1, BR2.2 and a kind mismatch (BR1.3), `validateClaims(next, stored)` (BR2.4: codes `wrongDx | wrongRx | secondOpinion` or a label equal to a stored one), `classifyChange(current, next)` (BR3.1: title is presentation, the rest material, claims compared as sets, fixed order) and `toVersionSnapshot(next, corrected)` (BR3.4: no identity field). Append the exports to `packages/domain/src/review/index.ts` (append-only).
+- [ ] **Step 7** — Write and run `packages/domain/src/review/versioning.test.ts`, part 1: `classifyChange` for each field of each kind, title-only (empty `corrected`), claims reordered (no change), no-op; `normaliseContent` drops empty sections and derives the title; quick story at 19, 20, 10000 and 10001 graphemes; detailed with no section, one section of 5001, all together under 20; kind mismatch; a new free-text label refused, a stored one kept or removed; the snapshot holds no persona, account, doctor, identity mode or exact date.
+- [ ] **Step 8** — Implement `versioning.ts`, part 2: `readCorrected(snapshot)` (a missing or malformed key reads as `[]`, R-05), `toHistory(rows, isAuthor)` (BR4.1–BR4.3): `editedAt` from the newest `correction` row; `corrections` oldest first, one per version with a non-empty `corrected`, with `original` built from the previous version's snapshot (keys the snapshot lacks are left out; kind inferred from `body` or `sections`); `versions` newest first only when `isAuthor`, kind `published | edited | corrected`.
+- [ ] **Step 9** — Write and run `versioning.test.ts`, part 2: `toHistory` for author and non-author (the non-author result has no `versions` key); the original of each material correction is the version before it; a title-only edit adds no line and no original; a correction row without `corrected` gives "Edited" with no line; a partial seed snapshot gives an original without the missing keys (never "Not provided" or 0); an unedited review gives no `editedAt`.
+
+**Phase D — repository / data access**
+
+- [ ] **Step 10** — Port and fake. In `packages/application/src/ports/repositories/review.ts` add to `ReviewModuleRepository`: `lockForCorrection(tx, reviewId)`, `updateContent(tx, reviewId, content, newVersion)`, `findOwnForEdit(tx, reviewId, locale)` and `listVersions(tx, reviewId)` with their row types (`CorrectionLockRow`, `OwnEditRow`, `VersionHistoryRow`); `listVersions` rows carry `version`, `changeKind`, `createdAt`, `corrected` and an optional `content`, never `actorId` or `reason`. In `packages/test-support/src/fakes/review-repository.ts` add the same four methods over the fake's in-memory reviews and versions (version rows append-only, `content` returned only for a version directly followed by a material correction). Add a correction-version option to `packages/test-support/src/builders/review.ts` if the tests need one (append-only). Run `packages/test-support/src/fakes/repositories-superset.test.ts` and the fake tests.
+- [ ] **Step 11** — Implement the four methods in `packages/database/src/repositories/review-module.ts` (`PgReviewModuleRepository`): `SELECT … FOR UPDATE` of the ENT-101 columns plus `version`, `author_persona_id`, `doctor_id`, `branch_id`; an `UPDATE` of only the ENT-101 changeable columns, `version` and `updated_at`; `findOwnForEdit` with the doctor display name for the locale; `listVersions` selecting `version`, `change_kind`, `created_at`, `snapshot->'corrected'` and, through a window over the next row, the content snapshot only of versions followed by a material correction. `database` never imports `domain`. Reuse U47's `insertVersion`.
+- [ ] **Step 12** — Write and run `packages/database/src/repositories/review-correction.int.test.ts` (new): each new method; `updateContent` leaves `kind`, `doctor_id`, `identity_mode`, `tags`, `state` and `published_at` unchanged; a correction written through `insertVersion` has `actor_id = reviews.author_persona_id` and never an `account_profiles.id`; `listVersions` never returns `actor_id` or `reason` and returns content only for versions followed by a material correction; a transaction that fails after `updateContent` leaves no version row and no change; a second transaction's `lockForCorrection` waits for the first and then reads the new version.
+
+**Phase E — business logic (application: command and queries)**
+
+- [ ] **Step 13** — Implement `packages/application/src/modules/review/commands/correct.ts` (`correctReviewCommand` with `defineCommand`, requires `authenticated → verifiedEmail → notRestricted`, BR1.2). In one unit of work, in this order: `reviewIdForPublicId`, `isReviewPublished`, `isReviewAuthor` (any failure `not_found`, BR1.1); `lockForCorrection`; version check (`conflict`, BR3.5); `normaliseContent`, the validators (`validation` with `messageKey` per field), `classifyChange`; a no-op returns `{publicId, version, changed: false}` and writes nothing (BR3.2); `reserveFailure('review-correct:account:<accountId>', 86400)` with the code constant `CORRECTIONS_PER_DAY = 30` (BR1.4; refused → release, `rate_limited`); `updateContent`, `insertVersion` (`change_kind correction`, `actor_kind author`, `actor_id` persona, `reason` null), `AuditWriter.write` (`review.corrected`, target `review:<id>`, actor `persona:<authorPersonaId>`, fields `{version, corrected}`), `Outbox` `review.changed {reviewId, doctorId, branchId?}`; release the slot on any refusal or rollback, keep it after commit. No notification call (BR3.6).
+- [ ] **Step 14** — Write and run `packages/application/src/modules/review/commands/correct.test.ts`, part 1 (fakes and builders): happy path for a quick and a detailed review (content, version + 1, one version row, one audit assertion with a `persona:` actor and no account id, action `review.corrected`, one `review.changed` event, no mail); another account's named review, another account's anonymous review and an unknown id give the identical `not_found`; an ineligible (hidden) review gives `not_found`; unconfirmed and restricted give `forbidden`.
+- [ ] **Step 15** — Write and run `correct.test.ts`, part 2: kind mismatch, an extra key (identity mode, doctor), a short story, all sections empty, a new free-text label (each `validation` with its field key); stale `expectedVersion` gives `conflict`; a no-op writes nothing and reserves no slot; the 31st correction in 24 hours gives `rate_limited` and writes nothing; a transaction that fails after the update releases its slot, so 30 committed corrections still fit.
+- [ ] **Step 16** — Implement `queries/get-own-for-edit.ts` (BR1.1 order, then `findOwnForEdit` into `EditReviewVM`) and `queries/get-history.ts` (resolve once, `isReviewPublished` else `not_found`, `listVersions`, `isReviewAuthor`, `toHistory`, BR4.4). Add `correct`, `getOwnForEdit` and `getHistory` to the `ReviewModule` interface and `createReviewModule(deps)` in `modules/review/module.ts`, and to the module barrel `modules/review/index.ts` if U47 exports there (append-only). `apps/web/src/server/container.ts` needs no change (it already passes the one review module); if it does, append only.
+- [ ] **Step 17** — Write and run `queries/get-own-for-edit.test.ts` and `queries/get-history.test.ts`: the author gets the VM; another account (named and anonymous review, real and forged public id) and an unknown id get identical `not_found`; `getHistory` gives `versions` only to the author, and the non-author result is equal for an anonymous and a named review; after a material correction every reader, signed out included, gets the original text; after a title-only edit no reader gets one; no result holds an actor, persona, account or reason.
+
+**Phase F — API / endpoint (server action) and demo retirement**
+
+- [ ] **Step 18** — Implement `apps/web/src/server/actions/review-edit.ts` (`'use server'`): `CorrectFormState` and `correctReviewAction(prev, formData)` reading `publicId`, `expectedVersion`, `kind`, `title`, `story` or the four sections, `sentiment`, `outcome` and repeated `claims`; `runCommand(getContainer().review.correct, raw)`; the BR5.4 mapping (ok → `revalidatePath` and redirect to `/{locale}/experiences/{publicId}`; `validation`, `conflict`, `rate_limited`, `forbidden`, `not_found` to their keys; unexpected → `errors.common.internal`, logged through the logger port with `code` and `correlationId` only). No persona or ownership logic in the action. Remove the demo edit code only U22 calls from `apps/web/src/server/actions/review.ts` (`saveReviewEdit`, `EditInput`, `EditField`, `EditValues`, `EditFormState`, and any of `refused`, `readFields`, `fieldErrorsOf` that a grep shows no other caller for), as its own hunk.
+- [ ] **Step 19** — Demo database code only U22 calls. Grep `apps/` and `packages/` for `updateOwnReview` and `snapshotOf`; delete them from `packages/database/src/demo/reviews.ts`, the `reviews.updateOwnReview` binding in `apps/web/src/server/data.ts`, and `DemoUpdateReviewFields` in `packages/contracts/src/view-models/demo.ts` only if the grep shows no caller. Move their rows in `packages/database/src/demo/reviews.int.test.ts`, `apps/web/src/server/actions/review.test.ts`, `apps/web/src/server/actions/ownership.adversarial.test.ts` and `apps/web/src/app/[locale]/(patient)/signed-out.adversarial.test.ts` to the module path, keeping every protective expectation (another account's review is `not_found`; a signed-out save writes nothing). Each file change is a separate hunk, so U48's and U49's hunks in the same files merge cleanly. Do not touch `getOwnReviewForEdit`, `personasOf`, `getReviewByPublicId`, `actions/evidence.ts` or `actions/comments.ts` (Step 33).
+- [ ] **Step 20** — Write and run `apps/web/src/server/actions/review-edit.test.ts` (new): each result's mapping and key; the redirect target per locale; a refusal keeps no submitted value in the state beyond what the form needs; `internal` is logged with allowlisted fields only. Re-run the moved rows of Step 19.
+- [ ] **Step 21** — Write and run `apps/web/src/server/review-correction.int.test.ts` (`web-int`, against the assigned test database, synthetic data built by the test): two corrections with the same `expectedVersion` in parallel give one `ok` and one `conflict`; account B's `getOwnForEdit`, `correct` and `getHistory` on A's anonymous review answer identically for the real and a forged public id; a committed correction's `review_versions.actor_id` is the persona id.
+
+**Phase G — i18n and UI (frontend behaviour)**
+
+- [ ] **Step 22** — i18n. Add the new keys of `functional-spec.md` § 7 to `packages/i18n/messages/en.json` and `bn.json` in the same commit, and change `compose.edit.intro` and `compose.edit.versionNote` (U22's keys). The parity check refuses an `errors.*` key with no `ErrorCode` behind it: register `errors.review.correctionsLimit` and `errors.review.editConflict` the same way U47 registered `errors.review.missingStory` (an `ERROR_CODES` entry in `packages/contracts/src/errors.ts`, or `FIELD_ERROR_ONLY_KEYS` in `packages/i18n/scripts/check-parity.mjs`), append-only, marked `ASSUMPTION(U22)` and given an `ISS-` row. The Bengali copy is flagged for the owner's review at U50 (FD-042). Regenerate `packages/i18n/src/keys.ts` with `pnpm --filter @rogikotha/i18n keys`, never by hand, and again after every rebase. Run `timeout 300 pnpm i18n:check`.
+- [ ] **Step 23** — Edit route. Rewrite `apps/web/src/app/[locale]/(patient)/experiences/[id]/edit/page.tsx` (WF1, BR5.1): `stripSlug`, `requireAccount({returnTo: '/experiences/{id}/edit'})`, `runCommand(getContainer().review.getOwnForEdit, {publicId})`, `not_found` → `notFound()`, metadata `noindex` and title `compose.edit.title`, `ViewShell` with `compose.edit.intro`, then `EditForm vm`. It no longer calls `reviews.getOwnReviewForEdit` or `doctors.getDoctor`.
+- [ ] **Step 24** — Rewrite `apps/web/src/components/patient/compose/EditForm.tsx` (client): `useActionState(correctReviewAction)`; hidden `publicId`, `expectedVersion`, `kind`; read-only doctor (`label.notProvided` when null); title; story for `quick`, the four sections for `detailed` in prototype order with the composer's headings; clearable `OptionGroup` for sentiment and outcome; claims fieldset with the three codes and each stored label as a checked, removable box; `compose.edit.versionNote` and `compose.edit.correctionNote`; Save with `aria-busy`; Cancel link; `FormErrorSummary` with the `compose.edit.reload` link on `conflict`; typed values kept after a refusal (`key={attempt}`). Reuse `TextField`, `OptionGroup` and `FormErrorSummary` from `compose/`.
+- [ ] **Step 25** — Write and run `apps/web/src/components/patient/compose/EditForm.test.tsx` (rewritten) and `apps/web/src/app/[locale]/(patient)/experiences/[id]/edit/page.test.tsx` (rewritten), both in `en` and `bn`: quick and detailed forms with field errors; the conflict message and reload link; the rate-limit message; a stored label is sent exactly as received; the page gives `notFound` for a non-author (mocked module), is `noindex`, has one `h1`, and redirects a signed-out visitor to sign in with `returnTo`.
+- [ ] **Step 26** — History slot. Replace the internals of `apps/web/src/components/patient/review-history/ReviewHistory.tsx` (frozen props `{reviewPublicId}`, BR4.5): `runCommand(getContainer().review.getHistory, …)`; `not_found` or no edit renders nothing; "Edited {month year}" in a `time` with the ISO date; `ul.corrections` with `history.corrected` per material correction, oldest first; `try/catch` → `history.unavailable`, logged with allowlisted fields. Add `OriginalText.tsx` (closed `details` with `history.showOriginal`, `history.originalHeading`, title, story or sections, and the sentiment, outcome and `label.reviewerLabel` claims present; `lang` when the original's language differs from the locale) and `VersionList.tsx` (author only, closed `details`, `history.version`, date, `history.kind.*`, no text). Months in Asia/Dhaka with locale digits. New classes go in a U22 section of `apps/web/src/styles/patient.css`, each with `/* added: U22 reason */`, on the FD-091 tokens, no motion of its own.
+- [ ] **Step 27** — Write and run `apps/web/src/components/patient/review-history/ReviewHistory.test.tsx` (extend U47's file) and `OriginalText.test.tsx`, `VersionList.test.tsx` (new), in `en` and `bn`: empty; edited only; with corrections and their Show original (closed by default, `lang` on the original); title-only (no original); the author's list newest first; the fallback when the query throws; Bengali digits and no capital-letter transform.
+- [ ] **Step 28** — Edit link for every kind (BR5.2). In U47's `apps/web/src/components/patient/experience/AuthorTools.tsx` (and `ExperiencePage.tsx` if the condition sits there) remove the `ASSUMPTION(U47)` `vm.reviewKind === 'quick'` condition. Update only the matching row of the AuthorTools or experience page test so it expects the link for a detailed review; run `apps/web/src/components/patient/experience/` and `apps/web/src/app/[locale]/(patient)/experiences/[id]/page.test.tsx`. Run `apps/web/src/app/pages.test.tsx`; change only a row that fails because of U22, and record it in this step's note.
+- [ ] **Step 29** — Smoke: add `apps/web/src/server/review-correction.int.smoke.test.ts` (`web-int`): against the assigned test database, publish a synthetic detailed review, correct its outcome through `getContainer().review.correct`, and read back through `getHistory` the `editedAt`, one correction line naming `outcome` and the original holding the earlier outcome. Run `timeout 600 pnpm smoke`; the suite only grows.
+
+**Phase H — records, gate and merge**
+
+- [ ] **Step 30** — Contract and design notes. Append the dated C9 note of `functional-spec.md` § 6 to `inception/contract-design/contract-summary.md` (`review.getOwnForEdit` added; `getHistory` returns `corrections: [{at, fields, original}]`; `correct` has no reason and sends no email; the audit action is `review.corrected`; C16 `ReviewHistory` internals are U22's; R-08: the projection is not extended and the repository extension is `review-module.ts`, while the T-302 stubs in `repositories/review.ts` stay for U50). Add the U22 amendments and Hand-off to the T-302 task file.
+- [ ] **Step 31** — Gate: `timeout 1200 pnpm check` (typecheck, lint, boundaries, `format:check`, identity check, coverage, i18n parity, contrast, `contrast:patient`, `check:motion`, build) and `timeout 600 pnpm smoke`, both green, plus `timeout 600 pnpm test:int`, `npx impeccable detect apps/web/src --no-advisory` and `timeout 300 pnpm contrast`. Every package stays at or above 80% lines, never lowered (D10). Record the counts and coverage against Step 1. Run the T-302 release-1 acceptance rows (AC6.2.1–AC6.2.4, AC6.3.1, AC6.3.2) and record expected against observed for Build and Test; walks that need a browser are marked "not run here".
+- [ ] **Step 32** — Records:
+  - `docs/implementation/ISSUES.md`: the five S4 rows of `functional-spec.md` § 10, plus every defect, workaround or `ASSUMPTION(U22)` found in Steps 1–31, each with a severity and `Found in U22 t-302-review-changes-and-tombstones`; take the next free `ISS-` numbers at merge time.
+  - `construction/t-302-review-changes-and-tombstones/code-generation/code-summary.md` (files, counts, coverage before and after, the `ISS-` ids found and fixed in U22 for the Build and Test record, the bracketed route paths), `traceability.json` (step → BR → AC) and `source-manifest.json` with literal paths only (no `[`, `]` or `*`).
+- [ ] **Step 33** — At merge time (after the owner approves the Unit): rebase on `main`, resolve the shared demo files hunk by hunk keeping the other Units' changes, regenerate `keys.ts`. Then grep `apps/` and `packages/` for `getOwnReviewForEdit`, `personasOf`, `getReviewByPublicId`, the `server/data` reviews binding, `DemoReviewEditRow`, `DemoUpdateReviewFields` and `packages/database/src/demo/reviews.ts`; delete an item only when no caller is left, in a separate commit followed by `timeout 1200 pnpm check`; otherwise leave it and note it for U50. Squash-merge locally into `main`, run `pnpm check` on `main`, push.
+
+## Story and rule traceability
+
+| Step | Rules | Stories (acceptance criteria) |
+|---|---|---|
+| 1–3 | — (baseline, runner) | — |
+| 4–5 | BR1.3, BR2.4, BR3.4 | US6.2 (AC6.2.2), US6.3 (AC6.3.1) |
+| 6–7 | BR1.3, BR2.1–BR2.4, BR3.1, BR3.4 | US6.2 (AC6.2.1–AC6.2.4), US6.3 (AC6.3.1) |
+| 8–9 | BR4.1–BR4.3 | US6.3 (AC6.3.1, AC6.3.2) |
+| 10–12 | BR1.3, BR3.3, BR3.4, BR3.6, BR4.4 | US6.3 (AC6.3.2) |
+| 13–15 | BR1.1–BR1.4, BR2.1–BR2.4, BR3.1–BR3.6 | US6.2 (AC6.2.1–AC6.2.4), US6.3 (AC6.3.1, AC6.3.2) |
+| 16–17 | BR1.1, BR4.1–BR4.4, BR5.1 | US6.3 (AC6.3.2) |
+| 18–21 | BR1.1, BR3.5, BR5.4, BR6.1 | US6.3 (AC6.3.1) |
+| 22 | BR5.3 | US6.2, US6.3 |
+| 23–25 | BR1.1, BR1.3, BR2.1–BR2.4, BR5.1, BR5.4 | US6.2 (AC6.2.1–AC6.2.4), US6.3 (AC6.3.1) |
+| 26–27 | BR4.1–BR4.5 | US6.3 (AC6.3.1, AC6.3.2) |
+| 28 | BR5.2 | US6.2 (AC6.2.1) |
+| 29 | BR3.1, BR4.1, BR4.2 | US6.3 (AC6.3.1, AC6.3.2) |
+| 30–33 | BR6.1 | — |
+
+Not covered in release 1 (design `traceability.json`, FD-105): AC6.2.5 (follow-ups by later providers), AC6.3.3 (follow-ups), AC6.3.4 (delete with tombstone), AC6.3.5 (restore).
+
+## Owned paths
+
+- `packages/domain/src/review/versioning.ts` and `versioning.test.ts`
+- `packages/application/src/modules/review/commands/correct.ts`, `queries/get-own-for-edit.ts`, `queries/get-history.ts`, and their tests
+- the U22 extensions of `packages/application/src/modules/review/module.ts`, `packages/application/src/ports/repositories/review.ts`, `packages/database/src/repositories/review-module.ts`, `packages/test-support/src/fakes/review-repository.ts`, `packages/contracts/src/schemas/review.ts`, `packages/contracts/src/view-models/experience.ts`
+- `packages/database/src/repositories/review-correction.int.test.ts` (new)
+- `apps/web/src/app/[locale]/(patient)/experiences/[id]/edit/`
+- `apps/web/src/components/patient/compose/EditForm.tsx` and `EditForm.test.tsx`
+- `apps/web/src/components/patient/review-history/` (handed over by U47)
+- `apps/web/src/server/actions/review-edit.ts` and `review-edit.test.ts` (new)
+- `apps/web/src/server/review-correction.int.test.ts` and `review-correction.int.smoke.test.ts` (new)
+
+Not touched: `modules/review/projection.ts` (R-08), `packages/database/src/repositories/review.ts` (T-302 stubs stay for U50), `server/actions/evidence.ts` (U48), `server/actions/comments.ts` (U49), worker code, migrations.
+
+## Shared files (append-only)
+
+| File | U22 use |
+|---|---|
+| `packages/i18n/messages/en.json`, `packages/i18n/messages/bn.json` | append U22's keys; change `compose.edit.intro` and `compose.edit.versionNote` (Step 22) |
+| `packages/i18n/src/keys.ts` | generated; regenerate after every rebase, never merge by hand |
+| `packages/contracts/src/errors.ts` or `packages/i18n/scripts/check-parity.mjs` | one registration per new `errors.review.*` key, following U47 (Step 22) |
+| `apps/web/src/styles/patient.css` | append a U22 section (Step 26) |
+| `packages/domain/src/review/index.ts`, `modules/review/index.ts`, `packages/contracts` barrels | append exports |
+| `packages/test-support/src/builders/review.ts` | append a correction-version option if needed |
+| `packages/database/src/schema/review.ts` | one comment (Step 4) |
+| `apps/web/src/components/patient/experience/AuthorTools.tsx` / `ExperiencePage.tsx` and their test row | remove the `ASSUMPTION(U47)` condition only (Step 28) |
+| `apps/web/src/server/actions/review.ts`, `review.test.ts` | remove U22's demo edit code and rows only (Steps 18, 19) |
+| `packages/database/src/demo/reviews.ts`, `reviews.int.test.ts`, `apps/web/src/server/data.ts`, `packages/contracts/src/view-models/demo.ts`, `server/actions/ownership.adversarial.test.ts`, `(patient)/signed-out.adversarial.test.ts` | shared with U48 and U49: remove or move only U22's items, one hunk each; resolve hunk by hunk at merge (R-02) |
+| `apps/web/src/app/pages.test.tsx` | only a row that fails because of U22, recorded in Step 28 |
+| `apps/web/src/server/container.ts` | not expected; append-only if a binding is needed |
+| `inception/contract-design/contract-summary.md` | the dated C9 note (Step 30) |
+| `docs/implementation/ISSUES.md` | append rows (Step 32) |
+| `docs/implementation/tasks/T-302-review-changes-and-tombstones.md` | amendments and Hand-off (Step 30) |
+| `docs/status/dependency-check-log.md` | not expected (Step 2) |
+
+Merge rules: on rebase, keep both sides of every append-only file and regenerate `keys.ts`. U22 adds no migration; if one were ever needed, it takes the next free number at merge time, not at build time. Shared demo code is deleted only when a grep on the rebased branch shows no caller left; otherwise it stays and U50 removes it (Step 33).
+
+## Testing Contract
+
+```json
+{
+  "version": 1,
+  "methodology": "test-after",
+  "source": "team",
+  "ordering": "Implement each testable layer, then write and run its unit tests, its integration tests against the isolated PostgreSQL test database (reset to a freshly migrated schema on every run), and extend the cumulative smoke suite.",
+  "scope": "classic",
+  "test_strategy": "minimal",
+  "project_type": "brownfield",
+  "applicable_notes": [
+    {
+      "layer": "org",
+      "text": "We treat tests as a first-class deliverable in every Bolt. The specific\nmethodology (TDD, BDD, ATDD, or classic test-after) is affirmed at\npractices-discovery and recorded in `team.md` under this heading with explicit\n`Methodology` and `Ordering` fields; Code Generation resolves those fields\nindependently from coverage, tooling, and scope notes.\n\nWhen no posture has been affirmed, our default per scope is:\n- **Methodology**: test-after\n- **Ordering**: implement each applicable testable layer, then write and run\n  that layer's tests.\n- `mvp`, `enterprise`, `feature`, `infra`, `classic` add an 80% line-coverage\n  floor and CI execution before merge.\n- `bugfix`, `security-patch` add a targeted regression for the specific\n  bug/vulnerability and require the existing suite to remain green.\n- `express` uses the Minimal strategy: requirement-driven unit tests (one per\n  requirement, with a happy-path floor per component); existing tests remain\n  green.\n- `poc`, `refactor`, `workshop` add no extra new-test floor and require the\n  existing suite to remain green.\n\nThe active `Test Strategy` still applies in every scope and determines test\nvolume/types. Scope floors are additive; they never reduce or replace the\nselected strategy.\n\nBuild and Test verifies defined coverage floors and affirmed quality targets;\nthey may not be weakened to make a step pass.\n\nAffirm a stricter posture in `team.md` if the team commits to one."
+    },
+    {
+      "layer": "team",
+      "text": "- **Methodology**: test-after\n- **Methodology evidence**: `01-conventions.md` §10 sets per-level test minimums that each task delivers together with its code, and §13's definition of done requires them green before hand-off. In git history, tests land in the same task commit as the implementation (for example T-007 and T-009). No source asks for tests to be written before the code, and test-after is the `org.md` default for the `classic` scope.\n- **Ordering**: Implement each testable layer, then write and run its unit tests, its integration tests against the isolated PostgreSQL test database (reset to a freshly migrated schema on every run), and extend the cumulative smoke suite.\n- Test levels follow `01-conventions.md` §10: domain (every state-transition table and policy function), application (each command's happy path, each authorization refusal and one audit assertion, using `test-support` fakes), database (`*.int.test.ts`, each repository method, migrations apply from empty), component (renders in both `en` and `bn`), and end-to-end with Playwright and axe from T-503.\n- Cumulative smoke suite: each unit adds at least one smoke assertion for what it delivered (`*.smoke.test.ts(x)`, and from T-503 also `apps/web/e2e/smoke/*.spec.ts`). `pnpm smoke` runs the whole suite every time. The suite only grows: removing or skipping a smoke assertion needs a recorded reason.\n- Integration tests: `pnpm test:int` runs the database project against `DATABASE_URL_TEST` (the `rogikotha_test` database, separate from the development database). It resets that database to an empty, freshly migrated schema and runs test files serially. It needs the compose PostgreSQL running.\n- Coverage: an 80% line-coverage floor per package, measured with Vitest `@vitest/coverage-v8` (already installed). T-010 adds the thresholds and the CI run before merge, and raises any package below 80%. Until T-010 lands, the floor cannot be measured: no Vitest config has a coverage block yet. Work before T-010 (CR-009) records \"coverage not measured yet\" at Build and Test; from T-010 on the floor is enforced, and it applies to a package once that package has source code (the empty `domain`, `application` and `adapters` packages are exempt until then). We do not claim a coverage figure we have not measured, and once the floor exists it is never lowered to make a step pass (D10).\n- Existing suites stay green: `pnpm check` (typecheck, lint, unit and integration tests, i18n parity, build) and `pnpm smoke` must pass after every unit, with no assertion removed or skipped. In brownfield work we run the full suite before changing anything, to record a baseline.\n- Test names read as sentences. We use builders, not hand-written fixture objects, and we never assert on implementation details (class names, internal calls). A test must be able to fail.\n- UI units also pass `npx impeccable detect apps/web/src --no-advisory` and `pnpm contrast` cleanly before they are done (`01-conventions.md` §7.8)."
+    }
+  ],
+  "obligations": {
+    "strategy": "minimal",
+    "strategy_volume": [
+      "One verifiable test per requirement at the narrowest effective level.",
+      "At least one happy-path unit test per component.",
+      "Unit tests are the default; a bugfix/security scope floor may require an integration or E2E regression when that is the narrowest level that reproduces the defect."
+    ],
+    "scope_floor": [
+      "Keep the existing test suite green.",
+      "This scope adds no extra new-test floor beyond the selected test strategy."
+    ],
+    "combination_rule": "Apply every selected-strategy obligation and every scope-floor obligation; neither replaces the other, and a targeted scope regression may add the narrowest necessary test type beyond the strategy default."
+  },
+  "plan_profile": {
+    "methodology": "test-after",
+    "runner_step": "Verify the existing test runner/configuration and record the exact unit-scoped command.",
+    "runner_ready_before_first_test": true,
+    "testable_layers": [
+      "Data model / database behavior",
+      "Repository / data access",
+      "Business logic",
+      "API / endpoint",
+      "Frontend behavior"
+    ],
+    "steps": [
+      "Project structure and production configuration skeleton.",
+      "Verify the existing test runner/configuration and record the exact unit-scoped command.",
+      "Data model / database behavior - implement.",
+      "Data model / database behavior - write and run its tests after implementation.",
+      "Repository / data access - implement.",
+      "Repository / data access - write and run its tests after implementation.",
+      "Business logic - implement.",
+      "Business logic - write and run its tests after implementation.",
+      "API / endpoint - implement.",
+      "API / endpoint - write and run its tests after implementation.",
+      "Frontend behavior - implement.",
+      "Frontend behavior - write and run its tests after implementation.",
+      "Environment/build configuration.",
+      "Documentation and traceability."
+    ]
+  },
+  "input_sha256": "sha256:eb26df65a70c60644a0bdc6b6fa19a28a2583bae7b61a57b814612d8ad43ebb9",
+  "contract_sha256": "sha256:57d068825625cb257445b363810a0b4bbe01d375329dd0df119f640f95c1c9f4"
+}
+```
+
+Applicable layers: data model (contract shapes and one schema comment, no table or migration, Steps 4–5), repository (Steps 10–12), business logic (domain `versioning.ts` and the application command and queries, Steps 6–9 and 13–17), API and endpoint (the server action and the `web-int` test, Steps 18–21) and frontend behaviour (i18n, the edit route, `EditForm`, the history slot, the edit link and the smoke file, Steps 22–29). Environment and build configuration: none beyond the regenerated `keys.ts`. Documentation and traceability: Steps 30 and 32.
+
+## Design decisions taken
+
+Q1–Q11 and the review points R-01 to R-08 were decided in the Functional Design under the owner's delegation of 2026-11-04 and are built as written. Open points found during the build are asked of the owner or recorded as `ASSUMPTION(U22)` with an `ISS-` row, never decided silently.
