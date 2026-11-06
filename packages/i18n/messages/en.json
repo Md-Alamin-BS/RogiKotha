@@ -628,7 +628,8 @@
       "attestationRequired": "Confirm this experience is genuinely yours before publishing.",
       "minFields": "Add a doctor and at least a short experience first.",
       "notEditable": "This experience can no longer be edited.",
-      "restoreExpired": "The 30-day window to restore this has passed."
+      "restoreExpired": "The 30-day window to restore this has passed.",
+      "anonymousNewDoctor": "To add a doctor who is not listed, post under your name or your username, or choose a listed doctor."
     }
   },
   "formErrors": {

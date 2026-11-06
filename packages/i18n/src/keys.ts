@@ -494,6 +494,7 @@ export type MessageKey =
   | 'errors.moderation.narrativeLocked'
   | 'errors.moderation.selfAppealReview'
   | 'errors.retention.previewDrift'
+  | 'errors.review.anonymousNewDoctor'
   | 'errors.review.attestationRequired'
   | 'errors.review.minFields'
   | 'errors.review.notEditable'
@@ -1409,6 +1410,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.moderation.narrativeLocked',
   'errors.moderation.selfAppealReview',
   'errors.retention.previewDrift',
+  'errors.review.anonymousNewDoctor',
   'errors.review.attestationRequired',
   'errors.review.minFields',
   'errors.review.notEditable',

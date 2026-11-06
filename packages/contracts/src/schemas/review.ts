@@ -2,8 +2,20 @@
 // (03-routes-and-contracts.md §4 "review (T-301, T-302, T-306, T-307)").
 import { z } from 'zod';
 
-import { CRITERIA, CRITERION_VALUES, FOLLOW_UP_KINDS, IDENTITY_MODES } from '../enums';
+import { hasControlOrFormat } from '../doctor-name';
+import {
+  CRITERIA,
+  CRITERION_VALUES,
+  FOLLOW_UP_KINDS,
+  IDENTITY_MODES,
+  OUTCOMES,
+  RELATIONSHIPS,
+  REVIEW_KINDS,
+  SENTIMENTS,
+  TAG_GROUPS,
+} from '../enums';
 import { PUBLIC_ID_RE } from '../ids';
+import { MEMBER_DOCTOR_NAME_MAX, MEMBER_DOCTOR_PLACE_MAX } from './directory';
 
 const publicId = z.string().regex(PUBLIC_ID_RE);
 const PageParams = {
@@ -11,16 +23,138 @@ const PageParams = {
   pageSize: z.number().int().min(1).max(100).optional(),
 };
 
-// TODO(T-301/T-306): the composer draft payload shape is owned by those
-// tasks; kept unknown here so this task does not guess the field list.
+/** The release-1 Reviewer's labels: the prototype's three codes (FD-110, BR3.8). */
+export const REVIEWER_LABEL_CODES = ['wrongDx', 'wrongRx', 'secondOpinion'] as const;
+export type ReviewerLabelCode = (typeof REVIEWER_LABEL_CODES)[number];
+
+export const DRAFT_TARGETS = ['doctor', 'facility'] as const;
+export type DraftTarget = (typeof DRAFT_TARGETS)[number];
+
+/** The composer's three safety checks an author may dismiss (personal data, emergency, duplicate). */
+export const SAFETY_CHECK_KINDS = ['pii', 'emerg', 'dup'] as const;
+export type SafetyCheckKind = (typeof SAFETY_CHECK_KINDS)[number];
+
+export const REVIEW_SECTION_KEYS = ['symptoms', 'diagnosis', 'treatment', 'after'] as const;
+export type ReviewSectionKey = (typeof REVIEW_SECTION_KEYS)[number];
+
+/** `reviews.language`, detected from the script of the text (BR3.7). */
+export const REVIEW_LANGUAGES = ['en', 'bn', 'mixed'] as const;
+export type ReviewLanguage = (typeof REVIEW_LANGUAGES)[number];
+
+export const DRAFT_TITLE_MAX = 120;
+export const DRAFT_STORY_MAX = 10_000;
+export const DRAFT_SECTION_MAX = 5_000;
+export const DRAFT_TAG_MAX = 20;
+export const DRAFT_TAG_TEXT_MAX = 60;
+
+const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+const graphemeCount = (text: string) => Array.from(graphemes.segment(text)).length;
+
+// Lengths are graphemes, not UTF-16 units: a Bengali story needs several units per letter.
+// Only outer whitespace is trimmed; no other normalisation of author text (BR3.9).
+function plainText(max: number, min = 0) {
+  return z
+    .string()
+    .trim()
+    .refine((s) => !hasControlOrFormat(s), { error: 'errors.common.validation' })
+    .refine((s) => graphemeCount(s) >= min && graphemeCount(s) <= max, {
+      error: 'errors.common.validation',
+    });
+}
+
+function longText(max: number) {
+  return z
+    .string()
+    .trim()
+    .refine((s) => !hasControlOrFormat(s.replace(/[\n\r\t]/g, '')), {
+      error: 'errors.common.validation',
+    })
+    .refine((s) => graphemeCount(s) <= max, { error: 'errors.common.validation' });
+}
+
+// The letter count and the title rule are publish checks (BR3.11), so a half-typed name saves.
+const DraftNewDoctor = z.object({
+  name: plainText(MEMBER_DOCTOR_NAME_MAX),
+  specialtyId: z.uuid().optional(),
+  practiceArea: plainText(MEMBER_DOCTOR_PLACE_MAX).optional(),
+  bmdc: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9-]{0,20}$/)
+    .optional(),
+});
+
+const DraftTag = z.union([
+  z.object({ group: z.enum(TAG_GROUPS), termPublicId: publicId }),
+  z.object({ group: z.enum(TAG_GROUPS), text: plainText(DRAFT_TAG_TEXT_MAX, 1) }),
+]);
+
+/**
+ * The composer's state inside an encrypted draft (ENT-006). Lenient: every field is optional and
+ * defaulted, bounds are enforced, unknown keys (FR46 checkboxes, any rating-like key) are
+ * dropped. The publish minimum is checked by the domain, not here.
+ */
+export const DraftPayload = z
+  .object({
+    v: z.literal(1).default(1),
+    target: z.enum(DRAFT_TARGETS).default('doctor'),
+    mode: z.enum(REVIEW_KINDS).default('quick'),
+    step: z.number().int().min(1).max(4).default(1),
+    doctorPublicId: publicId.optional(),
+    newDoctor: DraftNewDoctor.optional(),
+    branchPublicId: publicId.optional(),
+    relationship: z.enum(RELATIONSHIPS).optional(),
+    period: z
+      .object({
+        year: z.number().int().min(2000).max(2100),
+        month: z.number().int().min(1).max(12),
+      })
+      .optional(),
+    exactDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    title: plainText(DRAFT_TITLE_MAX).optional(),
+    story: longText(DRAFT_STORY_MAX).optional(),
+    sections: z
+      .object({
+        symptoms: longText(DRAFT_SECTION_MAX).optional(),
+        diagnosis: longText(DRAFT_SECTION_MAX).optional(),
+        treatment: longText(DRAFT_SECTION_MAX).optional(),
+        after: longText(DRAFT_SECTION_MAX).optional(),
+      })
+      .optional(),
+    tags: z.array(DraftTag).max(DRAFT_TAG_MAX).default([]),
+    notSure: z.boolean().default(false),
+    sentiment: z.enum(SENTIMENTS).optional(),
+    outcome: z.enum(OUTCOMES).optional(),
+    claims: z
+      .array(z.enum(REVIEWER_LABEL_CODES))
+      .max(REVIEWER_LABEL_CODES.length)
+      .default([])
+      .transform((codes) => [...new Set(codes)]),
+    criteria: z.partialRecord(z.enum(CRITERIA), z.enum(CRITERION_VALUES)).optional(),
+    identityMode: z.enum(IDENTITY_MODES).default('pseudonymous'),
+    dismissedChecks: z.array(z.enum(SAFETY_CHECK_KINDS)).max(SAFETY_CHECK_KINDS.length).optional(),
+  })
+  .refine((p) => !(p.doctorPublicId !== undefined && p.newDoctor !== undefined), {
+    error: 'errors.common.validation',
+    path: ['newDoctor'],
+  });
+
+export type DraftPayload = z.output<typeof DraftPayload>;
+export type DraftPayloadInput = z.input<typeof DraftPayload>;
+
 export const SaveDraftInput = z
   .object({
-    draftId: z.string().min(1).optional(),
-    payload: z.unknown(),
+    draftId: z.uuid().optional(),
+    payload: DraftPayload,
   })
   .strict();
 
-export const GetDraftInput = z.object({ draftId: z.string().min(1) }).strict();
+export const DiscardDraftInput = z.object({ draftId: z.uuid() }).strict();
+
+export const GetDraftInput = z.object({ draftId: z.uuid() }).strict();
 
 export const PublishReviewInput = z
   .object({
@@ -95,7 +229,9 @@ export const FacilityReviewDeleteInput = z.object({ reviewId: z.string().min(1) 
 export const FacilityReviewRestoreInput = z.object({ reviewId: z.string().min(1) }).strict();
 
 export const reviewSchemas = {
+  DraftPayload,
   SaveDraftInput,
+  DiscardDraftInput,
   GetDraftInput,
   PublishReviewInput,
   PreviewReviewInput,
