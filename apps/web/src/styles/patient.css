@@ -5000,3 +5000,68 @@ html:lang(bn) .join-steps li::before {
   color: var(--ink-muted);
   font-weight: 600;
 }
+
+/* ==========================================================================
+   U20 T-207 Discover home, Emergency and the patient 404. Static only: motion
+   comes from T-011's .reveal hooks and Reveal (BR5.2).
+   ========================================================================== */
+
+/* added: U20 the browse links, chips and browse grid are lists without bullets (BR4.1) */
+.home-browse ul,
+ul.chips,
+ul.browse-grid {
+  list-style: none;
+  margin-inline: 0;
+  padding: 0;
+}
+/* added: U20 the chips list keeps the chip row's top spacing */
+ul.chips {
+  margin-bottom: 0;
+}
+/* added: U20 the browse grid list has no block margin of its own */
+ul.browse-grid {
+  margin-block: 0;
+}
+
+/* added: U20 the three browse links in place of the prototype's search box (FD-046) */
+.home-browse {
+  margin-top: var(--space-5);
+}
+/* added: U20 the browse links wrap as one row of ghost buttons */
+.home-browse ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block: 0;
+}
+
+/* added: U20 the Limited data tag sits beside U46's unchanged mini row (R-02, BR2.3) */
+.teaser-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+/* added: U20 the mini row takes the free width beside the tag */
+.teaser-row .mini-row {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* added: U20 the tag keeps its own width */
+.teaser-row .tag {
+  flex: none;
+}
+
+/* added: U20 replaces the Emergency page's inline note margin (BR5.1) */
+.emerg-note {
+  margin-top: var(--space-4);
+}
+
+/* added: U20 the localized patient 404 (BR4.2) */
+.notfound {
+  max-width: var(--measure);
+  padding-block: var(--space-6);
+}
+/* added: U20 space above the 404's home and emergency links */
+.notfound .p-actions {
+  margin-top: var(--space-5);
+}

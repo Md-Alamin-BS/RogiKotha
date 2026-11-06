@@ -49,6 +49,8 @@ npx impeccable detect apps/web/src --no-advisory
 timeout 300 pnpm contrast
 ```
 
+Baseline (Step 3, 2026-11-06, `main` `153a65c`): the existing U20-area files ran with `timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/components/patient/home/ apps/web/src/components/patient/Emergency.test.tsx apps/web/src/components/patient/Policy.test.tsx apps/web/src/components/patient/About.test.tsx apps/web/src/components/patient/fd-022-lawful-placement.test.tsx apps/web/src/components/patient/fd-022-lawful-key-usage.test.ts apps/web/src/components/patient/emergency-about-policy.smoke.test.tsx "apps/web/src/app/[locale]/(patient)/home-page.test.tsx" "apps/web/src/app/[locale]/(patient)/emergency/page.parity.test.ts" apps/web/src/app/root.test.tsx`: 12 files, 60 tests, all green. After Step 4, `timeout 300 pnpm exec vitest run --config vitest.workspace.ts packages/i18n/` gave 7 files, 41 tests, green.
+
 If a bracketed or parenthesised path does not match in the shell, pass it in quotes, as above. Never replace a filter with a bare project-wide command when running the Unit's own tests; the gate commands at the end are the only whole-suite runs.
 
 ## What to cover (`frontend-components.md` § 5, `functional-spec.md` § 8)

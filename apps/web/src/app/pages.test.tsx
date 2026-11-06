@@ -80,6 +80,28 @@ vi.mock('@/server/data', async () => {
   };
 });
 
+// The home reads U46's queries and the configuration through the container (U20 WF2); empty
+// lists and the default settings stand in. home-page.test.tsx covers its sections.
+vi.mock('@/server/container', async () => {
+  const { DEFAULT_CONFIG_VALUES } = await import('@rogikotha/contracts');
+  return {
+    getContainer: () => ({
+      taxonomy: { listConditions: 'conditions' },
+      directory: { listFacilities: 'facilities' },
+      reviewReads: { listExperienceCards: 'latest' },
+      ports: {
+        config: { current: () => Promise.resolve(DEFAULT_CONFIG_VALUES) },
+        logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+      },
+    }),
+  };
+});
+vi.mock('@/server/command-call', () => ({
+  runCommand: vi.fn((command: string) =>
+    Promise.resolve({ ok: true, data: command === 'conditions' ? [] : { items: [], total: 0 } }),
+  ),
+}));
+
 // U9's auth pages read the request (the Actor, the `rk.pending` cookie, the holder's own account and
 // sessions); an anonymous reader with no cookie and empty results stand in. Their own tests cover
 // each state.

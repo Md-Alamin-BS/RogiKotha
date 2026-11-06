@@ -421,8 +421,11 @@ export type MessageKey =
   | 'disclaimer.long'
   | 'disclaimer.short'
   | 'discover.browse'
+  | 'discover.browseAll'
   | 'discover.browseDoctors'
+  | 'discover.browseFacilities'
   | 'discover.browseNote'
+  | 'discover.browseTopics'
   | 'discover.editorialNote'
   | 'discover.facilities'
   | 'discover.kicker'
@@ -450,6 +453,7 @@ export type MessageKey =
   | 'emergview.ambulance'
   | 'emergview.bmdc'
   | 'emergview.bmdcBody'
+  | 'emergview.bmdcShort'
   | 'emergview.crisis'
   | 'emergview.healthLine'
   | 'emergview.intro'
@@ -709,6 +713,8 @@ export type MessageKey =
   | 'nav.results'
   | 'nav.viewDoctor'
   | 'nav.viewFacility'
+  | 'notFound.body'
+  | 'notFound.home'
   | 'notif.draftExpiring'
   | 'notif.evidenceReady'
   | 'notif.moderationOutcome'
@@ -1336,8 +1342,11 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'disclaimer.long',
   'disclaimer.short',
   'discover.browse',
+  'discover.browseAll',
   'discover.browseDoctors',
+  'discover.browseFacilities',
   'discover.browseNote',
+  'discover.browseTopics',
   'discover.editorialNote',
   'discover.facilities',
   'discover.kicker',
@@ -1365,6 +1374,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'emergview.ambulance',
   'emergview.bmdc',
   'emergview.bmdcBody',
+  'emergview.bmdcShort',
   'emergview.crisis',
   'emergview.healthLine',
   'emergview.intro',
@@ -1624,6 +1634,8 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'nav.results',
   'nav.viewDoctor',
   'nav.viewFacility',
+  'notFound.body',
+  'notFound.home',
   'notif.draftExpiring',
   'notif.evidenceReady',
   'notif.moderationOutcome',

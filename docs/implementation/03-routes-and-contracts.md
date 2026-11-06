@@ -277,7 +277,7 @@ Jobs: `evidence.process`, `search.refresh`, `notification.deliver`, `mail.send`,
 
 ## 6. View models (names; fields are derived from what the prototype renders)
 
-`DiscoverVM`, `SearchResultsVM`, `DoctorCardVM`, `DoctorProfileVM`, `FacilityCardVM`, `FacilityProfileVM`, `ConditionPageVM`, `ExperienceCardVM`, `ExperiencePageVM`, `ThreadVM`, `EvidenceGroupVM`, `ViewerDocVM`, `ComposerVM` (doctors list, tag groups, draft), `PreviewVM = ExperiencePageVM`, `WorkspaceVM`, `SecurityVM`, `NotificationVM`, `PublicProfileVM`, `QueueVM`, `CaseTrayVM`, `QuarantineVM`, `ProvidersVM`, `StaffNotificationsVM`, `ConfigVM`.
+`SearchResultsVM`, `DoctorCardVM`, `DoctorProfileVM`, `FacilityCardVM`, `FacilityProfileVM`, `ConditionPageVM`, `ExperienceCardVM`, `ExperiencePageVM`, `ThreadVM`, `EvidenceGroupVM`, `ViewerDocVM`, `ComposerVM` (doctors list, tag groups, draft), `PreviewVM = ExperiencePageVM`, `WorkspaceVM`, `SecurityVM`, `NotificationVM`, `PublicProfileVM`, `QueueVM`, `CaseTrayVM`, `QuarantineVM`, `ProvidersVM`, `StaffNotificationsVM`, `ConfigVM`.
 
 Each VM file starts with a comment naming the prototype function whose output it replaces and the
 `RK.*` fields it maps from; T-003 creates the types with `// TODO(T-xxx)` markers where the owning
