@@ -568,6 +568,17 @@ export class FakeTaxonomyModuleRepository implements TaxonomyRepository, Transac
     );
   }
 
+  listPublished(_tx: Tx, kind: TermKind, locale: Locale): Promise<TermRecord[]> {
+    const compare = byText(locale);
+    const name = (t: FakeTerm) => (locale === 'bn' ? t.nameBn : t.nameEn);
+    return Promise.resolve(
+      [...this.terms.values()]
+        .filter((t) => t.kind === kind && t.published && t.canonicalId === null)
+        .sort((a, b) => compare(name(a), name(b)) || a.publicId.localeCompare(b.publicId))
+        .map((t) => this.record(t)),
+    );
+  }
+
   insertProvisional(_tx: Tx, term: NewProvisionalTerm): Promise<{ termId: string } | null> {
     const taken = [...this.terms.values()].some(
       (t) =>

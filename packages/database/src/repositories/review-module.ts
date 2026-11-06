@@ -5,6 +5,7 @@
 // `persona_links` or `evidence_items`, and no public read selects `exact_date_enc` (FR42).
 import type {
   ActiveTermRef,
+  PreviewDoctorRecord,
   DraftChange,
   DraftRecord,
   EligibleReviewRecord,
@@ -16,6 +17,7 @@ import type {
   NewReviewVersion,
   OwnReviewRecord,
   ReviewModuleRepository,
+  PreviewTermRecord,
   Tx,
 } from '@rogikotha/application';
 import { isPublicId, type IdentityMode, type Locale, type TermKind } from '@rogikotha/contracts';
@@ -236,6 +238,88 @@ export class PgReviewModuleRepository implements ReviewModuleRepository {
       .where(inArray(taxonomyTerms.publicId, ids));
     for (const row of rows) {
       if (row.termId !== null) result.set(row.publicId, { termId: row.termId, kind: row.kind });
+    }
+    return result;
+  }
+
+  async visibleDoctorRefByPublicId(
+    tx: Tx,
+    publicId: string,
+    locale: Locale,
+  ): Promise<PreviewDoctorRecord | null> {
+    if (!isPublicId(publicId)) return null;
+    const bn = locale === 'bn';
+    const [row] = await executorOf(tx)
+      .select({
+        id: doctors.id,
+        publicId: doctors.publicId,
+        name: bn ? doctors.nameBn : doctors.nameEn,
+        specialty: bn ? specialty.nameBn : specialty.nameEn,
+        memberAddedNotConfirmed,
+      })
+      .from(doctors)
+      .leftJoin(
+        specialty,
+        and(eq(specialty.id, doctors.specialtyId), eq(specialty.state, 'published')),
+      )
+      .where(and(isVisibleDoctor, eq(doctors.publicId, publicId)))
+      .limit(1);
+    if (!row) return null;
+    return {
+      id: row.id,
+      publicId: row.publicId,
+      name: row.name,
+      specialty: row.specialty,
+      memberAddedNotConfirmed: Boolean(row.memberAddedNotConfirmed),
+    };
+  }
+
+  async activeTermRefsByPublicIds(
+    tx: Tx,
+    publicIds: readonly string[],
+    locale: Locale,
+  ): Promise<Map<string, PreviewTermRecord>> {
+    const result = new Map<string, PreviewTermRecord>();
+    const ids = [...new Set(publicIds)].filter(isPublicId);
+    if (ids.length === 0) return result;
+    const bn = locale === 'bn';
+    const columns = {
+      id: taxonomyTerms.id,
+      publicId: taxonomyTerms.publicId,
+      state: taxonomyTerms.state,
+      canonicalId: taxonomyTerms.canonicalId,
+      nameEn: taxonomyTerms.nameEn,
+      nameBn: taxonomyTerms.nameBn,
+      provisional: taxonomyTerms.provisional,
+      kind: taxonomyTerms.kind,
+    };
+    const db = executorOf(tx);
+    const given = await db
+      .select(columns)
+      .from(taxonomyTerms)
+      .where(inArray(taxonomyTerms.publicId, ids));
+    const canonicalIds = [
+      ...new Set(given.flatMap((t) => (t.canonicalId === null ? [] : [t.canonicalId]))),
+    ];
+    const targets =
+      canonicalIds.length === 0
+        ? []
+        : await db
+            .select(columns)
+            .from(taxonomyTerms)
+            .where(inArray(taxonomyTerms.id, canonicalIds));
+    const byId = new Map(targets.map((t) => [t.id, t]));
+    for (const term of given) {
+      if (term.state !== 'published') continue;
+      // A mapped term stands for its canonical target, active only when that target is (U46 BR1.6).
+      const effective = term.canonicalId === null ? term : byId.get(term.canonicalId);
+      if (effective?.state !== 'published') continue;
+      result.set(term.publicId, {
+        publicId: effective.publicId,
+        name: bn ? effective.nameBn : effective.nameEn,
+        provisional: Boolean(effective.provisional),
+        kind: effective.kind,
+      });
     }
     return result;
   }

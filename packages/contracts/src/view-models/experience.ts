@@ -3,6 +3,8 @@
 // an internal id, an account or persona id, an email, the exact date, an evidence item, a
 // reaction or comment count, or any number standing for quality (BR5.9).
 import type {
+  Criterion,
+  CriterionValue,
   IdentityMode,
   Outcome,
   Relationship,
@@ -11,7 +13,7 @@ import type {
   TagGroup,
 } from '../enums';
 import type { ReviewLanguage, ReviewSectionKey, ReviewerLabelCode } from '../schemas/review';
-import type { ExperienceCardVM } from './experience-card';
+import type { BylineVM, ExperienceCardVM } from './experience-card';
 
 // The card moved to its own file with U46 (functional-spec § 7); U47 extends it there.
 export type { ExperienceCardVM } from './experience-card';
@@ -73,8 +75,35 @@ export interface ExperiencePageVM {
   otherByAuthor: ExperienceCardVM[];
 }
 
-/** `review.preview` returns the exact VM the public would see. */
-export type PreviewVM = ExperiencePageVM;
+/**
+ * `review.preview` of a doctor draft: the page's own fields, built by the same projection core.
+ * ASSUMPTION(U47): the minimum is not enforced in a preview (BR5.10), so the period, the
+ * relationship and the doctor may still be missing; a doctor not yet listed has no public id.
+ */
+export type PreviewVM = Omit<
+  ExperiencePageVM,
+  'publicId' | 'publishedAt' | 'period' | 'relationship' | 'doctor'
+> & {
+  period?: { year: number; month: number };
+  relationship?: Relationship;
+  doctor?: {
+    publicId?: string;
+    name: string;
+    specialty?: string;
+    memberAddedNotConfirmed: boolean;
+  };
+};
+
+/** `review.preview` of a facility draft (`toFacilityAccount`); no score anywhere (BR3.10). */
+export interface FacilityPreviewVM {
+  kind: 'facility';
+  author: BylineVM;
+  period?: { year: number; month: number };
+  body: string;
+  overall?: CriterionValue;
+  /** Answered criteria only, in enum order. */
+  criteria: { key: Criterion; value: CriterionValue }[];
+}
 
 /**
  * One row of the author's own list on `/me`. Structurally equal to `DemoOwnReviewRow`, so

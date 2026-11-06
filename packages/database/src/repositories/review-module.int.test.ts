@@ -207,6 +207,48 @@ describe('PgReviewModuleRepository reference ids', () => {
     expect(terms.size).toBe(2);
     expect((await repo.activeTermIdsByPublicIds(tx, [])).size).toBe(0);
   });
+
+  it('names a visible doctor for the preview in the reader language, with the member mark', async () => {
+    const specialty = await buildTerm(testDb, { kind: 'specialty', nameBn: 'কাল্পনিক বিশেষত্ব' });
+    const doctor = await buildDoctor(testDb, { specialtyId: specialty.id });
+    const hidden = await buildDoctor(testDb, { state: 'hidden' });
+    const account = await buildAccount(testDb);
+    await buildSubmission(testDb, doctor.id, account.accountId);
+
+    expect(await repo.visibleDoctorRefByPublicId(tx, doctor.publicId, 'bn')).toEqual({
+      id: doctor.id,
+      publicId: doctor.publicId,
+      name: doctor.nameBn,
+      specialty: 'কাল্পনিক বিশেষত্ব',
+      memberAddedNotConfirmed: true,
+    });
+    expect(await repo.visibleDoctorRefByPublicId(tx, hidden.publicId, 'en')).toBeNull();
+    expect(await repo.visibleDoctorRefByPublicId(tx, 'bad id', 'en')).toBeNull();
+  });
+
+  it('names active terms for the preview, a mapped term by its canonical target', async () => {
+    const active = await buildTerm(testDb, { kind: 'symptom', nameEn: 'Synthetic cough' });
+    const hidden = await buildTerm(testDb, { state: 'hidden' });
+    const canonical = await buildTerm(testDb, { nameBn: 'কাল্পনিক জ্বর' });
+    const mapped = await buildTerm(testDb, { canonicalId: canonical.id });
+
+    const terms = await repo.activeTermRefsByPublicIds(
+      tx,
+      [active.publicId, hidden.publicId, mapped.publicId, 'ZZZZZZZZZZ'],
+      'bn',
+    );
+
+    expect(terms.get(mapped.publicId)).toEqual({
+      publicId: canonical.publicId,
+      name: 'কাল্পনিক জ্বর',
+      provisional: false,
+      kind: 'condition',
+    });
+    expect(terms.get(active.publicId)?.kind).toBe('symptom');
+    expect(terms.has(hidden.publicId)).toBe(false);
+    expect(terms.size).toBe(2);
+    expect((await repo.activeTermRefsByPublicIds(tx, [], 'en')).size).toBe(0);
+  });
 });
 
 describe('PgReviewModuleRepository publish (BR4)', () => {

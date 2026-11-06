@@ -251,3 +251,39 @@ export const reviewSchemas = {
   FacilityReviewDeleteInput,
   FacilityReviewRestoreInput,
 };
+
+// U47's module inputs beside the catalogue above (functional-spec § 2).
+export const ReviewEmptyInput = z.object({}).strict();
+
+/** WF3: the author's own names come from `account.getOwnAccount`, passed in by the action. */
+export const PreviewDraftInput = z
+  .object({
+    draftId: z.uuid(),
+    names: z
+      .object({
+        named: plainText(MEMBER_DOCTOR_NAME_MAX).nullable(),
+        pseudonymous: plainText(MEMBER_DOCTOR_NAME_MAX).nullable(),
+      })
+      .optional(),
+  })
+  .strict();
+
+/** WF8: any string is answered; an unknown username gets the same empty page (BR7.2). */
+export const AuthorCardsInput = z
+  .object({
+    username: z.string().trim().min(1).max(64),
+    cursor: z.string().min(1).max(200).optional(),
+  })
+  .strict();
+
+export const HasOwnReviewOfDoctorInput = z.object({ draftId: z.uuid() }).strict();
+
+export type ReviewEmptyInput = z.output<typeof ReviewEmptyInput>;
+export type SaveDraftInput = z.output<typeof SaveDraftInput>;
+export type DiscardDraftInput = z.output<typeof DiscardDraftInput>;
+export type GetDraftInput = z.output<typeof GetDraftInput>;
+export type PublishReviewInput = z.output<typeof PublishReviewInput>;
+export type PreviewDraftInput = z.output<typeof PreviewDraftInput>;
+export type GetExperienceInput = z.output<typeof GetExperienceInput>;
+export type AuthorCardsInput = z.output<typeof AuthorCardsInput>;
+export type HasOwnReviewOfDoctorInput = z.output<typeof HasOwnReviewOfDoctorInput>;

@@ -5,6 +5,7 @@
 // target. Reference rows are added with the `add*` helpers; every row is synthetic.
 import type {
   ActiveTermRef,
+  PreviewDoctorRecord,
   DraftChange,
   DraftRecord,
   EligibleReviewRecord,
@@ -16,6 +17,7 @@ import type {
   NewReviewVersion,
   OwnReviewRecord,
   ReviewModuleRepository,
+  PreviewTermRecord,
   Tx,
 } from '@rogikotha/application';
 import type {
@@ -361,6 +363,47 @@ export class FakeReviewModuleRepository implements ReviewModuleRepository, Trans
       const effective = this.effectiveTerm(term.id);
       if (effective?.state === 'published') {
         result.set(publicId, { termId: effective.id, kind: effective.kind });
+      }
+    }
+    return Promise.resolve(result);
+  }
+
+  visibleDoctorRefByPublicId(
+    _tx: Tx,
+    publicId: string,
+    locale: Locale,
+  ): Promise<PreviewDoctorRecord | null> {
+    const doctor = this.doctors.find(
+      (d) => d.publicId === publicId && d.state === 'published' && d.mergedIntoId === null,
+    );
+    if (!doctor) return Promise.resolve(null);
+    const bn = locale === 'bn';
+    return Promise.resolve({
+      id: doctor.id,
+      publicId: doctor.publicId,
+      name: bn ? doctor.nameBn : doctor.nameEn,
+      specialty: bn ? doctor.specialtyBn : doctor.specialtyEn,
+      memberAddedNotConfirmed: doctor.memberAddedNotConfirmed,
+    });
+  }
+
+  activeTermRefsByPublicIds(
+    _tx: Tx,
+    publicIds: readonly string[],
+    locale: Locale,
+  ): Promise<Map<string, PreviewTermRecord>> {
+    const result = new Map<string, PreviewTermRecord>();
+    for (const publicId of new Set(publicIds)) {
+      const term = this.terms.find((t) => t.publicId === publicId);
+      if (!term || term.state !== 'published') continue;
+      const effective = this.effectiveTerm(term.id);
+      if (effective?.state === 'published') {
+        result.set(publicId, {
+          publicId: effective.publicId,
+          name: locale === 'bn' ? effective.nameBn : effective.nameEn,
+          provisional: effective.provisional,
+          kind: effective.kind,
+        });
       }
     }
     return Promise.resolve(result);

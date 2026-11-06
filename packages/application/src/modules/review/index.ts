@@ -18,6 +18,13 @@ export {
 } from './provider-experience';
 export { EXCERPT_GRAPHEMES, excerptOf, bylineOf, initialsOf } from './cards';
 export { DEFAULT_CARD_LIMIT } from './queries/list-experience-cards';
+export {
+  createReviewModule,
+  type ReviewCtx,
+  type ReviewModule,
+  type ReviewModulePorts,
+  type ReviewSeams,
+} from './module';
 
 export function createReviewReadModule(deps: ReviewReadDeps) {
   const providerExperience: ProviderExperience = createProviderExperience(deps);

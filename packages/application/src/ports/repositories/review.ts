@@ -307,6 +307,23 @@ export interface OwnReviewRecord {
   edited: boolean;
 }
 
+/** A visible doctor as the preview names it, in the requested locale. */
+export interface PreviewDoctorRecord {
+  id: string;
+  publicId: string;
+  name: string;
+  specialty: string | null;
+  memberAddedNotConfirmed: boolean;
+}
+
+/** An active term as the preview names it: the effective term, in the requested locale. */
+export interface PreviewTermRecord {
+  publicId: string;
+  name: string;
+  provisional: boolean;
+  kind: TermKind;
+}
+
 export interface ReviewModuleRepository {
   insertDraft(tx: Tx, draft: NewDraftRecord): Promise<void>;
   /** False when no live draft of the account has the id (BR2.1). */
@@ -332,6 +349,20 @@ export interface ReviewModuleRepository {
     tx: Tx,
     publicIds: readonly string[],
   ): Promise<Map<string, ActiveTermRef>>;
+
+  // ASSUMPTION(U47): the two preview reads below are beyond § 5; WF3 names the doctor and the chips.
+  /** U46's visible-doctor predicate, with the doctor's public names (WF3). */
+  visibleDoctorRefByPublicId(
+    tx: Tx,
+    publicId: string,
+    locale: Locale,
+  ): Promise<PreviewDoctorRecord | null>;
+  /** Active terms only, keyed by the given public id (WF3). */
+  activeTermRefsByPublicIds(
+    tx: Tx,
+    publicIds: readonly string[],
+    locale: Locale,
+  ): Promise<Map<string, PreviewTermRecord>>;
 
   insertReview(tx: Tx, review: NewReviewRecord): Promise<void>;
   insertTags(tx: Tx, reviewId: string, tags: readonly NewReviewTag[]): Promise<void>;
