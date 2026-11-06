@@ -6,6 +6,8 @@ import {
   type CommandPorts,
   type IdentityOwnership,
   type PrivateIdentityRepository,
+  type ReviewModulePorts,
+  type ReviewSeams,
 } from '@rogikotha/application';
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
@@ -46,6 +48,8 @@ vi.mock('@rogikotha/database', () => {
     PgDirectoryModuleRepository: Stub,
     PgReviewReadRepository: Stub,
     PgTaxonomyModuleRepository: Stub,
+    // U47's block.
+    PgReviewModuleRepository: Stub,
     createInterimPublicEvidenceCount: vi.fn(() => ({})),
   };
 });
@@ -118,6 +122,20 @@ describe('the web container', () => {
     expect(container.reviewReads.listExperienceCards.kind).toBe('query');
   });
 
+  it('offers the review module with its four seams (U47, C9)', () => {
+    const { review } = getContainer();
+
+    expect(review.publish.name).toBe('review.publish');
+    expect(review.saveDraft.kind).toBe('command');
+    const seams = [
+      'reviewIdForPublicId',
+      'isReviewAuthor',
+      'isReviewPublished',
+      'authorIdentityModeOf',
+    ] as const satisfies readonly (keyof ReviewSeams)[];
+    expect(seams.map((seam) => typeof review[seam])).toEqual(seams.map(() => 'function'));
+  });
+
   it('hands the app settings to the commands without any secret', () => {
     expect(getContainer().ports.app).toEqual({
       appUrl: 'http://localhost:3000',
@@ -160,6 +178,8 @@ describe('the identity wiring (C19)', () => {
     expectTypeOf<FieldsAccepting<CommandPorts, PrivateIdentityRepository>>().toBeNever();
     // @ts-expect-error BR3.2: the account repository port is not the private identity repository.
     accepts<CommandPorts['accounts']>(repo);
+    // U47: the review module takes the ownership check (BR3.5), never the private repository.
+    expectTypeOf<FieldsAccepting<ReviewModulePorts, PrivateIdentityRepository>>().toBeNever();
   });
 
   it('lets no other module ports type take the ownership check (BR3.5)', () => {

@@ -5,7 +5,13 @@
 // lookup and profile read are stubbed.
 // The data layer is an in-memory world that grants a write only to the account id it is handed,
 // so an action that trusted a forged id would change the victim's rows and fail these tests.
-import type { DemoCurrentAccount, DemoReviewEditRow } from '@rogikotha/contracts';
+import { defineCommand } from '@rogikotha/application';
+import {
+  PublishReviewInput,
+  ok,
+  type DemoCurrentAccount,
+  type DemoReviewEditRow,
+} from '@rogikotha/contracts';
 import { redirect as redirectToSignIn } from '@rogikotha/i18n';
 import { headers } from 'next/headers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -18,7 +24,13 @@ import { deleteComment, postComment, type CommentActionState } from './comments'
 import { listOwnEvidenceFiles, uploadEvidence, type EvidenceUploadState } from './evidence';
 import { setLang } from './preferences';
 import { updateDisplayNameAction, updateLanguageAction } from './profile';
-import { publishReview, saveReviewEdit, type ComposeFormState, type EditFormState } from './review';
+import {
+  publishDraftAction,
+  publishReview,
+  saveReviewEdit,
+  type ComposeFormState,
+  type EditFormState,
+} from './review';
 
 vi.mock('next/headers', () => ({ headers: vi.fn() }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
@@ -211,6 +223,18 @@ function sessionCookieOf(authUserId: string | null): void {
   );
 }
 
+// The module path (U47): `review.publish` on its own input schema and requirements. The persona
+// comes from the actor's account inside the module, so the stand-in records that account only.
+const modulePublish = defineCommand<PublishReviewInput, { publicId: string }>({
+  name: 'review.publish',
+  input: PublishReviewInput,
+  requires: { authenticated: true, verifiedEmail: true, notRestricted: true },
+  handle: ({ actor }) => {
+    world.writes.push(`review.publish by ${actor.accountId}`);
+    return Promise.resolve(ok({ publicId: 'n3wrev1ew2' }));
+  },
+});
+
 /** The container `getActor()` reads: the stubbed session and the world's profiles. */
 function installContainer(): void {
   const findProfileByAuthUserId = (_tx: unknown, authUserId: string) => {
@@ -232,11 +256,15 @@ function installContainer(): void {
     env: { appMode: 'demo' },
     ports: {
       authGateway: { getSession, revokeSession: vi.fn(() => Promise.resolve()) },
-      unitOfWork: { read: (work: (tx: unknown) => unknown) => work({}) },
       accounts: { findProfileByAuthUserId },
+      unitOfWork: {
+        read: (work: (tx: unknown) => unknown) => work({}),
+        run: (work: (tx: unknown) => unknown) => work({}),
+      },
       clock: { now: () => NOW },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
     },
+    review: { publish: modulePublish },
   } as unknown as ReturnType<typeof getContainer>);
 }
 
@@ -263,6 +291,13 @@ const FORGED_IDS = {
   ownerAccountId: VICTIM.accountId,
   authorPersonaId: VICTIM.currentPersonaId,
   authUserId: VICTIM.authUserId,
+};
+
+/** A `publishDraftAction` request for a synthetic draft id. */
+const PUBLISH_DRAFT = {
+  draftId: '0190f5a2-0000-7000-8000-0000000000f1',
+  identityMode: 'named',
+  attestation: true,
 };
 
 function editForm(publicId: string): FormData {
@@ -362,6 +397,18 @@ describe('an attacker signed in as another account (FR4.2, FR5.1, FR6.3, NFR3)',
     ]);
   });
 
+  it("cannot publish under the victim's persona through the review module by forging it into the request", async () => {
+    const forged = await publishDraftAction({
+      ...PUBLISH_DRAFT,
+      ...FORGED_IDS,
+      personaId: VICTIM.currentPersonaId,
+    });
+    await expect(publishDraftAction(PUBLISH_DRAFT)).rejects.toThrow('NEXT_REDIRECT');
+
+    expect(forged.formError).toBe('errors.common.validation');
+    expect(world.writes).toEqual([`review.publish by ${ATTACKER.accountId}`]);
+  });
+
   it("cannot attach a file to the victim's experience or list its files, and nothing is stored", async () => {
     const victims = await uploadEvidence(IDLE_UPLOAD, uploadForm(VICTIM_REVIEW));
     const missing = await uploadEvidence(IDLE_UPLOAD, uploadForm(MISSING_REVIEW));
@@ -422,6 +469,13 @@ describe.each([
     expect(typeof href === 'string' ? href : href?.pathname).toBe('/sign-in');
     expect(world.writes).toEqual([]);
     expect(setLang).not.toHaveBeenCalled();
+  });
+
+  it('cannot publish a draft through the review module, and nothing is written', async () => {
+    const state = await publishDraftAction(PUBLISH_DRAFT);
+
+    expect(state).toEqual({ formError: 'errors.common.forbidden', fieldErrors: {} });
+    expect(world.writes).toEqual([]);
   });
 
   it('cannot upload a file, and nothing is stored', async () => {

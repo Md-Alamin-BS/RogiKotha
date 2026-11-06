@@ -3,6 +3,7 @@
 // it lives on `globalThis` so `next dev` reloads do not open a second pool.
 import {
   createDirectoryModule,
+  createReviewModule,
   createReviewReadModule,
   createTaxonomyModule,
   MAIL_SEND_JOB,
@@ -14,6 +15,7 @@ import {
   type Crypto,
   type DirectoryModule,
   type IdGenerator,
+  type ReviewModule,
   type ReviewReadModule,
   type TaxonomyModule,
 } from '@rogikotha/application';
@@ -35,6 +37,7 @@ import {
   PgPrivateIdentityRepository,
   PgUnitOfWork,
   PgDirectoryModuleRepository,
+  PgReviewModuleRepository,
   PgReviewReadRepository,
   PgTaxonomyModuleRepository,
 } from '@rogikotha/database';
@@ -60,6 +63,8 @@ export interface WebContainer {
    * factories that U47 and U49 build here (BR3.5, BR3.6).
    */
   identity: IdentityModule;
+  /** U47: the review commands and queries, and the four seams other modules call (C9). */
+  review: ReviewModule;
 }
 
 /** BR7.4: defaults only until T-105 gives the runtime settings. */
@@ -162,7 +167,22 @@ function buildContainer(): WebContainer {
     logger,
   });
 
-  return { env, ports, auth, directory, taxonomy, reviewReads, identity };
+  // U47 (ENT-012): each other module is reached through its seams only, never its repository.
+  const review = createReviewModule({
+    reviews: new PgReviewModuleRepository(),
+    identity: {
+      personaFor: (tx, input) => identity.personaFor(tx, input),
+      publicProjection: (tx, input) => identity.publicProjection(tx, input),
+      publicProjections: (tx, input) => identity.publicProjections(tx, input),
+      publicPersonaIdsByUsername: (tx, input) => identity.publicPersonaIdsByUsername(tx, input),
+    },
+    ownership: identity.ownership,
+    directory: { addMemberDoctor: directory.addMemberDoctor },
+    taxonomy: { ensureProvisionalTerm: taxonomy.ensureProvisionalTerm },
+    cards: reviewReads.listExperienceCards,
+  });
+
+  return { env, ports, auth, directory, taxonomy, reviewReads, identity, review };
 }
 
 /**
