@@ -2,6 +2,9 @@
 // is built on first use, never at module load, so `next build` needs no `.env` (BR7.2, F27), and
 // it lives on `globalThis` so `next dev` reloads do not open a second pool.
 import {
+  createDirectoryModule,
+  createReviewReadModule,
+  createTaxonomyModule,
   MAIL_SEND_JOB,
   createIdentityModule,
   primeDummyCredential,
@@ -9,7 +12,10 @@ import {
   type CommandPorts,
   type ConfigProvider,
   type Crypto,
+  type DirectoryModule,
   type IdGenerator,
+  type ReviewReadModule,
+  type TaxonomyModule,
 } from '@rogikotha/application';
 import { DEFAULT_CONFIG_VALUES, newId, newPublicId } from '@rogikotha/contracts';
 import {
@@ -18,6 +24,7 @@ import {
   createMemoryRateLimiter,
 } from '@rogikotha/adapters';
 import {
+  createInterimPublicEvidenceCount,
   PgAccountRepository,
   PgAuditWriter,
   PgBossQueue,
@@ -27,6 +34,9 @@ import {
   PgOutbox,
   PgPrivateIdentityRepository,
   PgUnitOfWork,
+  PgDirectoryModuleRepository,
+  PgReviewReadRepository,
+  PgTaxonomyModuleRepository,
 } from '@rogikotha/database';
 
 import { createAfterResponse } from './after-response';
@@ -41,6 +51,10 @@ export interface WebContainer {
   ports: CommandPorts;
   /** For the `/api/auth` route and the session cookie names only; commands use the gateway. */
   auth: AuthInstance;
+  /** U46: the directory and taxonomy queries; the read-side Review stub behind their two ports. */
+  directory: DirectoryModule;
+  taxonomy: TaxonomyModule;
+  reviewReads: ReviewReadModule;
   /**
    * C19. Actions may call `renameNamedCommand` only; `ownership` is for the review and community
    * factories that U47 and U49 build here (BR3.5, BR3.6).
@@ -116,6 +130,29 @@ function buildContainer(): WebContainer {
     app: { appUrl: env.appUrl, termsVersion: env.termsVersion },
   };
 
+  // U46 (functional-spec § 6): the interim PublicEvidenceCount keeps today's public meaning until
+  // U48 binds Evidence's implementation here.
+  const reviewReads = createReviewReadModule({
+    reviews: new PgReviewReadRepository(),
+    evidence: createInterimPublicEvidenceCount(db),
+    config: ports.config,
+  });
+  const directory = createDirectoryModule({
+    directory: new PgDirectoryModuleRepository(),
+    providerExperience: reviewReads.providerExperience,
+    audit: ports.audit,
+    outbox: ports.outbox,
+    ids,
+    clock,
+  });
+  const taxonomy = createTaxonomyModule({
+    taxonomy: new PgTaxonomyModuleRepository(),
+    conditionStats: reviewReads.conditionStats,
+    audit: ports.audit,
+    outbox: ports.outbox,
+    ids,
+  });
+
   // BR3.2: the private repository goes to the identity module and nowhere else; it is not a
   // `CommandPorts` field.
   const identity = createIdentityModule({
@@ -125,7 +162,7 @@ function buildContainer(): WebContainer {
     logger,
   });
 
-  return { env, ports, auth, identity };
+  return { env, ports, auth, directory, taxonomy, reviewReads, identity };
 }
 
 /**

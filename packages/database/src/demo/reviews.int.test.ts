@@ -18,7 +18,9 @@ import {
   getReviewByPublicId,
   updateOwnReview,
 } from './reviews';
-import { getDoctor, listDoctors } from './doctors';
+import { PgDirectoryModuleRepository } from '../repositories/directory-module';
+import { appTxOf } from '../unit-of-work';
+import { getDoctor } from './doctors';
 
 async function buildAccount() {
   const authUserId = newId();
@@ -387,8 +389,13 @@ describe('createQuickReviewWithNewDoctor (FD-100)', () => {
       }),
     ).rejects.toThrow();
 
-    const listed = await listDoctors(testDb, 'en');
-    expect(listed.some((d) => d.name === name)).toBe(false);
+    // U46 (R-01): the directory list the pages read now.
+    const listed = await new PgDirectoryModuleRepository().listDoctors(appTxOf(testDb), {
+      page: 1,
+      pageSize: 100,
+      locale: 'en',
+    });
+    expect(listed.rows.some((d) => d.nameEn === name)).toBe(false);
     const chambers = await testDb
       .select()
       .from(doctorChambers)

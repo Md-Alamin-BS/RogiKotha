@@ -16,6 +16,16 @@ This decision is binding and overrides the text below where they differ.
 
 - **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-203 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Read first, the motion step and the acceptance checks.
 
+## Amendments — release 1 (FD-105)
+
+These decisions are binding and override the text below where they differ. Release 1 builds this task inside Unit U46 `u46-directory`, together with T-201 and T-202 (FD-105; record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u46-directory/`).
+
+- **Paths as built** — routes `apps/web/src/app/[locale]/(patient)/{facilities,topics}/page.tsx` and `…/[id]/page.tsx`, each reading a `cache()`d loader in `load.ts` beside it; components in `apps/web/src/components/patient/{facilities,topics}/` (`FacilityIndex`, `FacilityEntry`, `FacilityProfile`, `FacilityAccountRow`, `TopicIndex`, `ConditionPage`, `PlacesPanel`, `FreqList`) and `BrowseCard` and `EmergencyPanel` (with `compact`) in `components/patient/shared/`. Changes: Owned paths and Steps.
+- **FD-107** — facility feedback is the nine criteria, each a good, mixed and poor distribution with its denominator; no facility sentiment, and it never enters a doctor's figures. **FD-106** — counts, never percentages.
+- **FD-108** — a branch is titled by its own name (`facility_branches.own_name_*`), else its organisation; `name` shows as the label when it differs, and "Part of" the organisation when it differs. Changes: steps 1 and 3.
+- **FD-101** — condition figures count a review when a tag links the term or its free text equals a name or alias. The topic index lists the 10 seeded conditions (not 8), zero counts included. Changes: the "Empty topics listed" acceptance row.
+- **Deferred to release 2 (FD-105)** — the facility visit composer entry ("Describe your visit", `facility.write`), the parent organisation's aggregate page (AC4.3.1 "may"), redirects for mapped terms (F4) and paging (F3).
+
 ## Goal
 
 Port `renderFacilityIndex`, `renderFacility`, `renderTopicIndex` and `renderCondition` into

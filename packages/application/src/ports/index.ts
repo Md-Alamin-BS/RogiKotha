@@ -17,3 +17,5 @@ export * from './email-delivery-repository';
 export * from './recipient-directory';
 export * from './app-settings';
 export * from './email-catalog';
+export * from './public-evidence-count';
+export * from './repositories/index';

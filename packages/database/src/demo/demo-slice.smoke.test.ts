@@ -6,13 +6,33 @@ import { describe, expect, it } from 'vitest';
 
 import { authUsers } from '../schema/auth';
 import { doctors as doctorTable } from '../schema/directory';
+import { PgDirectoryModuleRepository } from '../repositories/directory-module';
+import { PgReviewReadRepository } from '../repositories/review-reads';
+import { PgTaxonomyModuleRepository } from '../repositories/taxonomy-module';
 import { testDb } from '../test-setup';
+import { appTxOf } from '../unit-of-work';
 import { createProfileForAuthUser } from './accounts';
 import { addComment, listComments } from './comments';
-import { listDoctors, listTopics } from './doctors';
-import { listFacilities } from './facilities';
 import { createQuickReview, createQuickReviewWithNewDoctor, getReviewByPublicId } from './reviews';
 import { getCurrentAccountByAuthUserId } from './session';
+
+// U46 retired the demo directory reads (BR7.1); the same checks now run on the module repositories.
+const directoryRepo = new PgDirectoryModuleRepository();
+const reviewReads = new PgReviewReadRepository();
+const taxonomyRepo = new PgTaxonomyModuleRepository();
+const tx = appTxOf(testDb);
+
+async function listedDoctor(doctorId: string, locale: 'en' | 'bn') {
+  const { rows } = await directoryRepo.listDoctors(tx, { page: 1, pageSize: 10_000, locale });
+  const row = rows.find((r) => r.id === doctorId);
+  return (
+    row && {
+      name: locale === 'bn' ? row.nameBn : row.nameEn,
+      memberAdded: row.memberAddedNotConfirmed,
+      publishedReviewCount: (await reviewReads.publishedForDoctor(tx, doctorId)).length,
+    }
+  );
+}
 
 describe('demo slice smoke', () => {
   it('a registered reader publishes about a doctor, who then lists it, and a comment shows on it', async () => {
@@ -55,7 +75,7 @@ describe('demo slice smoke', () => {
       language: 'en',
     });
 
-    const listed = (await listDoctors(testDb, 'bn')).find((row) => row.id === doctor!.id);
+    const listed = await listedDoctor(doctor!.id, 'bn');
     expect(listed).toMatchObject({ name: 'ডা. স্মোক কাল্পনিক', publishedReviewCount: 1 });
     await expect(getReviewByPublicId(testDb, publicId, 'en')).resolves.toMatchObject({
       title: 'A patient explanation',
@@ -107,9 +127,12 @@ describe('demo slice smoke', () => {
       },
     });
 
-    const listed = (await listDoctors(testDb, 'en')).find((row) => row.id === created.doctorId);
+    const listed = await listedDoctor(created.doctorId, 'en');
     expect(listed).toMatchObject({ name, memberAdded: true, publishedReviewCount: 1 });
-    await expect(listFacilities(testDb, 'en')).resolves.toEqual(expect.any(Array));
-    await expect(listTopics(testDb, 'bn')).resolves.toEqual(expect.any(Array));
+    const branches = await directoryRepo.listBranches(tx, { page: 1, pageSize: 100, locale: 'en' });
+    expect(Array.isArray(branches.rows)).toBe(true);
+    await expect(
+      taxonomyRepo.listTerms(tx, 'condition', { canonicalOnly: true, locale: 'bn' }),
+    ).resolves.toEqual(expect.any(Array));
   });
 });

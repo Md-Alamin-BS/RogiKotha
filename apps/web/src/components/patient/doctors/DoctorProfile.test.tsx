@@ -1,117 +1,167 @@
-import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import {
-  QUALITY_SCORE_PATTERN,
-  buildDoctorDetail,
-  buildReviewCard,
+  aDistribution,
+  aDoctorProfile,
+  anExperienceCard,
+  anOutcome,
+  aSentiment,
   renderInLocale,
 } from './directory-test-support';
 import { DoctorProfile } from './DoctorProfile';
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({ href, children, ...rest }: { href: string; children?: ReactNode }) => (
-    <a href={href} {...rest}>
-      {children}
-    </a>
-  ),
+vi.mock('@/i18n/routing', async () => ({
+  Link: (await import('../shared/link-test-support')).PlainLink,
 }));
 
+const empty = aSentiment();
+
 describe('DoctorProfile', () => {
-  it('heads the page with the doctor’s name, "Registration not verified" and the count', () => {
-    const doctor = buildDoctorDetail({ name: 'Dr. Farhana Synthetic', publishedReviewCount: 4 });
-    renderInLocale('en', <DoctorProfile doctor={doctor} experiences={[]} />);
-
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Dr. Farhana Synthetic');
-    expect(screen.getByText('Registration not verified')).toBeInTheDocument();
-    expect(screen.getByTestId('doctor-profile-count')).toHaveTextContent('4 patient experiences');
+  it('renders its blocks in the prototype order', () => {
+    renderInLocale('en', <DoctorProfile vm={aDoctorProfile()} filters={{}} threshold={5} />);
+    const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+    expect(headings).toEqual([
+      'Conditions people wrote about',
+      'By condition',
+      'Filter these experiences',
+      'Patient experiences',
+      'About',
+      'Practice locations',
+      'Where they practise',
+    ]);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Dr. Synthetic Rahman');
   });
 
-  it('links "Write about this doctor" to the write form for this doctor', () => {
-    const doctor = buildDoctorDetail();
-    renderInLocale('en', <DoctorProfile doctor={doctor} experiences={[]} />);
-
-    expect(screen.getByRole('link', { name: 'Write about this doctor' })).toHaveAttribute(
-      'href',
-      `/write?doctor=${doctor.publicId}`,
+  it('marks a member-added doctor with the badge and the why note, and never otherwise', () => {
+    const { unmount } = renderInLocale(
+      'en',
+      <DoctorProfile
+        vm={aDoctorProfile({ memberAddedNotConfirmed: true })}
+        filters={{}}
+        threshold={5}
+      />,
     );
+    expect(screen.getByTestId('member-added')).toBeInTheDocument();
+    expect(screen.getByTestId('member-added-note')).toHaveTextContent('A member added this doctor');
+    unmount();
+
+    renderInLocale('en', <DoctorProfile vm={aDoctorProfile()} filters={{}} threshold={5} />);
+    expect(screen.queryByTestId('member-added')).toBeNull();
+    expect(screen.queryByTestId('member-added-note')).toBeNull();
   });
 
-  it('lists the published experiences in the order given, without repeating the doctor link', () => {
-    const doctor = buildDoctorDetail();
-    const newer = buildReviewCard({ title: 'Newer visit' });
-    const older = buildReviewCard({ title: 'Older visit' });
-    renderInLocale('en', <DoctorProfile doctor={doctor} experiences={[newer, older]} />);
-
-    const titles = screen.getAllByTestId('experience-row-title-link').map((a) => a.textContent);
-    expect(titles).toEqual(['Newer visit', 'Older visit']);
-    expect(screen.queryByTestId('experience-row-doctor-link')).toBeNull();
-  });
-
-  it('says so when no one has written about the doctor yet', () => {
-    renderInLocale('en', <DoctorProfile doctor={buildDoctorDetail()} experiences={[]} />);
-
-    expect(screen.getByText('No one has written about this doctor yet.')).toBeInTheDocument();
-  });
-
-  it('reads "Not provided" for every missing fact, chamber hour and an empty chamber list', () => {
-    const doctor = buildDoctorDetail({
-      about: null,
-      specialty: null,
-      qualifications: null,
-      languages: null,
-      feeDisplay: null,
+  it('omits missing facts and reads "Not provided" where a value is absent, never 0', () => {
+    const vm = aDoctorProfile({
+      facts: [],
       chambers: [],
+      conditions: [],
+      breakdown: [],
+      facilities: [],
+      accounts: [],
+      accountsTotal: 0,
+      scopedSentiment: empty,
+      scopedOutcome: anOutcome(),
+      scopedTotal: 0,
+      showing: 0,
     });
-    renderInLocale('en', <DoctorProfile doctor={doctor} experiences={[]} />);
+    delete vm.about;
+    renderInLocale('en', <DoctorProfile vm={vm} filters={{}} threshold={5} />);
 
-    const facts = screen.getByTestId('doctor-profile-facts');
-    // About, specialty, qualifications, languages and fee.
-    expect(within(facts).getAllByText('Not provided')).toHaveLength(5);
-    expect(document.querySelectorAll('.panel .note')[1]).toHaveTextContent('Not provided');
+    expect(screen.queryByTestId('fact-fee')).toBeNull();
+    expect(screen.getByTestId('doctor-profile-about')).toHaveTextContent('Not provided');
+    expect(
+      within(screen.getByTestId('doctor-profile-chambers')).getByText('Not provided'),
+    ).toBeInTheDocument();
+    expect(screen.getAllByTestId('dist-not-provided')).toHaveLength(2);
+    expect(screen.queryByTestId('profile-breakdown')).toBeNull();
+    expect(screen.getByText('No one has written about this doctor yet.')).toBeInTheDocument();
+    expect(screen.getByTestId('condition-pill-all')).toHaveTextContent('All conditions (0)');
+    expect(screen.queryByTestId('dist-denominator')).toBeNull();
   });
 
-  it('shows each chamber with its hours, and "Not provided" for unknown hours', () => {
-    const doctor = buildDoctorDetail({
-      chambers: [
-        { name: 'Synthetic Clinic', hours: 'Thu, 4–7 pm' },
-        { name: 'Synthetic Hospital', hours: null },
+  it('shows each fact with its provenance tag and "No documents" on an account without any', () => {
+    renderInLocale('en', <DoctorProfile vm={aDoctorProfile()} filters={{}} threshold={5} />);
+    expect(screen.getByTestId('fact-fee')).toHaveTextContent('Community submitted · updated');
+    expect(screen.getByTestId('account-row')).toHaveTextContent('No documents');
+  });
+
+  it('prints the distributions as counts with "of n", "Not provided: n" and the limited line, never a %', () => {
+    const vm = aDoctorProfile({
+      accountsTotal: 3,
+      accountsLimitedData: true,
+      scopedSentiment: aSentiment({ positive: 1 }, { notProvided: 2, limitedData: true }),
+      scopedOutcome: anOutcome({ helped: 1 }, { notProvided: 2, limitedData: true }),
+    });
+    renderInLocale('en', <DoctorProfile vm={vm} filters={{}} threshold={5} />);
+
+    const sentiment = screen.getByTestId('sentiment-block');
+    expect(within(sentiment).getByTestId('dist-denominator')).toHaveTextContent(
+      'of 1 patient experience',
+    );
+    expect(within(sentiment).getByTestId('dist-not-provided-count')).toHaveTextContent(
+      'Not provided: 2',
+    );
+    expect(within(sentiment).getByTestId('dist-limited')).toHaveTextContent(
+      'Fewer than 5 experiences',
+    );
+    expect(document.body.textContent).not.toContain('%');
+  });
+
+  it('renders the breakdown in Bengali digits with a limited mark per limited row', () => {
+    const condition = { publicId: 'c000000001', name: 'ডায়াবেটিস' };
+    const vm = aDoctorProfile({
+      breakdown: [
+        {
+          condition,
+          sentiment: aDistribution(
+            ['positive', 'mixed', 'negative'],
+            { positive: 2 },
+            { limitedData: true },
+          ),
+        },
       ],
     });
-    renderInLocale('en', <DoctorProfile doctor={doctor} experiences={[]} />);
-
-    expect(screen.getByText('Thu, 4–7 pm')).toBeInTheDocument();
-    const hospital = screen.getByText('Synthetic Hospital').closest('li')!;
-    expect(hospital).toHaveTextContent('Not provided');
+    renderInLocale('bn', <DoctorProfile vm={vm} filters={{}} threshold={5} />);
+    const table = within(screen.getByTestId('profile-breakdown'));
+    expect(table.getByRole('row', { name: /ডায়াবেটিস/ })).toHaveTextContent('২');
+    expect(table.getByText('সীমিত তথ্য')).toBeInTheDocument();
+    expect(table.getByText(/৫টির কম অভিজ্ঞতা/)).toBeInTheDocument();
   });
 
-  it('shows no star, score or rating anywhere', () => {
+  it('presses the pills of the active filters and shows "Showing x of y"', () => {
+    const vm = aDoctorProfile({
+      showing: 2,
+      scopedTotal: 6,
+      selectedCondition: { publicId: 'c000000001', name: 'Type 2 diabetes' },
+    });
     renderInLocale(
       'en',
-      <DoctorProfile doctor={buildDoctorDetail()} experiences={[buildReviewCard()]} />,
+      <DoctorProfile
+        vm={vm}
+        filters={{ condition: 'c000000001', outcome: 'helped', docs: true }}
+        threshold={5}
+      />,
     );
-
-    expect(document.body.textContent).not.toMatch(QUALITY_SCORE_PATTERN);
+    const pressed = document.querySelectorAll('[aria-current="true"]');
+    expect([...pressed].map((a) => a.textContent)).toEqual([
+      'Type 2 diabetes (6)',
+      'Helped',
+      'Has documents',
+    ]);
+    expect(screen.getByTestId('profile-showing')).toHaveTextContent('Showing 2 of 6');
+    expect(screen.getByTestId('condition-pill-all')).toHaveAttribute(
+      'href',
+      `/doctors/${vm.publicId}?outcome=helped&docs=1`,
+    );
   });
 
-  it('renders in Bengali with Bengali numerals', () => {
-    const doctor = buildDoctorDetail({
-      name: 'ডা. ফারহানা রহমান',
-      specialty: 'এন্ডোক্রিনোলজি',
-      qualifications: 'এমবিবিএস',
-      city: 'ঢাকা',
-      area: 'ধানমন্ডি',
-      languages: 'বাংলা',
-      feeDisplay: '৳ ১২০০',
-      about: null,
-      chambers: [{ name: 'শেফা জেনারেল হাসপাতাল', hours: null }],
-      publishedReviewCount: 3,
+  it('never names or links an anonymous author in an account byline', () => {
+    const vm = aDoctorProfile({
+      accounts: [anExperienceCard({ author: { personaKind: 'anonymous' } })],
     });
-    renderInLocale('bn', <DoctorProfile doctor={doctor} experiences={[]} />);
-
-    expect(screen.getByRole('link', { name: 'এই ডাক্তারকে নিয়ে লিখুন' })).toBeInTheDocument();
-    expect(screen.getByTestId('doctor-profile-count')).toHaveTextContent('৩টি রোগীর অভিজ্ঞতা');
-    expect(screen.getAllByText('জানানো হয়নি').length).toBeGreaterThan(0);
-    expect(document.body.textContent).not.toMatch(/[0-9]/);
+    renderInLocale('en', <DoctorProfile vm={vm} filters={{}} threshold={5} />);
+    const byline = screen.getByTestId('account-row').querySelector('.byline')!;
+    expect(byline.querySelector('a')).toBeNull();
+    expect(byline).not.toHaveTextContent('Rina Akter');
   });
 });

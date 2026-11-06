@@ -8,12 +8,17 @@ import { NextIntlClientProvider, type AbstractIntlMessages } from 'next-intl';
 import type {
   DemoDoctorDetail,
   DemoDoctorListRow,
-  DemoFacilityDetail,
-  DemoFacilityRow,
   DemoReviewCard,
-  DemoTopicDetail,
-  DemoTopicRow,
+  ConditionPageVM,
+  DistributionVM,
+  DoctorCardVM,
+  DoctorProfileVM,
+  ExperienceCardVM,
+  FacilityCardVM,
+  FacilityProfileVM,
+  ProvenanceVM,
 } from '@rogikotha/contracts';
+import { CRITERIA, CRITERION_VALUES, OUTCOMES, SENTIMENTS, toIso } from '@rogikotha/contracts';
 
 export type TestLocale = 'en' | 'bn';
 
@@ -103,65 +108,217 @@ export function buildReviewCard(overrides: Partial<DemoReviewCard> = {}): DemoRe
 /** Characters and words that would make a number or symbol read as a quality score. */
 export const QUALITY_SCORE_PATTERN = /★|☆|\/\s*5\b|\/\s*10\b|\brating\b|\bscore\b|\bstars?\b/i;
 
-export function buildFacilityRow(overrides: Partial<DemoFacilityRow> = {}): DemoFacilityRow {
-  const n = nextSeq();
+// U46 view-model builders. Public ids follow PUBLIC_ID_RE: ten characters, no i, l, o or u.
+const vmId = (prefix: 'd' | 'f' | 'c' | 'e' | 'v') =>
+  `${prefix}${String(nextSeq()).padStart(9, '0')}`;
+
+const PROVENANCE: ProvenanceVM = {
+  source: 'community',
+  updatedAt: toIso(new Date('2026-05-04T06:00:00.000Z')),
+};
+
+/** A distribution over `keys` from `counts`; zero keys are filled, the rest is derived. */
+export function aDistribution(
+  keys: readonly string[],
+  counts: Record<string, number> = {},
+  overrides: Partial<DistributionVM> = {},
+): DistributionVM {
+  const full = Object.fromEntries(keys.map((k) => [k, counts[k] ?? 0]));
+  const total = Object.values(full).reduce((sum, n) => sum + n, 0);
   return {
-    publicId: `fac${String(n).padStart(7, '0')}`,
-    facilityName: `Synthetic Care Hospital ${n}`,
-    branchName: null,
-    type: 'hospital',
-    city: 'Dhaka',
-    area: 'Mirpur',
-    visitCount: 2,
+    keys: [...keys],
+    counts: full,
+    total,
+    notProvided: 0,
+    empty: total === 0,
+    limitedData: false,
     ...overrides,
   };
 }
 
-export function buildFacilityDetail(
-  overrides: Partial<DemoFacilityDetail> = {},
-): DemoFacilityDetail {
+export const aSentiment = (counts: Record<string, number> = {}, o: Partial<DistributionVM> = {}) =>
+  aDistribution(SENTIMENTS, counts, o);
+export const anOutcome = (counts: Record<string, number> = {}, o: Partial<DistributionVM> = {}) =>
+  aDistribution(OUTCOMES, counts, o);
+
+export function anExperienceCard(overrides: Partial<ExperienceCardVM> = {}): ExperienceCardVM {
   return {
-    ...buildFacilityRow(),
-    address: null,
-    visits: [
+    publicId: vmId('e'),
+    title: 'A careful second visit',
+    excerpt: 'Waited two hours, then a careful exam and a clear plan.',
+    truncated: false,
+    sentiment: 'positive',
+    outcome: 'helped',
+    condition: { publicId: 'c000000001', name: 'Type 2 diabetes' },
+    documentsCount: 0,
+    author: { personaKind: 'named', displayName: 'Rina Akter', initials: 'RA' },
+    relationship: 'self',
+    period: { year: 2026, month: 3 },
+    doctor: { publicId: 'd000000001', name: 'Dr. Synthetic Rahman' },
+    ...overrides,
+  };
+}
+
+export function aDoctorCard(overrides: Partial<DoctorCardVM> = {}): DoctorCardVM {
+  return {
+    publicId: vmId('d'),
+    name: 'Dr. Synthetic Rahman',
+    specialty: 'Endocrinology',
+    area: 'Dhanmondi',
+    city: 'Dhaka',
+    avatarHue: 210,
+    topConditions: [{ publicId: 'c000000001', name: 'Type 2 diabetes', count: 3 }],
+    documentsCount: 1,
+    accountsTotal: 6,
+    accountsLimitedData: false,
+    sentiment: aSentiment({ positive: 4, mixed: 1, negative: 1 }),
+    claimed: false,
+    registrationNotVerified: true,
+    memberAddedNotConfirmed: false,
+    ...overrides,
+  };
+}
+
+export function aDoctorProfile(overrides: Partial<DoctorProfileVM> = {}): DoctorProfileVM {
+  const card = aDoctorCard();
+  const condition = { publicId: 'c000000001', name: 'Type 2 diabetes' };
+  return {
+    ...card,
+    about: 'Sees adults with thyroid and diabetes care.',
+    facts: [
+      { key: 'specialty', value: 'Endocrinology', provenance: PROVENANCE },
+      { key: 'fee', value: '৳1,200', provenance: PROVENANCE },
+    ],
+    chambers: [
+      { name: 'Synthetic General Hospital', hours: 'Sat–Wed, 6–9 pm', provenance: PROVENANCE },
+    ],
+    conditions: [{ ...condition, count: 6 }],
+    breakdown: [{ condition, sentiment: card.sentiment }],
+    facilities: [
       {
-        publicId: 'visit00001',
-        authorDisplayName: 'Rina Akter',
-        identityMode: 'named',
-        periodYear: 2026,
-        periodMonth: 2,
+        publicId: 'f000000001',
+        name: 'Synthetic General Hospital',
+        branchName: 'Dhanmondi branch',
+        type: 'hospital',
+        avatarHue: 30,
+      },
+    ],
+    accounts: [anExperienceCard()],
+    scopedSentiment: card.sentiment,
+    scopedOutcome: anOutcome({ helped: 4, none: 1, worse: 0, uncertain: 1 }),
+    scopedTotal: 6,
+    showing: 6,
+    ...overrides,
+  };
+}
+
+export function aFacilityCard(overrides: Partial<FacilityCardVM> = {}): FacilityCardVM {
+  return {
+    publicId: vmId('f'),
+    name: 'Synthetic General Hospital',
+    branchName: 'Dhanmondi branch',
+    parentName: 'Synthetic Health Group',
+    type: 'hospital',
+    area: 'Dhanmondi',
+    city: 'Dhaka',
+    avatarHue: 30,
+    feedbackVisible: true,
+    accountsTotal: 2,
+    accountsLimitedData: true,
+    overall: aDistribution(CRITERION_VALUES, { good: 1, mixed: 1 }, { limitedData: true }),
+    claimed: false,
+    notVerified: true,
+    ...overrides,
+  };
+}
+
+export function aFacilityProfile(overrides: Partial<FacilityProfileVM> = {}): FacilityProfileVM {
+  return {
+    ...aFacilityCard(),
+    address: 'Road 5, Dhanmondi, Dhaka',
+    provenance: { name: PROVENANCE, address: PROVENANCE },
+    criteria: CRITERIA.map((key) => ({
+      key,
+      dist:
+        key === 'staff'
+          ? aDistribution(CRITERION_VALUES, { good: 2 }, { limitedData: true })
+          : aDistribution(CRITERION_VALUES),
+    })),
+    accounts: [
+      {
+        publicId: vmId('v'),
+        author: { personaKind: 'anonymous' },
+        period: { year: 2026, month: 2 },
+        posted: '2026-03-01',
         body: 'The reception was calm and the queue moved quickly.',
+        overall: 'mixed',
         criteria: [
-          { criterion: 'staff', value: 'good' },
-          { criterion: 'overall', value: 'mixed' },
+          { key: 'staff', value: 'good' },
+          { key: 'overall', value: 'mixed' },
         ],
       },
     ],
-    doctors: [
-      { id: 'doc-uuid-9', publicId: 'doc0000099', name: 'Dr. Synthetic Haque', specialty: null },
+    doctorsHere: [{ publicId: 'd000000002', name: 'Dr. Synthetic Haque', avatarHue: 120 }],
+    siblings: [
+      {
+        publicId: 'f000000002',
+        name: 'Synthetic General Hospital',
+        branchName: 'Mirpur branch',
+        area: 'Mirpur',
+        avatarHue: 40,
+      },
     ],
-    siblings: [],
     ...overrides,
   };
 }
 
-export function buildTopicRow(overrides: Partial<DemoTopicRow> = {}): DemoTopicRow {
-  const n = nextSeq();
+export function aConditionPage(overrides: Partial<ConditionPageVM> = {}): ConditionPageVM {
   return {
-    publicId: `top${String(n).padStart(7, '0')}`,
-    name: `Synthetic condition ${n}`,
-    experienceCount: 3,
+    publicId: vmId('c'),
+    name: 'Type 2 diabetes',
+    provisional: false,
+    aliases: ['sugar', 'ডায়াবেটিস'],
+    accountsTotal: 4,
+    accountsLimitedData: true,
+    doctorsTotal: 2,
+    specialties: [{ name: 'Endocrinology', count: 3 }],
+    places: [
+      { hospital: 'Synthetic General Hospital', area: 'Dhanmondi', city: 'Dhaka', count: 1 },
+      { area: 'Mirpur', city: 'Dhaka', count: 3 },
+    ],
+    sentiment: aSentiment({ positive: 2, mixed: 1, negative: 1 }, { limitedData: true }),
+    outcome: anOutcome({ helped: 3, uncertain: 1 }, { limitedData: true }),
+    medicines: [
+      { label: 'Metformin', count: 2 },
+      { label: 'Insulin', count: 4 },
+    ],
+    treatments: [],
+    symptoms: [{ label: 'Thirst', count: 1 }],
+    accounts: [anExperienceCard()],
+    doctors: [
+      {
+        publicId: 'd000000001',
+        name: 'Dr. Synthetic Rahman',
+        specialty: 'Endocrinology',
+        count: 3,
+        avatarHue: 210,
+      },
+    ],
+    facilities: [
+      {
+        publicId: 'f000000001',
+        name: 'Synthetic General Hospital',
+        type: 'hospital',
+        avatarHue: 30,
+      },
+    ],
     ...overrides,
   };
 }
 
-export function buildTopicDetail(overrides: Partial<DemoTopicDetail> = {}): DemoTopicDetail {
-  const card = buildReviewCard();
-  return {
-    ...buildTopicRow(),
-    aliases: ['sugar', 'চিনি রোগ'],
-    experiences: [card],
-    doctors: [{ ...card.doctor, experienceCount: 1 }],
-    ...overrides,
-  };
-}
+export const EMERGENCY_CONFIG = {
+  ambulance: '999',
+  healthLine: '16263',
+  crisisLine: '01779554391',
+  lastVerified: '2026-10-01',
+};

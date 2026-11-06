@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
-import type { Locale } from '@rogikotha/contracts';
+import { getTranslations } from 'next-intl/server';
 import { ViewShell } from '@/components/patient/ViewShell';
-import { TopicList } from '@/components/patient/topics/TopicList';
-import { doctors } from '@/server/data';
-import { titleForView, documentTitle } from '@/lib/titles';
+import { TopicIndex } from '@/components/patient/topics/TopicIndex';
+import { documentTitle } from '@/lib/titles';
+import { loadTopicIndex } from './load';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
@@ -12,12 +11,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TopicIndexPage() {
-  const t = await getTranslations();
-  const locale = (await getLocale()) as Locale;
-  const topics = await doctors.listTopics(locale);
+  const { cards, total } = await loadTopicIndex();
   return (
-    <ViewShell view="topics" title={titleForView('topics', t)}>
-      <TopicList topics={topics} />
+    // IndexHead brings the page's only h1.
+    <ViewShell view="topics" title="">
+      <TopicIndex cards={cards} total={total} />
     </ViewShell>
   );
 }

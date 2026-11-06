@@ -1,34 +1,25 @@
-import { cache } from 'react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getLocale, getTranslations } from 'next-intl/server';
-import type { Locale } from '@rogikotha/contracts';
+import { getTranslations } from 'next-intl/server';
 import { ViewShell } from '@/components/patient/ViewShell';
-import { TopicProfile } from '@/components/patient/topics/TopicProfile';
-import { doctors } from '@/server/data';
-import { documentTitle } from '@/lib/titles';
+import { ConditionPage } from '@/components/patient/topics/ConditionPage';
+import { loadConditionPage } from '../load';
 
 type Params = Promise<{ id: string }>;
-
-// One lookup per request, shared by the metadata and the page.
-const loadTopic = cache((id: string, locale: Locale) => doctors.getTopic(id, locale));
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
   const t = await getTranslations();
-  const topic = await loadTopic(id, (await getLocale()) as Locale);
-  if (!topic) return { title: documentTitle('condition', t) };
-  return { title: `${topic.name} — ${t('brand.name')}` };
+  const { vm } = await loadConditionPage(id);
+  return { title: `${vm.name} — ${t('brand.name')}` };
 }
 
 export default async function TopicPage({ params }: { params: Params }) {
   const { id } = await params;
-  const topic = await loadTopic(id, (await getLocale()) as Locale);
-  if (!topic) notFound();
+  const { vm, threshold, emergency } = await loadConditionPage(id);
   return (
-    // The hero brings the topic's name as the page's only h1.
+    // The hero brings the condition's name as the page's only h1.
     <ViewShell view="condition" title="">
-      <TopicProfile topic={topic} />
+      <ConditionPage vm={vm} threshold={threshold} emergency={emergency} />
     </ViewShell>
   );
 }

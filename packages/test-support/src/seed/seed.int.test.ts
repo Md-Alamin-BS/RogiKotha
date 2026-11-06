@@ -12,7 +12,13 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-import { createDb, type Db } from '@rogikotha/database';
+import {
+  appTxOf,
+  createDb,
+  PgReviewReadRepository,
+  PgTaxonomyModuleRepository,
+  type Db,
+} from '@rogikotha/database';
 import { config as loadDotenv } from 'dotenv';
 import type { Pool } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -21,8 +27,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 // schemas dropped together, `pgboss` reinstalled before the migrations). The package exports no
 // reset, and a seed test may import database code (FD-040).
 import { runReset } from '../../../database/src/reset';
-import { MODERATION_CASES } from '../corpus/index.js';
+import { ALIASES, BRANCHES, CONDITIONS, MODERATION_CASES, REVIEWS } from '../corpus/index.js';
 import { runSeed } from './seed.js';
+import { SUGGESTED_CONDITION_SEED_REFS, SUGGESTED_TERMS } from './seed-directory.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 loadDotenv({ path: path.resolve(here, '..', '..', '..', '..', '.env') });
@@ -490,6 +497,93 @@ describe('seed', () => {
       where d.seed_ref = 'd1' and r.state != 'published'
     `);
     expect(Number(hiddenCount.rows[0]!.n)).toBe(1); // r4
+  });
+
+  it('counts each condition by FD-101 as the corpus wording gives, c8 at 0 and r2, r21, r8 unmatched (U46)', async () => {
+    const lowerNfc = (s: string) => s.normalize('NFC').toLowerCase();
+    const published = new Set(
+      (
+        await pool.query<{ seed_ref: string }>(`
+          select r.seed_ref from reviews r join doctors d on d.id = r.doctor_id
+          where r.state = 'published' and r.deleted_at is null and r.published_at is not null
+            and d.state = 'published' and d.merged_into_id is null
+        `)
+      ).rows.map((r) => r.seed_ref),
+    );
+    const namesOf = (c: (typeof CONDITIONS)[number]) =>
+      [
+        c.name.en,
+        c.name.bn,
+        ...ALIASES.filter((a) => a.termSeedRef === c.seedRef).map((a) => a.alias),
+      ].map(lowerNfc);
+    const isAbout = (r: (typeof REVIEWS)[number], c: (typeof CONDITIONS)[number]) =>
+      r.tags.some(
+        (t) => t.group === 'condition' && namesOf(c).includes(lowerNfc(t.text.bn.trim())),
+      );
+    const terms = await pool.query<{ id: string; seed_ref: string }>(
+      "select id, seed_ref from taxonomy_terms where kind = 'condition'",
+    );
+    const totals = await new PgReviewReadRepository().totalsForTerms(
+      appTxOf(db),
+      terms.rows.map((t) => t.id),
+    );
+
+    for (const term of terms.rows) {
+      const condition = CONDITIONS.find((c) => c.seedRef === term.seed_ref)!;
+      const expected = REVIEWS.filter((r) => published.has(r.seedRef) && isAbout(r, condition));
+      expect({ [term.seed_ref]: totals.get(term.id) }).toEqual({
+        [term.seed_ref]: expected.length,
+      });
+    }
+    expect(terms.rows).toHaveLength(10);
+    expect([...totals.values()].reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
+    expect(totals.get(terms.rows.find((t) => t.seed_ref === 'c8')!.id)).toBe(0);
+    for (const seedRef of ['r2', 'r21', 'r8']) {
+      const review = REVIEWS.find((r) => r.seedRef === seedRef)!;
+      expect(CONDITIONS.some((c) => isAbout(review, c))).toBe(false);
+    }
+  });
+
+  it('gives f1 its own name, label and hue, f2 no own name, and every branch its corpus hue (U46)', async () => {
+    const result = await pool.query<{
+      seed_ref: string;
+      name_en: string;
+      own_name_en: string | null;
+      own_name_bn: string | null;
+      avatar_hue: number | null;
+    }>('select seed_ref, name_en, own_name_en, own_name_bn, avatar_hue from facility_branches');
+    const bySeedRef = new Map(result.rows.map((r) => [r.seed_ref, r]));
+
+    expect(bySeedRef.get('f1')).toMatchObject({
+      name_en: 'Dhanmondi branch',
+      own_name_en: 'Shefa General Hospital',
+      own_name_bn: 'শেফা জেনারেল হাসপাতাল',
+      avatar_hue: BRANCHES.find((b) => b.seedRef === 'f1')!.avatarHue,
+    });
+    expect(bySeedRef.get('f2')).toMatchObject({ own_name_en: null, own_name_bn: null });
+    for (const branch of BRANCHES) {
+      expect(bySeedRef.get(branch.seedRef)?.avatar_hue).toBe(branch.avatarHue);
+    }
+  });
+
+  it('suggests the prototype chips in order and keeps ten conditions (U46, BR4.5)', async () => {
+    const taxonomy = new PgTaxonomyModuleRepository();
+    const tx = appTxOf(db);
+    const conditionNames = SUGGESTED_CONDITION_SEED_REFS.map(
+      (ref) => CONDITIONS.find((c) => c.seedRef === ref)!.name.en,
+    );
+
+    expect((await taxonomy.listSuggested(tx, 'condition', 'en')).map((t) => t.nameEn)).toEqual(
+      conditionNames,
+    );
+    for (const kind of ['symptom', 'treatment', 'medicine'] as const) {
+      expect((await taxonomy.listSuggested(tx, kind, 'en')).map((t) => t.nameEn)).toEqual(
+        SUGGESTED_TERMS.filter((t) => t.kind === kind).map((t) => t.en),
+      );
+    }
+    expect(await scalar("select count(*) as n from taxonomy_terms where kind = 'condition'")).toBe(
+      10,
+    );
   });
 
   it('facility_reviews never reference doctors', async () => {

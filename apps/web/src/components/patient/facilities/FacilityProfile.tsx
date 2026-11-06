@@ -1,70 +1,55 @@
 import { useLocale, useTranslations } from 'next-intl';
-import type { DemoFacilityDetail, DemoFacilityVisit } from '@rogikotha/contracts';
+import type { FacilityProfileVM } from '@rogikotha/contracts';
 import type { Locale } from '@rogikotha/i18n';
-import { formatMonthYear, formatNumber } from '@rogikotha/i18n/format';
-import { Link } from '@/i18n/routing';
-import { DoctorAvatar } from '@/components/patient/doctors/DoctorAvatar';
-import { placeLine } from '@/components/patient/doctors/DoctorEntry';
-import { Byline } from '@/components/patient/experience/Byline';
-import { bylineIdentity } from '@/components/patient/experience/people';
-import { branchTitle } from './FacilityEntry';
+import { formatNumber } from '@rogikotha/i18n/format';
+import { placeText } from '@/components/patient/doctors/DoctorEntry';
+import { ProvTag } from '@/components/patient/doctors/DoctorProfile';
+import { Reveal } from '@/components/patient/motion/Reveal';
+import { Avatar } from '@/components/patient/shared/Avatar';
+import { DistBlock } from '@/components/patient/shared/DistBlock';
+import { MiniList, MiniRow } from '@/components/patient/shared/MiniList';
+import { NotVerified } from '@/components/patient/shared/NotVerified';
+import { FacilityAccountRow } from './FacilityAccountRow';
+import { ParentBadge } from './FacilityEntry';
 
-function VisitRow({ visit }: { visit: DemoFacilityVisit }) {
-  const t = useTranslations();
-  const locale = useLocale() as Locale;
-  const overall = visit.criteria.find((c) => c.criterion === 'overall');
-  const overallText = overall ? t(`crit.${overall.value}`) : t('label.notProvided');
-  const period = formatMonthYear({ year: visit.periodYear, month: visit.periodMonth }, locale);
-  return (
-    <article className="acct" data-testid="facility-visit">
-      <div className="row-flags">
-        <span className="badge plain">{`${t('crit.overall')}: ${overallText}`}</span>
-        <span className="badge plain">{`${t('review.episodeDate')}: ${period}`}</span>
-      </div>
-      <Byline
-        variant="row"
-        name={visit.authorDisplayName}
-        identity={bylineIdentity(visit.identityMode)}
-      />
-      <p className="excerpt">{visit.body}</p>
-      <div className="tag-row">
-        {visit.criteria
-          .filter((c) => c.criterion !== 'overall')
-          .map((c) => (
-            <span className="tag" key={c.criterion}>
-              {`${t(`crit.${c.criterion}`)}: ${t(`crit.${c.value}`)}`}
-            </span>
-          ))}
-      </div>
-    </article>
-  );
-}
-
-// Port of concept-04b's renderFacility() (app.js 1324-1412) for the demo (FD-101): the hero, the
-// separation notice, each visit with the criteria the visitor answered, the doctors who practise
-// at the branch and its sibling branches. The per-criterion distributions wait for T-203.
-export function FacilityProfile({ facility }: { facility: DemoFacilityDetail }) {
+// Port of concept-04b's renderFacility() (app.js 1324-1412) on the U46 view model, minus
+// "Describe your visit" (T-204). The separation callout is static and never revealed (BR2.6); the
+// figures, criteria and visits exist only while facility feedback is on (BR2.12).
+export function FacilityProfile({ vm, threshold }: { vm: FacilityProfileVM; threshold: number }) {
   const t = useTranslations();
   const locale = useLocale() as Locale;
   const notProvided = t('label.notProvided');
+  const place = placeText(vm) ?? notProvided;
+  const accounts = vm.feedbackVisible ? vm.accountsTotal : undefined;
+
   return (
     <>
-      <section className="panel">
+      <section className="panel" data-testid="facility-hero">
         <div className="p-hero">
           <span className="p-av">
-            <DoctorAvatar seed={facility.publicId} hue={null} size={118} />
+            <Avatar seed={vm.publicId} hue={vm.avatarHue} size={118} />
           </span>
           <div>
-            <span className="kicker">{t(`facility.type.${facility.type}`)}</span>
-            <h1>{branchTitle(facility)}</h1>
-            <p className="p-spec">{placeLine(facility) ?? notProvided}</p>
+            <span className="kicker">{t(`facility.type.${vm.type}`)}</span>
+            <h1>{vm.name}</h1>
+            <p className="p-spec">{vm.branchName ? `${vm.branchName} · ${place}` : place}</p>
             <div className="p-flags">
-              <span className="badge plain" data-testid="facility-profile-count">
-                {t('facility.visitCount', {
-                  n: facility.visitCount,
-                  count: formatNumber(facility.visitCount, locale),
-                })}
-              </span>
+              <NotVerified kind="facility" describedById="facility-not-verified-why" />
+              {accounts !== undefined ? (
+                <span className="badge plain" data-testid="facility-profile-count">
+                  {accounts > 0
+                    ? t('facility.visitCount', {
+                        n: accounts,
+                        count: formatNumber(accounts, locale),
+                      })
+                    : t('facility.noVisits')}
+                </span>
+              ) : null}
+              {vm.feedbackVisible && vm.accountsLimitedData ? (
+                <span className="badge warn">{t('label.limitedData')}</span>
+              ) : null}
+              <ProvTag provenance={vm.provenance.name} />
+              <ParentBadge card={vm} />
             </div>
           </div>
         </div>
@@ -76,60 +61,88 @@ export function FacilityProfile({ facility }: { facility: DemoFacilityDetail }) 
 
       <div className="p-grid">
         <div>
-          <h2 className="section-head">{t('facility.accounts')}</h2>
-          {facility.visits.length > 0 ? (
-            facility.visits.map((visit) => <VisitRow key={visit.publicId} visit={visit} />)
-          ) : (
-            <div className="empty-state">
-              <p>{t('facility.noVisits')}</p>
-            </div>
-          )}
+          {vm.feedbackVisible && vm.criteria.length > 0 ? (
+            <section className="panel" data-testid="facility-criteria">
+              <h2>{t('facility.criteria')}</h2>
+              {vm.accountsLimitedData ? (
+                <p className="limited" data-testid="facility-limited">
+                  <b>{t('label.limitedData')}</b>
+                  <span>
+                    {t('label.limitedDataWhy', { threshold: formatNumber(threshold, locale) })}
+                  </span>
+                </p>
+              ) : null}
+              <div className="crit-grid">
+                {vm.criteria.map(({ key, dist }) => (
+                  <div className="crit" key={key} data-testid={`crit-${key}`}>
+                    <h3>{t(`crit.${key}`)}</h3>
+                    <DistBlock dist={dist} prefix="crit." threshold={threshold} limitedNote="tag" />
+                    {key === 'reportTrust' ? (
+                      <p className="note">{t('crit.reportTrustNote')}</p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {vm.feedbackVisible ? (
+            <>
+              <h2 className="section-head">{t('facility.accounts')}</h2>
+              {vm.accounts.length > 0 ? (
+                <Reveal as="div">
+                  {vm.accounts.map((account) => (
+                    <FacilityAccountRow key={account.publicId} account={account} />
+                  ))}
+                </Reveal>
+              ) : (
+                <div className="empty-state">
+                  <p>{t('facility.noVisits')}</p>
+                </div>
+              )}
+            </>
+          ) : null}
         </div>
 
         <aside className="p-side">
-          <section className="panel">
-            <h2 style={{ fontSize: '15px' }}>{t('facility.address')}</h2>
-            <p className="note">{facility.address ?? notProvided}</p>
+          <section className="panel" data-testid="facility-address">
+            <h2>{t('facility.address')}</h2>
+            <p className="note">{vm.address ?? notProvided}</p>
+            {vm.address && vm.provenance.address ? (
+              <ProvTag provenance={vm.provenance.address} />
+            ) : null}
           </section>
-          {facility.doctors.length > 0 ? (
+          {vm.doctorsHere.length > 0 ? (
             <section className="panel" data-testid="facility-doctors">
-              <h2 style={{ fontSize: '15px' }}>{t('facility.doctorsHere')}</h2>
-              <div className="mini-list">
-                {facility.doctors.map((doctor) => (
-                  <Link className="mini-row" key={doctor.id} href={`/doctors/${doctor.publicId}`}>
-                    <span className="mini-av">
-                      <DoctorAvatar seed={doctor.publicId} hue={null} size={38} />
-                    </span>
-                    <span>
-                      <b>{doctor.name}</b>
-                      <span>{doctor.specialty ?? notProvided}</span>
-                    </span>
-                  </Link>
+              <h2>{t('facility.doctorsHere')}</h2>
+              <MiniList>
+                {vm.doctorsHere.map((doctor) => (
+                  <MiniRow
+                    key={doctor.publicId}
+                    href={`/doctors/${doctor.publicId}`}
+                    avatar={<Avatar seed={doctor.publicId} hue={doctor.avatarHue} size={38} />}
+                    title={doctor.name}
+                    sub={doctor.specialty ?? notProvided}
+                  />
                 ))}
-              </div>
+              </MiniList>
               <p className="note">{t('facility.doctorsNote')}</p>
             </section>
           ) : null}
-          {facility.siblings.length > 0 ? (
+          {vm.siblings.length > 0 ? (
             <section className="panel" data-testid="facility-siblings">
-              <h2 style={{ fontSize: '15px' }}>{t('facility.branch')}</h2>
-              <div className="mini-list">
-                {facility.siblings.map((sibling) => (
-                  <Link
-                    className="mini-row"
+              <h2>{t('facility.branch')}</h2>
+              <MiniList>
+                {vm.siblings.map((sibling) => (
+                  <MiniRow
                     key={sibling.publicId}
                     href={`/facilities/${sibling.publicId}`}
-                  >
-                    <span className="mini-av">
-                      <DoctorAvatar seed={sibling.publicId} hue={null} size={38} />
-                    </span>
-                    <span>
-                      <b>{sibling.branchName ?? sibling.facilityName}</b>
-                      <span>{placeLine(sibling) ?? notProvided}</span>
-                    </span>
-                  </Link>
+                    avatar={<Avatar seed={sibling.publicId} hue={sibling.avatarHue} size={38} />}
+                    title={sibling.branchName ?? sibling.name}
+                    sub={sibling.area ?? notProvided}
+                  />
                 ))}
-              </div>
+              </MiniList>
             </section>
           ) : null}
         </aside>

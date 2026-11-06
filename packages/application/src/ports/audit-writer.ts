@@ -15,8 +15,11 @@ export type AuditDetailValue =
 
 export type AuditDetails = { readonly [key: string]: AuditDetailValue };
 
-/** `account:<accountId>`, `staff:<accountId>`, `system` or `anonymous`. */
-export type AuditActor = `${'account' | 'staff'}:${string}` | 'system' | 'anonymous';
+/**
+ * `account:<accountId>`, `staff:<accountId>`, `system` or `anonymous`; `persona:<personaId>` is
+ * what an operation inside a publish records, so an anonymous review names no account (U46 BR5.3).
+ */
+export type AuditActor = `${'account' | 'staff' | 'persona'}:${string}` | 'system' | 'anonymous';
 
 export interface AuditEntry {
   /** e.g. `account:<accountId>` */

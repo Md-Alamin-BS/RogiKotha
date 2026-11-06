@@ -4,10 +4,7 @@
 // one package that both the database data functions and the web components may import (T-010).
 import type {
   AccountStatus,
-  Criterion,
-  CriterionValue,
   EvidenceState,
-  FacilityType,
   IdentityMode,
   Locale,
   Outcome,
@@ -242,56 +239,4 @@ export interface DemoAddCommentInput {
   parentPublicId: string | null;
   authorPersonaId: string;
   body: string;
-}
-
-/** One hospital, clinic or diagnostic branch in the /facilities list. */
-export interface DemoFacilityRow {
-  /** The branch's public id: every branch has its own page, as in the prototype. */
-  publicId: string;
-  facilityName: string;
-  /** Null when the branch carries the facility's own name. */
-  branchName: string | null;
-  type: FacilityType;
-  city: string | null;
-  area: string | null;
-  /** Published visit descriptions of this branch. A count, never a quality score. */
-  visitCount: number;
-}
-
-/** One published visit description of a facility branch. */
-export interface DemoFacilityVisit {
-  publicId: string;
-  /** Null for an anonymous author. */
-  authorDisplayName: string | null;
-  identityMode: IdentityMode;
-  periodYear: number;
-  periodMonth: number;
-  body: string;
-  /** Only the criteria the visitor answered, in the fixed criteria order. */
-  criteria: { criterion: Criterion; value: CriterionValue }[];
-}
-
-export interface DemoFacilityDetail extends DemoFacilityRow {
-  address: string | null;
-  visits: DemoFacilityVisit[];
-  /** Doctors with a chamber at this branch; listed only, never joined to the visits. */
-  doctors: DemoDoctorRef[];
-  /** The facility's other branches. */
-  siblings: DemoFacilityRow[];
-}
-
-/** One health topic (a condition term) in the /topics list. */
-export interface DemoTopicRow {
-  publicId: string;
-  name: string;
-  /** Published experiences tagged with this topic. */
-  experienceCount: number;
-}
-
-export interface DemoTopicDetail extends DemoTopicRow {
-  /** Other wordings people use, in the active language's script or as typed. */
-  aliases: string[];
-  experiences: DemoReviewCard[];
-  /** Doctors people wrote about for this topic, most experiences first. */
-  doctors: (DemoDoctorRef & { experienceCount: number })[];
 }

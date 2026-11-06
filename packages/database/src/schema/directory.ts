@@ -1,8 +1,10 @@
 // Directory (02-data-model.md §4).
 import type { Provenance } from '@rogikotha/contracts';
+import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import {
   boolean,
+  check,
   integer,
   jsonb,
   pgTable,
@@ -109,10 +111,19 @@ export const facilityBranches = pgTable(
     fieldProvenance: jsonb('field_provenance').$type<FieldProvenance>().notNull().default({}),
     state: publicationStateEnum('state').notNull(),
     isPrimary: boolean('is_primary').notNull().default(false),
+    // FD-108: the branch's own name, filled only when `name_*` holds a branch label; and its hue.
+    ownNameEn: text('own_name_en'),
+    ownNameBn: text('own_name_bn'),
+    avatarHue: smallint('avatar_hue'),
     ...timestamps(),
   },
   (t) => [
     uniqueIndex('facility_branches_seed_ref_unique').on(t.seedRef).where(wherePresent(t.seedRef)),
+    check(
+      'facility_branches_own_name_both_or_neither',
+      sql`(${t.ownNameEn} is null) = (${t.ownNameBn} is null)`,
+    ),
+    check('facility_branches_avatar_hue_check', sql`${t.avatarHue} between 0 and 359`),
   ],
 );
 

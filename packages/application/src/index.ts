@@ -6,4 +6,7 @@ export * from './audit';
 export * from './authorization/capabilities';
 export * from './modules/account';
 export * from './modules/notification';
+export * from './modules/directory';
+export * from './modules/taxonomy';
+export * from './modules/review';
 export * from './modules/identity';

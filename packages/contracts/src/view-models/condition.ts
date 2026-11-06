@@ -1,35 +1,55 @@
-// Replaces: `renderCondition` (topic/condition page) and the topic index
-// cards, app.js. Maps from RK.conditions (name, aliases) and RK.reviews
-// (tags grouped by tag_group, doctorId, sentiment/outcome).
-//
-// TODO(T-203): owner refines every field below against the ported
-// component; the aliases list (incl. Banglish) is taxonomy_aliases, not
-// rendered here directly.
+// Replaces: `renderCondition` (topic page) and `renderTopicIndex`, app.js 1173-1322 and
+// 1906-1924. U46 functional-spec § 7. Every count is of distinct eligible accounts (BR3.3, BR3.4).
 import type { DistributionVM, FacilityRefVM } from './doctor';
+import type { ExperienceCardVM } from './experience-card';
 
 export interface ConditionCardVM {
   publicId: string;
   name: string;
-  accountsCount: number;
+  /** Zero included: an empty topic is listed (BR4.4). */
+  accountsTotal: number;
 }
 
-export interface ConditionDoctorRefVM {
+export interface ConditionMentionVM {
+  label: string;
+  count: number;
+}
+
+export interface ConditionPlaceVM {
+  hospital?: string;
+  area?: string;
+  city?: string;
+  count: number;
+}
+
+export interface ConditionDoctorVM {
   publicId: string;
   name: string;
-  specialty: string;
+  specialty?: string;
   count: number;
+  primaryChamber?: string;
+  area?: string;
+  city?: string;
+  avatarHue: number;
 }
 
 export interface ConditionPageVM {
   publicId: string;
   name: string;
+  provisional: boolean;
+  aliases: string[];
+  accountsTotal: number;
+  accountsLimitedData: boolean;
+  doctorsTotal: number;
+  /** At most three, by account count. */
+  specialties: { name: string; count: number }[];
+  places: ConditionPlaceVM[];
   sentiment: DistributionVM;
   outcome: DistributionVM;
-  medicines: { name: string; count: number }[];
-  treatments: { name: string; count: number }[];
-  symptoms: { name: string; count: number }[];
-  doctors: ConditionDoctorRefVM[];
+  medicines: ConditionMentionVM[];
+  treatments: ConditionMentionVM[];
+  symptoms: ConditionMentionVM[];
+  accounts: ExperienceCardVM[];
+  doctors: ConditionDoctorVM[];
   facilities: FacilityRefVM[];
-  districts: { name: string; count: number }[];
-  accountsCount: number;
 }

@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
-import type { Locale } from '@rogikotha/contracts';
+import { getTranslations } from 'next-intl/server';
 import { ViewShell } from '@/components/patient/ViewShell';
-import { DoctorList } from '@/components/patient/doctors/DoctorList';
-import { doctors } from '@/server/data';
-import { titleForView, documentTitle } from '@/lib/titles';
+import { DoctorIndex } from '@/components/patient/doctors/DoctorIndex';
+import { documentTitle } from '@/lib/titles';
+import { loadDoctorIndex } from './load';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
@@ -12,13 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function DoctorIndexPage() {
-  const t = await getTranslations();
-  const locale = (await getLocale()) as Locale;
-  const rows = await doctors.listDoctors(locale);
+  const { cards, total, threshold } = await loadDoctorIndex();
 
   return (
-    <ViewShell view="doctors" title={titleForView('doctors', t)}>
-      <DoctorList doctors={rows} />
+    // IndexHead brings the page's only h1.
+    <ViewShell view="doctors" title="">
+      <DoctorIndex cards={cards} total={total} threshold={threshold} />
     </ViewShell>
   );
 }

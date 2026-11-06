@@ -66,3 +66,22 @@ export function stripSlug(param: string): string | null {
   if (!SLUGGED_PUBLIC_ID_RE.test(param)) return null;
   return param.slice(0, 10);
 }
+
+/**
+ * The prototype's `hash()` (ui-design-prototype/shared/rogikotha-data.js), FNV-1a style. Its
+ * multiply is a double, not `Math.imul`, so large products lose low bits; kept as written so a
+ * hue matches the prototype's for the same text (BR3.8).
+ */
+export function prototypeHash(text: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = (h * 16777619) >>> 0;
+  }
+  return h;
+}
+
+/** The avatar hue of a record without a stored one: the same public id always gives the same hue. */
+export function stableHue(publicId: string): number {
+  return prototypeHash(publicId) % 360;
+}

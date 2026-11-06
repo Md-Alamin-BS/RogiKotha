@@ -10,8 +10,11 @@ import { doctors } from '../schema/directory';
 import { evidenceItems } from '../schema/evidence';
 import { personaLinks, personas } from '../schema/identity';
 import { reviews } from '../schema/review';
+import { createInterimPublicEvidenceCount } from '../repositories/public-evidence-count-interim';
+import { PgReviewReadRepository } from '../repositories/review-reads';
 import { testDb } from '../test-setup';
-import { listPublishedReviewsForDoctor, listRecentPublishedReviews } from './doctors';
+import { appTxOf } from '../unit-of-work';
+import { listRecentPublishedReviews } from './doctors';
 import { addEvidenceItem, countReadyEvidence, markScanResult } from './evidence';
 import { getReviewByPublicId } from './reviews';
 
@@ -80,11 +83,19 @@ function buildUpload(reviewId: string, ownerAccountId: string): DemoAddEvidenceI
 /** The ready count the review shows on every public page that lists it. */
 async function publicCounts(publicId: string, doctorId: string) {
   const detail = await getReviewByPublicId(testDb, publicId, 'en');
-  const forDoctor = await listPublishedReviewsForDoctor(testDb, doctorId, 'bn');
+  // U46 (R-01): the doctor page reads its cards and counts through the binding the pages use.
+  const forDoctor = await new PgReviewReadRepository().publishedForDoctor(
+    appTxOf(testDb),
+    doctorId,
+  );
+  const doctorCounts = await createInterimPublicEvidenceCount(testDb).countPublicEvidenceByReview(
+    forDoctor.map((card) => card.id),
+  );
+  const doctorCard = forDoctor.find((card) => card.publicId === publicId);
   const recent = await listRecentPublishedReviews(testDb, 1000, 'en');
   return {
     detail: detail?.readyEvidenceCount,
-    doctorPage: forDoctor.find((card) => card.publicId === publicId)?.readyEvidenceCount,
+    doctorPage: doctorCard ? doctorCounts.get(doctorCard.id) : undefined,
     home: recent.find((card) => card.publicId === publicId)?.readyEvidenceCount,
   };
 }

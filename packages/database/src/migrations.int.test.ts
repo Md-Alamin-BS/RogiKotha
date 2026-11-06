@@ -132,7 +132,8 @@ describe('migrations apply from an empty database', () => {
     // consequence (ISS-242). T-101 adds 0009_auth_indexes_and_email_dedupe (functional-spec
     // § 10.5), the same mechanical consequence. U11 adds 0010_identity_constraints (BR5.4).
     const rows = await testDb.execute(sql`select hash from drizzle_migrations order by id`);
-    expect(rows.rows).toHaveLength(11);
+    // U46 adds 0011_directory_suggestions_and_branch_names (the same mechanical count change).
+    expect(rows.rows).toHaveLength(12);
   });
 
   it('creates every §1–§5, §9, §11, §15 table', async () => {

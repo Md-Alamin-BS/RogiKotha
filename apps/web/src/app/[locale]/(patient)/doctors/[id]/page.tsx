@@ -1,37 +1,40 @@
-import { cache } from 'react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getLocale, getTranslations } from 'next-intl/server';
-import type { Locale } from '@rogikotha/contracts';
+import { getTranslations } from 'next-intl/server';
 import { ViewShell } from '@/components/patient/ViewShell';
 import { DoctorProfile } from '@/components/patient/doctors/DoctorProfile';
-import { doctors } from '@/server/data';
-import { documentTitle } from '@/lib/titles';
+import type { RawSearch } from '@/lib/doctor-filters';
+import { loadDoctorProfile } from '../load';
 
 type Params = Promise<{ id: string }>;
+type SearchParams = Promise<RawSearch>;
 
-// One lookup per request, shared by the metadata and the page.
-const loadDoctor = cache((id: string, locale: Locale) => doctors.getDoctor(id, locale));
-
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams?: SearchParams;
+}): Promise<Metadata> {
   const { id } = await params;
   const t = await getTranslations();
-  const doctor = await loadDoctor(id, (await getLocale()) as Locale);
-  if (!doctor) return { title: documentTitle('profile', t) };
-  return { title: `${doctor.name} — ${t('brand.name')}` };
+  const { vm } = await loadDoctorProfile(id, await searchParams);
+  return { title: `${vm.name} — ${t('brand.name')}` };
 }
 
-export default async function DoctorProfilePage({ params }: { params: Params }) {
+export default async function DoctorProfilePage({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams?: SearchParams;
+}) {
   const { id } = await params;
-  const locale = (await getLocale()) as Locale;
-  const doctor = await loadDoctor(id, locale);
-  if (!doctor) notFound();
-  const experiences = await doctors.listPublishedReviewsForDoctor(doctor.id, locale);
+  const { vm, filters, threshold } = await loadDoctorProfile(id, await searchParams);
 
   return (
     // The hero brings the doctor's name as the page's only h1.
     <ViewShell view="profile" title="">
-      <DoctorProfile doctor={doctor} experiences={experiences} />
+      <DoctorProfile vm={vm} filters={filters} threshold={threshold} />
     </ViewShell>
   );
 }

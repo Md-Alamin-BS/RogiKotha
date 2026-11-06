@@ -8,35 +8,16 @@ import { doctorChambers, doctors } from '../schema/directory';
 import { evidenceItems } from '../schema/evidence';
 import { personas } from '../schema/identity';
 import { reviews, reviewVersions, type ReviewSections } from '../schema/review';
-import { taxonomyTerms } from '../schema/taxonomy';
 import { testDb } from '../test-setup';
 import {
   EXCERPT_LENGTH,
   getDoctor,
   listDoctorOptions,
-  listDoctors,
-  listPublishedReviewsForDoctor,
   listRecentPublishedReviews,
 } from './doctors';
 
 // Other test files share this database, so every assertion is scoped to rows built here.
 const run = newId().slice(-8);
-
-async function buildSpecialty(): Promise<string> {
-  const [term] = await testDb
-    .insert(taxonomyTerms)
-    .values({
-      publicId: newPublicId(),
-      kind: 'specialty',
-      nameEn: 'Cardiology',
-      nameBn: 'হৃদরোগ',
-      nameKeyEn: `cardiology-${newId()}`,
-      nameKeyBn: `cardiology-bn-${newId()}`,
-      state: 'published',
-    })
-    .returning({ id: taxonomyTerms.id });
-  return term!.id;
-}
 
 interface DoctorOverrides {
   nameEn?: string;
@@ -169,48 +150,14 @@ async function buildComment(reviewId: string, personaId: string, deleted = false
   });
 }
 
+// listRecentPublishedReviews over the whole table, narrowed to one doctor's cards.
+const recentCardsFor = async (doctorId: string) =>
+  (await listRecentPublishedReviews(testDb, 10_000, 'en')).filter((c) => c.doctor.id === doctorId);
+
 const ids = <T extends { id: string }>(rows: T[], wanted: string[]) =>
   rows.filter((r) => wanted.includes(r.id)).map((r) => r.id);
 
 describe('demo doctor directory', () => {
-  it('lists doctors by published experiences, then by name, never by sentiment', async () => {
-    const persona = await buildPersona();
-    const busy = await buildDoctor({ nameEn: `Zz ${run} Charlie` });
-    const quietA = await buildDoctor({ nameEn: `Zz ${run} Alpha` });
-    const quietB = await buildDoctor({ nameEn: `Zz ${run} Bravo` });
-    await buildReview(busy.id, persona);
-    await buildReview(busy.id, persona);
-    await buildReview(quietB.id, persona, { state: 'hidden' });
-    await buildReview(quietB.id, persona, { deletedAt: new Date() });
-
-    const rows = await listDoctors(testDb, 'en');
-
-    expect(ids(rows, [busy.id, quietA.id, quietB.id])).toEqual([busy.id, quietA.id, quietB.id]);
-    expect(rows.find((r) => r.id === busy.id)?.publishedReviewCount).toBe(2);
-    expect(rows.find((r) => r.id === quietB.id)?.publishedReviewCount).toBe(0);
-  });
-
-  it('leaves draft and merged doctors out of the list', async () => {
-    const live = await buildDoctor();
-    const draft = await buildDoctor({ state: 'draft' });
-    const merged = await buildDoctor({ mergedIntoId: live.id });
-
-    const rows = await listDoctors(testDb, 'en');
-
-    expect(ids(rows, [live.id, draft.id, merged.id])).toEqual([live.id]);
-  });
-
-  it('gives every text in the requested language and null for a missing value', async () => {
-    const specialtyId = await buildSpecialty();
-    const doctor = await buildDoctor({ specialtyId, cityBn: null, areaEn: '  ' });
-
-    const bn = (await listDoctors(testDb, 'bn')).find((r) => r.id === doctor.id);
-    const en = (await listDoctors(testDb, 'en')).find((r) => r.id === doctor.id);
-
-    expect(bn).toMatchObject({ name: `ডা. পরীক্ষা ${run}`, specialty: 'হৃদরোগ', city: null });
-    expect(en).toMatchObject({ specialty: 'Cardiology', city: 'Dhaka', area: null });
-  });
-
   it('finds one doctor by uuid or public id, with chambers in their order', async () => {
     const doctor = await buildDoctor();
     await testDb.insert(doctorChambers).values([
@@ -254,7 +201,7 @@ describe('demo doctor directory', () => {
     await expect(getDoctor(testDb, draft.publicId, 'en')).resolves.toBeNull();
   });
 
-  it('lists a doctor’s published experiences newest first, leaving hidden and deleted ones out', async () => {
+  it('lists recent published experiences newest first, leaving hidden and deleted ones out', async () => {
     const doctor = await buildDoctor();
     const persona = await buildPersona('Rina');
     const older = await buildReview(doctor.id, persona, { publishedAt: new Date('2026-01-02') });
@@ -262,7 +209,7 @@ describe('demo doctor directory', () => {
     await buildReview(doctor.id, persona, { state: 'hidden' });
     await buildReview(doctor.id, persona, { deletedAt: new Date() });
 
-    const cards = await listPublishedReviewsForDoctor(testDb, doctor.id, 'en');
+    const cards = await recentCardsFor(doctor.id);
 
     expect(cards.map((c) => c.publicId)).toEqual([newer.publicId, older.publicId]);
     expect(cards[0]).toMatchObject({
@@ -292,7 +239,7 @@ describe('demo doctor directory', () => {
       actorId: account,
     });
 
-    const [card] = await listPublishedReviewsForDoctor(testDb, doctor.id, 'en');
+    const [card] = await recentCardsFor(doctor.id);
 
     expect(card).toMatchObject({ commentCount: 1, readyEvidenceCount: 1, edited: true });
   });
@@ -310,15 +257,11 @@ describe('demo doctor directory', () => {
       publishedAt: new Date('2026-01-01'),
     });
 
-    const [long, detailed] = await listPublishedReviewsForDoctor(testDb, doctor.id, 'en');
+    const [long, detailed] = await recentCardsFor(doctor.id);
 
     expect(long?.excerpt.endsWith('…')).toBe(true);
     expect(long?.excerpt.length).toBeLessThanOrEqual(EXCERPT_LENGTH + 1);
     expect(detailed?.excerpt).toBe('Thyroid, found on the second visit.');
-  });
-
-  it('returns no experiences for a malformed doctor id', async () => {
-    await expect(listPublishedReviewsForDoctor(testDb, 'not-a-uuid', 'en')).resolves.toEqual([]);
   });
 
   it('returns the most recent published experiences up to the limit', async () => {

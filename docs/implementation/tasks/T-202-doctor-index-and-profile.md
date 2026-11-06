@@ -16,6 +16,15 @@ This decision is binding and overrides the text below where they differ.
 
 - **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-202 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Goal, Read first, Not in scope, the motion step and the acceptance checks.
 
+## Amendments — release 1 (FD-105)
+
+These decisions are binding and override the text below where they differ. Release 1 builds this task inside Unit U46 `u46-directory`, together with T-201 and T-203 (FD-105; record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u46-directory/`).
+
+- **Paths as built** — routes `apps/web/src/app/[locale]/(patient)/doctors/page.tsx` and `doctors/[id]/page.tsx`, each reading a `cache()`d loader in `doctors/load.ts` (404 for a malformed or non-public id, 307 for a condition the doctor has no account for); components in `apps/web/src/components/patient/doctors/` (`DoctorIndex`, `DoctorEntry`, `DoctorProfile`, `ConditionPills`, `ProfileFilters`) and the shared primitives in `components/patient/shared/`. URL filters are parsed by `apps/web/src/lib/doctor-filters.ts`. Changes: Owned paths and Steps.
+- **FD-106** — distributions show exact counts with their denominator, never a percentage. Changes: the distribution steps and acceptance rows.
+- **FD-100** — a member-added doctor shows "added by a member, not confirmed" next to "Registration not verified".
+- **Deferred to release 2 (FD-105)** — the "Redirect" acceptance row (merged profiles, F4), the claim sheet and "Is this you?", field changes and photo suggestions (T-204), search filters and the compare tray (T-205, T-206), and paging (F3).
+
 ## Goal
 
 Port `renderDoctorIndex` and `renderProfile` (and the helpers they use) into React pages under

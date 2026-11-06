@@ -1,6 +1,7 @@
 // Taxonomy (02-data-model.md §5).
+import { sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import { boolean, pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, check, pgTable, smallint, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 import { accountProfiles } from './account';
 import { createdAt, id, publicId, wherePresent } from './_common';
@@ -21,10 +22,18 @@ export const taxonomyTerms = pgTable(
     canonicalId: uuid('canonical_id').references((): AnyPgColumn => taxonomyTerms.id),
     createdByAccountId: uuid('created_by_account_id').references(() => accountProfiles.id),
     state: publicationStateEnum('state').notNull(),
+    // U46 (ISS-157, BR4.5): the composer's suggestion chips, in `suggested_order`.
+    suggested: boolean('suggested').notNull().default(false),
+    suggestedOrder: smallint('suggested_order'),
     createdAt: createdAt(),
   },
   (t) => [
     uniqueIndex('taxonomy_terms_seed_ref_unique').on(t.seedRef).where(wherePresent(t.seedRef)),
+    // U46 BR5.2: one open provisional term per kind and wording, so a race inserts once.
+    uniqueIndex('taxonomy_terms_open_provisional_key_unique')
+      .on(t.kind, t.nameKeyEn)
+      .where(sql`${t.provisional} and ${t.canonicalId} is null`),
+    check('taxonomy_terms_suggested_order_check', sql`${t.suggestedOrder} >= 0`),
   ],
 );
 

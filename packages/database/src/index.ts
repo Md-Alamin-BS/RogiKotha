@@ -21,6 +21,10 @@ export * from './repositories/email-delivery';
 export * from './repositories/retention';
 export * from './repositories/data-requests';
 export * from './repositories/outbox';
+export * from './repositories/directory-module';
+export * from './repositories/taxonomy-module';
+export * from './repositories/review-reads';
+export * from './repositories/public-evidence-count-interim';
 export * from './search/index';
 export * from './queue/index';
 // Demo slice (FD-099): replaced by the repositories above when the full Units resume.

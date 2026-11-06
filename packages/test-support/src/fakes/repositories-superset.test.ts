@@ -100,6 +100,14 @@ describe('every repository fake is a method-name superset of its Pg*Repository s
   it('pairs every repository file, so a new one cannot go unchecked (ISS-223)', () => {
     // `outbox.ts` has its own fake shape (ListOutbox) and `not-implemented.ts` holds no repository.
     const unpairedByDesign = new Set(['not-implemented.ts', 'outbox.ts']);
+    // U46's repositories are paired with their fakes in `directory-repositories.test.ts` (BR8.4).
+    for (const file of [
+      'directory-module.ts',
+      'taxonomy-module.ts',
+      'review-reads.ts',
+      'public-evidence-count-interim.ts',
+    ])
+      unpairedByDesign.add(file);
     // Test helpers (`*-test-support.ts`) sit beside the repositories but are not repositories.
     const repositoryFiles = fs
       .readdirSync(repositoriesDir)

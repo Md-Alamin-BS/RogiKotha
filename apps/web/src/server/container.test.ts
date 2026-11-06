@@ -42,6 +42,11 @@ vi.mock('@rogikotha/database', () => {
       return { asPort: () => privatePort };
     }),
     PgUnitOfWork: Stub,
+    // U46's block.
+    PgDirectoryModuleRepository: Stub,
+    PgReviewReadRepository: Stub,
+    PgTaxonomyModuleRepository: Stub,
+    createInterimPublicEvidenceCount: vi.fn(() => ({})),
   };
 });
 vi.mock('./better-auth/instance', () => ({
@@ -103,6 +108,14 @@ describe('the web container', () => {
     getContainer();
 
     expect(ensure).toHaveBeenCalledWith(MAIL_SEND_JOB);
+  });
+
+  it('offers the directory, taxonomy and review read queries (U46)', () => {
+    const container = getContainer();
+
+    expect(container.directory.getDoctor.name).toBe('directory.getDoctor');
+    expect(container.taxonomy.getCondition.name).toBe('taxonomy.getCondition');
+    expect(container.reviewReads.listExperienceCards.kind).toBe('query');
   });
 
   it('hands the app settings to the commands without any secret', () => {

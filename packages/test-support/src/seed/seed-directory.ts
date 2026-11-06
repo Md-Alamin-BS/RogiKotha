@@ -12,12 +12,12 @@
 // contributor), logged as an `ISS-` row rather than inventing a persona
 // with no basis in the corpus.
 //
-// The `taxonomy_terms.suggested` column the task's addendum asks for
-// ("add the boolean column in T-005 if missing") does not exist and is
-// outside this task's owned `packages/database/src/schema/` — logged as
-// an `ISS-` row; `taxonomy.listSuggested` (T-201) has no data source until
-// that column lands.
-import type { Provenance } from '@rogikotha/contracts';
+// U46: taxonomy keys come from `normalizeAliasKey` (BR4.2, F8); the
+// prototype's TAG_GROUPS chips set `suggested` (BR4.5, ISS-157); a branch
+// with a label gets its own name, every branch its hue, and `name_*` keeps
+// its meaning (BR7.3). Rows are only added for new parents, so a re-run
+// stays a no-op and an older seeded database needs `pnpm demo:reset` (F7).
+import type { Provenance, TermKind } from '@rogikotha/contracts';
 import { newId, newPublicId } from '@rogikotha/contracts';
 import {
   doctorChambers,
@@ -31,6 +31,7 @@ import {
   taxonomyTerms,
   type Db,
 } from '@rogikotha/database';
+import { normalizeAliasKey } from '@rogikotha/domain';
 import { eq } from 'drizzle-orm';
 
 import {
@@ -46,6 +47,31 @@ import {
 import type { SeedContext } from './seed.js';
 
 const GENERIC_SUBMITTER_USERNAME = 'shirin_88';
+
+/** The prototype's condition chips, in chip order; its "Hypothyroidism" chip is c2 (BR4.5). */
+export const SUGGESTED_CONDITION_SEED_REFS = ['c1', 'c3', 'c2'] as const;
+
+/** The prototype's other TAG_GROUPS chips, seeded as canonical published suggested terms. */
+export const SUGGESTED_TERMS: {
+  kind: Exclude<TermKind, 'condition' | 'specialty'>;
+  en: string;
+  bn: string;
+}[] = [
+  { kind: 'symptom', en: 'Excessive thirst', bn: 'অতিরিক্ত তৃষ্ণা' },
+  { kind: 'symptom', en: 'Fatigue', bn: 'ক্লান্তি' },
+  { kind: 'symptom', en: 'Chest tightness', bn: 'বুকে চাপ' },
+  { kind: 'symptom', en: 'Blurred vision', bn: 'ঝাপসা দৃষ্টি' },
+  { kind: 'treatment', en: 'Insulin adjustment', bn: 'ইনসুলিন সমন্বয়' },
+  { kind: 'treatment', en: 'Physiotherapy', bn: 'ফিজিওথেরাপি' },
+  { kind: 'treatment', en: 'Diet plan', bn: 'খাদ্য পরিকল্পনা' },
+  { kind: 'medicine', en: 'Metformin', bn: 'মেটফরমিন' },
+  { kind: 'medicine', en: 'Levothyroxine', bn: 'লেভোথাইরক্সিন' },
+];
+
+function suggestedOrderOf(conditionSeedRef: string): number | null {
+  const at = (SUGGESTED_CONDITION_SEED_REFS as readonly string[]).indexOf(conditionSeedRef);
+  return at === -1 ? null : at;
+}
 
 function keyify(s: string): string {
   return s.normalize('NFC').toLowerCase().replace(/\s+/g, '');
@@ -93,10 +119,12 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
         kind: 'condition',
         nameEn: c.name.en,
         nameBn: c.name.bn,
-        nameKeyEn: keyify(c.name.en),
-        nameKeyBn: keyify(c.name.bn),
+        nameKeyEn: normalizeAliasKey(c.name.en),
+        nameKeyBn: normalizeAliasKey(c.name.bn),
         provisional: false,
         state: 'published',
+        suggested: suggestedOrderOf(c.seedRef) !== null,
+        suggestedOrder: suggestedOrderOf(c.seedRef),
       })
       .returning();
     ctx.taxonomyTermIdBySeedRef.set(c.seedRef, term!.id);
@@ -107,7 +135,7 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
         id: newId(),
         termId: term!.id,
         alias: alias.alias,
-        aliasKey: keyify(alias.alias),
+        aliasKey: normalizeAliasKey(alias.alias),
         lang: alias.lang,
         provenance: 'community',
       });
@@ -139,13 +167,42 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
         kind: 'specialty',
         nameEn: d.specialty.en,
         nameBn: d.specialty.bn,
-        nameKeyEn: keyify(d.specialty.en),
-        nameKeyBn: keyify(d.specialty.bn),
+        nameKeyEn: normalizeAliasKey(d.specialty.en),
+        nameKeyBn: normalizeAliasKey(d.specialty.bn),
         provisional: false,
         state: 'published',
       })
       .returning();
     specialtyIdByName.set(name, term!.id);
+    inserted += 1;
+  }
+
+  // --- taxonomy: the composer's other suggestion chips (BR4.5) ---------------
+  const nextOrderByKind = new Map<string, number>();
+  for (const chip of SUGGESTED_TERMS) {
+    const order = nextOrderByKind.get(chip.kind) ?? 0;
+    nextOrderByKind.set(chip.kind, order + 1);
+    const seedRef = `suggested-${chip.kind}-${keyify(chip.en)}`;
+    const [existing] = await db
+      .select({ id: taxonomyTerms.id })
+      .from(taxonomyTerms)
+      .where(eq(taxonomyTerms.seedRef, seedRef))
+      .limit(1);
+    if (existing) continue;
+    await db.insert(taxonomyTerms).values({
+      id: newId(),
+      publicId: newPublicId(),
+      seedRef,
+      kind: chip.kind,
+      nameEn: chip.en,
+      nameBn: chip.bn,
+      nameKeyEn: normalizeAliasKey(chip.en),
+      nameKeyBn: normalizeAliasKey(chip.bn),
+      provisional: false,
+      state: 'published',
+      suggested: true,
+      suggestedOrder: order,
+    });
     inserted += 1;
   }
 
@@ -207,6 +264,10 @@ export async function seedDirectory(db: Db, ctx: SeedContext): Promise<number> {
         facilityId,
         nameEn: branch.branchLabel?.en ?? branch.name.en,
         nameBn: branch.branchLabel?.bn ?? branch.name.bn,
+        // FD-108: `name_*` holds the label when there is one, so the own name goes beside it.
+        ownNameEn: branch.branchLabel ? branch.name.en : null,
+        ownNameBn: branch.branchLabel ? branch.name.bn : null,
+        avatarHue: branch.avatarHue,
         cityEn: branch.city.en,
         cityBn: branch.city.bn,
         areaEn: branch.area.en,

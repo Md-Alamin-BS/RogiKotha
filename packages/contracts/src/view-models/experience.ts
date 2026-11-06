@@ -8,22 +8,8 @@
 import type { FollowUpKind, Outcome, Relationship, Sentiment, TagGroup } from '../enums';
 import type { EvidenceGroupVM } from './evidence';
 
-export interface ExperienceCardVM {
-  publicId: string;
-  doctor: { publicId: string; name: string; specialty: string };
-  condition?: { publicId: string; name: string };
-  sentiment?: Sentiment;
-  outcome?: Outcome;
-  title: string;
-  excerpt: string;
-  period: string;
-  postedAt: string;
-  likes: number;
-  dislikes: number;
-  commentsCount: number;
-  evidenceCount: number;
-  detailed: boolean;
-}
+// The card moved to its own file with U46 (functional-spec § 7); U47 extends it there.
+export type { ExperienceCardVM } from './experience-card';
 
 export interface TimelineSectionVM {
   key: 'symptoms' | 'diagnosis' | 'treatment' | 'after';

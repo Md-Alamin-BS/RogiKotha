@@ -1,0 +1,472 @@
+{
+  "stage": "code-generation",
+  "unit": "u46-directory",
+  "version": 1,
+  "writes": [
+    {
+      "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u46-directory/code-generation/code-generation-plan.md"
+    },
+    {
+      "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u46-directory/code-generation/code-summary.md"
+    },
+    {
+      "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u46-directory/code-generation/traceability.json"
+    },
+    {
+      "path": "aidlc/spaces/default/intents/261011-aidlc-adoption/inception/contract-design/contract-summary.md"
+    },
+    {
+      "path": "apps/web/src/app/pages.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/directory.smoke.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/doctors/ConditionPills.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/doctors/DoctorEntry.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/doctors/DoctorIndex.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/doctors/DoctorIndex.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/doctors/DoctorProfile.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/doctors/DoctorProfile.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/doctors/ProfileFilters.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/doctors/ProfileFilters.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/doctors/directory-test-support.ts"
+    },
+    {
+      "path": "apps/web/src/components/patient/facilities/FacilityAccountRow.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/facilities/FacilityDirectory.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/facilities/FacilityEntry.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/facilities/FacilityIndex.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/facilities/FacilityProfile.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/AccountRow.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/Avatar.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/Avatar.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/Badge.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/BrowseCard.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/ConditionLink.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/DistBlock.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/DoctorLink.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/EmergencyPanel.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/FacilityLink.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/IndexHead.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/MemberAdded.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/MiniList.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/NotVerified.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/OutcomeBlock.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/SentimentBlock.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/shared/link-test-support.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/topics/ConditionPage.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/topics/ConditionViews.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/topics/FreqList.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/topics/PlacesPanel.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/topics/TopicIndex.tsx"
+    },
+    {
+      "path": "apps/web/src/lib/doctor-filters.test.ts"
+    },
+    {
+      "path": "apps/web/src/lib/doctor-filters.ts"
+    },
+    {
+      "path": "apps/web/src/server/container.test.ts"
+    },
+    {
+      "path": "apps/web/src/server/container.ts"
+    },
+    {
+      "path": "apps/web/src/server/data.ts"
+    },
+    {
+      "path": "apps/web/src/styles/patient.css"
+    },
+    {
+      "path": "docs/implementation/02-data-model.md"
+    },
+    {
+      "path": "docs/implementation/03-routes-and-contracts.md"
+    },
+    {
+      "path": "docs/implementation/ISSUES.md"
+    },
+    {
+      "path": "docs/implementation/tasks/T-201-directory-and-taxonomy-modules.md"
+    },
+    {
+      "path": "docs/implementation/tasks/T-202-doctor-index-and-profile.md"
+    },
+    {
+      "path": "docs/implementation/tasks/T-203-facility-and-condition-pages.md"
+    },
+    {
+      "path": "docs/status/decision-log.md"
+    },
+    {
+      "path": "packages/application/src/index.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/audit.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/boundary.test.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/deps.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/directory-test-support.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/directory.test.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/index.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/internal/add-member-doctor.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/mappers.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/ports.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/queries/doctors-at-branch.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/queries/facilities-for-doctor.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/queries/get-doctor.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/queries/get-facility.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/queries/list-doctors.ts"
+    },
+    {
+      "path": "packages/application/src/modules/directory/queries/list-facilities.ts"
+    },
+    {
+      "path": "packages/application/src/modules/review/cards.ts"
+    },
+    {
+      "path": "packages/application/src/modules/review/condition-stats.ts"
+    },
+    {
+      "path": "packages/application/src/modules/review/index.ts"
+    },
+    {
+      "path": "packages/application/src/modules/review/provider-experience.ts"
+    },
+    {
+      "path": "packages/application/src/modules/review/queries/criteria-distribution.ts"
+    },
+    {
+      "path": "packages/application/src/modules/review/queries/list-experience-cards.ts"
+    },
+    {
+      "path": "packages/application/src/modules/review/queries/outcome-distribution.ts"
+    },
+    {
+      "path": "packages/application/src/modules/review/queries/sentiment-distribution.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/audit.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/commands/create-provisional.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/deps.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/index.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/ports.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/provisional-term.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/queries/get-condition.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/queries/list-conditions.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/queries/list-suggested.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/queries/resolve.ts"
+    },
+    {
+      "path": "packages/application/src/modules/taxonomy/taxonomy.test.ts"
+    },
+    {
+      "path": "packages/application/src/ports/audit-writer.ts"
+    },
+    {
+      "path": "packages/application/src/ports/index.ts"
+    },
+    {
+      "path": "packages/application/src/ports/outbox.ts"
+    },
+    {
+      "path": "packages/application/src/ports/public-evidence-count.ts"
+    },
+    {
+      "path": "packages/application/src/ports/repositories/directory.ts"
+    },
+    {
+      "path": "packages/application/src/ports/repositories/index.ts"
+    },
+    {
+      "path": "packages/application/src/ports/repositories/review.ts"
+    },
+    {
+      "path": "packages/application/src/ports/repositories/taxonomy.ts"
+    },
+    {
+      "path": "packages/contracts/src/ids-hue.test.ts"
+    },
+    {
+      "path": "packages/contracts/src/ids.ts"
+    },
+    {
+      "path": "packages/contracts/src/index.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/directory.test.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/directory.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/taxonomy.test.ts"
+    },
+    {
+      "path": "packages/contracts/src/schemas/taxonomy.ts"
+    },
+    {
+      "path": "packages/contracts/src/view-models/condition.ts"
+    },
+    {
+      "path": "packages/contracts/src/view-models/demo.ts"
+    },
+    {
+      "path": "packages/contracts/src/view-models/doctor.ts"
+    },
+    {
+      "path": "packages/contracts/src/view-models/experience-card.ts"
+    },
+    {
+      "path": "packages/contracts/src/view-models/experience.ts"
+    },
+    {
+      "path": "packages/contracts/src/view-models/facility.ts"
+    },
+    {
+      "path": "packages/database/src/demo/demo-slice.smoke.test.ts"
+    },
+    {
+      "path": "packages/database/src/demo/doctors.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/demo/doctors.ts"
+    },
+    {
+      "path": "packages/database/src/demo/evidence.adversarial.test.ts"
+    },
+    {
+      "path": "packages/database/src/demo/index.ts"
+    },
+    {
+      "path": "packages/database/src/demo/reviews.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/global-setup.ts"
+    },
+    {
+      "path": "packages/database/src/index.ts"
+    },
+    {
+      "path": "packages/database/src/migrations.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/migrations/0011_directory_suggestions_and_branch_names.sql"
+    },
+    {
+      "path": "packages/database/src/migrations/meta/0011_snapshot.json"
+    },
+    {
+      "path": "packages/database/src/migrations/meta/_journal.json"
+    },
+    {
+      "path": "packages/database/src/repositories/directory-module.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/directory-module.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/directory-test-support.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/directory.smoke.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/public-evidence-count-interim.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/public-evidence-count-interim.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/review-reads.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/review-reads.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/taxonomy-module.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/repositories/taxonomy-module.ts"
+    },
+    {
+      "path": "packages/database/src/reset-guard.int.test.ts"
+    },
+    {
+      "path": "packages/database/src/reset.ts"
+    },
+    {
+      "path": "packages/database/src/schema/directory.ts"
+    },
+    {
+      "path": "packages/database/src/schema/taxonomy.ts"
+    },
+    {
+      "path": "packages/database/src/validator-probes.int.test.ts"
+    },
+    {
+      "path": "packages/domain/src/directory/policies.test.ts"
+    },
+    {
+      "path": "packages/domain/src/directory/policies.ts"
+    },
+    {
+      "path": "packages/domain/src/index.ts"
+    },
+    {
+      "path": "packages/domain/src/review/policies.test.ts"
+    },
+    {
+      "path": "packages/domain/src/review/policies.ts"
+    },
+    {
+      "path": "packages/domain/src/taxonomy/policies.test.ts"
+    },
+    {
+      "path": "packages/domain/src/taxonomy/policies.ts"
+    },
+    {
+      "path": "packages/i18n/messages/bn.json"
+    },
+    {
+      "path": "packages/i18n/messages/en.json"
+    },
+    {
+      "path": "packages/i18n/src/keys.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/directory-ports.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/directory-repositories.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/directory-repositories.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/index.ts"
+    },
+    {
+      "path": "packages/test-support/src/fakes/repositories-superset.test.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed-directory.ts"
+    },
+    {
+      "path": "packages/test-support/src/seed/seed.int.test.ts"
+    }
+  ]
+}

@@ -78,6 +78,13 @@
       "when": 1793886337842,
       "tag": "0010_identity_constraints",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793959989125,
+      "tag": "0011_directory_suggestions_and_branch_names",
+      "breakpoints": true
     }
   ]
 }

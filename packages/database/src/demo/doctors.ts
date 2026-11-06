@@ -7,11 +7,8 @@ import type {
   DemoDoctorOption,
   DemoReviewCard,
   DemoSpecialtyOption,
-  DemoTopicDetail,
-  DemoTopicRow,
   Locale,
 } from '@rogikotha/contracts';
-import { PUBLIC_ID_RE } from '@rogikotha/contracts';
 import { and, asc, count, desc, eq, inArray, isNotNull, isNull, sql, type SQL } from 'drizzle-orm';
 
 import type { Db } from '../client';
@@ -20,7 +17,7 @@ import { doctorChambers, doctors, profileSubmissions } from '../schema/directory
 import { evidenceItems } from '../schema/evidence';
 import { personas } from '../schema/identity';
 import { reviews, reviewVersions, type ReviewSections } from '../schema/review';
-import { taxonomyAliases, taxonomyTerms } from '../schema/taxonomy';
+import { taxonomyTerms } from '../schema/taxonomy';
 import { DEMO_READY_EVIDENCE_STATES } from './evidence';
 
 /** The prototype's `accountRow()` cuts the body at 190 characters. */
@@ -109,16 +106,6 @@ function toListRow(row: DoctorRow, locale: Locale): DemoDoctorListRow {
     publishedReviewCount: row.publishedReviewCount,
     memberAdded: Boolean(row.memberAdded),
   };
-}
-
-/**
- * Published doctors (`state = 'published'`, not merged) in a neutral order: most published
- * experiences first, then name in `locale`. Never ordered by sentiment or any quality signal.
- */
-export async function listDoctors(db: Db, locale: Locale): Promise<DemoDoctorListRow[]> {
-  const { query, reviewCount } = selectDoctorRows(db, undefined);
-  const rows = await query.orderBy(desc(reviewCount), asc(doctorName(locale)), asc(doctors.id));
-  return rows.map((row) => toListRow(row, locale));
 }
 
 function listChambers(db: Db, doctorId: string, locale: Locale): Promise<DemoDoctorChamber[]> {
@@ -241,17 +228,6 @@ function toReviewCard(row: ReviewCardRow, locale: Locale): DemoReviewCard {
   };
 }
 
-/** Published experiences about one doctor (by uuid), most recent first. */
-export async function listPublishedReviewsForDoctor(
-  db: Db,
-  doctorId: string,
-  locale: Locale,
-): Promise<DemoReviewCard[]> {
-  if (!UUID_RE.test(doctorId)) return [];
-  const rows = await selectReviewCards(db, locale, eq(reviews.doctorId, doctorId));
-  return rows.map((row) => toReviewCard(row, locale));
-}
-
 /** The `limit` most recently published experiences, for the home page. */
 export async function listRecentPublishedReviews(
   db: Db,
@@ -294,101 +270,4 @@ export async function listSpecialtyOptions(db: Db, locale: Locale): Promise<Demo
     .from(taxonomyTerms)
     .where(and(eq(taxonomyTerms.kind, 'specialty'), eq(taxonomyTerms.state, 'published')))
     .orderBy(asc(name), asc(taxonomyTerms.id));
-}
-
-/**
- * A published review is about a topic when one of its condition tags points at the term, or its
- * free text is the term's name or one of its aliases, ignoring case and outer spaces. The seed
- * stores condition tags as free text, so both forms count.
- */
-// Written with explicit table names: in a single-table select Drizzle leaves column names bare,
-// which a correlated subquery would read as ambiguous.
-function taggedWithTopic(termId: SQL | string) {
-  return sql`exists (
-    select 1 from review_tags rt
-    where rt.review_id = reviews.id
-      and rt."group" = 'condition'
-      and (
-        rt.term_id = ${termId}
-        or lower(btrim(normalize(rt.free_text, NFC))) in (
-          select lower(normalize(t.name_en, NFC)) from taxonomy_terms t where t.id = ${termId}
-          union select lower(normalize(t.name_bn, NFC)) from taxonomy_terms t where t.id = ${termId}
-          union select lower(normalize(a.alias, NFC)) from taxonomy_aliases a where a.term_id = ${termId}
-        )
-      )
-  )`;
-}
-
-const isPublishedTopic = and(
-  eq(taxonomyTerms.kind, 'condition'),
-  eq(taxonomyTerms.state, 'published'),
-);
-
-function topicExperienceCount() {
-  return sql<number>`(
-    select count(*) from reviews
-    inner join doctors on doctors.id = reviews.doctor_id
-    where reviews.state = 'published' and reviews.deleted_at is null
-      and reviews.published_at is not null
-      and doctors.state = 'published' and doctors.merged_into_id is null
-      and ${taggedWithTopic(sql`taxonomy_terms.id`)}
-  )`.mapWith(Number);
-}
-
-/** Every published health topic, alphabetical in `locale`, including those nobody wrote about. */
-export async function listTopics(db: Db, locale: Locale): Promise<DemoTopicRow[]> {
-  const name = locale === 'bn' ? taxonomyTerms.nameBn : taxonomyTerms.nameEn;
-  return db
-    .select({ publicId: taxonomyTerms.publicId, name, experienceCount: topicExperienceCount() })
-    .from(taxonomyTerms)
-    .where(isPublishedTopic)
-    .orderBy(asc(name), asc(taxonomyTerms.id));
-}
-
-/** One published health topic by public id, with its experiences and the doctors in them. */
-export async function getTopic(
-  db: Db,
-  publicId: string,
-  locale: Locale,
-): Promise<DemoTopicDetail | null> {
-  if (!PUBLIC_ID_RE.test(publicId)) return null;
-  const name = locale === 'bn' ? taxonomyTerms.nameBn : taxonomyTerms.nameEn;
-  const [topic] = await db
-    .select({
-      id: taxonomyTerms.id,
-      publicId: taxonomyTerms.publicId,
-      name,
-      experienceCount: topicExperienceCount(),
-    })
-    .from(taxonomyTerms)
-    .where(and(isPublishedTopic, eq(taxonomyTerms.publicId, publicId)))
-    .limit(1);
-  if (!topic) return null;
-
-  const aliasRows = await db
-    .select({ alias: taxonomyAliases.alias })
-    .from(taxonomyAliases)
-    .where(eq(taxonomyAliases.termId, topic.id))
-    .orderBy(asc(taxonomyAliases.alias));
-  const rows = await selectReviewCards(db, locale, taggedWithTopic(topic.id));
-  const experiences = rows.map((row) => toReviewCard(row, locale));
-
-  const byDoctor = new Map<string, DemoTopicDetail['doctors'][number]>();
-  for (const card of experiences) {
-    const seen = byDoctor.get(card.doctor.id);
-    if (seen) seen.experienceCount += 1;
-    else byDoctor.set(card.doctor.id, { ...card.doctor, experienceCount: 1 });
-  }
-  const doctorsInTopic = [...byDoctor.values()].sort(
-    (a, b) => b.experienceCount - a.experienceCount || a.name.localeCompare(b.name, locale),
-  );
-
-  return {
-    publicId: topic.publicId,
-    name: topic.name,
-    experienceCount: topic.experienceCount,
-    aliases: aliasRows.map((a) => a.alias).filter((a) => a !== topic.name),
-    experiences,
-    doctors: doctorsInTopic,
-  };
 }

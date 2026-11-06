@@ -64,6 +64,7 @@ describe('terminateStaleTestBackends', () => {
     expect(isTestDatabaseName('rogikotha_test')).toBe(true);
     expect(isTestDatabaseName('rogikotha_test_b')).toBe(true);
     expect(isTestDatabaseName('rogikotha_test_w2')).toBe(true);
+    expect(isTestDatabaseName('rogikotha_test_w3')).toBe(true);
     expect(isTestDatabaseName('rogikotha_test_w')).toBe(false);
     expect(isTestDatabaseName('rogikotha_test_w10')).toBe(false);
     expect(isTestDatabaseName('rogikotha')).toBe(false);

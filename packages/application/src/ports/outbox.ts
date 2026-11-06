@@ -15,6 +15,9 @@ export type SecurityEventKind = (typeof SECURITY_EVENT_KINDS)[number];
 export type OutboxPayloads = {
   'account.registered': { accountId: string };
   'account.securityEvent': { accountId: string; kind: SecurityEventKind };
+  // U46: a member-added doctor (BR5.8) and a provisional term (BR5.3).
+  'doctor.changed': { id: string };
+  'term.changed': { id: string };
 };
 
 export type OutboxEventName = keyof OutboxPayloads;

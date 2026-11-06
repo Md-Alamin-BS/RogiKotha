@@ -46,8 +46,6 @@ vi.mock('@/i18n/routing', () => ({
 // a signed-in reader and fixed synthetic records stand in. Each page's own test covers its data.
 const RECORD = vi.hoisted(() => ({
   doctorName: 'Dr. Synthetic Haque',
-  facilityName: 'Synthetic Care Hospital',
-  topicName: 'Synthetic condition',
   experienceTitle: 'Clear advice after a long wait',
 }));
 
@@ -61,14 +59,7 @@ vi.mock('@/server/auth/session', async () => {
 });
 
 vi.mock('@/server/data', async () => {
-  const {
-    buildDoctorDetail,
-    buildDoctorRow,
-    buildFacilityDetail,
-    buildFacilityRow,
-    buildTopicDetail,
-    buildTopicRow,
-  } = await import('@/components/patient/doctors/directory-test-support');
+  const { buildDoctorDetail } = await import('@/components/patient/doctors/directory-test-support');
   const { buildReviewDetail } =
     await import('@/components/patient/experience/experience-test-support');
   const { buildProfile } = await import('@/components/patient/profile/profile-test-support');
@@ -76,17 +67,9 @@ vi.mock('@/server/data', async () => {
   return {
     doctors: {
       listRecentPublishedReviews: resolve([]),
-      listDoctors: resolve([buildDoctorRow()]),
       getDoctor: resolve(buildDoctorDetail({ name: RECORD.doctorName })),
-      listPublishedReviewsForDoctor: resolve([]),
       listDoctorOptions: resolve([]),
       listSpecialtyOptions: resolve([]),
-      listTopics: resolve([buildTopicRow()]),
-      getTopic: resolve(buildTopicDetail({ name: RECORD.topicName })),
-    },
-    facilities: {
-      listFacilities: resolve([buildFacilityRow()]),
-      getFacility: resolve(buildFacilityDetail({ facilityName: RECORD.facilityName })),
     },
     reviews: {
       getReviewByPublicId: resolve(buildReviewDetail({ title: RECORD.experienceTitle })),
@@ -183,15 +166,6 @@ const ROUTES: RouteCase[] = [
     params: { username: 'synthetic-writer' },
     noindex: true,
   },
-  { route: '/doctors', load: () => import('./[locale]/(patient)/doctors/page'), view: 'doctors' },
-  {
-    route: '/doctors/[id]',
-    load: () => import('./[locale]/(patient)/doctors/[id]/page'),
-    view: 'profile',
-    params: { id: 'doc0000001' },
-    ownsHeading: true,
-    recordTitle: RECORD.doctorName,
-  },
   {
     route: '/emergency',
     load: () => import('./[locale]/(patient)/emergency/page'),
@@ -210,19 +184,6 @@ const ROUTES: RouteCase[] = [
     params: { id: 'exp0000001' },
     ownsHeading: true,
     recordTitle: RECORD.experienceTitle,
-  },
-  {
-    route: '/facilities',
-    load: () => import('./[locale]/(patient)/facilities/page'),
-    view: 'facilities',
-  },
-  {
-    route: '/facilities/[id]',
-    load: () => import('./[locale]/(patient)/facilities/[id]/page'),
-    view: 'facility',
-    params: { id: 'fac0000001' },
-    ownsHeading: true,
-    recordTitle: RECORD.facilityName,
   },
   { route: '/me', load: () => import('./[locale]/(patient)/me/page'), view: 'mine', noindex: true },
   {
@@ -273,15 +234,6 @@ const ROUTES: RouteCase[] = [
     load: () => import('./[locale]/(patient)/terms/page'),
     view: 'terms',
     ownsHeading: true,
-  },
-  { route: '/topics', load: () => import('./[locale]/(patient)/topics/page'), view: 'topics' },
-  {
-    route: '/topics/[id]',
-    load: () => import('./[locale]/(patient)/topics/[id]/page'),
-    view: 'condition',
-    params: { id: 'top0000001' },
-    ownsHeading: true,
-    recordTitle: RECORD.topicName,
   },
   {
     route: '/verify-email',
@@ -433,13 +385,13 @@ describe.each(LOCALES)('route pages in %s', (locale) => {
 
 describe('route pages and the language switch', () => {
   it('gives the English and Bengali version of each tab title a different text', async () => {
-    const doctors = ROUTES.find((r) => r.route === '/doctors');
-    if (!doctors) throw new Error('doctors route missing from the table');
-    const page = (await doctors.load()) as PageModule;
+    const search = ROUTES.find((r) => r.route === '/search');
+    if (!search) throw new Error('search route missing from the table');
+    const page = (await search.load()) as PageModule;
     active.locale = 'en';
-    const english = (await page.generateMetadata(propsFor(doctors))).title;
+    const english = (await page.generateMetadata(propsFor(search))).title;
     active.locale = 'bn';
-    const bengali = (await page.generateMetadata(propsFor(doctors))).title;
+    const bengali = (await page.generateMetadata(propsFor(search))).title;
     expect(english).not.toBe(bengali);
   });
 });

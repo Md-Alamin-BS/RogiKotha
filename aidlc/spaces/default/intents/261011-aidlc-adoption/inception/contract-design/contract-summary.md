@@ -497,6 +497,8 @@ ports_declared:
     implemented_by: Review, built by U14 in modules/review (FD-067)
 ```
 
+**Note 2026-11-06 (U46 Code Generation, BR6.4; U46 review R-04): amendment of C6's `ConditionStats`.** U46 is the port's provider and its only consumer, so no other Unit breaks. `forCondition(termId)` becomes `forCondition(tx, termId, locale)`, because Taxonomy may not read Directory and Review therefore returns the names. Replaced result fields: `doctors: [{doctorId, count}]` becomes `doctors: [{publicId, name, specialty?, count, primaryChamber?, area?, city?, avatarHue}]`; `facilities: [{branchId, count}]` becomes `facilities: [{publicId, name, branchName?, type, avatarHue}]`; `districts: [{districtKey, count}]` becomes `places: [{hospital?, area?, city?, count}]`; `mentioned: [{kind, termId, count}]` becomes `mentioned: {medicine, treatment, symptom}: [{label, count}]`, so free-text mentions count (BR3.4). Added: `doctorsTotal`, `cards` and `specialties: [{name, count}]`, and the method `totalsForConditions(tx, termIds) -> ReadonlyMap<termId, number>` for the topic index. A review is about a condition by FD-101's rule (tag link or free text equal to a name or alias, ignoring case and outer spaces). Counts carry their denominators and no percentage (FD-106). Code: `packages/application/src/modules/taxonomy/ports.ts` (declared), `modules/review/condition-stats.ts` (implemented).
+
 ### C7 — Directory
 
 **Release:** release 1 for the six directory queries and the `ProviderExperience` port, provider U46; consumers U20 and U47. U47 adds its review queries beside U46's read-side stub without rewriting it. Added for release 1: `directory.addMemberDoctor` (FD-100), consumer U47, specified after the block. Deferred to release 2 (FD-105), with U17 and U33: `submitProfile`, `claimProfile`, the `decide*` and `list*` operations, `proposeFieldChange`, `setProfileState`, `deidentify` and the `ProfileMergeParticipant` port.
@@ -564,6 +566,8 @@ operations:
     caller: "review.publish (U47), so the doctor, the submission and the review commit or fail together; it replaces the demo createQuickReviewWithNewDoctor"
     built_by: U46
 ```
+
+**Note 2026-11-06 (U46 Code Generation, BR6.4): amendment of and additions to C7's `ProviderExperience`.** U46 is the port's provider and its only consumer. Amendment: `forDoctor`'s `condition` parameter is taken as `conditionPublicId`, which Review resolves, so Directory never calls Taxonomy; every method takes the caller's `tx` first, and every doctor method takes the reader's `locale`. Additions: `forDoctor` also returns `scopedTotal`, `showing`, `limitedData`, `conditions: [{publicId, name, count}]` (the condition pills), `breakdown: [{condition, sentiment}]` and `selectedCondition?`; `forBranch({branchId, locale})` returns `cards: FacilityAccountVM[]`, `criteria: [{key, dist}]` (the nine criteria only, FD-107), `total` and `limitedData`; `summariesForDoctors(doctorIds, locale)` and `summariesForBranches(branchIds)` give index cards without one query per card. Facility feedback never enters a doctor's figures (FR26, tested at query level). Directory's facility queries call the facility methods only while `featureVisibility.facilityAccounts` is on. `addMemberDoctor` is built as specified above, in `packages/application/src/modules/directory/internal/add-member-doctor.ts`. Code: `modules/directory/ports.ts` (declared), `modules/review/provider-experience.ts` (implemented).
 
 ### C8 — Evidence
 
@@ -1190,6 +1194,8 @@ rules:
   - "the count never includes quarantined, failed, rejected or removed items"
 binding: "apps/web/src/server/container.ts; U48 replaces the interim binding with Evidence's implementation and deletes countReadyEvidence and DEMO_READY_EVIDENCE_STATE(S) with demo/evidence.ts"
 ```
+
+**Note 2026-11-06 (U46 Code Generation): C17 as built; the signature freezes at U46's merge.** `packages/application/src/ports/public-evidence-count.ts` declares both methods: `countPublicEvidence(reviewId): Promise<number>` and `countPublicEvidenceByReview(reviewIds): Promise<ReadonlyMap<string, number>>`; U46's Functional Design needed the batched form for profile and card totals (Question 8), and a review absent from the map counts 0. The interim binding is `createInterimPublicEvidenceCount(db)` in `packages/database/src/repositories/public-evidence-count-interim.ts`, bound in U46's block of `apps/web/src/server/container.ts`; it keeps today's meaning (`DEMO_READY_EVIDENCE_STATES` through `countReadyEvidence`) and answers the batched form with one query per distinct review (ISS row for F2; U48's implementation answers it with one grouped query). `demo/evidence.adversarial.test.ts` reads the doctor page's count through the same binding, so the FD-035 check runs on the path the pages use. U48 swaps the binding, deletes the interim file with `demo/evidence.ts`, and points that test at its own implementation.
 
 ### C18 — Constants that stand in for T-105
 

@@ -4855,6 +4855,94 @@ html:lang(bn) .field-error {
 }
 
 /* ==========================================================================
+   U46 directory pages (frontend-components § 7). T-011 tokens only, no motion.
+   ========================================================================== */
+
+/* added: U46 a filter pill is a link; the pressed one gets a heavier border and a check mark, not only colour */
+.pillrow a[aria-current="true"] {
+  border-width: 2px;
+  border-color: var(--ink);
+  color: var(--ink);
+  font-weight: 700;
+}
+/* added: U46 the non-colour cue of a pressed filter pill */
+.pillrow a[aria-current="true"]::before {
+  content: "✓";
+  margin-inline-end: var(--space-1);
+}
+/* added: U46 filter pills keep the shared focus ring */
+.pillrow a:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+/* added: U46 the three filter groups stack with space between them */
+.profile-filters {
+  display: grid;
+  gap: var(--space-3);
+}
+
+/* added: U46 the partial "Not provided: n" line under a distribution */
+.dist .not-provided {
+  margin-top: var(--space-1);
+}
+/* added: U46 a distribution's own heading inside a panel */
+.dist-title {
+  font-size: var(--fs-small);
+  margin: var(--space-3) 0 var(--space-2);
+}
+/* added: U46 replaces the prototype's inline margin between the sentiment and outcome blocks */
+.dist-gap {
+  margin-top: var(--space-5);
+}
+
+/* added: U46 the breakdown table scrolls inside its panel and never widens the page */
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+/* added: U46 the scrolling region is focusable, so it shows the shared focus ring */
+.table-scroll:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* added: U46 replaces the merged home panel's inline styles */
+.emergency-panel {
+  border-color: var(--danger-line);
+}
+/* added: U46 the emergency panel heading in the danger ink */
+.emergency-panel h2 {
+  font-size: var(--fs-h3);
+  color: var(--danger-ink);
+}
+/* added: U46 the compact panel in a page's side column */
+.emergency-panel--compact h2 {
+  font-size: var(--fs-small);
+}
+
+/* added: U46 a criterion heading is an h3 under the panel's h2, sized as the prototype's h4 */
+.crit h3 {
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  margin: 0 0 var(--space-2);
+}
+/* added: U46 Bengali criterion headings use the Bengali face */
+html:lang(bn) .crit h3 {
+  font-family: var(--bangla);
+}
+
+/* added: U46 the short Limited data tag under one panel-level line */
+.crit-grid .limited-tag {
+  display: inline-block;
+  margin-top: var(--space-2);
+}
+
+/* added: U46 side-panel headings, replacing the merged pages' inline font sizes */
+.p-side .panel h2 {
+  font-size: var(--fs-small);
+}
+
+/* ==========================================================================
    U9 T-102 patient auth screens. Static only: no motion of its own (BR9.2).
    ========================================================================== */
 

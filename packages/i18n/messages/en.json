@@ -483,7 +483,9 @@
     "kicker": "Health topic",
     "listCount": "{n, plural, one {{count} health topic} other {{count} health topics}}",
     "experienceCount": "{n, plural, one {{count} patient experience} other {{count} patient experiences}}",
-    "doctorCount": "{n, plural, one {{count} experience} other {{count} experiences}}"
+    "doctorCount": "{n, plural, one {{count} experience} other {{count} experiences}}",
+    "countsLine": "{a, plural, one {{accounts} patient experience} other {{accounts} patient experiences}} about {d, plural, one {{doctors} doctor} other {{doctors} doctors}}",
+    "countedFrom": "{n, plural, one {Counted from {count} experience} other {Counted from {count} experiences}}"
   },
   "crit": {
     "admission": "Admission and discharge",
@@ -553,7 +555,8 @@
     "crisis": "Mental health crisis support",
     "healthLineLabel": "Health guidance",
     "lastVerifiedLine": "Last verified {date}",
-    "title": "If this is an emergency, do not wait for an answer here"
+    "title": "If this is an emergency, do not wait for an answer here",
+    "compactLine": "Call {ambulance} for an ambulance. For health guidance, call {healthLine}."
   },
   "emergview": {
     "ambulance": "Ambulance",
@@ -777,7 +780,10 @@
     "orderNote": "Listed alphabetically by name. Never ranked, and never scored.",
     "visitCount": "{n, plural, one {{count} visit described} other {{count} visits described}}",
     "noVisits": "No one has described a visit here yet.",
-    "address": "Address"
+    "address": "Address",
+    "notVerified": "Not verified",
+    "notVerifiedWhy": "RogiKotha does not check facility licences or registration. These details were submitted by the community.",
+    "parentOf": "Part of {parent}"
   },
   "filter": {
     "any": "Any",
@@ -831,7 +837,7 @@
     "edited": "Edited",
     "followUp": "Follow-up",
     "limitedData": "Limited data",
-    "limitedDataWhy": "Fewer than 5 experiences. Too few to show a pattern — read them individually.",
+    "limitedDataWhy": "Fewer than {threshold} experiences. Too few to show a pattern — read them individually.",
     "noDocuments": "No documents",
     "notProvided": "Not provided",
     "notVerified": "Registration not verified",
@@ -839,7 +845,8 @@
     "reviewerLabel": "Reviewer’s label",
     "reviewerLabelWhy": "This is the author’s own claim. RogiKotha has not checked it and takes no position on it.",
     "memberAdded": "Added by a member — not confirmed",
-    "memberAddedWhy": "A member added this doctor while sharing an experience. RogiKotha has not checked that this doctor exists or that the details are right."
+    "memberAddedWhy": "A member added this doctor while sharing an experience. RogiKotha has not checked that this doctor exists or that the details are right.",
+    "notProvidedCount": "Not provided: {count}"
   },
   "mine": {
     "addFollowUp": "Add an update",
@@ -966,13 +973,16 @@
       "orderNote": "Doctors are listed by how many people wrote about them, then by name. Never by how positive the experiences were."
     },
     "noExperiences": "No one has written about this doctor yet.",
-    "writeAbout": "Write about this doctor"
+    "writeAbout": "Write about this doctor",
+    "showingCount": "Showing {showing} of {total}",
+    "filterRelationship": "Who wrote it"
   },
   "prov": {
     "admin": "Admin checked",
     "community": "Community submitted",
     "provider": "Provider confirmed",
-    "title": "Where this information came from"
+    "title": "Where this information came from",
+    "updatedOn": "{source} · updated {date}"
   },
   "rel": {
     "family": "Family or caregiver",
@@ -1041,7 +1051,8 @@
     "negative": "Negative",
     "of": "of",
     "positive": "Positive",
-    "title": "How authors described the episode"
+    "title": "How authors described the episode",
+    "ofTotal": "{n, plural, one {of {count} patient experience} other {of {count} patient experiences}}"
   },
   "shell": {
     "placeholder": "This screen arrives with task {task}."

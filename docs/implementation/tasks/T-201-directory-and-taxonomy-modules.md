@@ -26,6 +26,17 @@ These decisions are binding and override the text below where they differ.
 
 FD-061 (protected fields) and FD-064, FD-065, FD-066, FD-068 and FD-069 do not change this task: it has no commands, no protected-field list, no retention, audit-ownership, metrics or deletion text.
 
+## Amendments — release 1 (FD-105)
+
+These decisions are binding and override the text below where they differ. Release 1 builds this task inside Unit U46 `u46-directory`, together with T-202 and T-203 (FD-105; record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u46-directory/`).
+
+- **Ports as built (C6 and C7 notes of 2026-11-06 in `contract-summary.md`)** — `ConditionStats.forCondition(tx, termId, locale)` returns names, places, specialties, cards and `doctorsTotal`, and `mentioned` counts free text; `ProviderExperience.forDoctor` takes `conditionPublicId`, and the port adds `summariesForDoctors`, `summariesForBranches` and `totalsForConditions`, so index pages need no query per card. Changes: the C6 and C7 amendment bullets above.
+- **New files, not the T-201 stubs (BR8.4)** — the real repositories are `packages/database/src/repositories/{directory-module,taxonomy-module,review-reads,public-evidence-count-interim}.ts` and the fakes `packages/test-support/src/fakes/{directory-repositories,directory-ports}.ts`. The stubs in `repositories/{directory,taxonomy,review}.ts` and `fakes/repositories.ts` stay as dead code until T-204, T-301 or U50 edits those files (ISS row for F9). Changes: Owned paths.
+- **FD-100** — `directory.addMemberDoctor` (internal, C7 release-1 addition) lets `review.publish` add a doctor that is public at once with the "added by a member, not confirmed" mark; the staff check is release 2.
+- **FD-101** — a review is about a condition when a tag links the term or the tag's free text equals a name or alias, ignoring case and outer spaces; the seed's keys go through `normalizeAliasKey` (F8).
+- **FD-106, FD-107, FD-108** — counts with denominators and no percentages; facility feedback is the nine criteria only; a branch has its own name and hue beside its label (migration `0011_directory_suggestions_and_branch_names`, with the `taxonomy_terms.suggested` columns of ISS-157).
+- **Deferred to release 2 (FD-105)** — `taxonomy.mapProvisional` and FR38 tag management; redirects for merged profiles and mapped terms; paging beyond one page of 100 (F3).
+
 ## Goal
 
 Make every doctor, facility, branch and condition readable from PostgreSQL through typed queries and

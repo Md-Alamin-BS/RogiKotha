@@ -17,14 +17,19 @@ export const ListConditionsInput = z
   })
   .strict();
 
-export const ResolveInput = z.object({ text: z.string().min(1) }).strict();
+/** The longest wording a provisional term or a lookup accepts (U46 BR5.2). */
+export const TERM_TEXT_MAX = 120;
+
+export const ResolveInput = z
+  .object({ text: z.string().min(1).max(TERM_TEXT_MAX), kind: z.enum(TERM_KINDS).optional() })
+  .strict();
 
 export const ListSuggestedInput = z.object({ group: z.enum(TAG_GROUPS) }).strict();
 
 export const CreateProvisionalInput = z
   .object({
     kind: z.enum(TERM_KINDS),
-    text: z.string().min(1),
+    text: z.string().trim().min(1).max(TERM_TEXT_MAX),
     lang: z.enum(ALIAS_LANGS),
   })
   .strict();
@@ -35,6 +40,12 @@ export const MapProvisionalInput = z
     canonicalId: z.string().min(1),
   })
   .strict();
+
+export type GetConditionInput = z.output<typeof GetConditionInput>;
+export type ListConditionsInput = z.output<typeof ListConditionsInput>;
+export type ResolveInput = z.output<typeof ResolveInput>;
+export type ListSuggestedInput = z.output<typeof ListSuggestedInput>;
+export type CreateProvisionalInput = z.output<typeof CreateProvisionalInput>;
 
 export const taxonomySchemas = {
   GetConditionInput,

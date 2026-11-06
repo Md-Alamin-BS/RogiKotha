@@ -1,21 +1,16 @@
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { NextIntlClientProvider, createTranslator } from 'next-intl';
+import { screen } from '@testing-library/react';
+import { createTranslator } from 'next-intl';
 import {
-  buildDoctorDetail,
-  buildDoctorRow,
-  buildReviewCard,
+  aDoctorCard,
+  aDoctorProfile,
   loadMessages,
-  type TestLocale,
+  renderInLocale,
 } from '@/components/patient/doctors/directory-test-support';
 
 const active = vi.hoisted((): { locale: 'en' | 'bn' } => ({ locale: 'en' }));
-const data = vi.hoisted(() => ({
-  listDoctors: vi.fn(),
-  getDoctor: vi.fn(),
-  listPublishedReviewsForDoctor: vi.fn(),
-}));
+const load = vi.hoisted(() => ({ loadDoctorIndex: vi.fn(), loadDoctorProfile: vi.fn() }));
 
 vi.mock('next-intl/server', () => ({
   getTranslations: () =>
@@ -25,14 +20,8 @@ vi.mock('next-intl/server', () => ({
   getLocale: () => Promise.resolve(active.locale),
 }));
 
-// Pages reach the database only through @/server/data; the doubles stand in for it.
-vi.mock('@/server/data', () => ({ doctors: data }));
-
-vi.mock('next/navigation', () => ({
-  notFound: () => {
-    throw new Error('NEXT_HTTP_ERROR_FALLBACK;404');
-  },
-}));
+// The loaders own the container calls, the 404 and the 307 (load.test.ts); the pages only render.
+vi.mock('./load', () => load);
 
 // See components/patient/Masthead.test.tsx for why the app's own routing module is mocked.
 vi.mock('@/i18n/routing', () => ({
@@ -48,15 +37,8 @@ vi.mock('@/i18n/routing', () => ({
 import DoctorIndexPage from './page';
 import DoctorProfilePage, { generateMetadata as profileMetadata } from './[id]/page';
 
-function renderPage(locale: TestLocale, element: ReactNode) {
-  render(
-    <NextIntlClientProvider locale={locale} messages={loadMessages(locale)}>
-      {element}
-    </NextIntlClientProvider>,
-  );
-}
-
 const LOCALES = ['en', 'bn'] as const;
+const BRAND = { en: 'RogiKotha', bn: 'রোগীকথা' } as const;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -67,50 +49,63 @@ describe.each(LOCALES)('doctor pages in %s', (locale) => {
     active.locale = locale;
   });
 
-  it('lists the doctors in the active language under the doctors heading', async () => {
-    data.listDoctors.mockResolvedValue([buildDoctorRow({ name: 'Dr. Listed' })]);
+  it('lists the doctor cards under the doctors heading', async () => {
+    load.loadDoctorIndex.mockResolvedValue({
+      cards: [aDoctorCard({ name: 'Dr. Listed' })],
+      total: 1,
+      threshold: 5,
+    });
 
-    renderPage(locale, await DoctorIndexPage());
+    renderInLocale(locale, await DoctorIndexPage());
 
-    expect(data.listDoctors).toHaveBeenCalledWith(locale);
     expect(document.getElementById('view-doctors')).not.toBeNull();
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       locale === 'bn' ? 'ডাক্তারেরা' : 'Doctors',
     );
-    expect(screen.getByRole('link', { name: 'Dr. Listed' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Dr\. Listed/ })).toBeInTheDocument();
   });
 
-  it('shows one doctor with their experiences, the name as the only h1', async () => {
-    const doctor = buildDoctorDetail({ name: 'Dr. Profiled' });
-    data.getDoctor.mockResolvedValue(doctor);
-    data.listPublishedReviewsForDoctor.mockResolvedValue([buildReviewCard({ title: 'A visit' })]);
+  it('shows one doctor with the name as the only h1 and passes the search to the loader', async () => {
+    const vm = aDoctorProfile({ name: 'Dr. Profiled' });
+    load.loadDoctorProfile.mockResolvedValue({ vm, filters: {}, threshold: 5 });
+    const search = { relationship: 'self' };
 
-    renderPage(
+    renderInLocale(
       locale,
-      await DoctorProfilePage({ params: Promise.resolve({ id: doctor.publicId }) }),
+      await DoctorProfilePage({
+        params: Promise.resolve({ id: vm.publicId }),
+        searchParams: Promise.resolve(search),
+      }),
     );
 
-    expect(data.getDoctor).toHaveBeenCalledWith(doctor.publicId, locale);
-    expect(data.listPublishedReviewsForDoctor).toHaveBeenCalledWith(doctor.id, locale);
+    expect(load.loadDoctorProfile).toHaveBeenCalledWith(vm.publicId, search);
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Dr. Profiled');
-    expect(screen.getByRole('link', { name: 'A visit' })).toBeInTheDocument();
+    expect(
+      screen.getAllByText(
+        locale === 'bn' ? 'রেজিস্ট্রেশন যাচাই করা হয়নি' : 'Registration not verified',
+      ).length,
+    ).toBeGreaterThan(0);
   });
 
-  it('answers 404 for a doctor that does not exist', async () => {
-    data.getDoctor.mockResolvedValue(null);
+  it('lets the loader’s 404 through for a doctor that does not exist', async () => {
+    load.loadDoctorProfile.mockRejectedValue(new Error('NEXT_HTTP_ERROR_FALLBACK;404'));
 
     await expect(
       DoctorProfilePage({ params: Promise.resolve({ id: 'missing000' }) }),
     ).rejects.toThrow(/404/);
-    expect(data.listPublishedReviewsForDoctor).not.toHaveBeenCalled();
   });
 
   it('names the doctor in the browser tab title', async () => {
-    data.getDoctor.mockResolvedValue(buildDoctorDetail({ name: 'Dr. Titled' }));
+    load.loadDoctorProfile.mockResolvedValue({
+      vm: aDoctorProfile({ name: 'Dr. Titled' }),
+      filters: {},
+      threshold: 5,
+    });
 
     const metadata = await profileMetadata({ params: Promise.resolve({ id: 'doc0000001' }) });
 
-    expect(metadata.title).toBe(`Dr. Titled — ${locale === 'bn' ? 'রোগীকথা' : 'RogiKotha'}`);
+    expect(metadata.title).toBe(`Dr. Titled — ${BRAND[locale]}`);
   });
 });
