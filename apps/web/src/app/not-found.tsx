@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { connection } from 'next/server';
 
 // Root `app/not-found.tsx` handles every URL that matches no route at all
 // (Next.js docs, "not-found.js" — true since v13.3.0), which for this app
@@ -13,7 +14,9 @@ import Link from 'next/link';
 // hand-off. Deliberately does not import the ported stylesheets: this
 // boundary must stay self-contained (Next.js docs on composing a 404 for a
 // root layout with a top-level dynamic segment).
-export default function NotFound() {
+export default async function NotFound() {
+  // BR1.4 (U41): render per request, so Next.js stamps this response's CSP nonce on its scripts.
+  await connection();
   return (
     <html lang="en">
       <body>

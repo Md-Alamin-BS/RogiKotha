@@ -95,6 +95,44 @@ No web or application caller logs a free-text field. Every web field Step 4 foun
 - **Step 11:** `eslint.config.mjs`: `no-console` is `error` with no allowed method for `apps/*/src/**` and `packages/*/src/**`. There are seven file exceptions, each with a one-line reason: the two loggers, `migrate.ts`, `reset.ts`, `seed.ts`, and, until the rebase, `actions/review.ts` (U47) and `actions/evidence.ts` (U48). A probe `console.error` in `apps/web/src/lib/` failed lint and was then removed. `timeout 900 pnpm lint`: 0 errors and 1 warning that was already there (`packages/i18n/src/routing.ts:17`, an unused disable, not touched). Lint needed a `pnpm --filter @rogikotha/web build` for typed routes; the build is green with the new plugin path.
 - **Tests run (unit-scoped):** `application` project 31 files / 299 tests; `i18n` project 7 / 42; `worker` project 13 / 95; `web` (`server/logger.test.ts`, `server/i18n-request.test.ts`, `i18n/`, `actions/review.test.ts`) 4 / 38. All green. `tsc` is clean for `packages/application`, `apps/worker` and `packages/i18n`. The web type check ran inside `next build`.
 
+## Steps 23–27 (2026-11-06)
+
+- **Step 23:** `apps/worker/src/log-scrub.test.ts` (5 tests) drives the real `JsonLogger` through five paths:
+  - `logOutcomes`, with a marker in `eventName` and in a cast `errorCode`;
+  - `job.failed`, from a poller whose error holds an address, a Windows path, a POSIX path and a 40-character token;
+  - `worker.crashed`, when the container throws before it exists;
+  - `loadEnv` with `APP_MODE=LOGSCRUB-ENV-7Q`: `worker.env_invalid` names `APP_MODE` and never the value;
+  - the queue policy mismatch: `fix: 'db.reset_required'`, both policies kept, no `pnpm db:reset` sentence.
+
+  Every case also checks that nothing reaches `console.error/warn/info/debug` or `process.stdout.write`, and that every `console.log` line ends with the logger's envelope. U48's processor case is added in Step 32.
+- **Step 24:** `infra/compose/.env.example` gains `APP_ALLOWED_ORIGINS=`, with its format in a comment. The `APP_MODE` comment now says the start-up assertion is deferred (FD-105). `apps/web/playwright.config.ts` sets `webServer.env = { APP_ALLOWED_ORIGINS: ORIGIN }` (R5); Playwright merges it with the process environment.
+- **Step 25:** `apps/web/src/proxy.smoke.test.ts` has 5 tests. It runs in the node environment, with next-intl replaced by a pass-through as in `proxy.test.ts`, and with `APP_URL=http://localhost:3000` and `NODE_ENV=production`. `timeout 900 pnpm smoke`: 22 files / 46 tests green.
+  - The assigned test database `rogikotha_test_w8` was owned by `postgres`, so the reset failed with "must be owner of schema public". Its owner was changed to `rk_app` and the three extensions of `02-extensions.sql` were added, as for `w1` to `w7`.
+- **Step 26:** `apps/web/e2e/smoke/security-headers.spec.ts` has 8 tests:
+  - on `/en` and `/bn`: the BR2.1 values (written out in the spec), no `X-Powered-By`, `'strict-dynamic'` and no `'unsafe-eval'`;
+  - two loads give different nonces, and every `<script>` tag in the HTML carries the header's nonce;
+  - no `securitypolicyviolation` event and no CSP console message on five pages per locale (home, doctors, a doctor profile, an experience, sign-in) and on the root not-found page (`/fr`);
+  - after the seeded patient signs in, every cookie is one of ENT-011: host-only, path `/`, `Lax`, not `Secure` on http, and `httpOnly` exactly for the session cookies;
+  - no request leaves the app's origin.
+
+  `next build` and the spec are green.
+  - ASSUMPTION(U41): the first run found one `script-src eval` violation on the doctor profile. It comes from zod 4's `allowsEval` probe (`Function('')` inside a `try`) in a client chunk. The probe does no harm, but the browser reports it. The new `apps/web/src/instrumentation-client.ts` runs `z.config({ jitless: true })` before hydration, and the violation is gone. The alternative is an `ISS-` row against U46 plus an exception in the spec; the owner may choose that instead.
+  - ASSUMPTION(U41): the shared development database `rogikotha` has only migrations 0000 to 0010 (no U46 0011), so `directory.listFacilities` failed there. U41 did not migrate a database that other worktrees use. The browser runs used a new database, `rogikotha_e2e_w8` (owner `rk_app`). It was built with `pnpm db:reset && pnpm db:seed` and passed to the run as `DATABASE_URL`.
+  - `motion.spec.ts` is green: one case failed once under load and passed on the next two runs.
+  - `demo.spec.ts` has 4 red cases that U41 did not cause. `register()` expects `/sign-in?next=…` after registering, but `server/actions/auth.ts:167` (T-101) now sends a new account to `/verify-email`. U41 does not edit `demo.spec.ts`.
+- **Step 27 (a), BR1.4:** before the change, the root not-found page had 11 `script-src-elem` violations: 9 Next.js chunks and 2 inline scripts with no nonce, because the page was prerendered. With `await connection()` in `apps/web/src/app/not-found.tsx`, the build lists the page as dynamic (`ƒ /_not-found`) and the browser reports no violation. So the line stays and there is no S3 row.
+  - The component is now `async`, so `apps/web/src/app/root.test.tsx` changed too. It is not in the owned list, and the change is the smallest that works: the test mocks `connection` from `next/server`, awaits the page, and gains the case "renders per request, so its scripts get the response nonce".
+- **Step 27 (b), WF5 step 3:** the trial ran `next build` with `APP_ALLOWED_ORIGINS=http://build-only.example:3200`, then `next start` (port 3108) with `APP_ALLOWED_ORIGINS=http://start-only.example:3200`. It sent a POST to the real `setTheme` server action with `Host: localhost:3000` and `Origin: http://start-only.example:3200`.
+  - The POST got 200 and set `rk.theme`, so Next.js's own origin check accepted the start-time value. A POST from the build-time origin got 403 from the proxy.
+  - `next start` runs `next.config.ts` again (its log shows "Running next.config.ts"), so the value is not fixed at build time. There is no S4 row and no "rebuild after changing" note.
+  - Afterwards the app was rebuilt without the trial value.
+- **Tests run (unit-scoped):**
+  - worker `log-scrub.test.ts`: 5 tests.
+  - web `lib/security`, `proxy.test.ts`, `proxy.smoke.test.ts`, `app/root.test.tsx` and `security-cookies.test.ts`: 12 files / 192 tests.
+  - `pnpm smoke`: 22 files / 46 tests.
+  - Playwright: `security-headers.spec.ts` 8 of 8. The whole e2e suite: 21 passed and 4 failed (the `demo.spec.ts` cases above).
+  - `tsc` is clean for `apps/web`, `apps/web/e2e` and `apps/worker`. ESLint and Prettier are clean on the changed files, and `pnpm lint:boundaries` is green.
+
 ## Deferred
 
 - `apps/web/src/server/actions/review.ts:228` (Step 10): U47 owns that file and is rewriting it now. U41 routes the call after U47 merges and this branch is rebased. Until then, Step 11's `no-console` rule leaves that line alone through a temporary file exception in `eslint.config.mjs`, not an inline disable, because U41 does not edit that file. The exception is removed at the rebase. The demo upload action `actions/evidence.ts:158,225` has the same kind of temporary exception until U48 removes it (Step 28).
@@ -106,3 +144,6 @@ No web or application caller logs a free-text field. Every web field Step 4 foun
 - `S4` logging/lint — `packages/test-support/src/seed/seed.ts` writes to the console and was not in the design's inventory; ASSUMPTION(U41) above.
 - `S4` logging/lint — temporary `no-console` file exceptions for `apps/web/src/server/actions/review.ts` (U47) and `apps/web/src/server/actions/evidence.ts` (U48) in `eslint.config.mjs`; found in U41; removed at the Step 28 rebase, when their calls are routed or deleted.
 - `S4` web/i18n — the next-intl request config moved from `apps/web/src/i18n/request.ts` to `apps/web/src/server/i18n-request.ts` (the `web-shared` boundary may not import the logger); found in U41; ASSUMPTION(U41), to be confirmed by the owner or reversed through a boundary exception.
+- `S2` e2e/auth: `apps/web/e2e/smoke/demo.spec.ts` `register()` expects `/sign-in?next=%2F<locale>%2Fme` after registering. T-101 now sends a new account to `/verify-email` (`server/actions/auth.ts:167`), so the four demo walks are red on this branch's base. Found in U41 (Step 26). Owner: T-101/U11 or the owner of the demo spec.
+- `S3` environment: the shared development database `rogikotha` has no migration 0011 (U46). The facilities page fails there with `directory.listFacilities: internal` until `pnpm db:migrate` runs on it. Found in U41 (Step 26). When to migrate the shared database is the owner's decision.
+- `S4` web/CSP: `apps/web/src/instrumentation-client.ts` turns zod's JIT off in the browser, so its `Function('')` probe no longer raises a `script-src eval` report. Found in U41 (Step 26). ASSUMPTION(U41), to be confirmed by the owner.
