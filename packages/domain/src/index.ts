@@ -6,3 +6,4 @@ export * from './taxonomy/policies';
 export * from './identity/persona';
 export * from './identity/alias';
 export * from './identity/projection';
+export * from './community';
