@@ -6,6 +6,7 @@ export * from './unit-of-work';
 
 export * from './repositories/account';
 export * from './repositories/identity';
+export * from './repositories/identity-private';
 export * from './repositories/directory';
 export * from './repositories/taxonomy';
 export * from './repositories/config';

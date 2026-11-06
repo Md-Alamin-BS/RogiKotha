@@ -130,9 +130,9 @@ describe('migrations apply from an empty database', () => {
     // redesign of the test. CR-006 adds 0007_revoke_worker_auth_users and
     // 0008_worker_grant_review (FD-041, FD-092), the same kind of mechanical
     // consequence (ISS-242). T-101 adds 0009_auth_indexes_and_email_dedupe (functional-spec
-    // § 10.5), the same mechanical consequence.
+    // § 10.5), the same mechanical consequence. U11 adds 0010_identity_constraints (BR5.4).
     const rows = await testDb.execute(sql`select hash from drizzle_migrations order by id`);
-    expect(rows.rows).toHaveLength(10);
+    expect(rows.rows).toHaveLength(11);
   });
 
   it('creates every §1–§5, §9, §11, §15 table', async () => {

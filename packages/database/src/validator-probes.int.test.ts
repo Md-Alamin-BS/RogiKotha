@@ -199,7 +199,8 @@ describe('CR-006: rk_worker privilege boundary', () => {
       );
       expect(applied.rows).toHaveLength(journal.entries.length);
       // T-101 adds 0009_auth_indexes_and_email_dedupe (same mechanical count change as ISS-242).
-      expect(applied.rows).toHaveLength(10);
+      // U11 adds 0010_identity_constraints (BR5.4).
+      expect(applied.rows).toHaveLength(11);
     });
   });
 

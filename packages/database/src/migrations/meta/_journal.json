@@ -71,6 +71,13 @@
       "when": 1793775482676,
       "tag": "0009_auth_indexes_and_email_dedupe",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793886337842,
+      "tag": "0010_identity_constraints",
+      "breakpoints": true
     }
   ]
 }

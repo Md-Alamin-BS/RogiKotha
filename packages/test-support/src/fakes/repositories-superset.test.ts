@@ -21,6 +21,7 @@ import {
   FakeDirectoryRepository,
   FakeEvidenceRepository,
   FakeIdentityRepository,
+  FakePrivateIdentityRepository,
   FakeModerationRepository,
   FakeNotificationRepository,
   FakeRetentionRepository,
@@ -73,6 +74,8 @@ const REPOSITORY_PAIRS: { file: string; FakeClass: new () => unknown }[] = [
     file: 'email-delivery.ts',
     FakeClass: FakeEmailDeliveryRepository as unknown as new () => unknown,
   },
+  // U11: the private identity repository, the only reader of `persona_links` (BR3.1).
+  { file: 'identity-private.ts', FakeClass: FakePrivateIdentityRepository },
 ];
 
 describe('every repository fake is a method-name superset of its Pg*Repository stub', () => {
@@ -90,8 +93,8 @@ describe('every repository fake is a method-name superset of its Pg*Repository s
     },
   );
 
-  it('covers all 14 repository fakes', () => {
-    expect(REPOSITORY_PAIRS).toHaveLength(14);
+  it('covers all 15 repository fakes', () => {
+    expect(REPOSITORY_PAIRS).toHaveLength(15);
   });
 
   it('pairs every repository file, so a new one cannot go unchecked (ISS-223)', () => {

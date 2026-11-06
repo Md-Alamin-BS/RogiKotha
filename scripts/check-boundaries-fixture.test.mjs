@@ -29,8 +29,8 @@ describe('the boundary fixture proof', () => {
 
     expect(failures).toEqual([]);
     expect(ok).toBe(true);
-    // FX22 (T-101, FD-098) made it 16.
-    expect(expected).toBe(16);
+    // FX22 (T-101, FD-098) made it 16; FX24 and FX25 (U11 BR3.7) made it 18.
+    expect(expected).toBe(18);
   });
 
   it('fails when the element rule is switched off', async () => {

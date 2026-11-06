@@ -67,30 +67,22 @@ import type { SeedContext } from './seed.js';
  * synthesized `anon_author_<seedRef>` account (`port-corpus.mjs`) owns
  * exactly one anonymous persona, so "does this account already have a
  * persona_link" is a sufficient, correct idempotency check.
+ *
+ * U11 BR2.8: links are inserted, never updated. A review author's persona
+ * is created with `'after-review'` and its link, carrying the review id, is
+ * inserted by `linkAnonymousPersona` once the review row exists.
  */
 async function ensureAnonymousPersona(
   db: Db,
   ctx: SeedContext,
   personaKey: string,
-  reviewIdForLink: string | null,
+  link: { reviewId: string | null } | 'after-review',
 ): Promise<string> {
   const cached = ctx.personaIdByKey.get(personaKey);
   if (cached) return cached;
 
-  const corpusPersona = (
-    PERSONAS as unknown as {
-      key: string;
-      kind: string;
-      displayName: Bilingual;
-      avatarHue: number;
-      accountUsername: string | null;
-    }[]
-  ).find((p) => p.key === personaKey);
-  if (!corpusPersona?.accountUsername)
-    throw new Error(`ensureAnonymousPersona: no corpus persona for key ${personaKey}`);
-  const accountId = ctx.accountIdByUsername.get(corpusPersona.accountUsername);
-  if (!accountId)
-    throw new Error(`ensureAnonymousPersona: account ${corpusPersona.accountUsername} not seeded`);
+  const accountId = anonymousAccountIdOf(ctx, personaKey);
+  const corpusPersona = corpusPersonaOf(personaKey);
 
   const [existingLink] = await db
     .select()
@@ -112,11 +104,50 @@ async function ensureAnonymousPersona(
       avatarHue: corpusPersona.avatarHue,
     })
     .returning();
-  await db
-    .insert(personaLinks)
-    .values({ personaId: persona!.id, accountId, reviewId: reviewIdForLink });
+  if (link !== 'after-review') {
+    await db
+      .insert(personaLinks)
+      .values({ personaId: persona!.id, accountId, reviewId: link.reviewId });
+  }
   ctx.personaIdByKey.set(personaKey, persona!.id);
   return persona!.id;
+}
+
+/** BR2.8: the review-scoped link of a persona made with `'after-review'`, now that its review exists. */
+async function linkAnonymousPersona(
+  db: Db,
+  ctx: SeedContext,
+  personaKey: string,
+  personaId: string,
+  reviewId: string,
+): Promise<void> {
+  // A link left by an earlier run of the seed already holds this persona; keep it.
+  await db
+    .insert(personaLinks)
+    .values({ personaId, accountId: anonymousAccountIdOf(ctx, personaKey), reviewId })
+    .onConflictDoNothing();
+}
+
+function corpusPersonaOf(personaKey: string) {
+  const corpusPersona = (
+    PERSONAS as unknown as {
+      key: string;
+      kind: string;
+      displayName: Bilingual;
+      avatarHue: number;
+      accountUsername: string | null;
+    }[]
+  ).find((p) => p.key === personaKey);
+  if (!corpusPersona?.accountUsername)
+    throw new Error(`ensureAnonymousPersona: no corpus persona for key ${personaKey}`);
+  return { ...corpusPersona, accountUsername: corpusPersona.accountUsername };
+}
+
+function anonymousAccountIdOf(ctx: SeedContext, personaKey: string): string {
+  const { accountUsername } = corpusPersonaOf(personaKey);
+  const accountId = ctx.accountIdByUsername.get(accountUsername);
+  if (!accountId) throw new Error(`ensureAnonymousPersona: account ${accountUsername} not seeded`);
+  return accountId;
 }
 
 const MONTHS: Record<string, number> = {
@@ -274,7 +305,7 @@ export async function seedContent(db: Db, ctx: SeedContext): Promise<number> {
           : `pseudonymous:${r.author.en}`;
     const personaId =
       r.identity === 'anon'
-        ? await ensureAnonymousPersona(db, ctx, personaKey, null)
+        ? await ensureAnonymousPersona(db, ctx, personaKey, 'after-review')
         : ctx.personaIdByKey.get(personaKey);
     const doctorId = ctx.doctorIdBySeedRef.get(r.doctorSeedRef);
     if (!personaId || !doctorId)
@@ -324,10 +355,7 @@ export async function seedContent(db: Db, ctx: SeedContext): Promise<number> {
     inserted += 1;
 
     if (r.identity === 'anon') {
-      // The anonymous persona was created before this review existed
-      // (`ensureAnonymousPersona(..., null)` above); back-fill the real
-      // review id onto its `persona_links` row now that one exists.
-      await db.update(personaLinks).set({ reviewId }).where(eq(personaLinks.personaId, personaId));
+      await linkAnonymousPersona(db, ctx, personaKey, personaId, reviewId);
     }
 
     for (const tag of r.tags) {
@@ -417,10 +445,10 @@ export async function seedContent(db: Db, ctx: SeedContext): Promise<number> {
           : `pseudonymous:${fr.author.en}`;
     // `persona_links.review_id` FKs to `reviews.id` only (not
     // `facility_reviews.id`) — a facility review's anonymous persona is
-    // never review-scoped at the database level; `reviewIdForLink: null`.
+    // never review-scoped at the database level; `{ reviewId: null }`.
     const personaId =
       fr.identity === 'anon'
-        ? await ensureAnonymousPersona(db, ctx, personaKey, null)
+        ? await ensureAnonymousPersona(db, ctx, personaKey, { reviewId: null })
         : ctx.personaIdByKey.get(personaKey);
     const branchId = ctx.branchIdBySeedRef.get(fr.branchSeedRef);
     if (!personaId || !branchId)
@@ -485,7 +513,7 @@ export async function seedContent(db: Db, ctx: SeedContext): Promise<number> {
     // no back-fill needed, unlike the review-insertion loop above.
     const personaId =
       c.identity === 'anon'
-        ? await ensureAnonymousPersona(db, ctx, personaKey, reviewId)
+        ? await ensureAnonymousPersona(db, ctx, personaKey, { reviewId })
         : ctx.personaIdByKey.get(personaKey);
     if (!personaId)
       throw new Error(`seed-content: comment ${c.seedRef} missing persona ${personaKey}`);

@@ -135,4 +135,18 @@ describe('foreign keys', () => {
       initially_deferred: true,
     });
   });
+
+  it('defers persona_links.review_id to commit and keeps on delete set null, so a persona and its link can be written before their review (U11 BR2.9)', async () => {
+    const key = (await databaseForeignKeys()).find(
+      (k) => k.table_name === 'persona_links' && k.columns.join() === 'review_id',
+    );
+
+    expect(key).toMatchObject({
+      name: 'persona_links_review_id_reviews_id_fk',
+      foreign_table: 'reviews',
+      delete_action: 'n',
+      deferrable: true,
+      initially_deferred: true,
+    });
+  });
 });

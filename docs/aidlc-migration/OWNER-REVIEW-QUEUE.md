@@ -24,6 +24,7 @@ The owner is away (2026-10-27, 8–10 hours). They asked the agent to build the 
 | every high-risk Unit | written sign-off before the milestone gate (team practice step 5) | the Unit's record |
 | each milestone | storyboard walk in `en` and `bn` and the Bengali copy review (FD-042) | `05-demo-storyboard.md` |
 | demo slice | the Bengali text added on 2026-11-01 (add-a-doctor note, form error summary, character count, facility and topic pages) awaits your bilingual review (FD-042); ISS-398 (a member-added doctor is public before staff review) is your accepted risk to confirm; ISS-330 and ISS-384 still need your decision | `docs/implementation/handoffs/demo-slice.md`, `ISSUES.md` |
+| U11 t-104-identity-module (**high risk**: identity) | confirm the agent-written sign-off, "delegated by the owner on 2026-11-04": 17 adversarial tests by a separate agent, no S1 or S2 left open (one S1, ISS-456, found and fixed in the Bolt), one latent ordering defect fixed (ISS-473); decide ISS-476 (S3: a named display name may copy a thread alias such as `patient-7k2m`; suggested: reject names that match the alias pattern) | `construction/t-104-identity-module/code-generation/code-summary.md` "Delegated sign-off", `ISSUES.md` ISS-456..ISS-478 |
 
 ## Units done in this run
 

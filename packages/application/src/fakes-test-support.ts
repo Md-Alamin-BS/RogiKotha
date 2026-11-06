@@ -19,3 +19,10 @@ export { FastHasher } from '../../test-support/src/fakes/hasher.js';
 export { InMemoryUnitOfWork } from '../../test-support/src/fakes/unit-of-work.js';
 export { FakeEmailDeliveryRepository } from '../../test-support/src/fakes/email-delivery-repository.js';
 export { aConfig } from '../../test-support/src/builders/config.js';
+export {
+  FakeIdentityRepository,
+  FakeIdentityStore,
+  FakePrivateIdentityRepository,
+  makeIdentityPorts,
+} from '../../test-support/src/fakes/identity.js';
+export { aPersonaRecord } from '../../test-support/src/builders/persona.js';

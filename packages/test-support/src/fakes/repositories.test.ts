@@ -19,7 +19,6 @@ import {
   FakeDataRequestRepository,
   FakeDirectoryRepository,
   FakeEvidenceRepository,
-  FakeIdentityRepository,
   FakeModerationRepository,
   FakeNotificationRepository,
   FakeRetentionRepository,
@@ -254,41 +253,7 @@ describe('FakeAccountRepository', () => {
   });
 });
 
-describe('FakeIdentityRepository', () => {
-  it('serves the public projection of a created persona and nothing for an unknown one', async () => {
-    const repo = new FakeIdentityRepository();
-    const persona = await repo.createPersona({ handle: 'quiet_owl' });
-
-    expect(await repo.publicProjection(persona.id as string)).toEqual(persona);
-    expect(await repo.publicProjection('missing')).toBeUndefined();
-  });
-
-  it('links a persona to an account and review', async () => {
-    const repo = new FakeIdentityRepository();
-
-    const link = await repo.linkPersona('p1', 'a1', 'r1');
-
-    expect(link).toMatchObject({ personaId: 'p1', accountId: 'a1', reviewId: 'r1' });
-  });
-
-  it('finds the persona link of an account for a review and identity mode', async () => {
-    const repo = new FakeIdentityRepository();
-    repo.links.insert({ id: 'l1', accountId: 'a1', reviewId: 'r1', mode: 'pseudonymous' });
-
-    expect(await repo.findPersonaFor('a1', 'r1', 'pseudonymous')).toMatchObject({ id: 'l1' });
-    expect(await repo.findPersonaFor('a1', 'r1', 'anonymous')).toBeUndefined();
-    expect(await repo.findPersonaFor('a2', 'r1', 'pseudonymous')).toBeUndefined();
-  });
-
-  it('records an identity reveal', async () => {
-    const repo = new FakeIdentityRepository();
-
-    const reveal = await repo.recordReveal({ reviewId: 'r1', reason: 'legal' });
-
-    expect(reveal).toMatchObject({ reviewId: 'r1', reason: 'legal' });
-    expect(repo.reveals.all()).toHaveLength(1);
-  });
-});
+// The identity fakes have their own behaviour tests in identity.test.ts (U11).
 
 describe('FakeDirectoryRepository', () => {
   it('finds a doctor and a facility by public id', async () => {

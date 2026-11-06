@@ -102,7 +102,7 @@ async function writeDomainRows(
   // Review point 5: a username taken between the check and the insert.
   if (!profile.ok) return usernameTaken(ctx);
   await ports.accounts.insertPreferences(tx, { accountId, interfaceLocale: input.locale });
-  // TODO(T-104): identity.createDefaultPersonas replaces these inserts.
+  // U11 BR1.2: the repository delegates to the private identity repository's `createDefault`.
   await ports.accounts.insertDefaultPersonas(tx, {
     accountId,
     username: input.username,

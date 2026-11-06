@@ -96,8 +96,37 @@ Implement AD-3: public content references `personas` only; the link from a perso
 ## Hand-off (implementer fills in)
 
 ### What changed
+
+Built as U11 `t-104-identity-module` for release 1 (FD-105). The full record is `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-104-identity-module/code-generation/code-summary.md`.
+
+- Domain `Persona`, the random thread alias `patient-xxxx` and `publicProjection` (no id; no username on an anonymous persona).
+- `createIdentityModule`: `createDefaultPersonas`, `personaFor` (one anonymous persona per account per review thread), `publicProjection(s)`, `publicPersonaIdsByUsername`, `identity.renameNamed` (a new persona per rename) and the `IdentityOwnership` seam for the review and community modules.
+- `PgIdentityRepository` and `PgPrivateIdentityRepository`, the only code that touches `persona_links`; migration `0010_identity_constraints.sql` (two partial unique indexes, deferrable `persona_links.review_id`).
+- Register keeps calling `insertDefaultPersonas`, which now delegates to the private repository (C4 amendment in `contract-summary.md`).
+- The seed inserts anonymous links with their `review_id` instead of back-filling them.
+- The web container builds the module once (`WebContainer.identity`).
+
 ### Not done and why
+
+- Reveal, `deidentify`, `accountsOf`, `personasOf` and the `RevealTarget` and `RevealContact` ports: deferred to release 2 with U10 (FD-105, BR5.3). The acceptance rows "Reveal always recorded" and "Deidentify" are therefore not run, and the worker-grant row covers `persona_links` only (`identity_reveals` is not built).
+- `packages/application/src/ports/repositories/identity.ts`: not created; the ports live in `modules/identity/ports.ts` (C19, ISS-467).
+
 ### Questions for the human
+
+- ISS-476 (S3): a named display name may look like a thread alias (`patient-7k2m`). Suggested: reject names that match the alias pattern. Also on `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`, with the delegated sign-off to confirm.
+
 ### Follow-ups
+
+ISS-456 to ISS-478 in `docs/implementation/ISSUES.md`. Open: ISS-458 (renumber the migration at merge if another Bolt merged one first), ISS-462, ISS-465, ISS-466, ISS-469, ISS-472, ISS-474, ISS-475, ISS-476, ISS-477, ISS-478.
+
 ### `pnpm check` output summary
+
+2026-11-06, Bolt branch `bolt/t-104-identity-module`, before the merge rebase: `pnpm check` exit 0 (235 test files, 2407 passed plus 2 expected fails; lint 0 errors, 1 warning, ISS-472; 18 expected boundary violations; i18n parity 879 keys; build green; lines 97.52% total, every package above 80%). `pnpm smoke` exit 0 (18 files, 33 tests). The merge rebase reruns both.
+
 ### Hard-rule evidence
+
+- No anonymous persona is reachable by username, projection, action or worker: `identity.int.test.ts`, `projection.test.ts`, `identity-boundary.test.ts`, `persona-links-allowlist.test.ts`, the four adversarial test files.
+- Cross-thread correlation: `identity.adversarial.test.ts` and `identity-private.adversarial.int.test.ts` (two threads give unrelated aliases).
+- No account-and-persona pair in logs: `log-capture.test.ts` and the alias-exhaustion adversarial test.
+- No new user-facing string; `en.json` and `bn.json` unchanged; `pnpm i18n:check` passes.
+- No attribution: `node scripts/check-identity.mjs` passes in `pnpm check`.

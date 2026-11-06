@@ -60,9 +60,12 @@ describe('one reset per run', () => {
 });
 
 describe('terminateStaleTestBackends', () => {
-  it('accepts only database names that end in _test or _test_b', () => {
+  it('accepts only database names that end in _test, _test_b or a worktree _test_w<n>', () => {
     expect(isTestDatabaseName('rogikotha_test')).toBe(true);
     expect(isTestDatabaseName('rogikotha_test_b')).toBe(true);
+    expect(isTestDatabaseName('rogikotha_test_w2')).toBe(true);
+    expect(isTestDatabaseName('rogikotha_test_w')).toBe(false);
+    expect(isTestDatabaseName('rogikotha_test_w10')).toBe(false);
     expect(isTestDatabaseName('rogikotha')).toBe(false);
     expect(isTestDatabaseName('rogikotha_test_old')).toBe(false);
     expect(isTestDatabaseName('rogikotha_testing')).toBe(false);

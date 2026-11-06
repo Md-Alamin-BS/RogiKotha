@@ -16,9 +16,10 @@ import { runMigrate } from './migrate';
 const LOCK_TIMEOUT = '10s';
 const DROP_STATEMENT_TIMEOUT = '60s';
 
-const TEST_DATABASE_NAME = /_test(_b)?$/;
+// ASSUMPTION(U11): parallel Bolt worktrees each own a test database named `<name>_test_w<n>` (FD-094).
+const TEST_DATABASE_NAME = /_test(_b|_w[1-9])?$/;
 
-/** True only for a database name ending in `_test` or `_test_b`. */
+/** True only for a database name ending in `_test`, `_test_b` or `_test_w1` .. `_test_w9`. */
 export function isTestDatabaseName(name: string): boolean {
   return TEST_DATABASE_NAME.test(name);
 }
@@ -44,7 +45,7 @@ const SWEEP_SQL = `
          pg_terminate_backend(pid, 5000) as terminated
   from pg_stat_activity
   where datname = current_database()
-    and current_database() ~ '_test(_b)?$'
+    and current_database() ~ '_test(_b|_w[1-9])?$'
     and pid <> pg_backend_pid()
     and backend_type = 'client backend'
     and pg_has_role(usesysid, 'MEMBER')
@@ -87,14 +88,14 @@ function describeBackends(backends: BackendInfo[]): string {
 /**
  * Ends every other client backend on the database that the connecting role
  * may signal. Refuses, without opening a connection, unless the database
- * name ends in `_test` or `_test_b`.
+ * name ends in `_test`, `_test_b` or `_test_w<n>`.
  */
 export async function terminateStaleTestBackends(url: string): Promise<SweepResult> {
   const name = databaseNameOf(url);
   if (!isTestDatabaseName(name)) {
     return {
       ok: false,
-      reason: `refusing to end backends on database "${name}": only a database whose name ends in _test or _test_b may be swept`,
+      reason: `refusing to end backends on database "${name}": only a database whose name ends in _test, _test_b or _test_w<n> may be swept`,
     };
   }
   const pool = new Pool({ connectionString: url });

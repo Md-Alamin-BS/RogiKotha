@@ -3,7 +3,9 @@
 // it lives on `globalThis` so `next dev` reloads do not open a second pool.
 import {
   MAIL_SEND_JOB,
+  createIdentityModule,
   primeDummyCredential,
+  type IdentityModule,
   type CommandPorts,
   type ConfigProvider,
   type Crypto,
@@ -20,8 +22,10 @@ import {
   PgAuditWriter,
   PgBossQueue,
   PgEmailDeliveryRepository,
+  PgIdentityRepository,
   PgJobQueue,
   PgOutbox,
+  PgPrivateIdentityRepository,
   PgUnitOfWork,
 } from '@rogikotha/database';
 
@@ -37,6 +41,11 @@ export interface WebContainer {
   ports: CommandPorts;
   /** For the `/api/auth` route and the session cookie names only; commands use the gateway. */
   auth: AuthInstance;
+  /**
+   * C19. Actions may call `renameNamedCommand` only; `ownership` is for the review and community
+   * factories that U47 and U49 build here (BR3.5, BR3.6).
+   */
+  identity: IdentityModule;
 }
 
 /** BR7.4: defaults only until T-105 gives the runtime settings. */
@@ -107,7 +116,16 @@ function buildContainer(): WebContainer {
     app: { appUrl: env.appUrl, termsVersion: env.termsVersion },
   };
 
-  return { env, ports, auth };
+  // BR3.2: the private repository goes to the identity module and nowhere else; it is not a
+  // `CommandPorts` field.
+  const identity = createIdentityModule({
+    identities: new PgIdentityRepository(),
+    privateIdentities: new PgPrivateIdentityRepository().asPort(),
+    crypto: ports.crypto,
+    logger,
+  });
+
+  return { env, ports, auth, identity };
 }
 
 /**

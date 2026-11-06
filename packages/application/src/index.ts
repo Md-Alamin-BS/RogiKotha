@@ -6,3 +6,4 @@ export * from './audit';
 export * from './authorization/capabilities';
 export * from './modules/account';
 export * from './modules/notification';
+export * from './modules/identity';

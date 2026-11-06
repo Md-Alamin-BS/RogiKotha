@@ -37,7 +37,7 @@ export default async function setup(project: TestProject): Promise<void> {
   const database = decodeURIComponent(new URL(url).pathname.replace(/^\//, ''));
   if (!isTestDatabaseName(database)) {
     throw new Error(
-      `DATABASE_URL_TEST names "${database}"; the database project only resets a database whose name ends in _test or _test_b`,
+      `DATABASE_URL_TEST names "${database}"; the database project only resets a database whose name ends in _test, _test_b or _test_w<n>`,
     );
   }
   await runReset(url, { terminateStaleBackends: true });

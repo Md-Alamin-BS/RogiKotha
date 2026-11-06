@@ -1,6 +1,7 @@
 // The `AccountRepository` port (T-101 functional-spec § 6.2). The only reader of `auth_users.email`
-// and of the password hash. The persona inserts are its only persona access: no method here reads
-// `personas` or `persona_links` (AD-3, T-104 F9). The device, bookmark and block methods stay
+// and of the password hash. No method here touches `personas` or `persona_links`: the default
+// personas are written by the private identity repository it delegates to (AD-3, U11 BR3.2, Q2).
+// The device, bookmark and block methods stay
 // stubs until their tasks (03-routes-and-contracts.md §4).
 import type {
   AccountByEmailRecord,
@@ -22,8 +23,8 @@ import { and, eq, sql } from 'drizzle-orm';
 import { uniqueViolationConstraint } from '../pg-error';
 import { accountPreferences, accountProfiles, feedback } from '../schema/account';
 import { authAccounts, authUsers, authVerifications } from '../schema/auth';
-import { personaLinks, personas } from '../schema/identity';
 import { executorOf } from '../unit-of-work';
+import { PgPrivateIdentityRepository } from './identity-private';
 import { NotImplemented } from './not-implemented';
 
 /** Better Auth's credential provider id on `auth_accounts.provider_id`. */
@@ -60,6 +61,8 @@ const byEmailColumns = {
 const credentialColumns = { ...byEmailColumns, passwordHash: authAccounts.password };
 
 export class PgAccountRepository implements AccountRepository {
+  private readonly privateIdentities = new PgPrivateIdentityRepository();
+
   async findProfileByAuthUserId(
     tx: AppTx,
     authUserId: string,
@@ -175,27 +178,9 @@ export class PgAccountRepository implements AccountRepository {
     return { ok: true, data: null };
   }
 
-  /** TODO(T-104): replaced by `identity.createDefaultPersonas` behind the identity repository. */
+  /** U11 BR1.2, BR3.2: the one allowed call into the private identity repository. */
   async insertDefaultPersonas(tx: AppTx, input: NewDefaultPersonas): Promise<void> {
-    const db = executorOf(tx);
-    await db.insert(personas).values([
-      {
-        id: input.namedPersonaId,
-        kind: 'named',
-        displayName: input.displayName,
-        username: input.username,
-      },
-      {
-        id: input.pseudonymousPersonaId,
-        kind: 'pseudonymous',
-        displayName: input.username,
-        username: input.username,
-      },
-    ]);
-    await db.insert(personaLinks).values([
-      { personaId: input.namedPersonaId, accountId: input.accountId },
-      { personaId: input.pseudonymousPersonaId, accountId: input.accountId },
-    ]);
+    await this.privateIdentities.createDefault(tx, input);
   }
 
   async updateStatus(tx: AppTx, accountId: string, status: AccountStatus): Promise<void> {

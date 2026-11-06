@@ -19,6 +19,7 @@ export * from './auth-gateway.js';
 export * from './email-delivery-repository.js';
 export * from './unit-of-work.js';
 export * from './command-ports.js';
+export { FakeIdentityStore, makeIdentityPorts, type FakePersonaLink } from './identity.js';
 
 import { ListAuditWriter } from './audit-writer.js';
 import { FakeClock } from './clock.js';

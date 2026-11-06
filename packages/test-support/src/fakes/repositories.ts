@@ -61,40 +61,8 @@ class MapStore<T extends Row> {
 // The account fake implements the `AccountRepository` port since T-101; it lives in its own file.
 export { FakeAccountRepository } from './account-repository.js';
 
-/** Mirrors `PgIdentityRepository`. */
-export class FakeIdentityRepository {
-  readonly personas = new MapStore<Row>();
-  readonly links = new MapStore<Row>();
-  readonly reveals = new MapStore<Row>();
-
-  createPersona(input: Row): Promise<Row> {
-    return Promise.resolve(this.personas.insert(input));
-  }
-
-  linkPersona(personaId: string, accountId: string, reviewId?: string): Promise<Row> {
-    return Promise.resolve(this.links.insert({ id: personaId, personaId, accountId, reviewId }));
-  }
-
-  findPersonaFor(
-    accountId: string,
-    reviewId: string | undefined,
-    mode: string,
-  ): Promise<Row | undefined> {
-    return Promise.resolve(
-      this.links.findOne(
-        (l) => l.accountId === accountId && l.reviewId === reviewId && l.mode === mode,
-      ),
-    );
-  }
-
-  publicProjection(personaId: string): Promise<Row | undefined> {
-    return Promise.resolve(this.personas.get(personaId));
-  }
-
-  recordReveal(input: Row): Promise<Row> {
-    return Promise.resolve(this.reveals.insert(input));
-  }
-}
+// The identity fakes implement the U11 identity ports; they live in their own file.
+export { FakeIdentityRepository, FakePrivateIdentityRepository } from './identity.js';
 
 /** Mirrors `PgDirectoryRepository`. */
 export class FakeDirectoryRepository {

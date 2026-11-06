@@ -154,6 +154,20 @@
       "kind": "control",
       "file": "apps/worker/src/worker-messages.ts",
       "proves": "FD-098"
+    },
+    {
+      "id": "FX24",
+      "kind": "violation",
+      "file": "apps/worker/src/worker-identity.ts",
+      "rule": "@typescript-eslint/no-restricted-imports",
+      "proves": "U11 BR3.7, AD-6"
+    },
+    {
+      "id": "FX25",
+      "kind": "violation",
+      "file": "apps/worker/src/worker-identity.ts",
+      "rule": "boundaries/dependencies",
+      "proves": "U11 BR3.7, FD-093"
     }
   ]
 }

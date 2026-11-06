@@ -383,6 +383,40 @@ operations:
     consumers: "none in release 1 beyond U11's own tests; the profile entry point comes with U38"
 ```
 
+Release-1 amendment from U11's build (2026-11-06, additive; U11 functional-spec § 7, Q2; U47 and U49 build against it):
+
+```yaml
+contract: C4 Identity, release 1, as built by U11
+module: "createIdentityModule(ports) in packages/application/src/modules/identity/index.ts; wired once in apps/web/src/server/container.ts as WebContainer.identity"
+operations:
+  - name: identity.publicProjections
+    kind: query
+    input: "{personaIds: string[]} (at most 200; duplicates and unknown or malformed ids are left out)"
+    result: "PersonaPublicVM[] in input order"
+    notes: "batch form of publicProjection; PersonaPublicVM carries {kind, displayName, avatarHue} plus username for named and pseudonymous only; never an id (BR1.4, BR1.5)"
+    callers: "U47 (bylines, experience page and index), U49 (comment authors)"
+    built_by: U11
+  - name: identity.publicProjection
+    changes: "PersonaPublicVM.displayName may be null for an anonymous legacy row (the seeded 'Anonymous' rows, BR2.7); a missing persona returns null"
+  - name: identity.publicPersonaIdsByUsername
+    kind: query
+    input: "{username}"
+    result: "personaIds: string[] (the account's named and pseudonymous personas only; never an anonymous one, BR1.6)"
+    callers: "U47 (a member's public activity list)"
+    built_by: U11
+  - name: identity.createDefaultPersonas
+    changes: "account.register is routed, not switched: it keeps calling AccountRepository.insertDefaultPersonas, whose PgAccountRepository implementation calls PgPrivateIdentityRepository.createDefault in the same transaction. This replaces 'U11 switches account.register to createDefaultPersonas' above and is the one allowed exception in BR3.2; the module operation has no release-1 caller beyond tests"
+seams:
+  - name: IdentityOwnership
+    methods:
+      - "ownsPersona(tx, {accountId, personaId}): Promise<boolean> (one boolean, the actor's own account only; a forged or unknown pair answers false, BR3.3)"
+      - "ownPersonaIds(tx, {accountId}): Promise<string[]> (the actor's own persona ids, at most OWN_PERSONA_IDS_MAX = 1000, BR3.4)"
+    handed_to: "the review module (U47, isReviewAuthor, C9) and the community module (U49, comment delete) only (BR3.5); branded, so no other module ports type accepts it"
+private:
+  - "PgPrivateIdentityRepository is the only reader and writer of persona_links (BR3.1) and is injected into the identity module only (BR3.2); rk_worker has no grant on persona_links (BR3.7)"
+unchanged: "personaFor and renameNamed keep their release-1 text above; reveal, deidentify, accountsOf, personasOf and both ports stay deferred to release 2 (BR5.3)"
+```
+
 ### C5 — Account (with staff access)
 
 **Release:** release 1 for the account commands and queries and `actor_shape`, provided by U8 (merged); consumers U9 (screens), U11 (register), U47, U48 and U49 (the `Actor`, its `emailVerified` and `status`). The T-101 ports and helpers behind them are C19. Deferred to release 2 (FD-105): `stepUp`, the `staff.*` operations and `capabilitiesOf` (U10), `account.deleteAccountStep` (U39), `account.applyEnforcement` (U33) and `account.blocksBetween` (blocks are deferred with U49's deferred part).
