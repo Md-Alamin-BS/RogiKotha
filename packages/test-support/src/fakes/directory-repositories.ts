@@ -616,6 +616,8 @@ export interface FakeReviewTag {
 export interface FakeReview {
   id: string;
   publicId: string;
+  /** U47: set by tests that filter cards by author persona (BR7.2). */
+  authorPersonaId?: string;
   doctorId: string;
   branchId: string | null;
   state: PublicationState;
@@ -975,6 +977,10 @@ export class FakeReviewReadRepository implements ReviewReadRepository {
           const doctor = this.directory.doctors.get(r.doctorId)!;
           if (request.doctorPublicId && doctor.publicId !== request.doctorPublicId) return false;
           if (term && !this.isAbout(r, term)) return false;
+          if (request.personaIds && !request.personaIds.includes(r.authorPersonaId ?? '')) {
+            return false;
+          }
+          if (request.excludePublicId === r.publicId) return false;
           if (!after) return true;
           const at = r.publishedAt!.getTime();
           return (

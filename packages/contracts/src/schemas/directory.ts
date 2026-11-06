@@ -62,6 +62,9 @@ export const ListExperienceCardsInput = z
     cursor: z.string().min(1).max(200).optional(),
     doctorPublicId: publicId.optional(),
     conditionPublicId: publicId.optional(),
+    // U47 (BR7.2, BR5.8): internal persona ids from Identity, never from the browser.
+    personaIds: z.array(z.uuid()).max(1000).optional(),
+    excludePublicId: publicId.optional(),
   })
   .strict();
 
