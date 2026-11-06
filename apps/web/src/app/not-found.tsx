@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 // The last resort for a URL outside any locale (for example `/fr/x` after the proxy): it renders
 // outside the `[locale]` layout, with no request locale and no provider, so it reads both
 // dictionaries by an explicit locale and marks each line with its own `lang` (BR4.2, ISS-120).
+// Emergency help stays one link away even here (BR3.3).
 // Deliberately imports no stylesheet: this boundary stays self-contained.
 export default async function NotFound() {
   const [en, bn] = await Promise.all([
@@ -16,10 +17,12 @@ export default async function NotFound() {
       <body>
         <main>
           <p lang="en">
-            {en('notFound.body')} <Link href="/en">{en('notFound.home')}</Link>
+            {en('notFound.body')} <Link href="/en">{en('notFound.home')}</Link>{' '}
+            <Link href="/en/emergency">{en('nav.emergency')}</Link>
           </p>
           <p lang="bn">
-            {bn('notFound.body')} <Link href="/bn">{bn('notFound.home')}</Link>
+            {bn('notFound.body')} <Link href="/bn">{bn('notFound.home')}</Link>{' '}
+            <Link href="/bn/emergency">{bn('nav.emergency')}</Link>
           </p>
         </main>
       </body>

@@ -134,7 +134,7 @@ describe('not-found page', () => {
   it('offers a way home in both languages, outside any locale provider', async () => {
     const doc = await notFoundDocument();
     const links = Array.from(doc.querySelectorAll('a')).map((a) => a.getAttribute('href'));
-    expect(links).toEqual(['/en', '/bn']);
+    expect(links).toEqual(['/en', '/en/emergency', '/bn', '/bn/emergency']);
     expect(doc.documentElement.getAttribute('lang')).toBe('en');
   });
 
@@ -150,6 +150,15 @@ describe('not-found page', () => {
       expect(line?.querySelector('a')?.textContent).toBe(home);
     },
   );
+
+  it.each([
+    ['en', 'Emergency help', '/en/emergency'],
+    ['bn', 'জরুরি সাহায্য', '/bn/emergency'],
+  ])('links %s emergency help with the dictionary label', async (lang, label, href) => {
+    const doc = await notFoundDocument();
+    const link = doc.querySelector(`main > p[lang="${lang}"] a[href="${href}"]`);
+    expect(link?.textContent).toBe(label);
+  });
 
   it('carries no inline style', async () => {
     const doc = await notFoundDocument();

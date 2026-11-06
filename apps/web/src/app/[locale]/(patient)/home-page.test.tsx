@@ -20,6 +20,7 @@ const fake = vi.hoisted(() => {
   const listExperienceCards = { name: 'review.listExperienceCards' };
   const configCurrent = vi.fn();
   const warn = vi.fn();
+  const error = vi.fn();
   return {
     listConditions,
     listFacilities,
@@ -27,13 +28,14 @@ const fake = vi.hoisted(() => {
     runCommand: vi.fn(),
     configCurrent,
     warn,
+    error,
     container: {
       taxonomy: { listConditions },
       directory: { listFacilities },
       reviewReads: { listExperienceCards },
       ports: {
         config: { current: configCurrent },
-        logger: { info: vi.fn(), warn, error: vi.fn() },
+        logger: { info: vi.fn(), warn, error },
       },
     },
   };
@@ -101,6 +103,12 @@ const HEADING_KEY: Record<Section, string> = {
   latest: 'discover.latest',
 };
 
+const COMMAND_NAME: Record<Section, string> = {
+  conditions: 'taxonomy.listConditions',
+  facilities: 'directory.listFacilities',
+  latest: 'review.listExperienceCards',
+};
+
 describe.each(['en', 'bn'] as const)('home page in %s', (locale) => {
   const t = createTranslator({ locale, messages: loadMessages(locale) }) as unknown as Translate;
 
@@ -108,6 +116,7 @@ describe.each(['en', 'bn'] as const)('home page in %s', (locale) => {
     active.locale = locale;
     fake.runCommand.mockReset();
     fake.warn.mockReset();
+    fake.error.mockReset();
     fake.configCurrent.mockReset();
     fake.configCurrent.mockResolvedValue({ emergency: EMERGENCY_CONFIG });
   });
@@ -122,6 +131,7 @@ describe.each(['en', 'bn'] as const)('home page in %s', (locale) => {
     expect(fake.runCommand).toHaveBeenCalledWith(fake.listExperienceCards, { limit: 4 });
     expect(fake.configCurrent).toHaveBeenCalledTimes(1);
     expect(fake.warn).not.toHaveBeenCalled();
+    expect(fake.error).not.toHaveBeenCalled();
   });
 
   it('renders every section under one h1 when all reads succeed', async () => {
@@ -154,16 +164,40 @@ describe.each(['en', 'bn'] as const)('home page in %s', (locale) => {
             screen.getByRole('heading', { level: 2, name: t(HEADING_KEY[other]) }),
           ).toBeInTheDocument();
         }
-        expect(fake.warn).toHaveBeenCalledTimes(1);
-        expect(fake.warn).toHaveBeenCalledWith('discover.section_unavailable', {
+        // A returned err is a warning with the err code; a throw is an error with the exception name.
+        const fields = {
           kind: section,
+          command: COMMAND_NAME[section],
+          errorCode: how === 'err' ? 'internal' : 'Error',
           correlationId: 'home-test-correlation',
-        });
+        };
+        const logged = how === 'err' ? fake.warn : fake.error;
+        const notLogged = how === 'err' ? fake.error : fake.warn;
+        expect(logged).toHaveBeenCalledTimes(1);
+        expect(logged).toHaveBeenCalledWith('discover.section_unavailable', fields);
+        expect(notLogged).not.toHaveBeenCalled();
         expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
         expect(screen.getAllByTestId('home-browse-link')).toHaveLength(3);
         expect(screen.getByTestId('emergency-panel')).toBeInTheDocument();
       },
     );
+  });
+
+  it('logs a fixed code when a list rejects with something that is not an Error', async () => {
+    fake.runCommand.mockImplementation((command: unknown) =>
+      command === fake.listFacilities
+        ? // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- the case under test is a non-Error rejection.
+          Promise.reject('plain string')
+        : Promise.resolve(command === fake.listConditions ? ok([TOPIC]) : ok({ items: [] })),
+    );
+    renderInLocale(locale, await DiscoverPage());
+
+    expect(fake.error).toHaveBeenCalledWith('discover.section_unavailable', {
+      kind: 'facilities',
+      command: 'directory.listFacilities',
+      errorCode: 'thrown',
+      correlationId: 'home-test-correlation',
+    });
   });
 
   it('leaves out the topic chips when the condition list fails', async () => {

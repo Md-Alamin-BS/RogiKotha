@@ -26,19 +26,31 @@ export default async function DiscoverPage() {
   const { locale, correlationId } = await getActor();
   const container = getContainer();
 
+  const queries = {
+    conditions: container.taxonomy.listConditions,
+    facilities: container.directory.listFacilities,
+    latest: container.reviewReads.listExperienceCards,
+  };
   const [conditions, facilities, latest] = await Promise.allSettled([
-    runCommand(container.taxonomy.listConditions, {}),
-    runCommand(container.directory.listFacilities, { page: 1, pageSize: FACILITY_COUNT }),
-    runCommand(container.reviewReads.listExperienceCards, { limit: LATEST_COUNT }),
+    runCommand(queries.conditions, {}),
+    runCommand(queries.facilities, { page: 1, pageSize: FACILITY_COUNT }),
+    runCommand(queries.latest, { limit: LATEST_COUNT }),
   ]);
   // Unguarded: the defaults-only provider cannot fail, so a throw here is a programming error.
   const config = await container.ports.config.current();
 
   function settle<T>(section: Section, outcome: PromiseSettledResult<Result<T>>): T | null {
     if (outcome.status === 'fulfilled' && outcome.value.ok) return outcome.value.data;
-    // ASSUMPTION(U20): the closed LogFields list has no `section` field, so the section name rides
-    // in `kind`; adding `section` to the port is the owner's call (ISSUES.md S4 row).
-    container.ports.logger.warn('discover.section_unavailable', { kind: section, correlationId });
+    // The closed LogFields list has no `section` field, so the section rides in `kind`.
+    const fields = { kind: section, command: queries[section].name, correlationId };
+    if (outcome.status === 'rejected') {
+      const reason: unknown = outcome.reason;
+      const errorCode = reason instanceof Error ? reason.name : 'thrown';
+      container.ports.logger.error('discover.section_unavailable', { ...fields, errorCode });
+    } else if (!outcome.value.ok) {
+      const errorCode = outcome.value.error.code;
+      container.ports.logger.warn('discover.section_unavailable', { ...fields, errorCode });
+    }
     return null;
   }
 

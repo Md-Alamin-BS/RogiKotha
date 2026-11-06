@@ -74,7 +74,7 @@ Deleted paths (Step 19) are not in the manifest: `apps/web/src/components/patien
 
 Fixed by U20: ISS-120 (localized 404), ISS-151 (`-t bn` selects the Bengali set), ISS-152 (one `h1` on `/`), ISS-171 (Emergency reads the `ConfigProvider`, release 1).
 
-Found in `U20 t-207-discover-emergency-about` (working numbers from ISS-600, because U47 numbers from ISS-517 in parallel; renumbered at merge):
+Found in `U20 t-207-discover-emergency-about` (numbers from ISS-600, because U47 numbers from ISS-517 in parallel; they are final and were merged unchanged, so `main` keeps a gap ISS-517 to ISS-599 reserved for U47):
 
 | ID | Sev | What | Status |
 |---|---|---|---|
