@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 
-import { DEFAULT_MAILPIT_URL, E2E_ORIGIN } from './env';
+import { DEFAULT_MAILPIT_URL, E2E_ORIGIN, readEnvFile } from './env';
 import type { Locale } from './locale';
 import { msg } from './messages';
 
@@ -108,6 +108,47 @@ export async function latestLink(
     );
   }
   return { link: links[0] as string, message };
+}
+
+/** Waits up to 30 s for the message, without asking for a link in it. */
+export async function waitForMessage(
+  query: Omit<LatestLinkQuery, 'pathPrefix'>,
+): Promise<MailpitMessage> {
+  let summary: MailpitSummary | null = null;
+  await expect
+    .poll(
+      async () => {
+        summary = await newestMessage({ ...query, pathPrefix: '' });
+        return summary !== null;
+      },
+      {
+        message: `a "${query.subjectKey}" message to ${query.to}`,
+        timeout: MAIL_TIMEOUT_MS,
+        intervals: [MAIL_INTERVAL_MS],
+      },
+    )
+    .toBe(true);
+  const found = summary as MailpitSummary | null;
+  if (!found) throw new Error(`No "${query.subjectKey}" message to ${query.to}`);
+  return getJson<MailpitMessage>(`/api/v1/message/${found.ID}`);
+}
+
+// The tool, model and agent names `check:identity` refuses, spelled for a mail body.
+const TOOL_IDENTITY =
+  /claude|anthropic|openai|chatgpt|copilot|gemini|codex|co-authored-by|generated (?:with|by)/i;
+
+const addressOf = (from: string): string => /<([^>]+)>/.exec(from)?.[1] ?? from.trim();
+
+/** BR6.3: the subject in the account's language, the configured sender and no tool identity. */
+export function expectCleanMail(
+  message: Pick<MailpitMessage, 'Subject' | 'From' | 'Text' | 'HTML'>,
+  locale: Locale,
+  subjectKey: string,
+): void {
+  expect(message.Subject, `subject of ${subjectKey}`).toBe(msg(locale, subjectKey));
+  const configured = process.env['MAIL_FROM'] ?? readEnvFile()['MAIL_FROM'];
+  if (configured) expect(message.From.Address).toBe(addressOf(configured));
+  expect(`${message.Text}\n${message.HTML}`, 'tool identity in a mail').not.toMatch(TOOL_IDENTITY);
 }
 
 /** BR3.4: true when no message reached `to` after `after` (checked once the caller's wait ends). */

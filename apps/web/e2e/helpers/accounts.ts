@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test';
 
 import { displayName, RUN_PASSWORD, runEmail, runUsername } from '../fixtures/synthetic';
 import { runId } from './env';
@@ -29,10 +29,9 @@ export function newRunAccount(locale: Locale, index = 0): RunAccount {
   };
 }
 
-/** Fills and submits the register form; lands on the pending screen. */
-export async function submitRegistration(page: Page, account: RunAccount): Promise<void> {
+/** Fills and submits the register form that is already open; lands on the pending screen. */
+export async function fillRegistration(page: Page, account: RunAccount): Promise<void> {
   const { locale } = account;
-  await page.goto(`/${locale}/register`);
   await page.locator('#f-register-email').fill(account.email);
   await page.locator('#f-register-password').fill(account.password);
   await page.locator('#f-register-username').fill(account.username);
@@ -41,6 +40,28 @@ export async function submitRegistration(page: Page, account: RunAccount): Promi
   await page.locator('#f-register-terms').check();
   await page.getByTestId('register-form-submit-button').click();
   await expect(page).toHaveURL(new RegExp(`/${locale}/verify-email(\\?|$)`));
+}
+
+/** Opens the register page, then fills and submits it. */
+export async function submitRegistration(page: Page, account: RunAccount): Promise<void> {
+  await page.goto(`/${account.locale}/register`);
+  await fillRegistration(page, account);
+}
+
+/** A second browser context with the project's base URL: another device, another cookie jar. */
+export async function secondDevice(
+  browser: Browser,
+): Promise<{ context: BrowserContext; page: Page }> {
+  const baseURL = test.info().project.use.baseURL;
+  const context = await browser.newContext(baseURL ? { baseURL } : {});
+  return { context, page: await context.newPage() };
+}
+
+/** Ends the session through the account menu. */
+export async function signOut(page: Page): Promise<void> {
+  await page.getByTestId('masthead-account-menu-button').click();
+  await page.getByTestId('account-menu-sign-out-button').click();
+  await expect(page.getByTestId('masthead-account-sign-in-link')).toBeVisible();
 }
 
 /** Opens the emailed link and confirms; the confirmation signs the account in (U9 WF3). */
