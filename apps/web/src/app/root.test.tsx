@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type * as NextServer from 'next/server';
+import type * as HealthModule from '@/server/health';
 import RootLayout from './layout';
 import NotFound from './not-found';
 import RootPage from './page';
@@ -30,6 +31,16 @@ vi.mock('next/headers', () => ({ cookies: vi.fn(), headers: vi.fn() }));
 // The health route probes the database with `select 1`; the stand-in answers or fails.
 const probeQuery = vi.hoisted(() => vi.fn());
 vi.mock('@/server/db', () => ({ getDb: () => ({ $client: { query: probeQuery } }) }));
+// fix: U50 (ISS-758): the mail and scanner probes open sockets, so the route test stands them in
+// and passes without Mailpit or ClamAV; health.test.ts covers the probes themselves.
+const socketProbe = vi.hoisted(() => vi.fn());
+vi.mock('@/server/health', async (importOriginal) => {
+  const actual = await importOriginal<typeof HealthModule>();
+  return {
+    ...actual,
+    healthReport: () => actual.healthReport({ mail: socketProbe, scanner: socketProbe }),
+  };
+});
 vi.mock('@/i18n/routing', () => ({
   routing: { locales: ['en', 'bn'], defaultLocale: 'en' },
 }));
@@ -187,6 +198,8 @@ describe('health route', () => {
   beforeEach(() => {
     probeQuery.mockReset();
     probeQuery.mockResolvedValue({ rows: [{ '?column?': 1 }] });
+    socketProbe.mockReset();
+    socketProbe.mockResolvedValue('ok');
   });
 
   afterEach(() => {
@@ -194,15 +207,25 @@ describe('health route', () => {
     else process.env.APP_MODE = originalMode;
   });
 
-  it('answers ok when the database answers, and reports the other dependencies as not yet probed', async () => {
+  it('answers ok when the database, the queue and mail answer, and reports the scanner', async () => {
     const response = await health();
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
       db: 'ok',
-      queue: 'unknown',
-      mail: 'unknown',
-      scanner: 'unknown',
+      queue: 'ok',
+      mail: 'ok',
+      scanner: 'ok',
+    });
+  });
+
+  it('answers not ok when mail is down, and still reports the scanner', async () => {
+    socketProbe.mockResolvedValueOnce('down').mockResolvedValueOnce('ok');
+
+    await expect((await health()).json()).resolves.toMatchObject({
+      ok: false,
+      mail: 'down',
+      scanner: 'ok',
     });
   });
 

@@ -34,17 +34,19 @@ timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps
 timeout 300 pnpm --filter @rogikotha/web exec playwright test --list
 
 # From Step 34 on (all nine dependencies merged, rebased), one spec at a time.
-# First build once; the e2e:fast form then skips the build.
+# First build once; these forms then skip the build. `pnpm e2e:fast` pins all four projects, and
+# `--project` takes every following word as a project name, so one project is named with `=`
+# through playwright directly (ISS-750). `--retries=0` records the first attempt.
 timeout 1200 pnpm --filter @rogikotha/web --filter @rogikotha/worker build
-timeout 1200 pnpm e2e:fast --project chromium-desktop journeys/reading.spec.ts
-timeout 1200 pnpm e2e:fast --project chromium-desktop journeys/contributor.spec.ts
-timeout 1800 pnpm e2e:fast --project chromium-desktop journeys/writing.spec.ts
-timeout 1200 pnpm e2e:fast --project chromium-desktop journeys/discussion.spec.ts
-timeout 1200 pnpm e2e:fast --project chromium-360 journeys/
-timeout 1200 pnpm e2e:fast --project chromium-desktop a11y/keyboard.spec.ts a11y/live-region.spec.ts a11y/zoom-and-spacing.spec.ts
-timeout 1200 pnpm e2e:fast --project chromium-reduced-motion
-timeout 1200 pnpm e2e:fast --project chromium-desktop security/security.spec.ts smoke/motion.spec.ts
-timeout 1200 pnpm e2e:fast --project log-scan
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop --retries=0 journeys/reading.spec.ts
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop --retries=0 journeys/contributor.spec.ts
+timeout 1500 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop --retries=0 journeys/writing.spec.ts
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop --retries=0 journeys/discussion.spec.ts
+timeout 1500 pnpm --filter @rogikotha/web exec playwright test --project=chromium-360 --retries=0 journeys/
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop a11y/keyboard.spec.ts a11y/live-region.spec.ts a11y/zoom-and-spacing.spec.ts
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-reduced-motion
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop security/security.spec.ts smoke/motion.spec.ts
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=log-scan
 
 # Browser smoke (desktop project) and the cumulative Vitest smoke suite:
 timeout 1200 pnpm e2e:smoke

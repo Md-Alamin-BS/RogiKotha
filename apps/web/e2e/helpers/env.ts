@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 // BR1.2, BR1.3: the one environment the suite's web server, worker and database helpers share.
 
@@ -40,6 +40,15 @@ export const resultsDir = (root = repoRoot()): string => path.join(webDir(root),
 export const logsDir = (root = repoRoot()): string => path.join(resultsDir(root), 'logs');
 export const workerEntry = (root = repoRoot()): string =>
   path.join(root, 'apps', 'worker', 'dist', 'main.js');
+/**
+ * ASSUMPTION(U50): plain `node dist/main.js` cannot load the workspace packages' TS source
+ * (ISS-193), so the worker's source runs under its own tsx loader in one process (ISS-759).
+ */
+export const workerArgs = (root = repoRoot()): string[] => {
+  const worker = path.join(root, 'apps', 'worker');
+  const loader = path.join(worker, 'node_modules', 'tsx', 'dist', 'loader.mjs');
+  return ['--import', pathToFileURL(loader).href, path.join(worker, 'src', 'main.ts')];
+};
 export const webBuildId = (root = repoRoot()): string =>
   path.join(webDir(root), '.next', 'BUILD_ID');
 

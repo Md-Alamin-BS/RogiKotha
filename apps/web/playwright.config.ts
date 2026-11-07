@@ -99,9 +99,8 @@ export default defineConfig({
     port: E2E_PORT,
     // Never adopt a server someone left running: it may not be this build.
     reuseExistingServer: false,
-    // The app accepts only APP_URL's origin by default; this test origin must be allowed too (U41 R5).
-    env: { APP_ALLOWED_ORIGINS: ORIGIN },
     timeout: 120_000,
+    // Sets APP_URL to the test origin, which is what U41 R5's APP_ALLOWED_ORIGINS line did.
     env: e2eEnvironment(),
   },
 });

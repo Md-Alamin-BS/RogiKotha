@@ -24,12 +24,12 @@ import {
   RUN_ID_VARIABLE,
   staleBuildWarning,
   storageDir,
-  workerEntry,
+  workerArgs,
   type E2eEnvironment,
 } from './env';
 
 // BR1.2, BR1.3: one browser run per machine, services up, the e2e database fresh, the storage
-// folder empty, then the built worker running against the same environment as the web server.
+// folder empty, then the worker running against the same environment as the web server.
 
 export const SERVICE_TIMEOUT_MS = 30_000;
 export const WORKER_START_TIMEOUT_MS = 30_000;
@@ -142,7 +142,7 @@ async function startWorker(env: E2eEnvironment, root: string): Promise<number> {
   const logPath = path.join(logDir, 'worker.log');
   // The worker writes straight into the file, so it keeps logging after this function returns.
   const fd = openSync(logPath, 'w');
-  const child = spawn(process.execPath, [workerEntry(root)], {
+  const child = spawn(process.execPath, workerArgs(root), {
     cwd: root,
     env,
     stdio: ['ignore', fd, fd],
