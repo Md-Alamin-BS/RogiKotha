@@ -4,5 +4,4 @@ export * as accounts from './accounts';
 export * as doctors from './doctors';
 export * as reviews from './reviews';
 export * as session from './session';
-export { NotBuiltYet } from './not-built';
 export type { CreateProfileInput } from './accounts';
