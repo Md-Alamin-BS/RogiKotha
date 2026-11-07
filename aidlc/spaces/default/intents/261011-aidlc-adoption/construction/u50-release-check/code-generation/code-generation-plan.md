@@ -101,9 +101,12 @@ Not built in U50 (design § 16, each with its ISS row from § 11): deletions bey
 
 **Phase F — journeys and checks (frontend behaviour: end-to-end specs; written now, run from Step 34)**
 
-- [ ] **Step 29** — `apps/web/e2e/journeys/reading.spec.ts` part 1 (BR2.1, BR3.5): P1.0 language detection and stored choice, P1.1 home, P1.1b emergency, P1.1c policy pages, exactly as WF2 Part 1.
-- [ ] **Step 30** — `reading.spec.ts` part 2: P1.3 doctor index, P1.4 doctor profile (with the in-test cross-locale digit comparison), P1.4b sparse doctor.
-- [ ] **Step 31** — `reading.spec.ts` part 3: P1.5 facility, P1.5b topics, P1.6 experience r1 (with the original-URL probe), P1.7 author pages.
+- [x] **Step 29** — `apps/web/e2e/journeys/reading.spec.ts` part 1 (BR2.1, BR3.5): P1.0 language detection and stored choice, P1.1 home, P1.1b emergency, P1.1c policy pages, exactly as WF2 Part 1.
+  - Done: written, typechecked, linted and listed (22 tests, `bn` then `en`); not run (no browser run in this batch, Step 34). P1.0 runs once per locale: the browser language is `bn-BD` or `en-US`, then the toggle and `/` prove the stored choice. Shared helpers in the new `e2e/helpers/reading.ts` (toggle with its `#sr-live` announcement, cross-locale number snapshot, "n of m", emergency numbers, open by name or title); seeded facts appended to `seed-facts.ts`. Facility teaser rows are checked per row: the Limited data tag appears exactly when the shown visit count is below 5. Assumptions are in ISS-753.
+- [x] **Step 30** — `reading.spec.ts` part 2: P1.3 doctor index, P1.4 doctor profile (with the in-test cross-locale digit comparison), P1.4b sparse doctor.
+  - Done: as Step 29. P1.4b expects Not provided for the doctor's "about" text (no seeded doctor has one), d10 stays the sparse doctor (ISS-752, ISS-753).
+- [x] **Step 31** — `reading.spec.ts` part 3: P1.5 facility, P1.5b topics, P1.6 experience r1 (with the original-URL probe), P1.7 author pages.
+  - Done: as Step 29. r1 stores no claim, so the Reviewer's label is read on r4 after r1's other checks (ISS-753). The original-URL probe passes on a 404 until U48 merges the route.
 - [ ] **Step 32** — `apps/web/e2e/journeys/contributor.spec.ts` (BR2.2, BR3.4, BR6.3): the serial group `P2.8 register, confirm, sign in, reset` (P2.8, P2.8b, P2.10b), plus P2.8c invalid form, P2.9 same email, P2.10 security page.
 - [ ] **Step 33** — `apps/web/e2e/journeys/writing.spec.ts` and `discussion.spec.ts` (BR2.3, BR2.4, BR4.5): P3.11 compose and publish, P3.11b member-added doctor, P3.12 attach and scan (120 s bounded polls per item), P3.13 correction, P3.14 signed-out view; P4.15 comment, reply, delete (with the 2001-character refusal), P4.15b gate.
 - [ ] **Step 34** — Rebase on `main` once all nine dependencies have merged (BR15.5); rerun `pnpm check` and `pnpm smoke`. Then run the journeys project by project with the unit-scoped commands (`--project chromium-desktop journeys/reading.spec.ts`, then contributor, writing, discussion, then `chromium-360`). Elements a sibling Unit deferred are not asserted and are noted "release 2" for the walk-through (BR2.7).

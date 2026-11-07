@@ -52,3 +52,55 @@ export type EvidenceFixture = (typeof EVIDENCE_FIXTURES)[number];
 
 export const fixturePath = (name: EvidenceFixture, root = repoRoot()): string =>
   path.join(root, 'packages', 'test-support', 'fixtures', name);
+
+/** The configured limited-data threshold of the seeded configuration version (corpus config). */
+export const LIMITED_DATA_THRESHOLD = 5;
+
+/** The emergency numbers and last-verified date of the seeded configuration, as the pages show them. */
+export const EMERGENCY_NUMBERS = {
+  ambulance: '999',
+  healthLine: '16263',
+  crisisLine: '09612-119911',
+} as const;
+
+export const EMERGENCY_VERIFIED: Named = { en: '21 August 2026', bn: '২১ আগস্ট ২০২৬' };
+
+/** The ten seeded topics (conditions c1-c10), by visible name. */
+export const SEEDED_TOPICS: Readonly<Record<Locale, readonly string[]>> = {
+  en: [
+    'Type 2 diabetes',
+    'Thyroid (hypothyroidism)',
+    'High blood pressure',
+    'Eczema',
+    'Frozen shoulder',
+    'Irritable bowel syndrome',
+    'Typhoid fever',
+    'Gastric ulcer',
+    'Asthma',
+    'Migraine',
+  ],
+  bn: [
+    'টাইপ ২ ডায়াবেটিস',
+    'থাইরয়েড (হাইপোথাইরয়েড)',
+    'উচ্চ রক্তচাপ',
+    'একজিমা',
+    'ফ্রোজেন শোল্ডার',
+    'আইবিএস',
+    'টাইফয়েড জ্বর',
+    'গ্যাস্ট্রিক আলসার',
+    'হাঁপানি',
+    'মাইগ্রেন',
+  ],
+};
+
+/**
+ * ASSUMPTION(U50): r1 carries no stored claim (corpus `claims: []`), so P1.6 reads the
+ * Reviewer's label on r4 (claim `secondOpinion`, doctor d1) instead (ISS-753).
+ */
+export const R4_TITLE: Named = {
+  en: 'Felt dismissed when I raised the side effects',
+  bn: 'পার্শ্বপ্রতিক্রিয়ার কথা বলায় গুরুত্ব পাইনি',
+};
+
+/** A username no account holds, for the author page's unknown-name case. */
+export const UNKNOWN_USERNAME = 'no_such_author_e2e';
