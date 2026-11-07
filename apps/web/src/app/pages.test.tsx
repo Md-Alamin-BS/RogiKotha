@@ -97,6 +97,8 @@ vi.mock('next/headers', () => ({
   cookies: vi.fn(() => Promise.resolve({ get: () => undefined })),
 }));
 vi.mock('@/server/actions/account', () => ({
+  // U47: /write shows the contribution gate here, so its rows load no composer data.
+  getContributionAccess: vi.fn(() => Promise.resolve('signed-out')),
   getOwnAccount: vi.fn(() =>
     Promise.resolve({
       ok: true,

@@ -8,7 +8,7 @@ import {
   testTranslator,
   type TestLocale,
 } from '../experience/experience-test-support';
-import { CommentThread } from './CommentThread';
+import { CommentThreadView } from './CommentThreadView';
 
 vi.mock('@/i18n/routing', async () => {
   const support = await import('../experience/experience-test-support');
@@ -21,12 +21,12 @@ vi.mock('@/server/actions/comments', () => ({
 
 function renderThread(
   locale: TestLocale,
-  threads: Parameters<typeof CommentThread>[0]['threads'],
+  threads: Parameters<typeof CommentThreadView>[0]['threads'],
   signedIn = true,
 ) {
   return renderInLocale(
     locale,
-    <CommentThread reviewPublicId="exp0000001" threads={threads} signedIn={signedIn} />,
+    <CommentThreadView reviewPublicId="exp0000001" threads={threads} signedIn={signedIn} />,
   );
 }
 

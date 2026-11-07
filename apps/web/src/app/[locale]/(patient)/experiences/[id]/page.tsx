@@ -5,7 +5,7 @@ import { cache } from 'react';
 import { stripSlug } from '@rogikotha/contracts';
 import type { Locale } from '@rogikotha/i18n';
 import { ViewShell } from '@/components/patient/ViewShell';
-import { CommentThread } from '@/components/patient/comments/CommentThread';
+import { CommentThreadView } from '@/components/patient/comments/CommentThreadView';
 import { AuthorEvidence } from '@/components/patient/evidence/AuthorEvidence';
 import { EvidenceNote } from '@/components/patient/evidence/EvidenceNote';
 import { AuthorTools } from '@/components/patient/experience/AuthorTools';
@@ -49,13 +49,13 @@ export default async function ExperiencePage({ params }: { params: Params }) {
         authorTools={
           ownReview ? (
             <AuthorTools
-              reviewPublicId={review.publicId}
+              editHref={`/experiences/${review.publicId}/edit`}
               uploader={<AuthorEvidence reviewPublicId={review.publicId} />}
             />
           ) : null
         }
         discussion={
-          <CommentThread
+          <CommentThreadView
             reviewPublicId={review.publicId}
             threads={threads}
             signedIn={account !== null}

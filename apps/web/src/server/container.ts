@@ -15,6 +15,7 @@ import {
   type Crypto,
   type DirectoryModule,
   type IdGenerator,
+  type PublicEvidenceCount,
   type ReviewModule,
   type ReviewReadModule,
   type TaxonomyModule,
@@ -65,6 +66,8 @@ export interface WebContainer {
   identity: IdentityModule;
   /** U47: the review commands and queries, and the four seams other modules call (C9). */
   review: ReviewModule;
+  /** U47 (C17): the count the experience page's evidence slot shows; U48 binds Evidence here. */
+  publicEvidence: PublicEvidenceCount;
 }
 
 /** BR7.4: defaults only until T-105 gives the runtime settings. */
@@ -181,8 +184,10 @@ function buildContainer(): WebContainer {
     taxonomy: { ensureProvisionalTerm: taxonomy.ensureProvisionalTerm },
     cards: reviewReads.listExperienceCards,
   });
+  // The same interim binding the review reads use above; U48 replaces both with Evidence's.
+  const publicEvidence = createInterimPublicEvidenceCount(db);
 
-  return { env, ports, auth, directory, taxonomy, reviewReads, identity, review };
+  return { env, ports, auth, directory, taxonomy, reviewReads, identity, review, publicEvidence };
 }
 
 /**

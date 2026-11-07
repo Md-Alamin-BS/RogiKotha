@@ -79,12 +79,20 @@ describe.each(['en', 'bn'] as const)('the experience index in %s', (locale: Test
   it('gives the author an edit link next to their uploader', () => {
     renderInLocale(
       locale,
-      <AuthorTools reviewPublicId="exp0000001" uploader={<p>uploader slot</p>} />,
+      <AuthorTools editHref="/experiences/exp0000001/edit" uploader={<p>uploader slot</p>} />,
     );
     expect(screen.getByRole('link', { name: t('experience.editExperience') })).toHaveAttribute(
       'href',
       '/experiences/exp0000001/edit',
     );
+    expect(screen.getByText('uploader slot')).toBeInTheDocument();
+  });
+
+  it('gives the author no edit link when there is no edit route for the review', () => {
+    renderInLocale(locale, <AuthorTools uploader={<p>uploader slot</p>} />);
+    expect(
+      screen.queryByRole('link', { name: t('experience.editExperience') }),
+    ).not.toBeInTheDocument();
     expect(screen.getByText('uploader slot')).toBeInTheDocument();
   });
 });

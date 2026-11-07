@@ -16,6 +16,7 @@ import { composerReducer, initComposerState, type ComposerStep } from './compose
 import { FormErrorSummary } from './FormErrorSummary';
 import { periodOptions } from './period';
 import { PreviewAside } from './PreviewAside';
+import { PreviewBody } from './PreviewBody';
 import { StepCare } from './StepCare';
 import { StepCheck } from './StepCheck';
 import { StepHowItWent } from './StepHowItWent';
@@ -67,15 +68,28 @@ export interface ComposerProps {
   initialStep: ComposerStep;
   /** `?doctor=`, the only way a doctor is preselected (BR8.8); ignored when a draft is open. */
   doctorPublicId?: string | undefined;
-  /** Renders the preview body (ExperienceBody or the facility row); the aside is empty without it. */
+  /** Renders the preview body; defaults to `PreviewBody` (ExperienceBody or the facility row). */
   renderPreview?: (preview: PreviewVM | FacilityPreviewVM) => ReactNode;
+  /** `?draft=` named a draft that is gone: start a new one and say so once (WF1 step 3). */
+  draftMissing?: boolean;
   /** Overrides the clock in tests. */
   now?: Date;
 }
 
+function defaultPreview(preview: PreviewVM | FacilityPreviewVM): ReactNode {
+  return <PreviewBody preview={preview} />;
+}
+
 // The four-step composer (frontend-components.md § 4): owns the reducer and the autosave, and puts
 // the rail, the current step, the preview aside and the static disclaimer on the page.
-export function Composer({ vm, initialStep, doctorPublicId, renderPreview, now }: ComposerProps) {
+export function Composer({
+  vm,
+  initialStep,
+  doctorPublicId,
+  renderPreview = defaultPreview,
+  draftMissing = false,
+  now,
+}: ComposerProps) {
   const t = useTranslations();
   const locale = useLocale() as Locale;
   const [clock] = useState(() => now ?? new Date());
@@ -157,6 +171,12 @@ export function Composer({ vm, initialStep, doctorPublicId, renderPreview, now }
     if (state.errors.formError) setAttempt((n) => n + 1);
   }, [state.errors]);
 
+  // A gone `?draft=` is reported once; the page already started a new draft.
+  const [initialDraftMissing] = useState(draftMissing);
+  useEffect(() => {
+    if (initialDraftMissing) dispatch({ type: 'draftMissing' });
+  }, [initialDraftMissing]);
+
   // The draft-missing notice is shown once, then cleared.
   useEffect(() => {
     if (!state.draftMissing) return;
@@ -237,7 +257,7 @@ export function Composer({ vm, initialStep, doctorPublicId, renderPreview, now }
         </div>
       </div>
       <PreviewAside step={state.step}>
-        {state.preview && renderPreview ? renderPreview(state.preview) : null}
+        {state.preview ? renderPreview(state.preview) : null}
       </PreviewAside>
     </div>
   );
