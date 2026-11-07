@@ -131,11 +131,23 @@ async function publishQuickReview(account: TestAccount): Promise<string> {
   return published.data.publicId;
 }
 
-async function uploadRequest(fields: { reviewPublicId: string; idempotencyKey: string }) {
+// The EICAR test string, joined at run time so no source file holds it for a local antivirus.
+const EICAR = ['X5O!P%@AP[4\\PZX54(P^)7CC)7}$', 'EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'].join(
+  '',
+);
+
+async function uploadRequest(fields: {
+  reviewPublicId: string;
+  idempotencyKey: string;
+  file?: File;
+}) {
   const form = new FormData();
   form.set('reviewPublicId', fields.reviewPublicId);
   form.set('idempotencyKey', fields.idempotencyKey);
-  form.set('file', new File([PNG_BYTES], 'synthetic-lab-report.png', { type: 'image/png' }));
+  form.set(
+    'file',
+    fields.file ?? new File([PNG_BYTES], 'synthetic-lab-report.png', { type: 'image/png' }),
+  );
   const encoded = new Response(form);
   const body = await encoded.arrayBuffer();
   return new Request('http://localhost:3000/api/evidence/upload', {
@@ -240,6 +252,26 @@ describe('POST /api/evidence/upload against the test database (WF1)', () => {
       expect(response.status).toBe(404);
       expect(await response.json()).toMatchObject({
         error: { code: 'not_found', messageKey: 'ev.upload.errors.notFound' },
+      });
+      expect(await quarantinedFiles()).toHaveLength(1);
+      expect(await countOf('select count(*) as n from evidence_items')).toBe(itemsBefore);
+    },
+    SLOW,
+  );
+
+  it(
+    'refuses the EICAR test string in a PNG-named file at intake with type_rejected and writes nothing',
+    async () => {
+      const itemsBefore = await countOf('select count(*) as n from evidence_items');
+      const file = new File([EICAR], 'synthetic-scan.png', { type: 'image/png' });
+
+      const response = await POST(
+        await uploadRequest({ reviewPublicId, idempotencyKey: newId(), file }),
+      );
+
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({
+        error: { code: 'evidence.type_rejected', messageKey: 'errors.evidence.typeRejected' },
       });
       expect(await quarantinedFiles()).toHaveLength(1);
       expect(await countOf('select count(*) as n from evidence_items')).toBe(itemsBefore);

@@ -4,10 +4,12 @@
 // after `database` and `test-support-seed`, which migrate and seed the database.
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { connect } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { crc32 } from 'node:zlib';
 
+import { createClamdScanner } from '@rogikotha/adapters';
 import { createProcessEvidence } from '@rogikotha/application/worker';
 import type { NewQuarantinedEvidence } from '@rogikotha/application';
 import { PgEvidenceRepository, PgUnitOfWork, closeDb, createDb } from '@rogikotha/database';
@@ -152,3 +154,75 @@ describe('evidence.process as rk_worker (U48 WF2)', () => {
     expect(events.rows.map((row) => row.payload.state)).toContain('preview_ready');
   });
 });
+
+const clamdHost = process.env.CLAMD_HOST ?? 'localhost';
+const clamdPort = Number(process.env.CLAMD_PORT ?? 3310);
+
+/** True when the compose ClamAV answers PING; it takes minutes to load signatures after a start. */
+function clamdAnswers(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = connect({ host: clamdHost, port: clamdPort });
+    let reply = '';
+    const done = (up: boolean) => {
+      socket.destroy();
+      resolve(up);
+    };
+    socket.setTimeout(2000, () => done(false));
+    socket.once('error', () => done(false));
+    socket.once('connect', () => socket.write('zPING\0'));
+    socket.on('data', (chunk: Buffer) => {
+      reply += chunk.toString('ascii');
+      if (reply.includes('PONG')) done(true);
+    });
+    socket.once('end', () => done(reply.includes('PONG')));
+  });
+}
+
+const clamdUp = await clamdAnswers();
+// Built at run time from two halves, so no source file holds the EICAR string a local antivirus
+// would quarantine.
+const EICAR = Buffer.from(
+  ['X5O!P%@AP[4\\PZX54(P^)7CC)7}$', 'EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'].join(''),
+  'ascii',
+);
+
+async function* bytesOf(body: Buffer): AsyncIterable<Uint8Array> {
+  await Promise.resolve();
+  yield new Uint8Array(body);
+}
+
+describe.skipIf(!clamdUp)(
+  `evidence.process with the live compose ClamAV (U48 Step 48; skipped when clamd at ${clamdHost}:${clamdPort} does not answer PING)`,
+  () => {
+    it('reports the EICAR test string as infected through the real clamd adapter', async () => {
+      const report = await createClamdScanner({ host: clamdHost, port: clamdPort }).scan(
+        bytesOf(EICAR),
+        { signal: new AbortController().signal },
+      );
+
+      expect(report.result).toBe('infected');
+    });
+
+    it('moves a valid PNG to preview_ready through the worker container and the real scanner', async () => {
+      const { itemId } = await intake(aPng());
+      const job = { eventId: randomUUID(), name: 'evidence.received', payload: { itemId } };
+
+      await evidenceProcessHandler(
+        job,
+        { logger: worker.logger, processEvidence: (input) => worker.processEvidence(input) },
+        { jobId: 'job-live', retryCount: 3, retryLimit: 3, signal: new AbortController().signal },
+      );
+
+      const item = await app.pool.query<{ state: string; fail_reason: string | null }>(
+        'select state, fail_reason from evidence_items where id = $1',
+        [itemId],
+      );
+      const custody = await app.pool.query<{ event: string }>(
+        'select event from evidence_custody_events where item_id = $1 order by created_at, id',
+        [itemId],
+      );
+      expect(item.rows[0]).toEqual({ state: 'preview_ready', fail_reason: null });
+      expect(custody.rows.map((row) => row.event)).toContain('scan_clean');
+    });
+  },
+);
