@@ -11,7 +11,7 @@ import { evidenceItems } from '../schema/evidence';
 import { personaLinks, personas } from '../schema/identity';
 import { reviews, reviewVersions } from '../schema/review';
 import { taxonomyTerms } from '../schema/taxonomy';
-import { DEMO_READY_EVIDENCE_STATES } from './evidence';
+import { DEMO_READY_EVIDENCE_STATES } from './ready-evidence-states';
 
 /** Personas of one account, as a subquery: ownership is "one of my personas wrote it". */
 function personasOf(db: Db | Tx, accountId: string) {

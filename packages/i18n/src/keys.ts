@@ -518,10 +518,12 @@ export type MessageKey =
   | 'errors.config.outOfRange'
   | 'errors.evidence.confirmationRequired'
   | 'errors.evidence.notPreviewable'
+  | 'errors.evidence.rateLimited'
   | 'errors.evidence.tooLarge'
   | 'errors.evidence.tooMany'
   | 'errors.evidence.totalTooLarge'
   | 'errors.evidence.typeRejected'
+  | 'errors.evidence.uploadFailed'
   | 'errors.hold.active'
   | 'errors.moderation.duplicateReport'
   | 'errors.moderation.narrativeLocked'
@@ -542,9 +544,17 @@ export type MessageKey =
   | 'errors.review.periodInvalid'
   | 'errors.review.restoreExpired'
   | 'ev.failNote'
+  | 'ev.guidance.photograph'
   | 'ev.note.count'
+  | 'ev.reason.couldNotCheck'
+  | 'ev.reason.malware'
+  | 'ev.reason.notImage'
+  | 'ev.reason.tooLarge'
   | 'ev.remove'
+  | 'ev.removeNamed'
   | 'ev.replace'
+  | 'ev.size.kb'
+  | 'ev.size.mb'
   | 'ev.state.checking'
   | 'ev.state.failed'
   | 'ev.state.processing'
@@ -552,24 +562,23 @@ export type MessageKey =
   | 'ev.state.ready'
   | 'ev.state.redact'
   | 'ev.state.scanning'
+  | 'ev.status.failed'
   | 'ev.status.pending'
   | 'ev.status.ready'
   | 'ev.status.rejected'
-  | 'ev.upload.done.pending'
-  | 'ev.upload.done.ready'
-  | 'ev.upload.done.rejected'
+  | 'ev.upload.done.received'
   | 'ev.upload.errors.failed'
   | 'ev.upload.errors.noFile'
   | 'ev.upload.errors.notFound'
+  | 'ev.upload.errors.rateLimited'
   | 'ev.upload.errors.signedOut'
   | 'ev.upload.errors.tooLarge'
   | 'ev.upload.errors.tooMany'
+  | 'ev.upload.errors.unconfirmed'
   | 'ev.upload.fileLabel'
   | 'ev.upload.hint'
   | 'ev.upload.limitReached'
   | 'ev.upload.listLabel'
-  | 'ev.upload.pendingNote'
-  | 'ev.upload.rejectedNote'
   | 'ev.upload.submit'
   | 'ev.upload.uploading'
   | 'evidence.group.later'
@@ -1504,10 +1513,12 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.config.outOfRange',
   'errors.evidence.confirmationRequired',
   'errors.evidence.notPreviewable',
+  'errors.evidence.rateLimited',
   'errors.evidence.tooLarge',
   'errors.evidence.tooMany',
   'errors.evidence.totalTooLarge',
   'errors.evidence.typeRejected',
+  'errors.evidence.uploadFailed',
   'errors.hold.active',
   'errors.moderation.duplicateReport',
   'errors.moderation.narrativeLocked',
@@ -1528,9 +1539,17 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.review.periodInvalid',
   'errors.review.restoreExpired',
   'ev.failNote',
+  'ev.guidance.photograph',
   'ev.note.count',
+  'ev.reason.couldNotCheck',
+  'ev.reason.malware',
+  'ev.reason.notImage',
+  'ev.reason.tooLarge',
   'ev.remove',
+  'ev.removeNamed',
   'ev.replace',
+  'ev.size.kb',
+  'ev.size.mb',
   'ev.state.checking',
   'ev.state.failed',
   'ev.state.processing',
@@ -1538,24 +1557,23 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'ev.state.ready',
   'ev.state.redact',
   'ev.state.scanning',
+  'ev.status.failed',
   'ev.status.pending',
   'ev.status.ready',
   'ev.status.rejected',
-  'ev.upload.done.pending',
-  'ev.upload.done.ready',
-  'ev.upload.done.rejected',
+  'ev.upload.done.received',
   'ev.upload.errors.failed',
   'ev.upload.errors.noFile',
   'ev.upload.errors.notFound',
+  'ev.upload.errors.rateLimited',
   'ev.upload.errors.signedOut',
   'ev.upload.errors.tooLarge',
   'ev.upload.errors.tooMany',
+  'ev.upload.errors.unconfirmed',
   'ev.upload.fileLabel',
   'ev.upload.hint',
   'ev.upload.limitReached',
   'ev.upload.listLabel',
-  'ev.upload.pendingNote',
-  'ev.upload.rejectedNote',
   'ev.upload.submit',
   'ev.upload.uploading',
   'evidence.group.later',

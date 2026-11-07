@@ -647,10 +647,12 @@
     "evidence": {
       "confirmationRequired": "Confirm this file is safe to attach before publishing.",
       "notPreviewable": "This file could not be prepared for preview.",
+      "rateLimited": "Too many uploads in a short time. Please wait and try again.",
       "tooLarge": "Each file must be 15 MB or smaller.",
-      "tooMany": "You can attach up to 10 files per draft.",
+      "tooMany": "You can attach up to 10 files per experience.",
       "totalTooLarge": "All files together must stay under 100 MB.",
-      "typeRejected": "Only JPG and PNG images are accepted."
+      "typeRejected": "Only JPG and PNG images are accepted.",
+      "uploadFailed": "The file could not be uploaded. Please try again."
     },
     "hold": {
       "active": "This item is on hold and can't be changed."
@@ -708,8 +710,22 @@
   },
   "ev": {
     "failNote": "Your words stayed published. Only this file was held back.",
+    "guidance": {
+      "photograph": "Take a clear photo of the document and upload it again."
+    },
+    "reason": {
+      "couldNotCheck": "The check could not finish. Remove this file and upload it again later.",
+      "malware": "A security check found a problem with this file.",
+      "notImage": "This is not a JPG or PNG image, or the image is damaged.",
+      "tooLarge": "This file is larger than {maxMb} MB."
+    },
     "remove": "Remove",
+    "removeNamed": "Remove {name}",
     "replace": "Replace",
+    "size": {
+      "kb": "{size} KB",
+      "mb": "{size} MB"
+    },
     "state": {
       "checking": "Checking the file",
       "failed": "Could not be published",
@@ -720,26 +736,23 @@
       "scanning": "Scanning for malware"
     },
     "status": {
-      "ready": "Ready",
-      "pending": "Scan pending",
-      "rejected": "Not accepted"
+      "ready": "Attached",
+      "pending": "Being checked",
+      "rejected": "Not accepted",
+      "failed": "Could not be checked — try again later"
     },
     "note": {
       "count": "Files attached: {count}"
     },
     "upload": {
-      "hint": "JPG or PNG images only, up to {maxMb} MB each and {maxFiles} per experience. Each file is scanned for malware. Readers see only how many files are attached, never the files or their names.",
+      "hint": "JPG or PNG images only, up to {maxMb} MB each and {maxFiles} per experience. Each file is checked for malware after it is uploaded. Readers see only how many files are attached, never the files or their names.",
       "fileLabel": "Choose an image",
       "submit": "Upload",
       "uploading": "Uploading…",
       "listLabel": "Your attached files",
       "limitReached": "You have attached the most files allowed ({maxFiles}).",
-      "pendingNote": "The scan could not run yet. The file stays private and is not counted.",
-      "rejectedNote": "The malware scan flagged this file, so it was not attached.",
       "done": {
-        "ready": "File attached. It passed the malware scan.",
-        "pending": "File received. The scan could not run, so it stays private as Scan pending.",
-        "rejected": "The malware scan flagged this file, so it was not attached."
+        "received": "File received. It stays private and is not counted until the check ends."
       },
       "errors": {
         "signedOut": "Sign in to attach files.",
@@ -747,7 +760,9 @@
         "noFile": "Choose a JPG or PNG image first.",
         "tooLarge": "Each file must be {maxMb} MB or smaller.",
         "tooMany": "You can attach up to {maxFiles} files per experience.",
-        "failed": "The file could not be uploaded. Please try again."
+        "failed": "The file could not be uploaded. Please try again.",
+        "unconfirmed": "Confirm your email address to attach files.",
+        "rateLimited": "You have uploaded many files in a short time. Try again in {minutes} minutes."
       }
     }
   },

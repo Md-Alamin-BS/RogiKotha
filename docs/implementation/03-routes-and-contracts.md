@@ -83,6 +83,7 @@ export type Capability =
 | 'forbidden' | 'not_found' | 'conflict' | 'validation' | 'rate_limited' | 'internal'
 | 'review.min_fields' | 'review.attestation_required' | 'review.not_editable' | 'review.restore_expired' | 'review.anonymous_new_doctor'
 | 'evidence.too_many' | 'evidence.too_large' | 'evidence.total_too_large' | 'evidence.type_rejected' | 'evidence.not_previewable' | 'evidence.confirmation_required'
+| 'evidence.rate_limited' | 'evidence.upload_failed'
 | 'community.reply_depth' | 'community.blocked' | 'community.mention_anonymous'
 | 'moderation.duplicate_report' | 'moderation.narrative_locked' | 'moderation.self_appeal_review'
 | 'config.invariant' | 'config.out_of_range' | 'retention.preview_drift' | 'hold.active'

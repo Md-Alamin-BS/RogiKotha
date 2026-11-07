@@ -9,3 +9,15 @@ export {
   smtpErrorCode,
   type SmtpSettings,
 } from './mail-smtp/mail-smtp';
+export {
+  MalformedEvidenceKeyError,
+  createFsEvidenceReader,
+  createFsEvidenceWriter,
+} from './storage-fs';
+export {
+  CLAMD_TIMEOUT_MS,
+  createClamdScanner,
+  parseClamdReply,
+  parseClamdVersion,
+  type ClamdSettings,
+} from './scanner-clamd';

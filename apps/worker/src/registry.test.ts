@@ -76,3 +76,21 @@ describe('job registry', () => {
     expect(sent).toEqual([{ deliveryId: '0192d6a4-7c1e-7a3b-9f10-5d2c8e4b6a01' }]);
   });
 });
+
+describe('the evidence jobs (U48)', () => {
+  it('registers evidence.process as a queue-driven job', () => {
+    const job = JOBS['evidence.process'];
+
+    expect(job).toBeDefined();
+    expect(job?.intervalMs).toBeUndefined();
+    expect(job?.cron).toBeUndefined();
+  });
+
+  it('registers evidence.sweep as a queue-driven job on a five-minute cron', () => {
+    const job = JOBS['evidence.sweep'];
+
+    expect(job).toBeDefined();
+    expect(job?.cron).toBe('*/5 * * * *');
+    expect(job?.intervalMs).toBeUndefined();
+  });
+});

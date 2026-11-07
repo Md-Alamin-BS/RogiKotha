@@ -2,7 +2,6 @@
 // client first; `apps/web/src/server/data.ts` binds them to the app's client.
 export * as accounts from './accounts';
 export * as doctors from './doctors';
-export * as evidence from './evidence';
 export * as reviews from './reviews';
 export * as session from './session';
 export { NotBuiltYet } from './not-built';

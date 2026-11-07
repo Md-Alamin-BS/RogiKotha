@@ -1,6 +1,13 @@
+import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { WEB_ONLY_SECRETS, loadEnv, scrubWebSecrets } from './env.js';
+import { WEB_ONLY_SECRETS, loadEnv, resolveStorageRoot, scrubWebSecrets } from './env.js';
+
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 /** A synthetic 32-byte key: every byte 7. */
 const MAIL_KEY_BASE64 = Buffer.alloc(32, 7).toString('base64');
@@ -46,7 +53,7 @@ describe('loadEnv', () => {
       APP_MODE: 'demo',
       LOG_LEVEL: 'info',
       MAIL_RECIPIENT_KEY: new Uint8Array(32).fill(7),
-      STORAGE_ROOT: './.data/storage',
+      STORAGE_ROOT: path.join(REPO_ROOT, '.data', 'storage'),
       CLAMD_HOST: 'localhost',
       CLAMD_PORT: 3310,
       SMTP_HOST: 'localhost',
@@ -146,6 +153,24 @@ describe('loadEnv', () => {
 
     expect(Object.keys(env)).not.toContain('APP_ENCRYPTION_KEY');
     expect(Object.keys(env)).not.toContain('BETTER_AUTH_SECRET');
+  });
+});
+
+describe('resolveStorageRoot (ISS-621)', () => {
+  it('takes a relative root from the repository root, not from apps/worker', () => {
+    expect(existsSync(path.join(REPO_ROOT, 'pnpm-workspace.yaml'))).toBe(true);
+
+    expect(resolveStorageRoot('./.data/storage')).toBe(path.join(REPO_ROOT, '.data', 'storage'));
+    expect(loadEnv(aWorkerEnv({ STORAGE_ROOT: 'var/evidence' })).STORAGE_ROOT).toBe(
+      path.join(REPO_ROOT, 'var', 'evidence'),
+    );
+  });
+
+  it('keeps an absolute root exactly as given', () => {
+    const absolute = path.join(tmpdir(), 'rk-storage-synthetic');
+
+    expect(resolveStorageRoot(absolute)).toBe(absolute);
+    expect(loadEnv(aWorkerEnv({ STORAGE_ROOT: absolute })).STORAGE_ROOT).toBe(absolute);
   });
 });
 

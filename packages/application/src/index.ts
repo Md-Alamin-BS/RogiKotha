@@ -10,4 +10,5 @@ export * from './modules/directory';
 export * from './modules/taxonomy';
 export * from './modules/review';
 export * from './modules/identity';
+export * from './modules/evidence';
 export * from './modules/community';

@@ -1,0 +1,56 @@
+{
+  "stage": "code-generation",
+  "unit": "u48-evidence",
+  "upstream_ids": ["AC7.1.1", "AC7.1.2", "AC7.1.3", "AC7.1.4", "AC7.1.5", "AC7.1.6"],
+  "coverage": [
+    {
+      "id": "AC7.1.1",
+      "status": "OK",
+      "target": "packages/domain/src/evidence/file-type.ts and limits.ts; packages/application/src/modules/evidence/commands/intake-evidence.ts and jobs/process-evidence.ts; packages/adapters/src/storage-fs/index.ts and scanner-clamd/index.ts; apps/web/src/app/api/evidence/upload/route.ts; PgEvidenceRepository countPublic (only preview_ready and published count); steps 4-11, 16-19, 27, 30, 36, 48. Re-encoding and metadata removal are release 2 (FD-105, T-305)"
+    },
+    {
+      "id": "AC7.1.2",
+      "status": "OK",
+      "target": "packages/domain/src/evidence/file-type.ts (detectImageType, imageStructureValid, extensionMatches); packages/application/src/modules/evidence/upload-screen.ts and jobs/process-evidence.ts (malformed, type_mismatch); route.test.ts, process-evidence.test.ts, upload.adversarial.int.test.ts (A1); steps 5-7, 10, 30, 36, 49"
+    },
+    {
+      "id": "AC7.1.3",
+      "status": "OK",
+      "target": "packages/domain/src/evidence/limits.ts; packages/application/src/modules/evidence/access.ts, commands/check-upload.ts and intake-evidence.ts (15 MB, ten files, 100 MB, per-review lock); apps/web/src/app/api/evidence/upload/route.ts (Content-Length cap); evidence-upload.test.ts, evidence.int.test.ts, upload.adversarial.int.test.ts (A2); steps 4, 12, 22, 26, 27, 36, 49"
+    },
+    {
+      "id": "AC7.1.4",
+      "status": "OK",
+      "target": "packages/application/src/modules/evidence/jobs/process-evidence.ts and sweep-evidence.ts; apps/worker/src/handlers/evidence-process.ts and evidence-sweep.ts; apps/web/src/components/patient/evidence/EvidenceFileRow.tsx and EvidenceUploader.tsx (reason, guidance, Remove); evidence.adversarial.test.ts (A5); steps 8, 28, 30, 31, 34, 40, 42, 49"
+    },
+    {
+      "id": "AC7.1.5",
+      "status": "OK",
+      "target": "packages/domain/src/evidence/states.ts (authorStatusOf reads processing as pending); packages/application/src/modules/evidence/jobs/process-evidence.ts (resume) and sweep-evidence.ts (a stuck item ends); packages/i18n/messages/{en,bn}.json (ev.status.pending, no time promise); EvidenceFileRow.test.tsx; steps 4, 9, 30, 31, 34, 40, 42"
+    },
+    {
+      "id": "AC7.1.6",
+      "status": "OK",
+      "target": "packages/application/src/modules/evidence/commands/intake-evidence.ts (name sealed), queries/get-for-author.ts, audit.ts; packages/application/src/ports/logger.ts and apps/web/src/server/logger.ts (BR7.1 fields only, ISS-642); packages/database/src/repositories/evidence.ts (worker column list); no search or evidence page exists in release 1, so the metadata and noindex parts are release 2 (T-305, T-308); steps 14, 22-28, 30, 52"
+    }
+  ],
+  "steps": [
+    { "steps": "1-3", "rules": [], "criteria": [] },
+    { "steps": "4, 9", "rules": ["BR2.2", "BR2.3", "BR2.4", "BR2.7", "BR4.6", "BR4.9", "BR5.1", "BR6.1"], "criteria": ["AC7.1.3", "AC7.1.5"] },
+    { "steps": "5-7, 9-10", "rules": ["BR2.1", "BR2.6", "BR4.3"], "criteria": ["AC7.1.1", "AC7.1.2"] },
+    { "steps": "8, 11", "rules": ["BR4.2", "BR4.4", "BR4.5", "BR4.7", "BR4.10", "BR4.11"], "criteria": ["AC7.1.4", "AC7.1.6"] },
+    { "steps": "12-13", "rules": ["BR2.5", "BR6.2"], "criteria": ["AC7.1.3", "AC7.1.4"] },
+    { "steps": "14-15", "rules": ["BR3.6", "BR4.8"], "criteria": ["AC7.1.2"] },
+    { "steps": "16-19", "rules": ["BR3.1", "BR3.2", "BR3.3", "BR3.4", "BR3.5", "BR3.6", "BR4.5", "BR4.6"], "criteria": ["AC7.1.1", "AC7.1.2"] },
+    { "steps": "20-21", "rules": ["BR4.1", "BR4.6", "BR4.9"], "criteria": ["AC7.1.5"] },
+    { "steps": "22-25", "rules": ["BR2.3", "BR2.4", "BR2.5", "BR4.2", "BR4.7", "BR4.8", "BR4.11", "BR5.2"], "criteria": ["AC7.1.3", "AC7.1.6"] },
+    { "steps": "26-29", "rules": ["BR1.1", "BR1.2", "BR1.3", "BR2.3", "BR2.4", "BR2.5", "BR2.6", "BR2.7", "BR2.8", "BR4.1", "BR5.2", "BR6.2", "BR6.3", "BR7.1"], "criteria": ["AC7.1.1", "AC7.1.3", "AC7.1.4"] },
+    { "steps": "30-33", "rules": ["BR4.2", "BR4.3", "BR4.4", "BR4.5", "BR4.6", "BR4.7", "BR4.8", "BR4.9", "BR4.10", "BR4.11"], "criteria": ["AC7.1.1", "AC7.1.4", "AC7.1.5"] },
+    { "steps": "34-35", "rules": ["BR4.1", "BR4.6", "BR4.8", "BR4.9", "BR4.12"], "criteria": ["AC7.1.5"] },
+    { "steps": "36-39", "rules": ["BR1.1", "BR1.2", "BR2.1", "BR2.2", "BR2.3", "BR2.4", "BR2.5", "BR2.6", "BR2.7", "BR2.8", "BR3.4", "BR3.5", "BR3.6", "BR6.3", "BR8.1"], "criteria": ["AC7.1.1", "AC7.1.2", "AC7.1.3", "AC7.1.4"] },
+    { "steps": "40-44", "rules": ["BR5.3", "BR5.4", "BR5.5", "BR6.1", "BR6.2", "BR6.3", "BR6.4"], "criteria": ["AC7.1.4", "AC7.1.5", "AC7.1.6"] },
+    { "steps": "45-46", "rules": ["BR8.1", "BR8.2"], "criteria": [] },
+    { "steps": "47-49", "rules": ["BR2.1", "BR2.2", "BR2.3", "BR2.4", "BR3.2", "BR3.5", "BR4.3", "BR4.5", "BR4.11", "BR8.2"], "criteria": ["AC7.1.1", "AC7.1.2", "AC7.1.3", "AC7.1.4", "AC7.1.5", "AC7.1.6"] },
+    { "steps": "50-52", "rules": ["BR7.1", "BR8.2", "BR8.3"], "criteria": [] }
+  ]
+}
