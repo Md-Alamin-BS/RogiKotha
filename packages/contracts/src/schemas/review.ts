@@ -2,7 +2,7 @@
 // (03-routes-and-contracts.md §4 "review (T-301, T-302, T-306, T-307)").
 import { z } from 'zod';
 
-import { hasControlOrFormat } from '../doctor-name';
+import { hasControlOrFormat, hasControlOrFormatExceptJoiners } from '../doctor-name';
 import {
   CRITERIA,
   CRITERION_VALUES,
@@ -52,11 +52,14 @@ const graphemeCount = (text: string) => Array.from(graphemes.segment(text)).leng
 
 // Lengths are graphemes, not UTF-16 units: a Bengali story needs several units per letter.
 // Only outer whitespace is trimmed; no other normalisation of author text (BR3.9).
-function plainText(max: number, min = 0) {
+// Names keep the directory's strict check (FD-100); the author's own words may hold the two
+// Bengali joiners ZWNJ and ZWJ (FD-114).
+function plainText(max: number, min = 0, { joiners = false }: { joiners?: boolean } = {}) {
+  const refused = joiners ? hasControlOrFormatExceptJoiners : hasControlOrFormat;
   return z
     .string()
     .trim()
-    .refine((s) => !hasControlOrFormat(s), { error: 'errors.common.validation' })
+    .refine((s) => !refused(s), { error: 'errors.common.validation' })
     .refine((s) => graphemeCount(s) >= min && graphemeCount(s) <= max, {
       error: 'errors.common.validation',
     });
@@ -66,7 +69,7 @@ function longText(max: number) {
   return z
     .string()
     .trim()
-    .refine((s) => !hasControlOrFormat(s.replace(/[\n\r\t]/g, '')), {
+    .refine((s) => !hasControlOrFormatExceptJoiners(s.replace(/[\n\r\t]/g, '')), {
       error: 'errors.common.validation',
     })
     .refine((s) => graphemeCount(s) <= max, { error: 'errors.common.validation' });
@@ -86,7 +89,10 @@ const DraftNewDoctor = z.object({
 
 const DraftTag = z.union([
   z.object({ group: z.enum(TAG_GROUPS), termPublicId: publicId }),
-  z.object({ group: z.enum(TAG_GROUPS), text: plainText(DRAFT_TAG_TEXT_MAX, 1) }),
+  z.object({
+    group: z.enum(TAG_GROUPS),
+    text: plainText(DRAFT_TAG_TEXT_MAX, 1, { joiners: true }),
+  }),
 ]);
 
 /**
@@ -114,7 +120,7 @@ export const DraftPayload = z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)
       .optional(),
-    title: plainText(DRAFT_TITLE_MAX).optional(),
+    title: plainText(DRAFT_TITLE_MAX, 0, { joiners: true }).optional(),
     story: longText(DRAFT_STORY_MAX).optional(),
     sections: z
       .object({

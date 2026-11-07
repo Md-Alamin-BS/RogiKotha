@@ -467,6 +467,7 @@
       "check": "Check and publish"
     },
     "draftNotSaved": "Not saved yet. Trying again shortly.",
+    "publishNotSaved": "Your latest changes could not be saved, so nothing was published. Fix the fields listed here or check your connection, then publish again.",
     "draftMissing": "That draft is no longer available, so a new one was started.",
     "drafts": {
       "title": "Your drafts",

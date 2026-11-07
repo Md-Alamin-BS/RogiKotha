@@ -84,6 +84,48 @@ describe('DraftPayload', () => {
     expect(DraftPayload.safeParse({ title: 'Two\nlines' }).success).toBe(false);
   });
 
+  // FD-114: "rab" (ra, ZWJ, ya-phala) needs ZWJ; "udjapon" is typed with ZWNJ to stop a conjunct.
+  const ZWJ = String.fromCodePoint(0x200d);
+  const ZWNJ = String.fromCodePoint(0x200c);
+  const RLO = String.fromCodePoint(0x202e);
+  const WITH_ZWJ = `\u09B0${ZWJ}\u09CD\u09AF\u09BE\u09AC`;
+  const WITH_ZWNJ = `\u0989\u09A6\u09CD${ZWNJ}\u09AF\u09BE\u09AA\u09A8`;
+
+  it('saves Bengali words holding ZWJ or ZWNJ in the title, story, sections and typed tags', () => {
+    const parsed = DraftPayload.safeParse({
+      title: WITH_ZWJ,
+      story: `${WITH_ZWJ}\n${WITH_ZWNJ}`,
+      sections: { symptoms: WITH_ZWNJ, after: WITH_ZWJ },
+      tags: [{ group: 'symptom', text: WITH_ZWJ }],
+    });
+    expect(parsed.success).toBe(true);
+    // Stored as typed: the joiners are not stripped (BR3.9).
+    expect(parsed.data?.title).toBe(WITH_ZWJ);
+    expect(parsed.data?.story).toBe(`${WITH_ZWJ}\n${WITH_ZWNJ}`);
+  });
+
+  it('still refuses a bidi override, an isolate or another invisible character', () => {
+    expect(DraftPayload.safeParse({ story: `${WITH_ZWJ}${RLO}` }).success).toBe(false);
+    expect(DraftPayload.safeParse({ title: `${WITH_ZWNJ}${RLO}` }).success).toBe(false);
+    expect(DraftPayload.safeParse({ tags: [{ group: 'symptom', text: `${RLO}x` }] }).success).toBe(
+      false,
+    );
+    // Inside the text: `trim` would remove a trailing U+FEFF before the check runs.
+    for (const cp of [0x2066, 0x200b, 0xfeff, 0x0000]) {
+      const story = `${WITH_ZWJ}${String.fromCodePoint(cp)}${WITH_ZWNJ}`;
+      expect(DraftPayload.safeParse({ story }).success).toBe(false);
+    }
+  });
+
+  it('keeps the strict check for a new doctor name, as the directory does (FD-100)', () => {
+    expect(DraftPayload.safeParse({ newDoctor: { name: WITH_ZWJ } }).success).toBe(false);
+  });
+
+  it('names the refused field in the issue path', () => {
+    const parsed = DraftPayload.safeParse({ story: `x${RLO}y` });
+    expect(parsed.error?.issues[0]?.path).toEqual(['story']);
+  });
+
   it('counts the story limit in graphemes, so 10 000 Bengali graphemes save', () => {
     const bengali = 'ক্ষি'.repeat(10_000);
     expect(bengali.length).toBeGreaterThan(10_000);

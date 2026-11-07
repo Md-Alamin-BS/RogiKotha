@@ -1,9 +1,10 @@
 // `review.publish` (WF4, BR1.2, BR1.3, BR3.1–BR3.12, BR4.1–BR4.7, BR2.5). Authorization, then the
-// actor's own live draft, then every domain check (a refusal writes nothing and is not counted),
-// then the publish limit, then in the one command transaction: ids and persona, a new doctor only
-// for a named or pseudonymous review, the tag terms, the review with its tags and version 1, the
-// audit row with the persona actor, the outbox event and the draft deletion. Any error rolls
-// everything back, the persona, a provisional term and a new doctor included.
+// actor's own live draft, claimed by its deletion, then every domain check (a refusal writes
+// nothing and is not counted), then the publish limit, then in the one command transaction: ids
+// and persona, a new doctor only for a named or pseudonymous review, the tag terms, the review
+// with its tags and version 1, the audit row with the persona actor and the outbox event. Any
+// error rolls everything back, the draft deletion, the persona, a provisional term and a new
+// doctor included.
 import {
   AddMemberDoctorInput,
   PublishReviewInput,
@@ -95,7 +96,12 @@ export function publishCommand(deps: ReviewModulePorts) {
       const payload = draft.payload;
       if (payload.target !== 'doctor') return fieldError('validation', actor, { target: INVALID });
 
+      // Claim the draft first (BR2.5): a concurrent publish of the same draft waits on this row
+      // and then finds it gone. A refusal below rolls the deletion back with everything else.
       const now = ports.clock.now();
+      if (!(await deps.reviews.deleteOwnDraft(tx, accountId, draft.record.id, now))) {
+        return draftNotFound(actor);
+      }
       const today = dhakaCalendarDate(now);
 
       // Minimum fields, every missing item together in the domain's order (BR3.2–BR3.4, BR3.11).
@@ -251,7 +257,6 @@ export function publishCommand(deps: ReviewModulePorts) {
         }),
       );
       await ports.outbox.append(tx, 'review.published', { reviewId, doctorId, branchId: null });
-      await deps.reviews.deleteOwnDraft(tx, accountId, draft.record.id, now);
       return ok({ publicId });
     },
   });
