@@ -3,7 +3,12 @@
 // Hard rule (01-conventions.md §11): logs carry only allowlisted fields —
 // never emails, tokens, bodies, file names or passwords. The shared log
 // policy keeps only allowlisted keys with id- or code-shaped values (BR6.1–BR6.3).
-import { LOG_FIELD_NAMES, logEventName, scrubLogFields } from '@rogikotha/application/worker';
+import {
+  LOG_FIELD_NAMES,
+  SCRUBBED,
+  logEventName,
+  scrubLogFields,
+} from '@rogikotha/application/worker';
 
 /** Names only the worker logs (ENT-012); `fix` holds `db.reset_required`, `variables` env names. */
 export const WORKER_LOG_FIELD_NAMES = [
@@ -42,13 +47,24 @@ export interface Logger {
   error(event: string, fields?: LogFields): void;
 }
 
+/** Fields that hold an error's own text: only their presence is written (ISS-697). */
+const FREE_TEXT_FIELDS: readonly string[] = ['message'];
+
+function scrubbed(fields: LogFields): Record<string, unknown> {
+  const kept = scrubLogFields(fields, ALLOWED_FIELDS);
+  // A message such as `LOGSCRUB-THROW-7Q` passes the id-or-code value shape, yet it is still
+  // whatever text the thrower chose (U41 adversarial A4).
+  for (const name of FREE_TEXT_FIELDS) if (name in kept) kept[name] = SCRUBBED;
+  return kept;
+}
+
 function write(level: 'info' | 'warn' | 'error', event: string, fields: LogFields): void {
   // The three fixed keys are spread last so they always win — a caller
   // passing a field literally named `ts`, `level` or `event` (e.g. the
   // outbox relay logging the *outbox* event's own name) must never silently
   // overwrite this line's own envelope fields.
   const line = JSON.stringify({
-    ...scrubLogFields(fields, ALLOWED_FIELDS),
+    ...scrubbed(fields),
     ts: new Date().toISOString(),
     level,
     event: logEventName(event),

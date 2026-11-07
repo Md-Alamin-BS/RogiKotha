@@ -318,4 +318,111 @@ describe('worker log scrubbing (BR6.6)', () => {
     expectNoMarker();
     expectOnlyLoggerOutput();
   });
+
+  // U41 plan Step 34, adversarial A4 (separate agent). The marker is code-shaped on purpose: the
+  // value rules alone keep it, so a `message` field leaked it until ISS-697 was fixed.
+  describe('A4: an unhandled throw whose message is the marker LOGSCRUB-THROW-7Q', () => {
+    const THROW_MARKER = 'LOGSCRUB-THROW-7Q';
+
+    function expectNoThrowMarker(): void {
+      expect(written()).not.toContain(THROW_MARKER);
+      expect(written()).not.toContain('LOGSCRUB');
+    }
+
+    it('a poller job that throws it writes job.failed without it', async () => {
+      vi.useFakeTimers();
+      scenario.ctx = aWorkerContext(() => Promise.resolve());
+      scenario.jobs = {
+        'outbox.relay': {
+          handler: () => Promise.reject(new Error(THROW_MARKER)),
+          intervalMs: 2000,
+        } satisfies JobDefinition,
+      };
+
+      await startMain();
+
+      const failed = parsedLines().find((line) => line.event === 'job.failed');
+      expect(failed).toMatchObject({ level: 'error', job: 'outbox.relay', message: '[scrubbed]' });
+      expectNoThrowMarker();
+      expectOnlyLoggerOutput();
+    });
+
+    it('a crash before the container exists writes worker.crashed without it', async () => {
+      vi.useFakeTimers();
+      scenario.buildFails = new Error(THROW_MARKER);
+
+      await startMain();
+
+      expect(parsedLines()).toEqual([
+        expect.objectContaining({ event: 'worker.crashed', errorName: 'Error' }),
+      ]);
+      expectNoThrowMarker();
+      expectOnlyLoggerOutput();
+    });
+
+    it('a heartbeat whose outbox count throws it writes heartbeat_failed without it', async () => {
+      vi.useFakeTimers();
+      const { startHeartbeat } = await import('./health.js');
+      const ctx = {
+        ...aWorkerContext(() => Promise.resolve()),
+        outbox: { countPending: () => Promise.reject(new Error(THROW_MARKER)) },
+      } as unknown as WorkerContainer;
+
+      const heartbeat = startHeartbeat(ctx, 1, 1000);
+      await vi.advanceTimersByTimeAsync(1000);
+      heartbeat.stop();
+
+      expect(parsedLines()).toEqual([
+        expect.objectContaining({ event: 'worker.heartbeat_failed', message: '[scrubbed]' }),
+      ]);
+      expectNoThrowMarker();
+      expectOnlyLoggerOutput();
+    });
+
+    it('a scanner outage that throws it writes scan_unavailable without it', async () => {
+      const { createProcessEvidence } = await import('@rogikotha/application/worker');
+      const itemId = '0192d6a4-7c1e-7a3b-9f10-5d2c8e4b6a31';
+      const tx = {};
+      const processEvidence = createProcessEvidence({
+        unitOfWork: {
+          read: (work: (t: unknown) => unknown) => work(tx),
+          run: (work: (t: unknown) => unknown) => work(tx),
+        },
+        evidenceRepository: {
+          processingFacts: () =>
+            Promise.resolve({
+              id: itemId,
+              reviewId: '0192d6a4-7c1e-7a3b-9f10-5d2c8e4b6a32',
+              storageKey: 'a'.repeat(32),
+              state: 'validating',
+              createdAt: new Date(),
+              latestCustody: null,
+            }),
+          transition: () => Promise.resolve(true),
+          appendCustody: () => Promise.resolve(),
+          markOriginalDeleted: () => Promise.resolve(),
+        },
+        files: {
+          readQuarantined: () => Promise.resolve(new Uint8Array([0x89, 0x50, 0x4e, 0x47])),
+          delete: () => Promise.resolve(),
+        },
+        scanner: { scan: () => Promise.reject(new Error(THROW_MARKER)) },
+        outbox: { append: () => Promise.resolve() },
+        clock: { now: () => new Date() },
+        logger: new JsonLogger(),
+        hasher: { hash: () => 'b'.repeat(64) },
+      } as unknown as Parameters<typeof createProcessEvidence>[0]);
+
+      await processEvidence({
+        itemId,
+        attempt: 1,
+        lastAttempt: false,
+        signal: { aborted: false } as Parameters<typeof processEvidence>[0]['signal'],
+      }).catch(() => undefined);
+
+      expect(parsedLines().length).toBeGreaterThan(0);
+      expectNoThrowMarker();
+      expectOnlyLoggerOutput();
+    });
+  });
 });

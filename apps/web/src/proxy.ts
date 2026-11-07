@@ -18,7 +18,7 @@ import { routing } from './i18n/routing';
 import { buildCsp, newNonce } from './lib/security/csp';
 import { HSTS_VALUE } from './lib/security/headers';
 import { NONCE_HEADER } from './lib/security/nonce';
-import { checkHost, checkRequest, type RefusedDecision } from './lib/security/origin';
+import { checkRequest, type RefusedDecision } from './lib/security/origin';
 import { refusalResponse } from './lib/security/refusal';
 import { loadSecuritySettings, logRequestRefused, type SecurityGuard } from './security-settings';
 
@@ -48,13 +48,12 @@ export function createProxy(guard: ProxyGuard) {
     if (settings === null) return refusalResponse('settings_invalid');
     const { pathname } = request.nextUrl;
 
-    if (isNextInternalPath(pathname)) {
-      const host = checkHost(request.headers, settings);
-      return host.outcome === 'refused' ? refuse(host) : NextResponse.next();
-    }
-
+    // ISS-696: Next.js still runs a server action posted to an internal path such as `/_next/x`,
+    // so those paths get the Origin rule for an unsafe method as well as the Host check.
     const decision = checkRequest(request, settings);
     if (decision.outcome === 'refused') return refuse(decision);
+
+    if (isNextInternalPath(pathname)) return NextResponse.next();
 
     if (isApiPath(pathname)) {
       const response = NextResponse.next();

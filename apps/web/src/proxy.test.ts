@@ -252,9 +252,11 @@ describe('proxy api and internals (WF2, WF2b)', () => {
     expect(https.headers.get('strict-transport-security')).toBe('max-age=31536000');
   });
 
+  // U41 adversarial A1 (ISS-696): an unsafe method also needs the Origin rule here, because Next.js
+  // runs a server action posted to an internal path; the POST below therefore carries the Origin.
   it('gives /_next/webpack-hmr the Host check only and keeps it away from next-intl', () => {
     const { run } = proxyFor(HTTP_APP);
-    const passed = run(request('/_next/webpack-hmr', {}, 'POST'));
+    const passed = run(request('/_next/webpack-hmr', { origin: 'http://localhost:3000' }, 'POST'));
     const badHost = run(request('/_next/webpack-hmr', { host: 'evil.example' }));
     const overlay = run(request('/__nextjs_original-stack-frames', { host: 'evil.example' }));
 
