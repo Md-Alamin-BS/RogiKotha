@@ -17,7 +17,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     passWithNoTests: true,
-    // Playwright specs run under `pnpm smoke:e2e`, never under Vitest. The database-backed tests
+    // Playwright specs run under the root `pnpm e2e*` scripts, never under Vitest. The database-backed tests
     // run in the `web-int` project (T-101 § 10.7).
     exclude: [...defaultExclude, '**/*.int.test.ts', '**/*.int.smoke.test.ts', 'e2e/**'],
   },
