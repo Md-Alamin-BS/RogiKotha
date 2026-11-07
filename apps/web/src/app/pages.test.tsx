@@ -113,6 +113,60 @@ vi.mock('@/server/actions/account', () => ({
   listSessions: vi.fn(() => Promise.resolve({ ok: true, data: [] })),
 }));
 
+// U47: the experience, index, author and /me pages read the review module through the container;
+// an empty module stands in, answering the one fixed experience. The page slots read their own
+// data and have their own tests (experience/slots.test.tsx).
+vi.mock('@/server/command-call', () => ({
+  runCommand: vi.fn((command: { name: string }, raw: Record<string, unknown>) => {
+    const answers: Record<string, unknown> = {
+      'review.getExperience': {
+        kind: 'experience',
+        publicId: 'exp0000001',
+        reviewKind: 'quick',
+        title: RECORD.experienceTitle,
+        story: 'A synthetic story.',
+        sections: [],
+        contentLanguage: 'en',
+        relationship: 'self',
+        period: { year: 2026, month: 4 },
+        publishedAt: '2026-05-02',
+        claims: [],
+        tags: [],
+        doctor: { publicId: 'd0c7015000', name: RECORD.doctorName },
+        byline: { personaKind: 'named', displayName: 'Synthetic Author' },
+        relatedByCondition: [],
+        sameDoctor: [],
+        otherByAuthor: [],
+      },
+      'review.listExperienceCards': { items: [] },
+      'review.countExperiences': { total: 0 },
+      'review.authorCards': { header: { username: raw.username }, page: { items: [] } },
+      'review.listOwnReviews': [],
+    };
+    return Promise.resolve({ ok: true, data: answers[command.name] });
+  }),
+}));
+vi.mock('@/server/container', () => {
+  const command = (name: string) => ({ name });
+  return {
+    getContainer: () => ({
+      review: {
+        getExperience: command('review.getExperience'),
+        countExperiences: command('review.countExperiences'),
+        authorCards: command('review.authorCards'),
+        listOwnReviews: command('review.listOwnReviews'),
+        reviewIdForPublicId: () => Promise.resolve(null),
+        isReviewAuthor: () => Promise.resolve(false),
+      },
+      reviewReads: { listExperienceCards: command('review.listExperienceCards') },
+      ports: { unitOfWork: { read: (fn: (tx: unknown) => unknown) => fn({}) } },
+    }),
+  };
+});
+vi.mock('@/components/patient/comments/CommentThread', () => ({ CommentThread: () => null }));
+vi.mock('@/components/patient/evidence/EvidenceSection', () => ({ EvidenceSection: () => null }));
+vi.mock('@/components/patient/review-history/ReviewHistory', () => ({ ReviewHistory: () => null }));
+
 const require = createRequire(import.meta.url);
 const i18nPackageRoot = path.resolve(path.dirname(require.resolve('@rogikotha/i18n')), '..');
 const LOCALES = ['en', 'bn'] as const;
@@ -167,6 +221,8 @@ const ROUTES: RouteCase[] = [
     view: 'person',
     params: { username: 'synthetic-writer' },
     noindex: true,
+    // U47: AuthorProfile brings the `@username` heading (WF8).
+    ownsHeading: true,
   },
   {
     route: '/emergency',

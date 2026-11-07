@@ -1,66 +1,68 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { cache } from 'react';
 import { stripSlug } from '@rogikotha/contracts';
-import type { Locale } from '@rogikotha/i18n';
 import { ViewShell } from '@/components/patient/ViewShell';
-import { CommentThreadView } from '@/components/patient/comments/CommentThreadView';
-import { AuthorEvidence } from '@/components/patient/evidence/AuthorEvidence';
-import { EvidenceNote } from '@/components/patient/evidence/EvidenceNote';
-import { AuthorTools } from '@/components/patient/experience/AuthorTools';
-import { ExperienceDetail } from '@/components/patient/experience/ExperienceDetail';
-import { getCurrentAccount } from '@/server/auth/session';
-import { comments, reviews } from '@/server/data';
-import { documentTitle } from '@/lib/titles';
+import { ExperiencePage } from '@/components/patient/experience/ExperiencePage';
+import { getActor } from '@/server/auth';
+import { runCommand } from '@/server/command-call';
+import { getContainer } from '@/server/container';
 
 type Params = Promise<{ id: string }>;
+type SearchParams = Record<string, string | string[] | undefined>;
 
-// One lookup per request, shared by the metadata and the page.
-const loadExperience = cache(async (param: string) => {
-  const publicId = stripSlug(param);
-  if (!publicId) return null;
-  const locale = (await getLocale()) as Locale;
-  return reviews.getReviewByPublicId(publicId, locale);
+// WF6: one read per request, shared by the metadata and the page. A missing review gives the
+// localised 404 before any markup, which is why `[id]` has no `loading.tsx`.
+const loadExperience = cache(async (id: string) => {
+  const publicId = stripSlug(id);
+  if (!publicId) notFound();
+  const result = await runCommand(getContainer().review.getExperience, { publicId });
+  if (!result.ok) {
+    if (result.error.code === 'not_found' || result.error.code === 'validation') notFound();
+    throw new Error(`review.getExperience: ${result.error.code}`);
+  }
+  return { publicId, vm: result.data };
 });
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
-  const [t, review] = await Promise.all([getTranslations(), loadExperience(id)]);
-  return { title: review ? `${review.title} — ${t('brand.name')}` : documentTitle('account', t) };
+  const [t, { vm }] = await Promise.all([getTranslations(), loadExperience(id)]);
+  // Indexable, and never the author's name in the title (WF6 step 7).
+  return { title: `${vm.title} — ${t('brand.name')}` };
 }
 
-export default async function ExperiencePage({ params }: { params: Params }) {
+export default async function ExperienceRoute({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams?: Promise<SearchParams>;
+}) {
   const { id } = await params;
-  const review = await loadExperience(id);
-  if (!review) notFound();
+  const { publicId, vm } = await loadExperience(id);
 
-  const account = await getCurrentAccount();
-  const [threads, ownReview] = await Promise.all([
-    comments.listComments(review.id, account?.accountId ?? null),
-    account ? reviews.getOwnReviewForEdit(review.publicId, account.accountId) : null,
-  ]);
+  // The id and the authorship are resolved once, with the call shapes of functional-spec § 2.1.
+  const c = getContainer();
+  const actor = await getActor();
+  const reviewId = await c.ports.unitOfWork.read((tx) =>
+    c.review.reviewIdForPublicId(tx, { publicId }),
+  );
+  const isAuthor =
+    reviewId !== null &&
+    (await c.ports.unitOfWork.read((tx) => c.review.isReviewAuthor(tx, { reviewId, actor })));
+
+  const search = await searchParams;
+  const publishedParam = Array.isArray(search?.published) ? search.published[0] : search?.published;
 
   return (
+    // ExperienceHead brings the page's only h1.
     <ViewShell view="account" title="">
-      <ExperienceDetail
-        review={review}
-        evidence={<EvidenceNote count={review.readyEvidenceCount} />}
-        authorTools={
-          ownReview ? (
-            <AuthorTools
-              editHref={`/experiences/${review.publicId}/edit`}
-              uploader={<AuthorEvidence reviewPublicId={review.publicId} />}
-            />
-          ) : null
-        }
-        discussion={
-          <CommentThreadView
-            reviewPublicId={review.publicId}
-            threads={threads}
-            signedIn={account !== null}
-          />
-        }
+      <ExperiencePage
+        vm={vm}
+        reviewPublicId={publicId}
+        isAuthor={isAuthor}
+        published={isAuthor && publishedParam === '1'}
       />
     </ViewShell>
   );

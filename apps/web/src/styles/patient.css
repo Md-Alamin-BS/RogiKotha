@@ -5062,3 +5062,85 @@ html:lang(bn) .join-steps li::before {
   align-items: center;
   cursor: pointer;
 }
+
+/* added: U47 the composer column, the step name and the free tag entry (Steps 42-44) */
+.c-main {
+  min-width: 0;
+}
+.c-step-name {
+  display: block;
+}
+.tag-free {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.tag-free .sub {
+  flex: 1 1 100%;
+}
+.tag-free input {
+  flex: 1 1 200px;
+  min-height: 44px;
+}
+
+/* added: U47 the anonymous alias beside the lead byline, plain text and never a link (BR5.3) */
+.byline-alias {
+  margin-inline-start: var(--space-2);
+  color: var(--ink-muted);
+}
+
+/* added: U47 section headings in a detailed story are h2/h3, so the heading margins are reset */
+.chapters h2.k,
+.chapters h3.k {
+  margin: 0 0 6px;
+  font-weight: 600;
+  line-height: var(--lh-label);
+}
+
+/* added: U47 the other experiences by the author, one block link each in the margin */
+.margin-link {
+  display: block;
+  text-align: start;
+  margin-top: var(--space-1);
+  color: var(--ink);
+}
+
+/* added: U47 the notes around the related lists, the disclaimer and the publish confirmation */
+.related-note {
+  margin: 0 0 var(--space-3);
+}
+.experience-disclaimer {
+  margin-top: var(--space-6);
+}
+.published-note {
+  margin-bottom: var(--space-4);
+}
+
+/* added: U47 keyset paging of the experience lists, plain links (BR7.1) */
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+}
+
+/* added: U47 the static index skeleton in experiences/loading.tsx, no animation (BR8.11) */
+.index-skeleton {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--rule);
+}
+.index-skeleton-line {
+  display: block;
+  height: 0.9em;
+  width: 40%;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+.index-skeleton-line.wide {
+  width: 70%;
+}

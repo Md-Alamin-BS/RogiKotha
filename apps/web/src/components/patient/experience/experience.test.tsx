@@ -242,4 +242,41 @@ describe.each(['en', 'bn'] as const)('the experience components in %s', (locale:
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('@nobody_here');
     expect(screen.getByText(t('profile.noContributions'))).toBeInTheDocument();
   });
+
+  it('names a named author in plain text, never as a link', () => {
+    renderInLocale(locale, <ExperienceBody vm={aPage()} mode="page" />);
+    expect(screen.getByText('Synthetic Author')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Synthetic Author/ })).toBeNull();
+    expect(screen.getByText(t('experience.writtenBy'))).toBeInTheDocument();
+  });
+
+  it('renders the preview with an h2 title and Not provided for the missing period', () => {
+    const { period: _period, ...rest } = aPage();
+    void _period;
+    renderInLocale(locale, <ExperienceBody vm={rest} mode="preview" />);
+    expect(screen.queryByRole('heading', { level: 1 })).toBeNull();
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('A synthetic visit');
+    expect(screen.getByTestId('experience-flags')).toHaveTextContent(t('label.notProvided'));
+    expect(screen.getByText('Second paragraph.')).toBeInTheDocument();
+  });
+
+  it('shows an author page with the display name, the cards and a pager', () => {
+    renderInLocale(
+      locale,
+      <AuthorProfile
+        header={{ username: 'synthetic_writer', displayName: 'Synthetic Writer' }}
+        cards={[aCard()]}
+        nextCursor="c2"
+      />,
+    );
+    expect(screen.getByTestId('author-display-name')).toHaveTextContent('Synthetic Writer');
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Another synthetic account' }),
+    ).toBeVisible();
+    expect(screen.getByTestId('pager-more')).toHaveAttribute(
+      'href',
+      '/authors/synthetic_writer?cursor=c2',
+    );
+    expect(screen.queryByTestId('pager-newest')).toBeNull();
+  });
 });
