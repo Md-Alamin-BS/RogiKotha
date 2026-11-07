@@ -4,7 +4,9 @@
 import type { Command, SessionCookieEffect } from '@rogikotha/application';
 import type { AppError, ErrorCode, Locale, Result } from '@rogikotha/contracts';
 import { redirect as redirectInLocale } from '@/i18n/routing';
+import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { getLocale } from 'next-intl/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { applySessionEffect, runCommand } from '../command-call';
@@ -566,15 +568,27 @@ describe('setting a new password (BR5.2, BR5.3)', () => {
 describe('changing the password (BR6.5)', () => {
   const changeForm = () => formOf({ currentPassword: PASSWORD, newPassword: NEW_PASSWORD });
 
-  it('applies the rotated session and replaces the form with the notice', async () => {
-    await expect(changePasswordForm(INITIAL_AUTH_STATE, changeForm())).resolves.toEqual({
-      status: 'done',
-      formError: null,
-      fieldErrors: {},
-      notice: { key: 'auth.security.passwordChanged' },
-    });
-    expect(applySessionEffect).toHaveBeenCalledWith(SESSION);
-  });
+  it.each(['en', 'bn'] as const)(
+    'applies the rotated session, then redirects to the %s security page with changed=1 (ISS-778)',
+    async (locale) => {
+      vi.mocked(getLocale).mockResolvedValueOnce(locale);
+
+      await expect(changePasswordForm(INITIAL_AUTH_STATE, changeForm())).rejects.toThrow(
+        'NEXT_REDIRECT',
+      );
+
+      expect(applySessionEffect).toHaveBeenCalledWith(SESSION);
+      expect(vi.mocked(applySessionEffect).mock.invocationCallOrder[0]).toBeLessThan(
+        vi.mocked(redirectInLocale).mock.invocationCallOrder[0] ?? 0,
+      );
+      expect(revalidatePath).toHaveBeenCalledWith('/', 'layout');
+      expect(redirectInLocale).toHaveBeenCalledWith({
+        href: { pathname: '/me/security', query: { changed: '1' } },
+        locale,
+      });
+      expect(redirect).not.toHaveBeenCalled();
+    },
+  );
 
   it('names a wrong current password on its field and keeps no password in the state', async () => {
     commandsAnswer({ 'account.changePassword': refused('auth.invalid_credentials') });
@@ -588,6 +602,7 @@ describe('changing the password (BR6.5)', () => {
     });
     expect(JSON.stringify(state)).not.toMatch(/secret/);
     expect(applySessionEffect).not.toHaveBeenCalled();
+    expect(redirectInLocale).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -599,12 +614,30 @@ describe('changing the password (BR6.5)', () => {
       refused('auth.password_equals_email'),
       { fieldErrors: { newPassword: { key: 'errors.auth.passwordEqualsEmail' } } },
     ],
+    [
+      refused('validation', { fieldErrors: { newPassword: 'errors.auth.passwordTooShort' } }),
+      { fieldErrors: { newPassword: { key: 'errors.auth.passwordTooShort' } } },
+    ],
     [refused('forbidden'), { formError: { key: 'errors.common.internal' } }],
-  ])('maps each other refusal', async (outcome, expected) => {
+  ])('maps each other refusal in place, without a redirect', async (outcome, expected) => {
     commandsAnswer({ 'account.changePassword': outcome });
     await expect(changePasswordForm(INITIAL_AUTH_STATE, changeForm())).resolves.toMatchObject(
       expected,
     );
+    expect(applySessionEffect).not.toHaveBeenCalled();
+    expect(redirectInLocale).not.toHaveBeenCalled();
+    expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it('a weak new password is refused before the command runs, without a redirect', async () => {
+    await expect(
+      changePasswordForm(
+        INITIAL_AUTH_STATE,
+        formOf({ currentPassword: PASSWORD, newPassword: 'short' }),
+      ),
+    ).resolves.toMatchObject({ status: 'refused', fieldErrors: { newPassword: {} } });
+    expect(runCommand).not.toHaveBeenCalled();
+    expect(redirectInLocale).not.toHaveBeenCalled();
   });
 });
 

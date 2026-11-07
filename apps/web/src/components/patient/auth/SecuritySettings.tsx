@@ -23,10 +23,13 @@ export function SecuritySettings({
   account,
   sessions,
   locale,
+  passwordChanged = false,
 }: {
   account: OwnAccountVM | null;
   sessions: SessionVM[] | null;
   locale: Locale;
+  /** The page came from a successful password change (`?changed=1`, ISS-778). */
+  passwordChanged?: boolean;
 }) {
   const t = useTranslations();
   return (
@@ -57,7 +60,7 @@ export function SecuritySettings({
         <h2 className="sub-head" id="security-password-head">
           {t('auth.security.password')}
         </h2>
-        <ChangePasswordForm />
+        <ChangePasswordForm changed={passwordChanged} />
       </section>
       <section className="sub" aria-labelledby="security-sessions-head">
         <h2 className="sub-head" id="security-sessions-head">
