@@ -10,12 +10,7 @@ import { personaLinks, personas } from '../schema/identity';
 import { reviews } from '../schema/review';
 
 // Registration (plan Step 5) has its own file, so the auth and profile steps edit separate files.
-export {
-  createProfileForAuthUser,
-  isUsernameTaken,
-  removeAuthUserWithoutProfile,
-  type CreateProfileInput,
-} from './accounts-create';
+export { createProfileForAuthUser, type CreateProfileInput } from './accounts-create';
 
 const liveAccount = (accountId: string) =>
   and(eq(accountProfiles.id, accountId), isNull(accountProfiles.deletedAt));

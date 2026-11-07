@@ -1,11 +1,9 @@
 // Registration data functions of the demo slice (FR1, plan Step 5), re-exported by `accounts.ts`
 // so the profile step can own the rest of that file.
 import type { Locale } from '@rogikotha/contracts';
-import { eq } from 'drizzle-orm';
 
 import type { Db } from '../client';
 import { accountPreferences, accountProfiles } from '../schema/account';
-import { authUsers } from '../schema/auth';
 import { personaLinks, personas } from '../schema/identity';
 
 export interface CreateProfileInput {
@@ -57,36 +55,5 @@ export function createProfileForAuthUser(
     await tx.insert(personaLinks).values({ personaId: persona!.id, accountId });
 
     return { accountId, personaId: persona!.id };
-  });
-}
-
-/** True when `account_profiles.username` (citext, so case-insensitive) is already used. */
-export async function isUsernameTaken(db: Db, username: string): Promise<boolean> {
-  const rows = await db
-    .select({ id: accountProfiles.id })
-    .from(accountProfiles)
-    .where(eq(accountProfiles.username, username))
-    .limit(1);
-  return rows.length > 0;
-}
-
-/**
- * Deletes a Better Auth user (its sessions and credential cascade) when no profile was created for
- * it, so a registration whose profile insert failed leaves nothing behind. Returns whether a row
- * was deleted; a user that has a profile is never touched.
- */
-export function removeAuthUserWithoutProfile(db: Db, authUserId: string): Promise<boolean> {
-  return db.transaction(async (tx) => {
-    const [profile] = await tx
-      .select({ id: accountProfiles.id })
-      .from(accountProfiles)
-      .where(eq(accountProfiles.authUserId, authUserId))
-      .limit(1);
-    if (profile) return false;
-    const deleted = await tx
-      .delete(authUsers)
-      .where(eq(authUsers.id, authUserId))
-      .returning({ id: authUsers.id });
-    return deleted.length > 0;
   });
 }
