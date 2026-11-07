@@ -16,6 +16,7 @@ import { makeFakePorts } from './index.js';
 import { MemoryJobQueue } from './job-queue.js';
 import { CollectingLogger } from './logger.js';
 import { RecordingMailTransport } from './mailer.js';
+import { FakeReviewModuleRepository } from './review-repository.js';
 import { ListOutbox } from './outbox.js';
 import { AlwaysAllowRateLimiter } from './rate-limiter.js';
 import { ScriptedScanner } from './scanner.js';
@@ -215,5 +216,83 @@ describe('every other fake', () => {
     expect(ports.repositories.account).toBeDefined();
     expect(ports.repositories.evidence).toBeDefined();
     expect(ports.repositories.moderation).toBeDefined();
+  });
+});
+
+describe('FakeReviewModuleRepository (U47)', () => {
+  const tx = {} as never;
+  const now = new Date('2026-10-02T00:00:00.000Z');
+  const later = new Date(now.getTime() + 60_000);
+  const month = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const bytes = (s: string) => new TextEncoder().encode(s);
+
+  it('keeps drafts owner-only and live until they expire', async () => {
+    const repo = new FakeReviewModuleRepository();
+    const draft = { kind: 'quick' as const, doctorId: null, now, expiresAt: month };
+    await repo.insertDraft(tx, { ...draft, id: 'd1', accountId: 'a1', payloadEnc: bytes('one') });
+    await repo.insertDraft(tx, {
+      ...draft,
+      id: 'd2',
+      accountId: 'a1',
+      payloadEnc: bytes('two'),
+      now: later,
+    });
+
+    expect((await repo.listOwnLiveDrafts(tx, 'a1', later, 10)).map((d) => d.id)).toEqual([
+      'd2',
+      'd1',
+    ]);
+    expect(await repo.findOwnLiveDraft(tx, 'a2', 'd1', later)).toBeNull();
+    expect(await repo.countOwnLiveDrafts(tx, 'a1', new Date(month.getTime() + 1))).toBe(0);
+    expect(await repo.deleteOwnDraft(tx, 'a2', 'd1', later)).toBe(false);
+    expect(await repo.deleteOwnDraft(tx, 'a1', 'd1', later)).toBe(true);
+    expect(await repo.countOwnLiveDrafts(tx, 'a1', later)).toBe(1);
+  });
+
+  it('reads only eligible reviews and resolves mapped terms to their target', async () => {
+    const repo = new FakeReviewModuleRepository();
+    const doctor = repo.addDoctor();
+    const merged = repo.addDoctor({ mergedIntoId: doctor.id });
+    const canonical = repo.addTerm();
+    const mapped = repo.addTerm({ canonicalId: canonical.id });
+    const review = repo.addReview(doctor.id, 'p1');
+    const hidden = repo.addReview(doctor.id, 'p1', { state: 'hidden' });
+    const onMerged = repo.addReview(merged.id, 'p1');
+    await repo.insertTags(tx, review.id, [{ group: 'condition', termId: mapped.id }]);
+
+    const read = await repo.findEligibleByPublicId(tx, review.publicId, 'bn');
+
+    expect(read?.tags).toEqual([
+      expect.objectContaining({ termPublicId: canonical.publicId, termName: canonical.nameBn }),
+    ]);
+    expect(await repo.findEligibleByPublicId(tx, hidden.publicId, 'en')).toBeNull();
+    expect(await repo.isEligible(tx, onMerged.id)).toBe(false);
+    expect(await repo.countEligible()).toBe(1);
+    expect(
+      (await repo.activeTermIdsByPublicIds(tx, [mapped.publicId])).get(mapped.publicId),
+    ).toEqual({
+      termId: canonical.id,
+      kind: 'condition',
+    });
+    expect((await repo.listByPersonas(tx, ['p1'], 'en', 100)).map((r) => r.state).sort()).toEqual([
+      'hidden',
+      'published',
+      'published',
+    ]);
+    expect(await repo.identityModeOf(tx, review.id)).toBe('pseudonymous');
+  });
+
+  it('undoes its writes on restore', () => {
+    const repo = new FakeReviewModuleRepository();
+    const doctor = repo.addDoctor();
+    const saved = repo.snapshot();
+    repo.addReview(doctor.id, 'p1');
+    repo.addCorrection(repo.reviews[0]!.id, now);
+
+    repo.restore(saved);
+
+    expect(repo.reviews).toEqual([]);
+    expect(repo.versions).toEqual([]);
+    expect(repo.doctors).toHaveLength(1);
   });
 });

@@ -114,6 +114,21 @@ describe('PgTaxonomyModuleRepository reads', () => {
 
     expect(ids).toEqual([first.id, second.id]);
   });
+
+  it('lists the published canonical terms of a kind by name (U47 listSpecialties)', async () => {
+    const run = uniqueSuffix();
+    const later = await buildTerm(testDb, { kind: 'specialty', nameEn: `${run} B` });
+    const earlier = await buildTerm(testDb, { kind: 'specialty', nameEn: `${run} A` });
+    const hidden = await buildTerm(testDb, { kind: 'specialty', state: 'hidden' });
+    const mapped = await buildTerm(testDb, { kind: 'specialty', canonicalId: earlier.id });
+    const other = await buildTerm(testDb, { kind: 'condition', nameEn: `${run} C` });
+
+    const ids = (await repo.listPublished(tx, 'specialty', 'en'))
+      .map((t) => t.id)
+      .filter((id) => [later.id, earlier.id, hidden.id, mapped.id, other.id].includes(id));
+
+    expect(ids).toEqual([earlier.id, later.id]);
+  });
 });
 
 describe('PgTaxonomyModuleRepository provisional terms (BR5.2)', () => {

@@ -51,6 +51,15 @@ const FIELD_ERROR_ONLY_KEYS = [
   'errors.auth.displayNameRequired',
   'errors.auth.emailInvalid',
   'errors.auth.passwordTooLong',
+  // ASSUMPTION(U47): the per-field keys of `review.min_fields` (BR3.1) and the `conflict` key of
+  // the ten-draft limit (BR2.4) are message keys of existing codes, not codes of their own.
+  'errors.review.missingDoctor',
+  'errors.review.missingRelationship',
+  'errors.review.missingStory',
+  'errors.review.missingTag',
+  'errors.review.periodInvalid',
+  'errors.review.missingBranch',
+  'errors.review.draftsFull',
 ];
 
 function flatten(obj, prefix = '') {

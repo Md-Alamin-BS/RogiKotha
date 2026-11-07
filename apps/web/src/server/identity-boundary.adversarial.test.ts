@@ -1,9 +1,10 @@
 // @vitest-environment node
 // U11 Step 17, high-risk adversarial test (functional-spec § 8.3, BR3.6), written by an agent that
-// did not build the boundary. `WebContainer.identity` hands the whole module, `ownership` and
-// `personaFor` included, to every server file, so BR3.6 rests on a source scan. This scan closes
-// the ways around `identity-boundary.test.ts`: destructuring (`const { personaFor } = identity`),
-// bracket access (`identity['ownership']`) and aliasing the module to another name.
+// did not build the boundary. This scan closes the ways around `identity-boundary.test.ts`:
+// destructuring (`const { personaFor } = identity`), bracket access (`identity['ownership']`) and
+// aliasing the module to another name. Since the U11 review `WebContainer.identity` is narrowed to
+// `WebIdentity` (fixed in U47), so the type closes these members too; the scan stays as the second
+// line and now covers all of `app` and `server`, the composition root excepted.
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,7 +13,8 @@ import { describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..');
-const ROOTS = [join(SRC, 'server', 'actions'), join(SRC, 'app', 'api')];
+const ROOTS = [join(SRC, 'app'), join(SRC, 'server')];
+const COMPOSITION_ROOT = join(SRC, 'server', 'container.ts');
 
 /** The members actions and routes may use: the actor's own rename and the public reads. */
 const OPEN_MEMBERS = 'renameNamedCommand|publicProjections?|publicPersonaIdsByUsername';
@@ -84,9 +86,10 @@ describe('U11 adversarial: closed identity members reached from actions and rout
     expect(violationsIn(allowed)).toEqual([]);
   });
 
-  it('finds none of them in any action or route file', () => {
-    const files = ROOTS.flatMap(sourceFiles);
-    expect(files.length).toBeGreaterThan(0);
+  it('finds none of them in any page, route, action or server file', () => {
+    const files = ROOTS.flatMap(sourceFiles).filter((file) => file !== COMPOSITION_ROOT);
+    expect(files.some((file) => file.includes(join('app', '[locale]')))).toBe(true);
+    expect(files.some((file) => file.includes(join('server', 'actions')))).toBe(true);
 
     const hits = files.flatMap((file) =>
       violationsIn(readFileSync(file, 'utf8')).map((name) => `${relative(SRC, file)}: ${name}`),

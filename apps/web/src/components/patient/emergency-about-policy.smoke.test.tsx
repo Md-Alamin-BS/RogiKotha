@@ -29,20 +29,19 @@ const CONFIG: EmergencyConfig = {
   lastVerified: '2026-08-21',
 };
 
-describe('Emergency/About/Policy smoke', () => {
-  for (const locale of ['en', 'bn'] as const) {
-    it(`renders Emergency, About, Terms and Privacy in ${locale} without throwing`, () => {
-      const messages = loadMessages(locale);
-      const wrap = (child: ReactNode) => (
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          {child}
-        </NextIntlClientProvider>
-      );
+// One block per locale, so `-t bn` selects the Bengali set (ISS-151).
+describe.each(['en', 'bn'] as const)('Emergency/About/Policy smoke in %s', (locale) => {
+  it(`renders Emergency, About, Terms and Privacy in ${locale} without throwing`, () => {
+    const messages = loadMessages(locale);
+    const wrap = (child: ReactNode) => (
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        {child}
+      </NextIntlClientProvider>
+    );
 
-      expect(() => render(wrap(<Emergency config={CONFIG} locale={locale} />))).not.toThrow();
-      expect(() => render(wrap(<About />))).not.toThrow();
-      expect(() => render(wrap(<Policy kind="terms" />))).not.toThrow();
-      expect(() => render(wrap(<Policy kind="privacy" />))).not.toThrow();
-    });
-  }
+    expect(() => render(wrap(<Emergency config={CONFIG} locale={locale} />))).not.toThrow();
+    expect(() => render(wrap(<About />))).not.toThrow();
+    expect(() => render(wrap(<Policy kind="terms" />))).not.toThrow();
+    expect(() => render(wrap(<Policy kind="privacy" />))).not.toThrow();
+  });
 });

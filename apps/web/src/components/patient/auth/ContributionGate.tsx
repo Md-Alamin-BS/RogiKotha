@@ -72,6 +72,9 @@ export function ContributionGatePanel({
  * C16 (frozen when U9 merges): mounted by U47 and U49 above their own form, which they render only
  * when `getContributionAccess()` answers `allowed`. It never throws into its page: any error reads
  * as signed out (fail closed, BR8.3), and the commands still refuse on their own (C9, C10).
+ *
+ * ASSUMPTION(U47): `returnTo` must already carry the locale (`/${locale}/write`), as the write page
+ * builds it; a bare path is still dropped, as U9's tests require, rather than prefixed here.
  */
 export async function ContributionGate({
   purpose,

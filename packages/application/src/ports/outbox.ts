@@ -18,6 +18,8 @@ export type OutboxPayloads = {
   // U46: a member-added doctor (BR5.8) and a provisional term (BR5.3).
   'doctor.changed': { id: string };
   'term.changed': { id: string };
+  /** U47 BR4.6: ids only; a facility visit appends no event. */
+  'review.published': { reviewId: string; doctorId: string; branchId: null };
 };
 
 export type OutboxEventName = keyof OutboxPayloads;

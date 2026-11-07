@@ -4,6 +4,8 @@ import { render, screen } from '@testing-library/react';
 import { NextIntlClientProvider, createTranslator } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { requireAccount } from '@/server/auth/session';
+import { runCommand } from '@/server/command-call';
+import { getContainer } from '@/server/container';
 import { accounts } from '@/server/data';
 import {
   buildCurrentAccount,
@@ -40,6 +42,10 @@ vi.mock('@/server/auth/session', () => ({ requireAccount: vi.fn() }));
 vi.mock('@/server/data', () => ({
   accounts: { getProfile: vi.fn(), listOwnReviews: vi.fn() },
 }));
+vi.mock('@/server/command-call', () => ({ runCommand: vi.fn() }));
+vi.mock('@/server/container', () => ({ getContainer: vi.fn() }));
+
+const listOwnReviews = { name: 'review.listOwnReviews' };
 vi.mock('@/server/actions/profile', () => ({
   updateDisplayNameAction: vi.fn(),
   updateLanguageAction: vi.fn(),
@@ -57,6 +63,8 @@ async function renderPage(locale: 'en' | 'bn') {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(getContainer).mockReturnValue({ review: { listOwnReviews } } as never);
+  vi.mocked(runCommand).mockResolvedValue({ ok: true, data: [] } as never);
 });
 
 describe('the /me page', () => {
@@ -65,7 +73,7 @@ describe('the /me page', () => {
     await expect(WorkspacePage()).rejects.toThrow('NEXT_REDIRECT');
     expect(requireAccount).toHaveBeenCalledWith({ returnTo: '/me' });
     expect(accounts.getProfile).not.toHaveBeenCalled();
-    expect(accounts.listOwnReviews).not.toHaveBeenCalled();
+    expect(runCommand).not.toHaveBeenCalled();
   });
 
   it.each(['en', 'bn'] as const)('renders the signed-in user’s workspace in %s', async (locale) => {
@@ -74,9 +82,10 @@ describe('the /me page', () => {
     vi.mocked(accounts.getProfile).mockResolvedValue(
       buildProfile({ accountId: account.accountId, locale }),
     );
-    vi.mocked(accounts.listOwnReviews).mockResolvedValue([
-      buildOwnReview({ title: 'Synthetic visit' }),
-    ]);
+    vi.mocked(runCommand).mockResolvedValue({
+      ok: true,
+      data: [buildOwnReview({ title: 'Synthetic visit' })],
+    } as never);
 
     await renderPage(locale);
 
@@ -86,15 +95,26 @@ describe('the /me page', () => {
     expect(screen.getByTestId('profile-head')).toHaveTextContent('Rina Akter · @rina_demo');
     expect(screen.getByText('Synthetic visit')).toBeInTheDocument();
     expect(accounts.getProfile).toHaveBeenCalledWith(account.accountId);
-    expect(accounts.listOwnReviews).toHaveBeenCalledWith(account.accountId, locale);
+    // The module query reads the actor from the request, so it takes no account id (WF9).
+    expect(runCommand).toHaveBeenCalledWith(listOwnReviews, {});
+    expect(accounts.listOwnReviews).not.toHaveBeenCalled();
   });
 
   it('shows not-found when the profile was deleted after the session was read', async () => {
     vi.mocked(requireAccount).mockResolvedValue(buildCurrentAccount());
     vi.mocked(accounts.getProfile).mockResolvedValue(null);
-    vi.mocked(accounts.listOwnReviews).mockResolvedValue([]);
     await expect(WorkspacePage()).rejects.toThrow('NEXT_NOT_FOUND');
     expect(notFound).toHaveBeenCalled();
+  });
+
+  it('sends a failed read of the own reviews to the error boundary', async () => {
+    const account = buildCurrentAccount();
+    vi.mocked(requireAccount).mockResolvedValue(account);
+    vi.mocked(accounts.getProfile).mockResolvedValue(
+      buildProfile({ accountId: account.accountId }),
+    );
+    vi.mocked(runCommand).mockResolvedValue({ ok: false, error: { code: 'internal' } } as never);
+    await expect(WorkspacePage()).rejects.toThrow('review.listOwnReviews: internal');
   });
 
   it('keeps search engines out', async () => {

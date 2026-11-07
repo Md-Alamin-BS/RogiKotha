@@ -100,3 +100,41 @@ describe('Emergency', () => {
     expect(queryByText('Poison information centre')).toBeNull();
   });
 });
+
+const BENGALI_DIGITS = '০১২৩৪৫৬৭৮৯';
+const inLocale = (locale: 'en' | 'bn', latin: string) =>
+  locale === 'en' ? latin : latin.replace(/[0-9]/g, (d) => BENGALI_DIGITS[Number(d)] ?? d);
+
+describe.each(['en', 'bn'] as const)('Emergency in %s (U20)', (locale) => {
+  const messages = loadMessages(locale) as { emergview: Record<string, string> };
+
+  it.each([
+    ['ambulance', CONFIG.ambulance],
+    ['healthLine', CONFIG.healthLine],
+    ['crisis', CONFIG.crisisLine],
+  ] as const)('names the %s link by its label and the provider number', (labelKey, number) => {
+    const { getByRole } = renderEmergency(locale);
+    const label = messages.emergview[labelKey] ?? '';
+    const link = getByRole('link', { name: new RegExp(`${label}.*${inLocale(locale, number)}`) });
+    expect(link).toHaveAttribute('href', `tel:${number}`);
+  });
+
+  it('shows the short register name from the dictionary', () => {
+    const { container } = renderEmergency(locale);
+    expect(container.querySelector('a.emerg-card.bmdc .num')?.textContent).toBe(
+      messages.emergview.bmdcShort,
+    );
+  });
+
+  it('shows the last-verified line under the emerg-note class', () => {
+    const { container } = renderEmergency(locale);
+    const note = container.querySelector('p.note.emerg-note');
+    expect(note?.textContent).toContain(inLocale(locale, '2026'));
+    expect(note?.textContent).toContain(inLocale(locale, '21'));
+  });
+
+  it('carries no inline style attribute', () => {
+    const { container } = renderEmergency(locale);
+    expect(container.querySelectorAll('[style]')).toHaveLength(0);
+  });
+});

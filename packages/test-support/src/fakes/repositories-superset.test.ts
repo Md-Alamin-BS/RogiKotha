@@ -107,6 +107,8 @@ describe('every repository fake is a method-name superset of its Pg*Repository s
       'taxonomy-module.ts',
       'review-reads.ts',
       'public-evidence-count-interim.ts',
+      // U47: paired with `FakeReviewModuleRepository` in the same file.
+      'review-module.ts',
     ])
       unpairedByDesign.add(file);
     // Test helpers (`*-test-support.ts`) sit beside the repositories but are not repositories.

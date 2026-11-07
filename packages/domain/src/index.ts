@@ -7,3 +7,5 @@ export * from './identity/persona';
 export * from './identity/alias';
 export * from './identity/projection';
 export * from './community';
+export * from './review/review';
+export * from './review/facility-review';

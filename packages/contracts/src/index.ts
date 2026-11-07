@@ -27,7 +27,6 @@ export * from './schemas/notification';
 export * from './schemas/administration';
 export * from './schemas/data-requests';
 
-export * from './view-models/discover';
 export * from './view-models/search';
 export * from './view-models/doctor';
 export * from './view-models/facility';
