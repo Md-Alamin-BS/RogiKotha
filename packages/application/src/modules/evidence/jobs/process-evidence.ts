@@ -327,7 +327,8 @@ export function createProcessEvidence(deps: EvidenceProcessorDeps) {
 
     const ageMs = deps.clock.now().getTime() - facts.createdAt.getTime();
     if (ageMs > EVIDENCE_PROCESSING_DEADLINE_SEC * 1000) {
-      // The deadline row of § 4: the reason follows the latest custody event, as in the sweep.
+      // ASSUMPTION(U48): BR4.9 says `processing_timeout`; the reason follows the latest custody
+      // event as in the sweep (BR4.11), so both paths agree. The author sees the same copy (ISS-644).
       const failReason = sweepReason(facts.latestCustody);
       return { state: await fail(item, facts.state, failReason, [['failed', { failReason }]]) };
     }
