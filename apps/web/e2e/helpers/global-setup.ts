@@ -168,6 +168,8 @@ export default async function globalSetup(): Promise<void> {
   await waitForServices(env, root);
   prepareDatabase(env, root);
   emptyStorage(root);
+  // checkPage appends to it; log-scan.spec.ts must read this run's pages only (BR2.8).
+  rmSync(path.join(logsDir(root), 'csp.jsonl'), { force: true });
   const workerPid = await startWorker(env, root);
   writeLock({ pid: process.pid, workerPid }, lockFile(root));
   process.env[RUN_ID_VARIABLE] = newRunId();
