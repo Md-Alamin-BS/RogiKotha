@@ -11,7 +11,8 @@ delivered to Mailpit (`http://localhost:8025`).
 | Username | Role | State | Used for |
 |---|---|---|---|
 | `shirin_88` | contributor | verified, author of r1 (pseudonymous), four drafts (one blocked on a pending profile), eight bookmarks, nine notifications | the workspace, security page, an existing author |
-| `rafi_c` | contributor | verified, author of r6 (named) with follow-ups and later care | discussion, follow-ups, evidence viewer |
+| `rafi_c` | contributor | verified, no content | discussion (comments, replies, reactions, blocks) |
+| `named_tanvir-ahmed` | contributor | verified, author of r6 (named, Tanvir Ahmed) with follow-ups and later care | follow-ups, evidence viewer, the moderation notification in step 19 |
 | `anon_author_r2` | contributor | verified; author of r2 **anonymously** (its only persona) | proves alias isolation |
 | `reporter_1` … `reporter_6` | contributors | verified, no content | five-account auto-hide, the sixth for "duplicate report does not count" |
 | `newuser` | — | **not seeded** — created live in step 2 | registration flow |
@@ -52,11 +53,11 @@ third tab. Total ≈ 25 minutes.
 ### Part 4 — Discussion and reporting
 15. As `rafi_c`: comment on r1, reply to k8 (one level — reply button absent on the reply), edit, delete k10 (gone) vs delete k8 (tombstone stays). Like, change to dislike, remove. Bookmark. Block `reporter_1` → they can no longer reply to rafi's thread.
 16. As `reporter_1`…`reporter_5` (five tabs or quick switch): report comment k3 as spam → after the fifth distinct account it flips to **hidden pending review**; `reporter_1` reports again → "already reported", count unchanged; `reporter_6` reports as **factual** → no hide.
-17. As `newuser`: report r6 as **privacy** → hidden immediately (critical), case in the critical lane.
+17. As `newuser`: report r6 (by `named_tanvir-ahmed`) as **privacy** → hidden immediately (critical), case in the critical lane.
 
 ### Part 5 — Staff console (window B)
 18. `/admin/sign-in` as `mod_rashid` on this browser → **Approve this device** → Mailpit → link → password → console. Sign out and in again → straight in.
-19. Queue: critical lane shows the privacy case with SLA 24 h; MOD-2041 is in the critical lane; the standard lane includes MOD-2033 and MOD-2029; counts in the nav. Open the case → reporter reads **restricted**; pick **redact**, write the reason to author, **Record decision** → audit timeline gains the row; the author (`rafi_c`) gets a moderation notification with the appeal path, no reporter identity.
+19. Queue: critical lane shows the privacy case with SLA 24 h; MOD-2041 is in the critical lane; the standard lane includes MOD-2033 and MOD-2029; counts in the nav. Open the case → reporter reads **restricted**; pick **redact**, write the reason to author, **Record decision** → audit timeline gains the row; the author of r6 (`named_tanvir-ahmed`) gets a moderation notification with the appeal path, no reporter identity.
 20. Try to edit the narrative body → refused ("narrative is not editable through moderation").
 21. Bulk: select the critical lane → preview lists affected cases → confirm → each result recorded.
 22. Evidence: quarantine table with stages; place a **legal hold** on e1 with a reason; move the **demo clock** +91 days → run retention → e3's original expires (custody `original_expired`), e1's does not; release the hold.
@@ -69,7 +70,7 @@ third tab. Total ≈ 25 minutes.
 27. Install as PWA (Chrome "Install"), go offline → home shell loads, `/me` does not; sign out purges caches.
 28. Reset the demo: `pnpm demo:reset` restores the seed and the clock.
 
-T-504 records the observed result of every step in `docs/implementation/tasks/T-504-walkthrough-record.md`; T-505 reads it. Note: a **failed** evidence item (step 12's encrypted PDF) is shown to its author only; the public experience page lists published documents alone (AD-6) — the prototype's public rendering of e5's failure is not carried over.
+T-504 records the observed result of every step in `docs/implementation/tasks/T-504-walkthrough-record.md`; T-505 reads it. For release 1 the record is [docs/validation/U50-walkthrough.md](../validation/U50-walkthrough.md) (FD-105 defers the parts that need the staff console and the other release-2 features). Note: a **failed** evidence item (step 12's encrypted PDF) is shown to its author only; the public experience page lists published documents alone (AD-6) — the prototype's public rendering of e5's failure is not carried over.
 
 ## Fixtures (`packages/test-support/fixtures/`)
 
