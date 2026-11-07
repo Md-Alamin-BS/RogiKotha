@@ -19,7 +19,6 @@ import {
   ok,
   type Actor,
   type DemoCurrentAccount,
-  type DemoDoctorOption,
   type ErrorCode,
   type Result,
 } from '@rogikotha/contracts';
@@ -31,17 +30,15 @@ import { redirect } from '@/i18n/routing';
 import { getRequestContext } from '@/server/auth';
 import { requireContributor } from '@/server/auth/session';
 import { getContainer } from '@/server/container';
-import { doctors, reviews } from '@/server/data';
+import { reviews } from '@/server/data';
 import {
   discardDraftAction,
   duplicateHintAction,
   previewAction,
   publishDraftAction,
   publishFacilityVisitAction,
-  publishReview,
   saveDraftAction,
   saveReviewEdit,
-  type ComposeFormState,
   type EditFormState,
 } from './review';
 
@@ -77,17 +74,9 @@ vi.mock('@/i18n/routing', () => ({
 }));
 vi.mock('@/server/auth/session', () => ({ requireContributor: vi.fn() }));
 vi.mock('@/server/data', () => ({
-  doctors: { listDoctorOptions: vi.fn(), listSpecialtyOptions: vi.fn() },
-  reviews: {
-    createQuickReview: vi.fn(),
-    createQuickReviewWithNewDoctor: vi.fn(),
-    createPseudonymousPersona: vi.fn(),
-    updateOwnReview: vi.fn(),
-  },
+  reviews: { updateOwnReview: vi.fn() },
 }));
 
-const DOCTOR_ID = '0190f5a2-0000-7000-8000-0000000000d1';
-const SPECIALTY_ID = '0190f5a2-0000-7000-8000-0000000000e1';
 const PUBLIC_ID = 'a1b2c3d4e5';
 
 function anAccount(overrides: Partial<DemoCurrentAccount> = {}): DemoCurrentAccount {
@@ -105,30 +94,6 @@ function anAccount(overrides: Partial<DemoCurrentAccount> = {}): DemoCurrentAcco
   };
 }
 
-function aDoctorOption(): DemoDoctorOption {
-  return { id: DOCTOR_ID, publicId: 'd0c7015000', name: 'Dr. Synthetic Rahman', specialty: null };
-}
-
-const lastYear = new Date().getUTCFullYear() - 1;
-
-function aComposeForm(overrides: Record<string, string | null> = {}): FormData {
-  const fields: Record<string, string | null> = {
-    doctorId: DOCTOR_ID,
-    relationship: 'parent',
-    period: `${lastYear}-03`,
-    title: '  Calm and careful with my son  ',
-    body: 'She listened to every question and explained the medicine doses slowly.',
-    sentiment: 'positive',
-    outcome: '',
-    identity: 'named',
-    attestation: 'on',
-    ...overrides,
-  };
-  const form = new FormData();
-  for (const [name, value] of Object.entries(fields)) if (value !== null) form.set(name, value);
-  return form;
-}
-
 function anEditForm(overrides: Record<string, string> = {}): FormData {
   const form = new FormData();
   const fields = {
@@ -143,250 +108,13 @@ function anEditForm(overrides: Record<string, string> = {}): FormData {
   return form;
 }
 
-const composeStart: ComposeFormState = {
-  attempt: 0,
-  values: null,
-  fieldErrors: {},
-  formError: null,
-};
 const editStart: EditFormState = { attempt: 0, values: null, fieldErrors: {}, formError: null };
 
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(getLocale).mockResolvedValue('en');
   vi.mocked(requireContributor).mockResolvedValue(anAccount());
-  vi.mocked(doctors.listDoctorOptions).mockResolvedValue([aDoctorOption()]);
-  vi.mocked(reviews.createQuickReview).mockResolvedValue({ reviewId: 'r-1', publicId: PUBLIC_ID });
   vi.mocked(reviews.updateOwnReview).mockResolvedValue({ ok: true, data: { version: 2 } });
-  vi.mocked(doctors.listSpecialtyOptions).mockResolvedValue([
-    { id: SPECIALTY_ID, name: 'Paediatrics' },
-  ]);
-  vi.mocked(reviews.createQuickReviewWithNewDoctor).mockResolvedValue({
-    reviewId: 'r-2',
-    publicId: PUBLIC_ID,
-    doctorId: 'new-doctor',
-    createdDoctor: true,
-  });
-});
-
-function aNewDoctorForm(overrides: Record<string, string | null> = {}): FormData {
-  return aComposeForm({
-    doctorId: null,
-    newDoctor: '1',
-    newDoctorName: '  Dr. Synthetic   Karim ',
-    newDoctorSpecialtyId: SPECIALTY_ID,
-    newDoctorChamber: 'Synthetic Clinic, Mirpur',
-    newDoctorBmdc: 'A-12345',
-    ...overrides,
-  });
-}
-
-describe('publishing about a doctor the member adds (FD-100)', () => {
-  it('publishes with the typed doctor and never needs a listed doctor id', async () => {
-    await expect(publishReview(composeStart, aNewDoctorForm())).rejects.toThrow('NEXT_REDIRECT');
-
-    expect(reviews.createQuickReview).not.toHaveBeenCalled();
-    expect(reviews.createQuickReviewWithNewDoctor).toHaveBeenCalledWith(
-      expect.objectContaining({
-        doctor: {
-          name: 'Dr. Synthetic   Karim',
-          specialtyId: SPECIALTY_ID,
-          chamber: 'Synthetic Clinic, Mirpur',
-          bmdc: 'A-12345',
-        },
-      }),
-    );
-    expect(vi.mocked(reviews.createQuickReviewWithNewDoctor).mock.calls[0]?.[0].review.title).toBe(
-      'Calm and careful with my son',
-    );
-    expect(redirect).toHaveBeenCalledWith({ href: `/experiences/${PUBLIC_ID}`, locale: 'en' });
-  });
-
-  it('stores blank optional details as not provided', async () => {
-    await expect(
-      publishReview(
-        composeStart,
-        aNewDoctorForm({ newDoctorSpecialtyId: '', newDoctorChamber: ' ', newDoctorBmdc: '' }),
-      ),
-    ).rejects.toThrow('NEXT_REDIRECT');
-
-    expect(vi.mocked(reviews.createQuickReviewWithNewDoctor).mock.calls[0]?.[0].doctor).toEqual({
-      name: 'Dr. Synthetic   Karim',
-      specialtyId: null,
-      chamber: null,
-      bmdc: null,
-    });
-  });
-
-  it('refuses a missing name, a bad BMDC number and an unknown specialty beside their fields', async () => {
-    const state = await publishReview(
-      composeStart,
-      aNewDoctorForm({ newDoctorName: 'X', newDoctorBmdc: '1; drop table doctors' }),
-    );
-    expect(state.fieldErrors).toMatchObject({
-      newDoctorName: 'formErrors.compose.newDoctorName',
-      newDoctorBmdc: 'formErrors.compose.newDoctorBmdc',
-    });
-
-    vi.mocked(doctors.listSpecialtyOptions).mockResolvedValue([]);
-    const unknown = await publishReview(composeStart, aNewDoctorForm());
-    expect(unknown.fieldErrors).toEqual({
-      newDoctorSpecialtyId: 'formErrors.compose.newDoctorSpecialty',
-    });
-    expect(reviews.createQuickReviewWithNewDoctor).not.toHaveBeenCalled();
-  });
-
-  it.each([
-    ['a bare title', 'Dr.'],
-    ['a Bengali title', 'ডা.'],
-    ['dots', '...'],
-    ['digits', '123'],
-    ['zero-width spaces', '\u200b\u200b\u200b'],
-    ['a bidi override', 'Dr. \u202eilA nimaR'],
-  ])('refuses %s as a doctor name', async (_label, name) => {
-    const state = await publishReview(composeStart, aNewDoctorForm({ newDoctorName: name }));
-    expect(state.fieldErrors).toMatchObject({ newDoctorName: 'formErrors.compose.newDoctorName' });
-    expect(reviews.createQuickReviewWithNewDoctor).not.toHaveBeenCalled();
-  });
-
-  it('refuses a NUL byte in the story beside the field instead of failing in the database', async () => {
-    const state = await publishReview(
-      composeStart,
-      aComposeForm({ body: 'A long enough story with a   hidden inside it.' }),
-    );
-    expect(state.fieldErrors).toMatchObject({ body: 'errors.common.validation' });
-    expect(reviews.createQuickReview).not.toHaveBeenCalled();
-  });
-
-  it('keeps the attestation tick on a refused submission so the author does not tick it twice', async () => {
-    const state = await publishReview(composeStart, aNewDoctorForm({ body: 'Too short' }));
-
-    expect(state.fieldErrors).toEqual({ body: 'formErrors.compose.bodyTooShort' });
-    expect(state.values).toMatchObject({ attestation: 'on', newDoctor: '1' });
-  });
-});
-
-describe('publishing an experience', () => {
-  it('publishes the quick review as the named persona and opens its page', async () => {
-    await expect(publishReview(composeStart, aComposeForm())).rejects.toThrow('NEXT_REDIRECT');
-
-    expect(reviews.createQuickReview).toHaveBeenCalledWith({
-      authorPersonaId: anAccount().currentPersonaId,
-      authorAccountId: anAccount().accountId,
-      doctorId: DOCTOR_ID,
-      relationship: 'parent',
-      periodYear: lastYear,
-      periodMonth: 3,
-      title: 'Calm and careful with my son',
-      body: 'She listened to every question and explained the medicine doses slowly.',
-      sentiment: 'positive',
-      outcome: null,
-      identityMode: 'named',
-      language: 'en',
-    });
-    expect(revalidatePath).toHaveBeenCalledWith('/', 'layout');
-    expect(redirect).toHaveBeenCalledWith({ href: `/experiences/${PUBLIC_ID}`, locale: 'en' });
-  });
-
-  it('sends a signed-out visitor to sign in and writes nothing', async () => {
-    vi.mocked(requireContributor).mockRejectedValue(new Error('NEXT_REDIRECT'));
-
-    await expect(publishReview(composeStart, aComposeForm())).rejects.toThrow('NEXT_REDIRECT');
-
-    expect(requireContributor).toHaveBeenCalledWith({ returnTo: '/write' });
-    expect(reviews.createQuickReview).not.toHaveBeenCalled();
-  });
-
-  it('creates the pseudonymous persona on first use', async () => {
-    vi.mocked(reviews.createPseudonymousPersona).mockResolvedValue('persona-alias');
-
-    await expect(
-      publishReview(composeStart, aComposeForm({ identity: 'pseudonymous' })),
-    ).rejects.toThrow('NEXT_REDIRECT');
-
-    expect(reviews.createPseudonymousPersona).toHaveBeenCalledWith({
-      accountId: anAccount().accountId,
-      username: 'abba_of_two',
-    });
-    expect(reviews.createQuickReview).toHaveBeenCalledWith(
-      expect.objectContaining({ authorPersonaId: 'persona-alias', identityMode: 'pseudonymous' }),
-    );
-  });
-
-  it('reuses an existing pseudonymous persona', async () => {
-    vi.mocked(requireContributor).mockResolvedValue(
-      anAccount({ pseudonymousPersonaId: 'alias-1' }),
-    );
-
-    await expect(
-      publishReview(composeStart, aComposeForm({ identity: 'pseudonymous' })),
-    ).rejects.toThrow('NEXT_REDIRECT');
-
-    expect(reviews.createPseudonymousPersona).not.toHaveBeenCalled();
-    expect(reviews.createQuickReview).toHaveBeenCalledWith(
-      expect.objectContaining({ authorPersonaId: 'alias-1' }),
-    );
-  });
-
-  it.each([
-    ['এক বছর ধরে মাথাব্যথা, ডাক্তার ধৈর্য নিয়ে সব শুনেছেন।', 'bn'],
-    ['Headache for a year; ডাক্তার ধৈর্য নিয়ে সব শুনেছেন।', 'mixed'],
-  ])('records the language the author wrote in (%s)', async (body, language) => {
-    await expect(
-      publishReview(composeStart, aComposeForm({ title: 'মাথাব্যথা', body })),
-    ).rejects.toThrow('NEXT_REDIRECT');
-    expect(reviews.createQuickReview).toHaveBeenCalledWith(expect.objectContaining({ language }));
-  });
-
-  it('refuses a form with field errors, keeps what was typed and writes nothing', async () => {
-    const state = await publishReview(
-      composeStart,
-      aComposeForm({
-        attestation: null,
-        body: 'Too short',
-        period: `${new Date().getUTCFullYear() + 1}-01`,
-        relationship: 'neighbour',
-        title: '',
-      }),
-    );
-
-    expect(state).toMatchObject({
-      attempt: 1,
-      formError: 'errors.common.validation',
-      fieldErrors: {
-        attestation: 'errors.review.attestationRequired',
-        body: 'formErrors.compose.bodyTooShort',
-        period: 'formErrors.compose.periodInvalid',
-        relationship: 'formErrors.compose.relationshipRequired',
-        title: 'formErrors.compose.titleLength',
-      },
-    });
-    expect(state.values?.body).toBe('Too short');
-    expect(reviews.createQuickReview).not.toHaveBeenCalled();
-    expect(redirect).not.toHaveBeenCalled();
-  });
-
-  it('refuses a doctor that is not in the published list', async () => {
-    vi.mocked(doctors.listDoctorOptions).mockResolvedValue([]);
-
-    const state = await publishReview(composeStart, aComposeForm());
-
-    expect(state.fieldErrors).toEqual({ doctorId: 'formErrors.compose.doctorRequired' });
-    expect(reviews.createQuickReview).not.toHaveBeenCalled();
-  });
-
-  it('answers a database failure with the internal message and keeps the text out of the log', async () => {
-    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    vi.mocked(reviews.createQuickReview).mockRejectedValue(
-      new Error('duplicate key: Calm and careful with my son'),
-    );
-
-    const state = await publishReview(composeStart, aComposeForm());
-
-    expect(state.formError).toBe('errors.common.internal');
-    expect(JSON.stringify(log.mock.calls)).not.toContain('Calm and careful');
-    log.mockRestore();
-  });
 });
 
 describe('editing an experience', () => {

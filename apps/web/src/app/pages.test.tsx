@@ -68,8 +68,6 @@ vi.mock('@/server/data', async () => {
     doctors: {
       listRecentPublishedReviews: resolve([]),
       getDoctor: resolve(buildDoctorDetail({ name: RECORD.doctorName })),
-      listDoctorOptions: resolve([]),
-      listSpecialtyOptions: resolve([]),
     },
     reviews: {
       getReviewByPublicId: resolve(buildReviewDetail({ title: RECORD.experienceTitle })),

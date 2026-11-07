@@ -32,7 +32,7 @@ vi.mock('@/i18n/routing', () => ({
   ),
   usePathname: () => '/experiences/a1b2c3d4e5/edit',
 }));
-vi.mock('@/server/actions/review', () => ({ publishReview: vi.fn(), saveReviewEdit: vi.fn() }));
+vi.mock('@/server/actions/review', () => ({ saveReviewEdit: vi.fn() }));
 vi.mock('@/server/auth/session', () => ({ requireAccount: vi.fn() }));
 vi.mock('@/server/data', () => ({
   doctors: { getDoctor: vi.fn() },

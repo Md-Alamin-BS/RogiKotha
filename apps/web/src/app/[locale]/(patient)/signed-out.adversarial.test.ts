@@ -44,10 +44,10 @@ vi.mock('@/server/actions/profile', () => ({
   updateDisplayNameAction: vi.fn(),
   updateLanguageAction: vi.fn(),
 }));
-vi.mock('@/server/actions/review', () => ({ publishReview: vi.fn(), saveReviewEdit: vi.fn() }));
+vi.mock('@/server/actions/review', () => ({ saveReviewEdit: vi.fn() }));
 vi.mock('@/server/data', () => ({
   accounts: { getProfile: vi.fn(), listOwnReviews: vi.fn() },
-  doctors: { getDoctor: vi.fn(), listDoctorOptions: vi.fn() },
+  doctors: { getDoctor: vi.fn() },
   reviews: { getOwnReviewForEdit: vi.fn() },
   session: { getCurrentAccountByAuthUserId: vi.fn() },
 }));
@@ -157,7 +157,6 @@ function nextOfSignInRedirect(): string | undefined {
 function nothingWasRead(): void {
   expect(accounts.getProfile).not.toHaveBeenCalled();
   expect(accounts.listOwnReviews).not.toHaveBeenCalled();
-  expect(doctors.listDoctorOptions).not.toHaveBeenCalled();
   expect(doctors.getDoctor).not.toHaveBeenCalled();
   expect(reviews.getOwnReviewForEdit).not.toHaveBeenCalled();
 }
