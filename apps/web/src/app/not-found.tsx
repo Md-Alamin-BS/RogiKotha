@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { connection } from 'next/server';
 import { getTranslations } from 'next-intl/server';
 
 // The last resort for a URL outside any locale (for example `/fr/x` after the proxy): it renders
@@ -7,6 +8,8 @@ import { getTranslations } from 'next-intl/server';
 // Emergency help stays one link away even here (BR3.3).
 // Deliberately imports no stylesheet: this boundary stays self-contained.
 export default async function NotFound() {
+  // BR1.4 (U41): render per request, so Next.js stamps this response's CSP nonce on its scripts.
+  await connection();
   const [en, bn] = await Promise.all([
     getTranslations({ locale: 'en' }),
     getTranslations({ locale: 'bn' }),

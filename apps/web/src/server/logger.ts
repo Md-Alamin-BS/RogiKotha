@@ -1,29 +1,15 @@
-// The web tier's `Logger` port: one JSON line per event with allowlisted fields only (BR8.1). The
-// port's types already close the field list; the runtime filter also drops anything a cast let in.
-import type { LogFields, Logger } from '@rogikotha/application';
+// The web tier's `Logger` port: one JSON line per event under the shared log policy (BR8.1,
+// BR6.1–BR6.4). The port's types already close the field list; the runtime filter also drops
+// anything a cast let in, and every kept value must look like an id or a code.
+import {
+  LOG_FIELD_NAMES,
+  logEventName,
+  scrubLogFields,
+  type LogFields,
+  type Logger,
+} from '@rogikotha/application';
 
-const ALLOWED_FIELDS: ReadonlySet<string> = new Set<keyof LogFields>([
-  'correlationId',
-  'accountId',
-  'deliveryId',
-  'sessionId',
-  'jobId',
-  'command',
-  'messageKey',
-  'status',
-  'errorCode',
-  'purpose',
-  'kind',
-  'attempts',
-  'count',
-  'durationMs',
-  'retryAfterSec',
-  'itemId',
-  'state',
-  'failReason',
-  'attempt',
-  'errorClass',
-]);
+const ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>(LOG_FIELD_NAMES);
 
 export type LogLevel = 'info' | 'warn' | 'error';
 
@@ -33,11 +19,17 @@ export function formatLogLine(
   fields: LogFields = {},
   at: Date = new Date(),
 ): string {
-  const kept: Record<string, unknown> = {};
-  for (const [name, value] of Object.entries(fields)) {
-    if (ALLOWED_FIELDS.has(name) && value !== undefined) kept[name] = value;
-  }
-  return JSON.stringify({ level, event, ...kept, at: at.toISOString() });
+  const name = logEventName(event);
+  const line: Record<string, unknown> = {
+    level,
+    event: name,
+    ...scrubLogFields(fields, ALLOWED_FIELDS),
+  };
+  // Re-asserted after the fields, so no field can overwrite the envelope (BR6.4).
+  line.level = level;
+  line.event = name;
+  line.at = at.toISOString();
+  return JSON.stringify(line);
 }
 
 export function createWebLogger(

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import type * as NextServer from 'next/server';
 import RootLayout from './layout';
 import NotFound from './not-found';
 import RootPage from './page';
@@ -15,6 +16,11 @@ class Redirected extends Error {
     super(`NEXT_REDIRECT ${target}`);
   }
 }
+// U41 (BR1.4): `connection()` needs a request scope, which a component test does not have.
+vi.mock('next/server', async (importOriginal) => ({
+  ...(await importOriginal<typeof NextServer>()),
+  connection: vi.fn(() => Promise.resolve()),
+}));
 vi.mock('next/navigation', () => ({
   redirect: vi.fn((target: string) => {
     throw new Redirected(target);
@@ -136,6 +142,15 @@ describe('not-found page', () => {
     const links = Array.from(doc.querySelectorAll('a')).map((a) => a.getAttribute('href'));
     expect(links).toEqual(['/en', '/en/emergency', '/bn', '/bn/emergency']);
     expect(doc.documentElement.getAttribute('lang')).toBe('en');
+  });
+
+  it('renders per request, so its scripts get the response nonce', async () => {
+    const { connection } = await import('next/server');
+    vi.mocked(connection).mockClear();
+
+    await NotFound();
+
+    expect(connection).toHaveBeenCalledTimes(1);
   });
 
   it.each([

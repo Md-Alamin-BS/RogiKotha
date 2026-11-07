@@ -12,6 +12,8 @@ export interface LogFields {
   messageKey?: string;
   status?: string;
   errorCode?: string;
+  /** an `Error` subclass name such as `TypeError`, never its message or stack */
+  errorName?: string;
   /** a library-call scope purpose or an `account.securityEvent` kind */
   purpose?: string;
   kind?: string;

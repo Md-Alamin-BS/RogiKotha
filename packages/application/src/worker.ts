@@ -10,6 +10,15 @@ export {
 export { emailCatalogFromMessages } from './modules/notification/email-catalog';
 export { MAIL_SEND_JOB, type MailSendPayload } from './ports/job-queue';
 export {
+  INVALID_EVENT,
+  LOG_FIELD_NAMES,
+  SCRUBBED,
+  logEventName,
+  scrubLogFields,
+  scrubLogValue,
+  type LogFieldName,
+} from './ports/log-policy';
+export {
   EvidenceAttemptAborted,
   ScannerUnavailable,
 } from './modules/evidence/jobs/process-evidence';

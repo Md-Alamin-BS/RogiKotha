@@ -21,8 +21,14 @@ type ConfigFactory = (params: {
   requestLocale: Promise<string | undefined>;
 }) => Promise<RequestConfig>;
 
-async function configFor(requested: string | undefined): Promise<RequestConfig> {
-  const factory = (await import('./request')).default as unknown as ConfigFactory;
+async function configFor(
+  requested: string | undefined,
+  onIntlError?: (code: string) => void,
+): Promise<RequestConfig> {
+  const module = await import('./request');
+  const factory = (onIntlError === undefined
+    ? module.default
+    : module.createRequestConfig({ onIntlError })) as unknown as ConfigFactory;
   return factory({ requestLocale: Promise.resolve(requested) });
 }
 
@@ -69,22 +75,34 @@ describe('request config missing-message handling', () => {
     expect(() => onError(error)).toThrow();
   });
 
-  it('logs and carries on for a missing message in production', async () => {
+  // Step 10 (U41): these cases read the reporter instead of a console spy, because printing the
+  // whole error bypassed the log policy (BR6.7).
+  it('reports the code and carries on for a missing message in production', async () => {
     vi.stubEnv('NODE_ENV', 'production');
-    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const { onError } = await configFor('en');
-    const error = aMissingMessageError();
-    expect(() => onError(error)).not.toThrow();
-    expect(log).toHaveBeenCalledWith(error);
+    const printed = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const reported: string[] = [];
+    const { onError } = await configFor('en', (code) => reported.push(code));
+    expect(() => onError(aMissingMessageError())).not.toThrow();
+    expect(reported).toEqual([IntlErrorCode.MISSING_MESSAGE]);
+    expect(printed).not.toHaveBeenCalled();
   });
 
-  it('only logs an error that is not a missing message, even outside production', async () => {
+  it('only reports an error that is not a missing message, even outside production', async () => {
     vi.stubEnv('NODE_ENV', 'test');
-    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const printed = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const reported: string[] = [];
+    const { onError } = await configFor('en', (code) => reported.push(code));
+    expect(() => onError({ code: IntlErrorCode.INVALID_MESSAGE })).not.toThrow();
+    expect(reported).toEqual([IntlErrorCode.INVALID_MESSAGE]);
+    expect(printed).not.toHaveBeenCalled();
+  });
+
+  it('prints nothing for an error when no reporter is given', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    const printed = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const { onError } = await configFor('en');
-    const error = { code: IntlErrorCode.INVALID_MESSAGE };
-    expect(() => onError(error)).not.toThrow();
-    expect(log).toHaveBeenCalledWith(error);
+    expect(() => onError(aMissingMessageError())).not.toThrow();
+    expect(printed).not.toHaveBeenCalled();
   });
 
   it('names the missing key, with its namespace, when failing outside production', async () => {
