@@ -21,6 +21,11 @@ import type {
   PublishReviewInput,
   ReviewEmptyInput,
   SaveDraftInput,
+  CorrectReviewInput,
+  EditReviewVM,
+  GetHistoryInput,
+  GetOwnForEditInput,
+  ReviewHistoryVM,
 } from '@rogikotha/contracts';
 
 import type { Command } from '../../command';
@@ -46,6 +51,9 @@ import { listOwnDraftsQuery } from './queries/list-own-drafts';
 import { listOwnReviewsQuery } from './queries/list-own-reviews';
 import { previewQuery } from './queries/preview';
 import { reviewIdForPublicId } from './queries/review-id-for-public-id';
+import { correctCommand, type CorrectOutput } from './commands/correct';
+import { getHistoryQuery } from './queries/get-history';
+import { getOwnForEditQuery } from './queries/get-own-for-edit';
 
 /** `ports/unit-of-work.ts` `Tx`; valid inside `unitOfWork.read` and `unitOfWork.run`. */
 export type ReviewCtx = Tx;
@@ -73,6 +81,10 @@ export interface ReviewModule extends ReviewSeams {
   hasOwnReviewOfDoctor: Command<HasOwnReviewOfDoctorInput, { duplicate: boolean }>;
   /** ISO timestamp of the newest correction, or null (BR6.7); not part of `ReviewSeams`. */
   lastEditedAt(tx: ReviewCtx, input: { reviewId: string }): Promise<string | null>;
+  /** U22: the author's correction of a published review (FR69). */
+  correct: Command<CorrectReviewInput, CorrectOutput>;
+  getOwnForEdit: Command<GetOwnForEditInput, EditReviewVM>;
+  getHistory: Command<GetHistoryInput, ReviewHistoryVM>;
 }
 
 export function createReviewModule(deps: ReviewModulePorts): ReviewModule {
@@ -95,8 +107,12 @@ export function createReviewModule(deps: ReviewModulePorts): ReviewModule {
     isReviewPublished: (tx, input) => isReviewPublished(reviews, tx, input),
     authorIdentityModeOf: (tx, input) => authorIdentityModeOf(reviews, tx, input),
     lastEditedAt: (tx, input) => lastEditedAt(reviews, tx, input),
+    correct: correctCommand(deps),
+    getOwnForEdit: getOwnForEditQuery(deps),
+    getHistory: getHistoryQuery(deps),
   };
 }
 
 export type { ReviewModulePorts } from './ports';
 export type { SaveDraftOutput, PublishOutput, FacilityPublishOutput, AuthorCardsOutput };
+export type { CorrectOutput };
