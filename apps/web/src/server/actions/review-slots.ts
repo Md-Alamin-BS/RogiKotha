@@ -8,7 +8,6 @@ import type { DemoCommentThread } from '@rogikotha/contracts';
 
 import { getActor } from '@/server/auth';
 import { getContainer } from '@/server/container';
-import { comments } from '@/server/data';
 
 async function reviewIdOf(reviewPublicId: string): Promise<string | null> {
   const c = getContainer();
@@ -17,15 +16,16 @@ async function reviewIdOf(reviewPublicId: string): Promise<string | null> {
   );
 }
 
-/** The demo discussion until U49 (C10) swaps the data source. */
+// ASSUMPTION(U49): the demo comment read is gone with Step 23 (BR6.1), and the slot still takes
+// `DemoCommentThread[]`, so until Step 25 reads `community.getThread` through the new views this
+// answers an empty list; the post and delete actions already run on the Community module.
 export async function loadCommentThread(
   reviewPublicId: string,
 ): Promise<{ threads: DemoCommentThread[]; signedIn: boolean } | null> {
   const reviewId = await reviewIdOf(reviewPublicId);
   if (reviewId === null) return null;
   const actor = await getActor();
-  const threads = await comments.listComments(reviewId, actor.accountId ?? null);
-  return { threads, signedIn: actor.kind === 'account' };
+  return { threads: [], signedIn: actor.kind === 'account' };
 }
 
 /** How many documents the public may count (C17), until U48 binds Evidence's implementation. */
