@@ -16,6 +16,18 @@ This decision is binding and overrides the text below where they differ.
 
 - **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-307 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, the motion step and the acceptance checks.
 
+## Amendments — release 1 (FD-105, FD-109..FD-112)
+
+These decisions are binding and override the text below where they differ. Release 1 builds this task inside Unit U47 `u47-reviews`, together with T-301 and T-306 (record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u47-reviews/`).
+
+- **FD-105 — what release 1 builds** — the experience page `/{locale}/experiences/{id}`, the index `/experiences`, the author page `/authors/{username}` and the own-review list on `/me`. Follow-ups, "later care" and tombstones are release 2 (T-302), so the rows "Latest on top" and "Tombstone" are deferred, and the section order is title → history → evidence → discussion → related condition → related doctor.
+- **Byline rules (BR5.7)** — a named author is plain text, never a link (this overrides "named → display name link"); a pseudonymous author is an `@username` link to `/authors/{username}`; an anonymous review shows the thread alias on the page variant only, never a link or initials.
+- **Slots (C16)** — `CommentThread`, `EvidenceSection` and `ReviewHistory` take only `reviewPublicId` and fetch for themselves; their props freeze at U47's merge.
+- **Indexing and errors** — the experience page is indexable with the title `<title> — <brand>`; `not_found` and `validation` become `notFound()` before any read of the authorship; the author page is `noindex` and answers an unknown username and a username with no public reviews with the same empty page (status 200).
+- **Index** — 20 cards a page from `reviewReads.listExperienceCards` with `review.countExperiences`; a bad cursor redirects (307) to the first page; `experiences/loading.tsx` is a static skeleton with no animation.
+- **FD-109..FD-112** — no checkbox lists on the page; labels are the Reviewer's labels of the three codes; the facility account is not on this page; audit and version actors are personas.
+- **Acceptance commands as built** — run `pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/components/patient/experience apps/web/src/app` (`experience.test.tsx`, `slots.test.tsx`, `experiences/[id]/page.test.tsx`, `experiences/page.test.tsx`, `authors/[username]/page.test.tsx`, `me/page.test.tsx`); the component names `FollowUpSpine` and `Tombstone` do not exist in release 1. Bengali digits are asserted in `experiences/page.test.tsx` and `slots.test.tsx`.
+
 ## Goal
 
 Port `renderAccount` (the thirteen-section experience page) and `renderExperienceIndex` +
@@ -100,9 +112,25 @@ Not M3. UI-level assertions: the DOM never contains `accountId`, `personaLinks`,
 
 ## Hand-off (implementer fills in)
 
+Built in release 1 by Unit U47 `u47-reviews` (branch `bolt/u47-reviews`, 2026-11-07); the full record is `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u47-reviews/code-generation/code-summary.md`.
+
 ### What changed
+- The experience page, index and author page are on the module path (`review.getExperience`, `reviewReads.listExperienceCards` with `review.countExperiences`, `review.authorCards`); `/me` lists the own reviews through `review.listOwnReviews`. Components are in `apps/web/src/components/patient/experience/`.
+- The three slots take `{reviewPublicId}` and fetch for themselves; their reads are in `server/actions/review-slots.ts`. The slot props freeze at the merge (C16).
+- The demo `ExperienceDetail`, `ExperienceIndex` and `ExperienceRow` are deleted.
+
 ### Not done and why
+- Follow-ups, later care and tombstones: release 2 (T-302). Reactions and bookmarks: release 2.
+- The edit link shows only for quick reviews until U22's route supports detailed ones (ISS-522).
+
 ### Questions for the human
+- None beyond ISS-530 and ISS-533 (see T-301).
+
 ### Follow-ups
+- ISS-539, ISS-540 (U48 rebinds the evidence count; U49 mounts the comments), ISS-528 (U50 removes `listRecentPublishedReviews`).
+
 ### `pnpm check` output summary
+- Green on the final tree: 288 files, 3146 passed plus 2 expected failures; `apps/web` line coverage 94.99%; `pnpm smoke` 23 files, 44 tests.
+
 ### Hard-rule evidence
+- Not provided, Reviewer's label, byline rules, limited data and Bengali digits: `experience.test.tsx`, `slots.test.tsx`, `experiences/page.test.tsx`; hidden or unknown id is a 404 before any authorship read: `experiences/[id]/page.test.tsx`; acceptance rows: plan Step 60.
