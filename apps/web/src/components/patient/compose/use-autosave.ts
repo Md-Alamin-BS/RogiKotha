@@ -12,7 +12,21 @@ export const AUTOSAVE_RETRY_MS: readonly number[] = [5_000, 15_000, 30_000];
 
 /** The answer of `saveDraftAction`, kept structural so the hook does not import server code. */
 export type AutosaveAnswer =
-  { ok: true; draftId: string; expiresAt: string } | { ok: false; messageKey: string };
+  | { ok: true; draftId: string; expiresAt: string }
+  | { ok: false; messageKey: string; fieldErrors?: Record<string, string> };
+
+/** Why the latest save failed; `fieldErrors` is keyed by the input path, e.g. `payload.story`. */
+export interface AutosaveFailure {
+  messageKey: string;
+  fieldErrors?: Record<string, string>;
+}
+
+/** What `flush` answers: `saved` is false when the latest change did not reach the server. */
+export interface FlushResult {
+  draftId: string | undefined;
+  saved: boolean;
+  failure?: AutosaveFailure;
+}
 
 export type AutosaveSave = (input: {
   draftId?: string;
@@ -31,8 +45,8 @@ export interface UseAutosaveOptions {
 }
 
 export interface Autosave {
-  /** Saves any pending change now and resolves with the draft id once nothing is in flight. */
-  flush: () => Promise<string | undefined>;
+  /** Saves any pending change now and resolves once nothing is in flight. */
+  flush: () => Promise<FlushResult>;
 }
 
 const NOT_FOUND = 'errors.common.notFound';
@@ -48,6 +62,7 @@ export function useAutosave(options: UseAutosaveOptions): Autosave {
   const dispatchRef = useRef(dispatch);
   const dirty = useRef(false);
   const failed = useRef(false);
+  const lastFailure = useRef<AutosaveFailure | null>(null);
   const inFlight = useRef<Promise<void> | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retries = useRef(0);
@@ -109,6 +124,12 @@ export function useAutosave(options: UseAutosaveOptions): Autosave {
       }
       // Kept even after unmount, so the unmount flush updates this draft instead of creating one.
       if (answer.ok) draftIdRef.current = answer.draftId;
+      lastFailure.current = answer.ok
+        ? null
+        : {
+            messageKey: answer.messageKey,
+            ...(answer.fieldErrors !== undefined ? { fieldErrors: answer.fieldErrors } : {}),
+          };
       if (!mounted.current) return;
 
       if (answer.ok) {
@@ -127,7 +148,11 @@ export function useAutosave(options: UseAutosaveOptions): Autosave {
       }
       dirty.current = true;
       failed.current = true;
-      dispatchRef.current({ type: 'saveFailed', seq: mySeq });
+      dispatchRef.current({
+        type: 'saveFailed',
+        seq: mySeq,
+        ...(answer.fieldErrors !== undefined ? { fieldErrors: answer.fieldErrors } : {}),
+      });
       const wait = AUTOSAVE_RETRY_MS[retries.current];
       retries.current += 1;
       // After the last backoff the draft waits for the author's next change.
@@ -203,17 +228,21 @@ export function useAutosave(options: UseAutosaveOptions): Autosave {
     };
   }, [clearTimer]);
 
-  const flush = useCallback(async (): Promise<string | undefined> => {
+  const flush = useCallback(async (): Promise<FlushResult> => {
     clearTimer();
     // Read through a function: TypeScript keeps a narrowed `.current` across the awaits.
     const pending = () => inFlight.current;
+    const isDirty = () => dirty.current;
     for (let p = pending(); p !== null; p = pending()) await p;
-    if (dirty.current) {
+    if (isDirty()) {
       failed.current = false;
       await run();
       for (let p = pending(); p !== null; p = pending()) await p;
     }
-    return draftIdRef.current;
+    // A failed save leaves the change dirty: the stored draft is older than what is on screen.
+    if (!isDirty()) return { draftId: draftIdRef.current, saved: true };
+    const failure = lastFailure.current;
+    return { draftId: draftIdRef.current, saved: false, ...(failure ? { failure } : {}) };
   }, [clearTimer, run]);
 
   return { flush };
