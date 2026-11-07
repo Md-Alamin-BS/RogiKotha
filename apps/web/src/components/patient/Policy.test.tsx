@@ -30,29 +30,35 @@ function sectionTitles(container: HTMLElement): (string | null)[] {
 }
 
 describe('Policy — terms', () => {
-  it('renders the head panel and the five Terms sections in task order', () => {
+  it('renders the head panel and the six Terms sections in task order, lawful access last', () => {
     const { container } = renderPolicy('terms');
     const head = container.querySelector('section.panel.about-head');
     expect(head?.querySelector('h1')?.textContent).toBe('Terms of use');
     expect(head?.querySelector('p.lead')?.textContent).toBe(
       'These terms describe what RogiKotha is, what you agree to when you write, and what we do not do.',
     );
-    expect(sectionTitles(container)).toEqual([
+    const titles = sectionTitles(container);
+    expect(titles).toHaveLength(6);
+    expect(titles.slice(0, 5)).toEqual([
       'What this is not',
       'What a reviewer label means',
       'How experiences are moderated',
       'Who can write',
       'Reports and enforcement',
     ]);
+    const lawfulTitle = (loadMessages('en') as { policy: { privacy: { lawful: string } } }).policy
+      .privacy.lawful;
+    expect(titles[5]).toBe(lawfulTitle);
   });
 
-  it('never renders the FD-022 lawful-access sentence', () => {
-    const { queryByText } = renderPolicy('terms');
-    expect(
-      queryByText(
-        'An anonymous account is never publicly linked to you. A small number of authorised staff can, for a stated moderation, security or legal reason, look up which account wrote it; every such access is recorded. We may be required to disclose that link in response to a lawful order.',
-      ),
-    ).toBeNull();
+  // FD-109: the lawful-access section is on both legal pages.
+  it('renders the FD-022 lawful-access sentence as its own last section', () => {
+    const { container, getByText } = renderPolicy('terms');
+    const sentence = getByText(
+      'An anonymous account is never publicly linked to you. A small number of authorised staff can, for a stated moderation, security or legal reason, look up which account wrote it; every such access is recorded. We may be required to disclose that link in response to a lawful order.',
+    );
+    const sections = container.querySelectorAll('.about-sections > .about-section');
+    expect(sections[sections.length - 1]?.contains(sentence)).toBe(true);
   });
 });
 

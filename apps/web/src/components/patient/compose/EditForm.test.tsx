@@ -6,7 +6,7 @@ import { saveReviewEdit, type EditFormState } from '@/server/actions/review';
 import { EditForm, type EditFormProps } from './EditForm';
 import { renderInLocale, translatorFor, type TestLocale } from './compose-test-support';
 
-vi.mock('@/server/actions/review', () => ({ publishReview: vi.fn(), saveReviewEdit: vi.fn() }));
+vi.mock('@/server/actions/review', () => ({ saveReviewEdit: vi.fn() }));
 vi.mock('@/i18n/routing', () => ({
   Link: ({ href, children, ...rest }: { href: string; children?: ReactNode }) => (
     <a href={href} {...rest}>

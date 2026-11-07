@@ -65,12 +65,12 @@ export function Emergency({ config, locale }: { config: EmergencyConfig; locale:
           rel="noopener"
         >
           <span className="k">{t('emergview.bmdc')}</span>
-          <span className="num">BMDC</span>
+          <span className="num">{t('emergview.bmdcShort')}</span>
           <span className="cta">{t('emergview.bmdcBody')}</span>
         </a>
       </div>
 
-      <p className="note" style={{ marginTop: '18px' }}>
+      <p className="note emerg-note">
         {t('emergency.lastVerifiedLine', { date: formatDate(config.lastVerified, locale) })}
       </p>
     </>

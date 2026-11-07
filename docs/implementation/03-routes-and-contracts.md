@@ -81,7 +81,7 @@ export type Capability =
 | 'auth.username_invalid' | 'auth.age_required' | 'auth.terms_required' | 'auth.account_suspended'
 | 'auth.password_equals_email'
 | 'forbidden' | 'not_found' | 'conflict' | 'validation' | 'rate_limited' | 'internal'
-| 'review.min_fields' | 'review.attestation_required' | 'review.not_editable' | 'review.restore_expired'
+| 'review.min_fields' | 'review.attestation_required' | 'review.not_editable' | 'review.restore_expired' | 'review.anonymous_new_doctor'
 | 'evidence.too_many' | 'evidence.too_large' | 'evidence.total_too_large' | 'evidence.type_rejected' | 'evidence.not_previewable' | 'evidence.confirmation_required'
 | 'evidence.rate_limited' | 'evidence.upload_failed'
 | 'community.reply_depth' | 'community.blocked' | 'community.mention_anonymous'
@@ -278,7 +278,7 @@ Jobs: `evidence.process`, `search.refresh`, `notification.deliver`, `mail.send`,
 
 ## 6. View models (names; fields are derived from what the prototype renders)
 
-`DiscoverVM`, `SearchResultsVM`, `DoctorCardVM`, `DoctorProfileVM`, `FacilityCardVM`, `FacilityProfileVM`, `ConditionPageVM`, `ExperienceCardVM`, `ExperiencePageVM`, `ThreadVM`, `EvidenceGroupVM`, `ViewerDocVM`, `ComposerVM` (doctors list, tag groups, draft), `PreviewVM = ExperiencePageVM`, `WorkspaceVM`, `SecurityVM`, `NotificationVM`, `PublicProfileVM`, `QueueVM`, `CaseTrayVM`, `QuarantineVM`, `ProvidersVM`, `StaffNotificationsVM`, `ConfigVM`.
+`SearchResultsVM`, `DoctorCardVM`, `DoctorProfileVM`, `FacilityCardVM`, `FacilityProfileVM`, `ConditionPageVM`, `ExperienceCardVM`, `ExperiencePageVM`, `ThreadVM`, `EvidenceGroupVM`, `ViewerDocVM`, `ComposerVM` (doctors list, tag groups, draft), `PreviewVM = ExperiencePageVM`, `WorkspaceVM`, `SecurityVM`, `NotificationVM`, `PublicProfileVM`, `QueueVM`, `CaseTrayVM`, `QuarantineVM`, `ProvidersVM`, `StaffNotificationsVM`, `ConfigVM`.
 
 Each VM file starts with a comment naming the prototype function whose output it replaces and the
 `RK.*` fields it maps from; T-003 creates the types with `// TODO(T-xxx)` markers where the owning

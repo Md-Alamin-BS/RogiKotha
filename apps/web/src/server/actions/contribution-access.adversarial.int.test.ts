@@ -2,8 +2,8 @@
 // confirmed its address signs in with its password and tries to write and comment anyway. The
 // gate must not answer `allowed`, and the publish and comment actions must refuse it on their own,
 // because a page that skips the gate (or a hand-built POST) reaches them directly.
-// ASSUMPTION(U9): the demo slice's `publishReview` and `postComment` are the publish and comment
-// paths today; C9 and C10 replace them in U47 and U49.
+// The publish path is U47's `publishDraftAction` (the review module); the comment path is still the
+// demo slice's `postComment`, which U49 replaces.
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { optionalEnv } from '../env';
@@ -107,14 +107,19 @@ describe('an unconfirmed account trying to contribute (BR8.1)', () => {
 
   it('cannot publish a review by calling the publish action directly', async () => {
     newRequest();
-    const { publishReview } = await import('./review');
+    const { publishDraftAction } = await import('./review');
 
-    // An empty compose form: an action past its authorization answers with field errors.
+    // A well-formed draft id that no account owns: a command past its authorization would answer
+    // with a missing draft, not the unconfirmed-address refusal of the module's requirements.
     const outcome = await submit(() =>
-      publishReview({ status: 'idle' } as never, formOf({ attestation: 'on' })),
+      publishDraftAction({
+        draftId: '0190f5a2-0000-7000-8000-0000000000f1',
+        identityMode: 'named',
+        attestation: true,
+      }),
     );
 
-    expect(stateOf(outcome)).toBeNull();
-    expect(thrownBy(outcome)).toContain('NEXT_REDIRECT');
+    expect(stateOf(outcome)).toMatchObject({ formError: 'errors.auth.emailUnverified' });
+    expect(thrownBy(outcome)).toBeNull();
   }, 60_000);
 });

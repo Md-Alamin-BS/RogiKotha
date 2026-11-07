@@ -392,7 +392,7 @@
     "fixNow": "Fix it",
     "identity": {
       "anon": "Anonymous",
-      "anonNote": "Anonymous hides your name from readers. It is not absolute anonymity — your account and contact details remain private but known to us, and can be required by law.",
+      "anonNote": "Readers see a name made for this thread only.",
       "label": "How should your name appear?",
       "pseudo": "My username",
       "real": "My real name"
@@ -459,7 +459,36 @@
     "addNote": "The doctor appears straight away, marked “Added by a member — not confirmed”. RogiKotha has not checked that this doctor exists or that these details are right.",
     "addSpecialtyNone": "Not sure",
     "bodyCount": "{count} of at least {min} characters",
-    "errorFields": "Check these fields:"
+    "errorFields": "Check these fields:",
+    "stepName": {
+      "care": "The care",
+      "story": "Your story",
+      "how": "How it went",
+      "check": "Check and publish"
+    },
+    "draftNotSaved": "Not saved yet. Trying again shortly.",
+    "draftMissing": "That draft is no longer available, so a new one was started.",
+    "drafts": {
+      "title": "Your drafts",
+      "untitled": "Untitled draft",
+      "saved": "Saved {date}",
+      "expires": "Kept until {date}",
+      "continue": "Continue",
+      "discard": "Discard",
+      "discardConfirm": "Discard this draft? It cannot be brought back."
+    },
+    "exactDate": "Exact date (optional)",
+    "exactDateNote": "Only you see the exact date.",
+    "target": {
+      "doctor": "A doctor",
+      "facility": "A hospital or clinic"
+    },
+    "facilityStoryHint": "Describe the service: waiting, cleanliness, staff and costs. What you write here is kept apart from every doctor’s summaries.",
+    "tagFree": "Not in the list? Type it",
+    "tagAdd": "Add",
+    "tagsMax": "{count} of {max} tags",
+    "addBmdcPrivate": "Not shown publicly.",
+    "anonNewDoctor": "To add a doctor who is not listed, post under your name or your username, or choose a listed doctor."
   },
   "condition": {
     "accounts": "Experiences about this health topic",
@@ -517,7 +546,10 @@
     "kicker": "Bangladesh · Public beta",
     "latest": "From the latest accounts",
     "browseDoctors": "Browse doctors",
-    "latestEmpty": "No experiences have been published yet."
+    "latestEmpty": "No experiences have been published yet.",
+    "browseAll": "Browse doctors, hospitals and topics",
+    "browseFacilities": "Browse hospitals & clinics",
+    "browseTopics": "Browse health topics"
   },
   "email": {
     "existing": {
@@ -566,7 +598,8 @@
     "healthLine": "National health helpline",
     "intro": "This page lists the national emergency numbers for Bangladesh. Tap to call from a phone, or read them aloud if you need to. These numbers work 24 hours, every day, free from any mobile network.",
     "poison": "Poison information centre",
-    "title": "Emergency help"
+    "title": "Emergency help",
+    "bmdcShort": "BMDC"
   },
   "errors": {
     "auth": {
@@ -630,7 +663,15 @@
       "attestationRequired": "Confirm this experience is genuinely yours before publishing.",
       "minFields": "Add a doctor and at least a short experience first.",
       "notEditable": "This experience can no longer be edited.",
-      "restoreExpired": "The 30-day window to restore this has passed."
+      "restoreExpired": "The 30-day window to restore this has passed.",
+      "anonymousNewDoctor": "To add a doctor who is not listed, post under your name or your username, or choose a listed doctor.",
+      "missingDoctor": "Choose a doctor, or add one who is not listed.",
+      "missingRelationship": "Choose your relationship to the patient.",
+      "missingStory": "Write what happened.",
+      "missingTag": "Add at least one tag, or choose “Not sure”.",
+      "periodInvalid": "Choose a month and year that is not in the future.",
+      "missingBranch": "Choose the branch you visited.",
+      "draftsFull": "You already keep as many drafts as allowed. Continue one or discard one to start a new one."
     }
   },
   "formErrors": {
@@ -832,7 +873,10 @@
     "emptyTopic": "No one has written about this yet.",
     "experiencesNote": "The most recent patient experiences across every doctor and hospital.",
     "facilitiesNote": "Hospitals, clinics and diagnostic centres people have written about, with their branches.",
-    "topicsNote": "Every health topic in the directory, including those nobody has written about yet."
+    "topicsNote": "Every health topic in the directory, including those nobody has written about yet.",
+    "count": "{n, plural, one {{count} patient experience} other {{count} patient experiences}}",
+    "more": "More experiences",
+    "newest": "Back to the newest"
   },
   "label": {
     "documentsWord": "documents",
@@ -901,6 +945,10 @@
     "results": "Results",
     "viewDoctor": "View doctor",
     "viewFacility": "View hospital"
+  },
+  "notFound": {
+    "body": "The page may have moved, or the address may be mistyped.",
+    "home": "Go to the home page"
   },
   "notif": {
     "draftExpiring": "A draft will be removed in {days} days if you do not finish it.",
@@ -977,7 +1025,8 @@
     "noExperiences": "No one has written about this doctor yet.",
     "writeAbout": "Write about this doctor",
     "showingCount": "Showing {showing} of {total}",
-    "filterRelationship": "Who wrote it"
+    "filterRelationship": "Who wrote it",
+    "noContributions": "No published experiences under this name yet."
   },
   "prov": {
     "admin": "Admin checked",

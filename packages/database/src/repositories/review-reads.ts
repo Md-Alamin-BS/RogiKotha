@@ -27,6 +27,7 @@ import {
   inArray,
   isNotNull,
   isNull,
+  ne,
   sql,
   type SQL,
 } from 'drizzle-orm';
@@ -43,8 +44,8 @@ function uuids(ids: readonly string[]): string[] {
   return [...new Set(ids)].filter((id) => UUID_RE.test(id));
 }
 
-/** BR1.3, with the subject doctor joined. */
-const isEligibleReview = and(
+/** BR1.3, with the subject doctor joined; U47's module imports it (R-04). */
+export const isEligibleReview = and(
   eq(reviews.state, 'published'),
   isNull(reviews.deletedAt),
   isNotNull(reviews.publishedAt),
@@ -479,6 +480,8 @@ export class PgReviewReadRepository implements ReviewReadRepository {
       if (!term) return [];
       termFilter = reviewIsAbout(term.id);
     }
+    const personaIds = request.personaIds === undefined ? undefined : uuids(request.personaIds);
+    if (personaIds?.length === 0) return [];
     const after = request.after;
     const rows = await selectCards(
       db,
@@ -487,6 +490,10 @@ export class PgReviewReadRepository implements ReviewReadRepository {
           ? undefined
           : eq(doctors.publicId, request.doctorPublicId),
         termFilter,
+        personaIds === undefined ? undefined : inArray(reviews.authorPersonaId, personaIds),
+        request.excludePublicId === undefined
+          ? undefined
+          : ne(reviews.publicId, request.excludePublicId),
         after
           ? sql`(${reviews.publishedAt}, ${reviews.publicId}) < (${after.publishedAt.toISOString()}::timestamptz, ${after.publicId})`
           : undefined,

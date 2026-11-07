@@ -272,3 +272,39 @@ describe('PgReviewReadRepository recent cards', () => {
     expect(await repo.listRecentCards(tx, { limit: 5, termPublicId: 'ZZZZZZZZZZ' })).toEqual([]);
   });
 });
+
+describe('PgReviewReadRepository recent cards, U47 filters', () => {
+  it('filters by author personas, and an empty persona list matches nothing (BR7.2)', async () => {
+    const doctor = await buildDoctor(testDb);
+    const mine = await buildPersona(testDb, { kind: 'pseudonymous', username: null });
+    const other = await buildPersona(testDb);
+    const own = await buildReview(testDb, doctor.id, mine);
+    await buildReview(testDb, doctor.id, other);
+
+    const cards = await repo.listRecentCards(tx, {
+      limit: 5,
+      doctorPublicId: doctor.publicId,
+      personaIds: [mine],
+    });
+
+    expect(cards.map((c) => c.id)).toEqual([own.id]);
+    expect(
+      await repo.listRecentCards(tx, { limit: 5, doctorPublicId: doctor.publicId, personaIds: [] }),
+    ).toEqual([]);
+    expect(await repo.listRecentCards(tx, { limit: 5, personaIds: ['not-a-uuid'] })).toEqual([]);
+  });
+
+  it('leaves out the excluded review and keeps the rest (BR5.8)', async () => {
+    const { doctor, persona } = await doctorWithPersona();
+    const first = await buildReview(testDb, doctor.id, persona);
+    const second = await buildReview(testDb, doctor.id, persona);
+
+    const cards = await repo.listRecentCards(tx, {
+      limit: 5,
+      doctorPublicId: doctor.publicId,
+      excludePublicId: first.publicId,
+    });
+
+    expect(cards.map((c) => c.id)).toEqual([second.id]);
+  });
+});

@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import type { DemoOwnReviewRow, Locale } from '@rogikotha/contracts';
+import type { Locale, OwnReviewVM } from '@rogikotha/contracts';
 import { formatMonthYear, formatNumber } from '@rogikotha/i18n/format';
 
 import { Link } from '@/i18n/routing';
@@ -12,7 +12,7 @@ const STATE_BADGE = {
   other: 'mine.profile.state.other',
 } as const;
 
-function OwnReview({ review, locale }: { review: DemoOwnReviewRow; locale: Locale }) {
+function OwnReview({ review, locale }: { review: OwnReviewVM; locale: Locale }) {
   const t = useTranslations();
   const published = review.state === 'published';
   const when = review.publishedAt
@@ -59,13 +59,7 @@ function OwnReview({ review, locale }: { review: DemoOwnReviewRow; locale: Local
 
 // Port of the prototype's "Published" list (app.js renderMine, `.mine-item`), limited to what the
 // demo slice has: no drafts, follow-ups or deletion yet.
-export function OwnReviewList({
-  reviews,
-  locale,
-}: {
-  reviews: DemoOwnReviewRow[];
-  locale: Locale;
-}) {
+export function OwnReviewList({ reviews, locale }: { reviews: OwnReviewVM[]; locale: Locale }) {
   const t = useTranslations();
   return (
     <section className="panel" aria-labelledby="profile-experiences-head">

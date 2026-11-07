@@ -46,8 +46,8 @@ export const isVisibleBranch = and(
 
 const specialty = aliasedTable(taxonomyTerms, 'doctor_specialty');
 
-/** BR2.13: a pending doctor submission created this doctor. */
-const memberAddedNotConfirmed = sql<boolean>`exists (
+/** BR2.13: a pending doctor submission created this doctor; U47's module imports it. */
+export const memberAddedNotConfirmed = sql<boolean>`exists (
   select 1 from ${profileSubmissions}
   where ${profileSubmissions.kind} = 'doctor'
     and ${profileSubmissions.createdDoctorId} = "doctors"."id"

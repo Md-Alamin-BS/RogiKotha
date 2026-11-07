@@ -20,6 +20,8 @@ export type OutboxPayloads = {
   // U46: a member-added doctor (BR5.8) and a provisional term (BR5.3).
   'doctor.changed': { id: string };
   'term.changed': { id: string };
+  /** U47 BR4.6: ids only; a facility visit appends no event. */
+  'review.published': { reviewId: string; doctorId: string; branchId: null };
   // U48 (BR4.1, BR4.7): internal ids and the state entered only; never an account id.
   // ASSUMPTION(U48): the plan names no step for these entries; added with the evidence ports.
   'evidence.received': { itemId: string };

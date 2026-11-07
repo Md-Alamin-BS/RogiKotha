@@ -6,6 +6,7 @@ import type { TaxonomyDeps } from './deps';
 import { ensureProvisionalTerm, type ProvisionalTermRequest } from './provisional-term';
 import { getConditionQuery } from './queries/get-condition';
 import { listConditionsQuery } from './queries/list-conditions';
+import { listSpecialtiesQuery } from './queries/list-specialties';
 import { listSuggestedQuery } from './queries/list-suggested';
 import { resolveQuery } from './queries/resolve';
 
@@ -21,6 +22,7 @@ export {
 export { createProvisionalRateLimitKey } from './commands/create-provisional';
 export type { ResolveResult } from './queries/resolve';
 export type { SuggestedTermVM } from './queries/list-suggested';
+export type { SpecialtyOptionVM } from './queries/list-specialties';
 
 export function createTaxonomyModule(deps: TaxonomyDeps) {
   return {
@@ -28,6 +30,7 @@ export function createTaxonomyModule(deps: TaxonomyDeps) {
     listConditions: listConditionsQuery(deps),
     resolve: resolveQuery(deps),
     listSuggested: listSuggestedQuery(deps),
+    listSpecialties: listSpecialtiesQuery(deps),
     createProvisional: createProvisionalCommand(deps),
     /** For U47's publish, on its own transaction with its persona actor (WF10). */
     ensureProvisionalTerm: (
