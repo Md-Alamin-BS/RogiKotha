@@ -15,3 +15,14 @@ export type {
   EvidenceSweepDeps,
   FilenameSeal,
 } from './ports';
+export {
+  createEvidenceProcessor,
+  createEvidenceSweep,
+  type EvidenceProcessor,
+  type EvidenceSweep,
+  type ProcessEvidenceInput,
+  type ProcessEvidenceResult,
+  type SweepEvidenceResult,
+} from './module';
+export { EvidenceAttemptAborted, ScannerUnavailable } from './jobs/process-evidence';
+export { EVIDENCE_SWEEP_BATCH } from './jobs/sweep-evidence';

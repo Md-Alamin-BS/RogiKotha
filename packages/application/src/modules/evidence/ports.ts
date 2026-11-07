@@ -4,6 +4,7 @@
 // command come from `CommandPorts` at call time, as in the Review module.
 import type {
   Clock,
+  Crypto,
   EvidenceFileReader,
   EvidenceFileWriter,
   EvidenceRepository,
@@ -48,6 +49,9 @@ export interface EvidenceProcessorDeps {
   outbox: Outbox;
   clock: Clock;
   logger: Logger;
+  // ASSUMPTION(U48): § 2 names no hasher, but BR4.3 re-checks the sha256 and `application` has no
+  // crypto of its own; the worker passes its existing `mailCrypto`, whose `hash` is SHA-256.
+  hasher: Pick<Crypto, 'hash'>;
 }
 
-export type EvidenceSweepDeps = Omit<EvidenceProcessorDeps, 'scanner'>;
+export type EvidenceSweepDeps = Omit<EvidenceProcessorDeps, 'scanner' | 'hasher'>;
