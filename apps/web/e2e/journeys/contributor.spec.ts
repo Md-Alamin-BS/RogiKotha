@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { R1_TITLE } from '../fixtures/seed-facts';
-import { CHANGED_PASSWORD, RUN_PASSWORD, runEmail } from '../fixtures/synthetic';
+import { CHANGED_PASSWORD, displayName, RUN_PASSWORD, runEmail } from '../fixtures/synthetic';
 import {
   fillRegistration,
   freshNetwork,
@@ -17,7 +17,7 @@ import { describeEachLocale, forEachLocale } from '../helpers/locale';
 import { expectCleanMail, hasNoMessageSince, latestLink, waitForMessage } from '../helpers/mailpit';
 import { msg } from '../helpers/messages';
 import { checkPage } from '../helpers/page-check';
-import { openExperienceByTitle } from '../helpers/reading';
+import { openExperienceByTitle, switchLanguage } from '../helpers/reading';
 
 // WF2 Part 2: becoming a contributor, in bn then en (BR2.2, BR3.4, BR6.3). Every account is
 // synthetic and made by the test itself (BR1.5); the one ordered group is the P2.8 account.
@@ -281,4 +281,26 @@ forEachLocale('P2.10', 'security page', async ({ page, browser, locale }) => {
   } finally {
     await device.context.close();
   }
+});
+
+forEachLocale(
+  'P2.11',
+  'language switch keeps where sign-in returns to',
+  async ({ page, locale }) => {
+    await page.goto(`/${locale}/sign-in?next=%2Fdoctors`);
+    await expect(page.locator('html')).toHaveAttribute('data-motion-ready', '');
+    const other = await switchLanguage(page, locale);
+    await expect(page).toHaveURL(new RegExp(`/${other}/sign-in\\?next=%2Fdoctors$`));
+  },
+);
+
+forEachLocale('P2.12', 'rename the display name on /me', async ({ page, locale }) => {
+  await registerConfirmed(page, locale);
+  await page.goto(`/${locale}/me`);
+  const renamed = displayName(locale, 1);
+  await page.getByTestId('profile-name-input').fill(renamed);
+  await page.getByTestId('profile-name-submit').click();
+  await expect(page.getByText(msg(locale, 'mine.profile.nameSaved'))).toBeVisible();
+  await page.reload();
+  await expect(page.getByTestId('profile-name-input')).toHaveValue(renamed);
 });

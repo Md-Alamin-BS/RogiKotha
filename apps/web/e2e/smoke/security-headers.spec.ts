@@ -1,7 +1,7 @@
 import { expect, test, type Page, type Response } from '@playwright/test';
 
 // U41 (design § 8.4, BR2.1, BR1.x, ENT-011, AC12.4.1): what the built app sends and what the
-// browser does with it. Needs the compose PostgreSQL and a seeded database, like demo.spec.ts.
+// browser does with it. Needs the compose PostgreSQL and a seeded database.
 
 type Locale = 'en' | 'bn';
 const LOCALES: readonly Locale[] = ['en', 'bn'];

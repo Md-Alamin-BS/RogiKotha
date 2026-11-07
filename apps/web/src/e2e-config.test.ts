@@ -179,10 +179,6 @@ function readTree(dir: string, base = dir): SourceFile[] {
   });
 }
 
-// The demo-slice smoke spec waits a fixed 1.5 s before its optional screenshots; it is mapped
-// to the journeys and deleted at Step 45 (BR14.7), which removes this entry with it.
-const RETIRED_AT_STEP_45 = ['smoke/demo.spec.ts'];
-
 const FIXED_SLEEP = [
   /\bwaitForTimeout\s*\(/,
   /setTimeout\(\s*(resolve|res|r|done)\s*,/,
@@ -196,10 +192,8 @@ const TEST_SUPPORT_IMPORT =
 function sourceProblems(files: readonly SourceFile[]): string[] {
   const problems: string[] = [];
   for (const file of files) {
-    if (!RETIRED_AT_STEP_45.includes(file.path)) {
-      if (FIXED_SLEEP.some((pattern) => pattern.test(file.text))) {
-        problems.push(`${file.path} has a fixed sleep`);
-      }
+    if (FIXED_SLEEP.some((pattern) => pattern.test(file.text))) {
+      problems.push(`${file.path} has a fixed sleep`);
     }
     if (FOCUSED_OR_SKIPPED.test(file.text)) problems.push(`${file.path} focuses or skips a test`);
     if (TEST_SUPPORT_IMPORT.test(file.text)) problems.push(`${file.path} imports test-support`);
@@ -271,12 +265,6 @@ describe('the browser suite sources (BR1.4, BR1.7, BR7.4)', () => {
 
   it('declare journeys through forEachLocale, never sleep, skip or import test-support', () => {
     expect(sourceProblems(files)).toEqual([]);
-  });
-
-  it('still hold every file the sleep exemption names', () => {
-    for (const retired of RETIRED_AT_STEP_45) {
-      expect(files.map((file) => file.path)).toContain(retired);
-    }
   });
 
   it('finds planted sleeps, skips, imports and a hand-written locale loop', () => {
