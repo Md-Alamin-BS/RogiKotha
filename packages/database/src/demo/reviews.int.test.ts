@@ -9,7 +9,7 @@ import { evidenceItems } from '../schema/evidence';
 import { personaLinks, personas } from '../schema/identity';
 import { reviews, reviewVersions } from '../schema/review';
 import { testDb } from '../test-setup';
-import { getOwnReviewForEdit, getReviewByPublicId, updateOwnReview } from './reviews';
+import { getOwnReviewForEdit, getReviewByPublicId } from './reviews';
 import { getDoctor } from './doctors';
 
 async function buildAccount() {
@@ -172,13 +172,6 @@ describe('demo experience projection', () => {
 });
 
 describe('demo experience editing', () => {
-  const correction = {
-    title: 'Clear explanation, slow follow-up',
-    body: 'The explanation was clear, but the follow-up call came two weeks late.',
-    sentiment: 'mixed',
-    outcome: 'helped',
-  } as const;
-
   it('loads the experience for its author, and for no one else', async () => {
     const { author, doctor, publicId } = await publishOne();
     const stranger = await buildAccount();
@@ -194,42 +187,27 @@ describe('demo experience editing', () => {
     await expect(getOwnReviewForEdit(testDb, publicId, stranger.accountId)).resolves.toBeNull();
   });
 
-  it('writes a correction version, bumps the version and marks the page edited', async () => {
-    const { author, reviewId, publicId } = await publishOne();
-
-    const outcome = await updateOwnReview(testDb, publicId, author.accountId, correction);
-
-    expect(outcome).toEqual({ ok: true, data: { version: 2 } });
-    const corrections = await testDb
-      .select()
-      .from(reviewVersions)
-      .where(eq(reviewVersions.reviewId, reviewId));
-    expect(corrections.map((v) => v.changeKind).sort()).toEqual(['correction', 'publish']);
-    expect(corrections.find((v) => v.changeKind === 'correction')).toMatchObject({
-      version: 2,
-      actorKind: 'author',
-      actorId: author.accountId,
-      snapshot: correction,
-    });
-    const detail = await getReviewByPublicId(testDb, publicId, 'en');
-    expect(detail).toMatchObject({ ...correction, edited: true, version: 2 });
-    expect(detail?.updatedAt).toBeInstanceOf(Date);
-  });
-
-  it("answers not_found for someone else's experience and changes nothing", async () => {
+  // The write rows (a correction version, another account's review is `not_found`) moved to the
+  // module path (U22): review-correction.int.test.ts in `database` and
+  // review-correction.int.test.ts in `web-int`.
+  it('marks the page edited once a correction version exists', async () => {
     const { reviewId, publicId } = await publishOne();
-    const stranger = await buildAccount();
+    await expect(getReviewByPublicId(testDb, publicId, 'en')).resolves.toMatchObject({
+      edited: false,
+    });
 
-    const outcome = await updateOwnReview(testDb, publicId, stranger.accountId, correction);
+    await testDb.insert(reviewVersions).values({
+      reviewId,
+      version: 2,
+      snapshot: {},
+      changeKind: 'correction',
+      actorKind: 'author',
+      actorId: newId(),
+    });
 
-    expect(outcome).toEqual({ ok: false, reason: 'not_found' });
-    const [row] = await testDb.select().from(reviews).where(eq(reviews.id, reviewId));
-    expect(row).toMatchObject({ title: 'Clear explanation of my test results', version: 1 });
-    const versions = await testDb
-      .select()
-      .from(reviewVersions)
-      .where(eq(reviewVersions.reviewId, reviewId));
-    expect(versions).toHaveLength(1);
+    await expect(getReviewByPublicId(testDb, publicId, 'en')).resolves.toMatchObject({
+      edited: true,
+    });
   });
 });
 

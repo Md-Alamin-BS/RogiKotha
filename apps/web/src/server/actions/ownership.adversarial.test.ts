@@ -7,6 +7,7 @@
 // so an action that trusted a forged id would change the victim's rows and fail these tests.
 import { defineCommand } from '@rogikotha/application';
 import {
+  CorrectReviewInput,
   DeleteCommentInput,
   PostCommentInput,
   PublishReviewInput,
@@ -28,7 +29,8 @@ import { deleteComment, postComment, type CommentActionState } from './comments'
 import { listOwnEvidenceFiles, uploadEvidence, type EvidenceUploadState } from './evidence';
 import { setLang } from './preferences';
 import { updateDisplayNameAction, updateLanguageAction } from './profile';
-import { publishDraftAction, saveReviewEdit, type EditFormState } from './review';
+import { publishDraftAction } from './review';
+import { correctReviewAction, type CorrectFormState } from './review-edit';
 
 vi.mock('next/headers', () => ({ headers: vi.fn() }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
@@ -64,7 +66,6 @@ vi.mock('@/server/data', () => ({
   reviews: {
     getOwnReviewForEdit: vi.fn(),
     getReviewByPublicId: vi.fn(),
-    updateOwnReview: vi.fn(),
   },
   session: { getCurrentAccountByAuthUserId: vi.fn() },
 }));
@@ -106,6 +107,8 @@ interface World {
   comments: Map<string, { ownerAccountId: string; deleted: boolean }>;
   /** Every write the data layer accepted, in order. */
   writes: string[];
+  /** The account each `review.correct` call ran for, accepted or refused. */
+  correctAttempts: string[];
 }
 
 let world: World;
@@ -120,6 +123,7 @@ function freshWorld(): World {
     ]),
     comments: new Map([[VICTIM_COMMENT, { ownerAccountId: VICTIM.accountId, deleted: false }]]),
     writes: [],
+    correctAttempts: [],
   };
 }
 
@@ -149,16 +153,6 @@ function installWorld(): void {
   vi.mocked(reviews.getOwnReviewForEdit).mockImplementation((publicId, accountId) =>
     Promise.resolve(ownedBy(publicId, accountId) ? editRowOf(publicId) : null),
   );
-  vi.mocked(reviews.updateOwnReview).mockImplementation((publicId, accountId, fields) => {
-    const row = world.reviews.get(publicId);
-    if (!row || row.ownerAccountId !== accountId) {
-      return Promise.resolve({ ok: false, reason: 'not_found' } as const);
-    }
-    row.title = fields.title;
-    row.version += 1;
-    world.writes.push(`review.update ${publicId} by ${accountId}`);
-    return Promise.resolve({ ok: true, data: { version: row.version } } as const);
-  });
   vi.mocked(evidence.listOwnEvidence).mockResolvedValue([]);
   vi.mocked(evidence.addEvidenceItem).mockImplementation((input) => {
     world.writes.push(`evidence.add on ${input.reviewId} by ${input.ownerAccountId}`);
@@ -202,6 +196,25 @@ const modulePublish = defineCommand<PublishReviewInput, { publicId: string }>({
   handle: ({ actor }) => {
     world.writes.push(`review.publish by ${actor.accountId}`);
     return Promise.resolve(ok({ publicId: 'n3wrev1ew2' }));
+  },
+});
+
+// The module path (U22): `review.correct` on its own input schema and requirements. The stand-in
+// answers a review that is not the actor's like one that does not exist (BR1.1).
+const moduleCorrect = defineCommand<CorrectReviewInput, { publicId: string; version: number }>({
+  name: 'review.correct',
+  input: CorrectReviewInput,
+  requires: { authenticated: true, verifiedEmail: true, notRestricted: true },
+  handle: ({ input, actor }) => {
+    world.correctAttempts.push(`${input.publicId} by ${actor.accountId}`);
+    const row = world.reviews.get(input.publicId);
+    if (!row || row.ownerAccountId !== actor.accountId) {
+      return Promise.resolve(err('not_found', { correlationId: actor.correlationId }));
+    }
+    row.title = input.title;
+    row.version += 1;
+    world.writes.push(`review.correct ${input.publicId} by ${actor.accountId}`);
+    return Promise.resolve(ok({ publicId: input.publicId, version: row.version }));
   },
 });
 
@@ -265,7 +278,7 @@ function installContainer(): void {
       clock: { now: () => NOW },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
     },
-    review: { publish: modulePublish },
+    review: { publish: modulePublish, correct: moduleCorrect },
     community: { postComment: moduleCommentPost, deleteComment: moduleCommentDelete },
   } as unknown as ReturnType<typeof getContainer>);
 }
@@ -278,7 +291,7 @@ function form(fields: Record<string, string | File>): FormData {
 
 const IDLE_COMMENT: CommentActionState = { status: 'idle' };
 const IDLE_UPLOAD: EvidenceUploadState = { status: 'idle' };
-const EDIT_START: EditFormState = { attempt: 0, values: null, fieldErrors: {}, formError: null };
+const EDIT_START: CorrectFormState = { attempt: 0, values: null, fieldErrors: {}, formError: null };
 
 /** The victim's ids, as an attacker would add them to any form. */
 const FORGED_IDS = {
@@ -300,8 +313,10 @@ function editForm(publicId: string): FormData {
   return form({
     ...FORGED_IDS,
     publicId,
+    expectedVersion: '1',
+    kind: 'quick',
     title: 'Hijacked title',
-    body: 'This text was written by someone who is not the author.',
+    story: 'This text was written by someone who is not the author.',
     sentiment: 'negative',
     outcome: '',
   });
@@ -330,21 +345,17 @@ describe('an attacker signed in as another account (FR4.2, FR5.1, FR6.3, NFR3)',
   beforeEach(() => sessionCookieOf(ATTACKER.authUserId));
 
   it("cannot correct the victim's experience by sending its public id, even with the victim's ids forged into the form", async () => {
-    const state = await saveReviewEdit(EDIT_START, editForm(VICTIM_REVIEW));
+    const state = await correctReviewAction(EDIT_START, editForm(VICTIM_REVIEW));
 
     expect(state.formError).toBe('errors.common.notFound');
     expect(world.reviews.get(VICTIM_REVIEW)).toMatchObject({ title: ORIGINAL_TITLE, version: 1 });
     expect(world.writes).toEqual([]);
-    expect(reviews.updateOwnReview).toHaveBeenCalledWith(
-      VICTIM_REVIEW,
-      ATTACKER.accountId,
-      expect.anything(),
-    );
+    expect(world.correctAttempts).toEqual([`${VICTIM_REVIEW} by ${ATTACKER.accountId}`]);
   });
 
   it("gets the same answer for the victim's experience as for one that does not exist", async () => {
-    const victims = await saveReviewEdit(EDIT_START, editForm(VICTIM_REVIEW));
-    const missing = await saveReviewEdit(EDIT_START, editForm(MISSING_REVIEW));
+    const victims = await correctReviewAction(EDIT_START, editForm(VICTIM_REVIEW));
+    const missing = await correctReviewAction(EDIT_START, editForm(MISSING_REVIEW));
 
     expect(victims).toEqual(missing);
   });
@@ -425,7 +436,7 @@ const COMMENT_ACTIONS = [
 ] as const;
 
 const WRITE_ACTIONS = [
-  ['correct an experience', () => saveReviewEdit(EDIT_START, editForm(VICTIM_REVIEW))],
+  ['correct an experience', () => correctReviewAction(EDIT_START, editForm(VICTIM_REVIEW))],
   [
     'rename the account',
     () => updateDisplayNameAction({ status: 'idle' }, form({ displayName: 'New name' })),

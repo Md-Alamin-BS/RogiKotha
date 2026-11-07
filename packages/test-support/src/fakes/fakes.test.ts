@@ -296,3 +296,96 @@ describe('FakeReviewModuleRepository (U47)', () => {
     expect(repo.doctors).toHaveLength(1);
   });
 });
+
+describe('FakeReviewModuleRepository correction methods (U22)', () => {
+  const tx = {} as never;
+  const at = new Date('2026-10-02T00:00:00.000Z');
+  const after = new Date('2026-10-03T00:00:00.000Z');
+
+  function seeded() {
+    const repo = new FakeReviewModuleRepository();
+    const doctor = repo.addDoctor();
+    const review = repo.addReview(doctor.id, 'persona-1', { claims: [{ label: 'secondOpinion' }] });
+    return { repo, doctor, review };
+  }
+
+  const content = (overrides: Record<string, unknown> = {}) => ({
+    title: 'A careful visit',
+    body: 'The doctor listened, and the plan changed after the second visit.',
+    sections: null,
+    sentiment: 'positive' as const,
+    outcome: 'helped' as const,
+    claims: [{ label: 'secondOpinion' }],
+    language: 'en' as const,
+    now: after,
+    ...overrides,
+  });
+
+  it('locks the ownership keys and reads the version as 1 until a version row exists', async () => {
+    const { repo, doctor, review } = seeded();
+
+    expect(await repo.lockForCorrection(tx, review.id)).toMatchObject({
+      version: 1,
+      authorPersonaId: 'persona-1',
+      doctorId: doctor.id,
+      branchId: null,
+      claims: [{ label: 'secondOpinion' }],
+    });
+    expect(await repo.lockForCorrection(tx, 'missing')).toBeNull();
+  });
+
+  it('writes only the content columns and refuses a stale version', async () => {
+    const { repo, review } = seeded();
+
+    expect(await repo.updateContent(tx, review.id, content({ outcome: 'worse' }), 3)).toBe(false);
+    expect(await repo.updateContent(tx, review.id, content({ outcome: 'worse' }), 2)).toBe(true);
+
+    expect(repo.reviews[0]).toMatchObject({
+      outcome: 'worse',
+      version: 2,
+      updatedAt: after,
+      kind: 'quick',
+      identityMode: 'pseudonymous',
+      state: 'published',
+    });
+    expect((await repo.lockForCorrection(tx, review.id))?.version).toBe(2);
+    expect(await repo.updateContent(tx, review.id, content(), 2)).toBe(false);
+  });
+
+  it('reads the edit view with the doctor name in the locale', async () => {
+    const { repo, review } = seeded();
+
+    expect(await repo.findOwnForEdit(tx, review.id, 'bn')).toMatchObject({
+      publicId: review.publicId,
+      doctorName: 'ডা. কাল্পনিক রহমান',
+    });
+    expect(await repo.findOwnForEdit(tx, 'missing', 'en')).toBeNull();
+  });
+
+  it('returns version content only for a version followed by a material correction', async () => {
+    const { repo, review } = seeded();
+    await repo.insertVersion(tx, {
+      reviewId: review.id,
+      version: 1,
+      snapshot: { kind: 'quick', title: 'First' },
+      changeKind: 'publish',
+      actorKind: 'author',
+      actorId: 'persona-1',
+      now: at,
+    });
+    repo.addCorrection(review.id, after, { snapshot: { title: 'Second' }, corrected: ['outcome'] });
+    repo.addCorrection(review.id, after, { snapshot: { title: 'Third' }, corrected: [] });
+
+    const rows = await repo.listVersions(tx, review.id);
+
+    expect(rows.map((r) => r.version)).toEqual([1, 2, 3]);
+    expect(rows[0]?.content).toEqual({ kind: 'quick', title: 'First' });
+    expect(rows[1]).not.toHaveProperty('content');
+    expect(rows[2]).not.toHaveProperty('content');
+    expect(rows[1]?.corrected).toEqual(['outcome']);
+    for (const row of rows) {
+      expect(row).not.toHaveProperty('actorId');
+      expect(row).not.toHaveProperty('reason');
+    }
+  });
+});

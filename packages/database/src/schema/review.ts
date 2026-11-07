@@ -158,7 +158,8 @@ export const reviewVersions = pgTable(
     // `system` — the meaning depends on `actorKind`, matching the
     // `audit_events.actor` opaque-string convention used elsewhere in this
     // data model, kept as a plain `uuid` rather than an FK to `accountProfiles`
-    // since a `system` row has no account at all.
+    // since a `system` row has no account at all. U22 (Question 8): for `author` it is the author
+    // persona id (`reviews.author_persona_id`), never an account id.
     actorId: uuid('actor_id'),
     createdAt: createdAt(),
   },

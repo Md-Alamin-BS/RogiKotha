@@ -9,7 +9,7 @@ export function AuthorTools({
   editHref,
   uploader,
 }: {
-  /** The edit route; omitted where no edit route opens this review yet (U47 BR6.6). */
+  /** The edit route, given for every review kind (U22 BR5.2). */
   editHref?: string | undefined;
   uploader: ReactNode;
 }) {

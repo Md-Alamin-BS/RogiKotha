@@ -451,9 +451,11 @@
     "previewEmpty": "Your words will appear here.",
     "edit": {
       "title": "Edit your experience",
-      "intro": "You can change the title, your story and how you describe it. The doctor, the date and your name stay as they were published.",
+      "intro": "You can change the title, your story, how you describe it and your labels. The doctor, the date and your name stay as they were published.",
       "save": "Save changes",
-      "versionNote": "Each change is kept as a new version, and the experience shows “Edited”."
+      "versionNote": "Each change is kept as a new version, and the experience shows “Edited”.",
+      "correctionNote": "Changes to your story, sentiment, outcome or labels are shown as dated corrections, and the earlier wording stays readable under Show original.",
+      "reload": "Reload the latest version"
     },
     "addCancel": "Choose from the list instead",
     "addNote": "The doctor appears straight away, marked “Added by a member — not confirmed”. RogiKotha has not checked that this doctor exists or that these details are right.",
@@ -673,7 +675,9 @@
       "missingTag": "Add at least one tag, or choose “Not sure”.",
       "periodInvalid": "Choose a month and year that is not in the future.",
       "missingBranch": "Choose the branch you visited.",
-      "draftsFull": "You already keep as many drafts as allowed. Continue one or discard one to start a new one."
+      "draftsFull": "You already keep as many drafts as allowed. Continue one or discard one to start a new one.",
+      "correctionsLimit": "You have made many corrections today. Please try again tomorrow.",
+      "editConflict": "This review changed in another tab — reload to see the latest."
     }
   },
   "formErrors": {
@@ -858,6 +862,29 @@
     "browse": "Browse experiences",
     "cta": "Share your experience",
     "title": "Read what patients actually went through."
+  },
+  "history": {
+    "corrected": "Corrected: {fields} — {date}",
+    "field": {
+      "after": "what happened afterwards",
+      "claims": "labels",
+      "diagnosis": "what they were told",
+      "outcome": "outcome",
+      "sentiment": "sentiment",
+      "story": "story",
+      "symptoms": "symptoms",
+      "treatment": "treatment"
+    },
+    "kind": {
+      "corrected": "Corrected",
+      "edited": "Edited",
+      "published": "Published"
+    },
+    "originalHeading": "As first written, before this correction",
+    "showOriginal": "Show original",
+    "unavailable": "The edit history could not be loaded right now.",
+    "version": "Version {n}",
+    "yourVersions": "Your versions"
   },
   "how": {
     "1": {
