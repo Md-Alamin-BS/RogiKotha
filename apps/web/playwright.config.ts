@@ -87,6 +87,8 @@ export default defineConfig({
       // Only through `pnpm e2e:perf`.
       name: 'nfr13',
       testMatch: ['perf/**/*.spec.ts'],
+      // BR5.5: a failing median is never retried by the suite.
+      retries: 0,
       use: { ...devices['Desktop Chrome'], viewport: DESKTOP },
     },
   ],
