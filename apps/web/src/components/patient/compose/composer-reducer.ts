@@ -36,7 +36,8 @@ export interface ComposerState {
   payload: DraftPayload;
   draftId?: string;
   step: ComposerStep;
-  save: { status: SaveStatus; seq: number };
+  /** `fieldErrors` names the fields a failed save refused, keyed by path (`payload.story`). */
+  save: { status: SaveStatus; seq: number; fieldErrors?: Record<string, string> };
   preview?: PreviewVM | FacilityPreviewVM;
   /** The sequence number of the save the shown preview belongs to; older answers are dropped. */
   previewSeq: number;
@@ -71,7 +72,7 @@ export type ComposerAction =
   | { type: 'dismissCheck'; kind: SafetyCheckKind }
   | { type: 'saveStarted'; seq: number }
   | { type: 'saveSucceeded'; seq: number; draftId: string }
-  | { type: 'saveFailed'; seq: number }
+  | { type: 'saveFailed'; seq: number; fieldErrors?: Record<string, string> }
   | { type: 'draftMissing' }
   | { type: 'draftMissingShown' }
   | { type: 'preview'; seq: number; preview: PreviewVM | FacilityPreviewVM }
@@ -281,7 +282,14 @@ export function composerReducer(state: ComposerState, action: ComposerAction): C
       return { ...state, draftId: action.draftId, save: { status: 'saved', seq: action.seq } };
     case 'saveFailed':
       if (action.seq !== state.save.seq) return state;
-      return { ...state, save: { status: 'failed', seq: action.seq } };
+      return {
+        ...state,
+        save: {
+          status: 'failed',
+          seq: action.seq,
+          ...(action.fieldErrors !== undefined ? { fieldErrors: action.fieldErrors } : {}),
+        },
+      };
     case 'draftMissing': {
       const next = { ...state, draftMissing: true };
       delete next.draftId;

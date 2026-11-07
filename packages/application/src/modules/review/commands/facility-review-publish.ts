@@ -1,8 +1,9 @@
 // `facilityReview.publish` (WF5, BR3.10, BR4.8): `forbidden` while facility feedback is off; the
-// branch, period, story and criteria are checked and an anonymous mode is refused (FD-112) before
-// the shared publish limit is hit (BR1.3). Then, in the one transaction: the persona, the
-// `facility_reviews` row with every criterion key, the audit row with the persona actor and the
-// draft deletion. No outbox event, and never a doctor's review or figures (hard rule).
+// draft is claimed by its deletion, then the branch, period, story and criteria are checked and an
+// anonymous mode is refused (FD-112) before the shared publish limit is hit (BR1.3). Then, in the
+// one transaction: the persona, the `facility_reviews` row with every criterion key and the audit
+// row with the persona actor; a refusal rolls the deletion back. No outbox event, and never a
+// doctor's review or figures (hard rule).
 // ASSUMPTION(U47): the input is `PublishReviewInput`, as functional-spec § 2 says ("same input");
 // the criteria come from the draft, so the T-003 `FacilityReviewPublishInput` stays unused.
 import {
@@ -56,7 +57,12 @@ export function facilityReviewPublishCommand(deps: ReviewModulePorts) {
         return fieldError('validation', actor, { target: INVALID });
       }
 
+      // Claim the draft first (BR2.5): a concurrent publish of the same draft waits on this row
+      // and then finds it gone. A refusal below rolls the deletion back with everything else.
       const now = ports.clock.now();
+      if (!(await deps.reviews.deleteOwnDraft(tx, accountId, draft.record.id, now))) {
+        return draftNotFound(actor);
+      }
       const branchId =
         payload.branchPublicId === undefined
           ? null
@@ -105,7 +111,6 @@ export function facilityReviewPublishCommand(deps: ReviewModulePorts) {
           criteriaAnswered: Object.values(criteria).filter((v) => v !== null).length,
         }),
       );
-      await deps.reviews.deleteOwnDraft(tx, accountId, draft.record.id, now);
       return ok({ publicId, branchPublicId: payload.branchPublicId! });
     },
   });

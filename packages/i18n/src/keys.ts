@@ -363,6 +363,7 @@ export type MessageKey =
   | 'compose.preview'
   | 'compose.previewEmpty'
   | 'compose.publish'
+  | 'compose.publishNotSaved'
   | 'compose.publishedNote'
   | 'compose.redact'
   | 'compose.redactBody'
@@ -1319,6 +1320,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.preview',
   'compose.previewEmpty',
   'compose.publish',
+  'compose.publishNotSaved',
   'compose.publishedNote',
   'compose.redact',
   'compose.redactBody',

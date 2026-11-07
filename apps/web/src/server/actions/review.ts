@@ -6,7 +6,7 @@
 import { getOwnAccountQuery } from '@rogikotha/application';
 import {
   LOCALES,
-  hasControlOrFormat,
+  hasControlOrFormatExceptJoiners,
   OUTCOMES,
   PUBLIC_ID_RE,
   SENTIMENTS,
@@ -60,9 +60,9 @@ function optionalChoice<const T extends readonly [string, ...string[]]>(values: 
     .transform((v) => (v === '' ? null : v));
 }
 
-/** Line breaks and tabs are fine in a story; any other control or invisible character is not. */
+/** Line breaks, tabs and Bengali joiners pass; other invisible characters do not (FD-114). */
 function plainText(v: string) {
-  return !hasControlOrFormat(v.replace(/[\n\r\t]/g, ''));
+  return !hasControlOrFormatExceptJoiners(v.replace(/[\n\r\t]/g, ''));
 }
 
 const titleField = z
