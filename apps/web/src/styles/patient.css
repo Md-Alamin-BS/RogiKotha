@@ -5000,3 +5000,65 @@ html:lang(bn) .join-steps li::before {
   color: var(--ink-muted);
   font-weight: 600;
 }
+
+/* added: U47 the composer step rail, the draft list and the stacked preview (frontend-components § 4) */
+.c-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+}
+.c-step {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  text-align: start;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.c-step[aria-current="step"] {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  font-weight: 700;
+}
+.c-step-n {
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+}
+.c-step-body h2:focus {
+  outline: none;
+}
+.c-step-body h2:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.draft-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.draft-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.draft-list li .sub {
+  flex: 1 1 100%;
+}
+.preview-details > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
