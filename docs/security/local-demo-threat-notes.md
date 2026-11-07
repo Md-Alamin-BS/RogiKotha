@@ -1,0 +1,71 @@
+# Local demo threat notes (release 1)
+
+Scope: the local Docker demo only (`pnpm demo`). No TLS front, no WAF, no reverse proxy. Everything
+is synthetic data. Unit U41 (`t-502-security-hardening`), rules BR1 to BR8; decisions FD-093, FD-104
+and FD-105 (rate-limit table, network key, `assertAppMode()`, FD-072 adversarial test and the PWA
+CSP move to release 2).
+
+Tests marked "test in Step <n>" are written in the named step of the U41 Code Generation plan and
+do not exist yet when this file is read before that step is done.
+
+## 1. Threats and controls
+
+| Threat | Control | Test | Status |
+|---|---|---|---|
+| Stored XSS through review, comment or display-name text | React escaping; nonce `script-src` with `'strict-dynamic'`; no inline script (BR1.1 to BR1.5) | `apps/web/src/lib/security/__tests__/csp.test.ts`; `apps/web/src/lib/security/__tests__/sweep.test.ts`; `apps/web/e2e/smoke/security-headers.spec.ts` (zero violations); adversarial A3 in Step 34 | covered |
+| Third-party data leak (analytics) | No third-party origin in the CSP (BR1.3); no analytics code (FD-019) | `csp.test.ts` "allows no third-party origin"; `security-headers.spec.ts` request log | covered |
+| CSRF on server actions and the upload | Proxy Origin check, `serverActions.allowedOrigins`, `guardRouteRequest`, SameSite=Lax (BR3.3 to BR3.5, BR5.1) | `lib/security/__tests__/origin.test.ts`; `apps/web/src/proxy.test.ts`; upload security test (`route.security.test.ts`, test in Step 30); adversarial A1 in Step 34 | covered |
+| DNS rebinding and Host header injection | Unknown Host and X-Forwarded-Host refused (BR3.2) | `proxy.test.ts`; `proxy.smoke.test.ts`; curl with `Host: evil.example` (Build and Test) | covered |
+| Clickjacking | `frame-ancestors 'none'`, `X-Frame-Options: DENY` (BR1.2, BR2.1) | `lib/security/__tests__/headers.test.ts`; `security-headers.spec.ts` | covered |
+| Session theft through script | HttpOnly cookie, nonce CSP, `get-session` closed (FD-104) | `apps/web/src/security-cookies.test.ts`; `security-headers.spec.ts` cookie check | covered |
+| Resource exhaustion through upload | Declared-length check, counting stream, U48's per-file and per-review limits and rate limit (BR4.*) | `lib/security/__tests__/request-limits.test.ts`; upload security test (test in Step 30); adversarial A2 in Step 34 | covered |
+| Upload truncated by the proxy | Upload route outside the proxy matcher (BR3.4) | `proxy.test.ts` matcher case | covered |
+| A page served without CSP or Host check through a dotted URL (`/en/experiences/<id>-a.b`) | Matcher excludes only named files, never an extension (BR3.4, ENT-016) | `proxy.test.ts` matcher cases; `proxy.smoke.test.ts` dotted-path case; adversarial A1 in Step 34 | covered |
+| Private data in logs | Key allowlist, value shape and event shape in both loggers (BR6.1 to BR6.6); no direct console output outside the loggers (BR6.7) | `packages/application/src/ports/log-policy.test.ts`; `apps/web/src/server/logger.test.ts`; `apps/worker/src/logger.test.ts`; `apps/worker/src/log-scrub.test.ts`; `apps/web/src/server/log-scrub.int.test.ts` (test in Step 32); the `no-console` lint rule; adversarial A4 in Step 34 | covered |
+| Private data in output Next.js or Node prints on its own (an unhandled server error with its message and stack) | None in release 1: the application catches and logs code-shaped lines where it can; the framework's own printing is outside the logger | Adversarial A4 (Step 34) records what it prints | residual |
+| Reporter identity leakage through headers or logs | No reporter identity exists in release 1 (reports are release 2, FD-105); the log policy drops any key not on the list and scrubs free text; no response header carries an account or persona id | `log-policy.test.ts` (an unknown `reporterAccountId` key is dropped); `security-headers.spec.ts` header inventory | covered for logs and headers; reporting itself deferred (FD-105, T-403) |
+| Credential stuffing and enumeration | T-101's limits, delay and generic answers (merged in U8) | U8's tests; the FD-072 adversarial test | deferred (FD-105) |
+| CGNAT lock-out | Network key | none | deferred (FD-105) |
+| Demo shortcuts reaching production | `assertAppMode()` | none | deferred (FD-105) |
+| Service worker caching private responses | T-501 deny list and PWA CSP | none | deferred (FD-105) |
+| No TLS locally | HSTS, `upgrade-insecure-requests` and the `__Secure-` cookie prefix switch on with an https `APP_URL` | `csp.test.ts` and `security-cookies.test.ts` https branch | residual: untested against a real TLS front |
+
+## 2. Residuals
+
+- The in-memory limiters reset on restart and are per process.
+- No TLS, no WAF and no reverse proxy locally.
+- `/_next/static`, `/_next/image` and the four named root files (`/favicon.ico`, `/robots.txt`,
+  `/sitemap.xml`, `/manifest.webmanifest`) skip the Host check; they hold public bytes only.
+- `style-src 'unsafe-inline'` stays on (style attributes), so CSS injection is not blocked by the CSP.
+- There is no CSP violation reporting endpoint.
+- Most error messages are written as `[scrubbed]` in logs, so a failure is diagnosed from its code
+  and event name, not its text.
+- Next.js and Node print unhandled errors themselves, outside the logger.
+- The database command-line tools print their errors to the developer's terminal.
+
+## 3. Cookie inventory (ENT-011)
+
+Release 1 sets exactly these cookies; no other cookie is set on any page (AC12.4.2).
+`rk.session_data` is never set because `cookieCache` is disabled in
+`server/better-auth/instance.ts`. The staff device, step-up and purge cookies do not exist in
+release 1 (the staff console is release 2, FD-105).
+
+| Cookie | Set by | HttpOnly | SameSite | Path | Secure | Domain | Max-Age | Sensitive | Test |
+|---|---|---|---|---|---|---|---|---|---|
+| `rk.session_token` (http) / `__Secure-rk.session_token` (https) | Better Auth through the gateway and `applySetCookies` | yes | Lax | `/` | only on https | none | 30 days (`SESSION_MAX_AGE_SECONDS`) | yes | `apps/web/src/security-cookies.test.ts`; `apps/web/src/server/better-auth/session-cookies.test.ts`; `security-headers.spec.ts` |
+| `rk.dont_remember` / `__Secure-rk.dont_remember` | Better Auth, only when a sign-in passes `rememberMe` false | yes | Lax | `/` | only on https | none | session | yes | `security-cookies.test.ts` |
+| `rk.lang` | next-intl `localeCookie` and `server/actions/preferences.ts` | no | Lax | `/` | no | none | 1 year | no | `apps/web/src/lib/cookies.test.ts`; `security-headers.spec.ts` |
+| `rk.theme` | `server/actions/preferences.ts` | no | Lax | `/` | no | none | 1 year | no | `lib/cookies.test.ts`; `security-headers.spec.ts` |
+| `rk.motion` | `server/actions/preferences.ts` | no | Lax | `/` | no | none | 1 year | no | `lib/cookies.test.ts`; `security-headers.spec.ts` |
+
+## 4. Worker code `db.reset_required` (BR6.8)
+
+At start the worker checks that each pg-boss queue exists with the policy the code expects. If a
+queue exists with a different policy (for example after a schema from an older build), the worker
+does not try to repair it. It logs one line whose `fix` field is the code `db.reset_required`,
+with `expectedPolicy` and `actualPolicy` holding the two policy names, and stops.
+
+`db.reset_required` means: run `pnpm db:reset` (it rebuilds the demo database from empty), then
+`pnpm db:seed`, then start the worker again. The code is a fixed token, not prose, so the log line
+stays inside the allowlist and carries no private data. Test: the queue mismatch case in
+`apps/worker/src/log-scrub.test.ts`.
