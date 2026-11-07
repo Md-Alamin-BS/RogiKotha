@@ -2,7 +2,7 @@
 import { randomBytes } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
-import { optionalEnv, readWebEnv, requireEnv, WebEnvError } from './env';
+import { optionalEnv, readProbeTargets, readWebEnv, requireEnv, WebEnvError } from './env';
 
 describe('server environment', () => {
   it('returns a variable that is set', () => {
@@ -19,6 +19,45 @@ describe('server environment', () => {
   it('reads a missing optional variable as undefined', () => {
     expect(optionalEnv('RK_ENV_TEST_NEVER_SET')).toBeUndefined();
   });
+});
+
+describe('the health probe targets (BR9.1)', () => {
+  it('defaults to the worker values when nothing is set', () => {
+    expect(readProbeTargets(() => undefined)).toEqual({
+      smtpHost: 'localhost',
+      smtpPort: 1025,
+      clamdHost: 'localhost',
+      clamdPort: 3310,
+    });
+  });
+
+  it('reads the hosts and ports that are set', () => {
+    const values: Record<string, string> = {
+      SMTP_HOST: 'mail.local',
+      SMTP_PORT: '2525',
+      CLAMD_HOST: 'clamd.local',
+      CLAMD_PORT: '4000',
+    };
+
+    expect(readProbeTargets((name) => values[name])).toEqual({
+      smtpHost: 'mail.local',
+      smtpPort: 2525,
+      clamdHost: 'clamd.local',
+      clamdPort: 4000,
+    });
+  });
+
+  it.each(['abc', '0', '-1', '70000', '1.5', ''])(
+    'falls back to the default port for %j',
+    (port) => {
+      const targets = readProbeTargets((name) =>
+        name === 'SMTP_PORT' || name === 'CLAMD_PORT' ? port : undefined,
+      );
+
+      expect(targets.smtpPort).toBe(1025);
+      expect(targets.clamdPort).toBe(3310);
+    },
+  );
 });
 
 const APP_KEY = randomBytes(32).toString('base64');

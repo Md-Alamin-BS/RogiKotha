@@ -34,6 +34,31 @@ export function optionalEnv(name: string): string | undefined {
   return process.env[name] || undefined;
 }
 
+/** Where the health route's mail and scanner probes connect; the worker's defaults (BR9.1). */
+export interface ProbeTargets {
+  smtpHost: string;
+  smtpPort: number;
+  clamdHost: string;
+  clamdPort: number;
+}
+
+function portOr(value: string | undefined, fallback: number): number {
+  const port = Number(value);
+  return Number.isInteger(port) && port > 0 && port < 65536 ? port : fallback;
+}
+
+/** Reads the probe hosts and ports; an unset or unusable value falls back to the default. */
+export function readProbeTargets(
+  read: (name: string) => string | undefined = optionalEnv,
+): ProbeTargets {
+  return {
+    smtpHost: read('SMTP_HOST') || 'localhost',
+    smtpPort: portOr(read('SMTP_PORT'), 1025),
+    clamdHost: read('CLAMD_HOST') || 'localhost',
+    clamdPort: portOr(read('CLAMD_PORT'), 3310),
+  };
+}
+
 const KEY_BYTES = 32;
 const SECRET_MIN_LENGTH = 32;
 
