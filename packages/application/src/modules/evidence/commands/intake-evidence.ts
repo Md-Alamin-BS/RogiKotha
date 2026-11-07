@@ -1,6 +1,6 @@
 // `evidence.intake` (WF1 step 8, BR1.1, BR1.2, BR2.*, BR4.1): records a file the route already
-// wrote to quarantine. One transaction, in this order: type and size, the review, the idempotency
-// key, the per-review lock, the count, the total, then the item, its original artifact, custody
+// wrote to quarantine. One transaction, in this order: type and size, the review, the per-review
+// lock, the idempotency key, the count, the total, then the item, its original artifact, custody
 // `received` and outbox `evidence.received`. The caller deletes its quarantined key on any `err`
 // and whenever `created` is false (BR3.4).
 import { IntakeCommandInput, ok } from '@rogikotha/contracts';
@@ -45,11 +45,12 @@ export function intakeEvidenceCommand(deps: EvidenceModuleDeps) {
 
       const reviewId = await ownPublishedReviewId(deps.review, tx, input.reviewPublicId, actor);
       if (reviewId === null) return refused('not_found', actor);
+      // Locked before the key check, so a retry racing its first send sees that item (ISS-620).
+      await repo.lockReview(tx, reviewId);
       const existing = await existingForKey(repo, tx, input.idempotencyKey, reviewId, actor);
       if (!existing.ok) return existing;
       if (existing.data !== null) return ok({ ...existing.data, created: false });
 
-      await repo.lockReview(tx, reviewId);
       const limit = await limitRefusal(repo, tx, reviewId, input.file.bytes);
       if (limit !== null) return refused(limit, actor);
 

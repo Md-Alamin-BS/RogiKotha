@@ -88,3 +88,51 @@ describe('a hostile upload', () => {
     expect(readdirSync(path.join(root, 'quarantine'))).toEqual([]);
   });
 });
+
+// U48 Step 49 (A4), by the separate adversarial agent.
+describe('a hostile upload, continued', () => {
+  async function* thenDrop(bytes: Uint8Array): EvidenceByteStream {
+    await Promise.resolve();
+    yield bytes;
+    throw new Error('synthetic connection reset');
+  }
+
+  it('leaves no temp or final file behind when the client drops the connection mid-upload', async () => {
+    await expect(
+      createFsEvidenceWriter(root).putQuarantined(thenDrop(Buffer.alloc(4096, 1)), {
+        maxBytes: 1_000_000,
+      }),
+    ).rejects.toThrow(/connection reset/);
+    expect(readdirSync(path.join(root, 'quarantine'))).toEqual([]);
+  });
+
+  it('keeps a root given with parent-folder hops inside its resolved folder', async () => {
+    const hopped = path.join(root, '..', 'evidence', '.', 'quarantine', '..');
+    const put = await createFsEvidenceWriter(hopped).putQuarantined(once(Buffer.from('x')), {
+      maxBytes: 10,
+    });
+    if (!put.ok) throw new Error('put failed');
+    expect(readdirSync(path.join(root, 'quarantine'))).toEqual([put.data.key]);
+    expect(readdirSync(tmp).sort()).toEqual(['evidence', 'secret.env']);
+  });
+
+  it('gives twenty uploads at the same instant twenty distinct keys and no stray file', async () => {
+    const writer = createFsEvidenceWriter(root);
+    const puts = await Promise.all(
+      Array.from({ length: 20 }, (_, i) =>
+        writer.putQuarantined(once(Buffer.from(`synthetic-${i}`)), { maxBytes: 100 }),
+      ),
+    );
+    const keys = puts.map((p) => (p.ok ? p.data.key : 'refused'));
+    expect(new Set(keys).size).toBe(20);
+    expect(readdirSync(path.join(root, 'quarantine')).sort()).toEqual([...keys].sort());
+    const reader = createFsEvidenceReader(root);
+    for (const [i, key] of keys.entries()) {
+      const read = await reader.readQuarantined(key);
+      if (!read.ok) throw new Error('read failed');
+      const chunks: Uint8Array[] = [];
+      for await (const chunk of read.data) chunks.push(chunk);
+      expect(Buffer.concat(chunks).toString()).toBe(`synthetic-${i}`);
+    }
+  });
+});
