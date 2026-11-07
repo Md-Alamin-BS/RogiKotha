@@ -53,6 +53,7 @@
     { "path": "apps/worker/src/logger.ts" },
     { "path": "apps/worker/src/main.test.ts" },
     { "path": "apps/worker/src/main.ts" },
+    { "path": "docs/aidlc-migration/OWNER-REVIEW-QUEUE.md" },
     { "path": "docs/implementation/ISSUES.md" },
     { "path": "docs/implementation/tasks/T-502-security-hardening.md" },
     { "path": "docs/security/local-demo-threat-notes.md" },

@@ -32,7 +32,8 @@ function isApiPath(pathname: string): boolean {
   return pathname === '/api' || pathname.startsWith('/api/');
 }
 
-// Development HMR and error-overlay endpoints: next-intl would redirect them to a locale (R8).
+// Static files, the image optimizer and the development endpoints: next-intl would redirect them
+// to a locale (R8).
 function isNextInternalPath(pathname: string): boolean {
   return pathname.startsWith('/_next/') || pathname.startsWith('/__nextjs');
 }
@@ -95,11 +96,9 @@ export function createProxy(guard: ProxyGuard) {
 
 export default createProxy({ loadSecuritySettings, logRequestRefused });
 
-// ENT-016 (Review 01 R-01): the only unmatched paths are named one by one, never by extension, so
-// a slugged id such as `/en/experiences/<id>-a.b` is still a page. A Unit adding a file to
-// `apps/web/public` adds its exact name here in the same commit.
+// ENT-016 as amended at U41 review-01 (ISS-718): only the upload route, which guards itself, is
+// unmatched. Next.js ran a server action posted to `/robots.txt` and to a missing `/_next/static/x`,
+// and a pattern cannot tell a missing file from a real one, so static paths get the checks too.
 export const config = {
-  matcher: [
-    '/((?!api/evidence/upload$|_next/static/|_next/image$|favicon\\.ico$|robots\\.txt$|sitemap\\.xml$|manifest\\.webmanifest$).*)',
-  ],
+  matcher: ['/((?!api/evidence/upload$).*)'],
 };
