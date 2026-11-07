@@ -29,6 +29,21 @@ import {
   FakeTaxonomyRepository,
 } from './repositories.js';
 import { FakeEmailDeliveryRepository } from './email-delivery-repository.js';
+import { InMemoryEvidenceRepository } from './evidence-repository.js';
+
+// U48: `evidence.ts` holds the release-1 methods `InMemoryEvidenceRepository` fakes and the
+// release-2 stubs `FakeEvidenceRepository` still fakes; together they must cover the file.
+class EvidenceFakes {}
+for (const Fake of [FakeEvidenceRepository, InMemoryEvidenceRepository]) {
+  for (const name of Object.getOwnPropertyNames(Fake.prototype)) {
+    if (name === 'constructor' || Object.hasOwn(EvidenceFakes.prototype, name)) continue;
+    Object.defineProperty(
+      EvidenceFakes.prototype,
+      name,
+      Object.getOwnPropertyDescriptor(Fake.prototype, name)!,
+    );
+  }
+}
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repositoriesDir = path.resolve(here, '../../../database/src/repositories');
@@ -62,7 +77,7 @@ const REPOSITORY_PAIRS: { file: string; FakeClass: new () => unknown }[] = [
   { file: 'config.ts', FakeClass: FakeConfigRepository },
   { file: 'data-requests.ts', FakeClass: FakeDataRequestRepository },
   { file: 'directory.ts', FakeClass: FakeDirectoryRepository },
-  { file: 'evidence.ts', FakeClass: FakeEvidenceRepository },
+  { file: 'evidence.ts', FakeClass: EvidenceFakes },
   { file: 'identity.ts', FakeClass: FakeIdentityRepository },
   { file: 'moderation.ts', FakeClass: FakeModerationRepository },
   { file: 'notification.ts', FakeClass: FakeNotificationRepository },

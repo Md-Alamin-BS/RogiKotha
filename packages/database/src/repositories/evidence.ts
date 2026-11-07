@@ -95,11 +95,12 @@ interface WorkerItemRow {
 }
 
 function custodyDetails(details: NewEvidenceCustody['details']): Record<string, unknown> {
-  const kept: Record<string, unknown> = {};
-  for (const key of CUSTODY_DETAIL_KEYS) {
-    if (details[key] !== undefined) kept[key] = details[key];
-  }
-  return kept;
+  // No loop at class-body indentation: `repositories-superset.test.ts` reads methods by indent.
+  const kept = CUSTODY_DETAIL_KEYS.filter((key) => details[key] !== undefined).map((key) => [
+    key,
+    details[key],
+  ]);
+  return Object.fromEntries(kept) as Record<string, unknown>;
 }
 
 const workerSelect = sql.raw(WORKER_ITEM_SELECT);
