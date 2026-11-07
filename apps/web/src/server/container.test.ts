@@ -71,6 +71,8 @@ vi.mock('@rogikotha/database', () => {
     // U47's block.
     PgReviewModuleRepository: Stub,
     createInterimPublicEvidenceCount: vi.fn(() => ({})),
+    // U49's block.
+    PgCommunityRepository: Stub,
   };
 });
 vi.mock('./better-auth/instance', () => ({
