@@ -156,6 +156,9 @@ async function uploadRequest(fields: {
     headers: {
       'content-type': encoded.headers.get('content-type') ?? '',
       'content-length': String(body.byteLength),
+      // U41 WF3: the route checks Host and Origin first.
+      origin: 'http://localhost:3000',
+      host: 'localhost:3000',
     },
   });
 }

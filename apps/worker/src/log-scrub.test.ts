@@ -262,4 +262,60 @@ describe('worker log scrubbing (BR6.6)', () => {
     expectNoMarker();
     expectOnlyLoggerOutput();
   });
+
+  // U41 plan Step 32: U48's processor on its last attempt, with a reader whose error message and a
+  // delete whose error class carry the markers, and a storage key that is a path.
+  it('writes the evidence processor lines with the class name only, never the key or the message', async () => {
+    const { createProcessEvidence } = await import('@rogikotha/application/worker');
+    const itemId = '0192d6a4-7c1e-7a3b-9f10-5d2c8e4b6a21';
+    const facts = {
+      id: itemId,
+      reviewId: '0192d6a4-7c1e-7a3b-9f10-5d2c8e4b6a22',
+      storageKey: WINDOWS_PATH,
+      state: 'validating',
+      createdAt: new Date(),
+      latestCustody: null,
+    };
+    const tx = {};
+    const deleteError = Object.assign(new Error(LEAKY_MESSAGE), { name: POSIX_PATH });
+    const processEvidence = createProcessEvidence({
+      unitOfWork: {
+        read: (work: (t: unknown) => unknown) => work(tx),
+        run: (work: (t: unknown) => unknown) => work(tx),
+      },
+      evidenceRepository: {
+        processingFacts: () => Promise.resolve(facts),
+        transition: () => Promise.resolve(true),
+        appendCustody: () => Promise.resolve(),
+        markOriginalDeleted: () => Promise.resolve(),
+      },
+      files: {
+        readQuarantined: () => Promise.reject(new Error(LEAKY_MESSAGE)),
+        delete: () => Promise.reject(deleteError),
+      },
+      scanner: { scan: () => Promise.reject(new Error(LEAKY_MESSAGE)) },
+      outbox: { append: () => Promise.resolve() },
+      clock: { now: () => new Date() },
+      logger: new JsonLogger(),
+      hasher: { hash: () => TOKEN },
+    } as unknown as Parameters<typeof createProcessEvidence>[0]);
+
+    const result = await processEvidence({
+      itemId,
+      attempt: 4,
+      lastAttempt: true,
+      signal: { aborted: false } as Parameters<typeof processEvidence>[0]['signal'],
+    });
+
+    expect(result).toEqual({ state: 'failed' });
+    expect(parsedLines().map((line) => line.event)).toEqual([
+      'evidence.last_attempt_failed',
+      'evidence.original_delete_failed',
+      'evidence.failed',
+    ]);
+    expect(parsedLines()[0]).toMatchObject({ itemId, attempt: 4, errorClass: 'Error' });
+    expect(parsedLines()[1]).toMatchObject({ itemId, errorClass: '[scrubbed]' });
+    expectNoMarker();
+    expectOnlyLoggerOutput();
+  });
 });

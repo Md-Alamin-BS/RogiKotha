@@ -43,12 +43,11 @@ const nextConfig: NextConfig = {
   agentRules: false,
   // BR2.1, BR2.2: static headers on every response, applied before the proxy runs.
   headers: () => Promise.resolve(securityHeaderRoutes()),
-  // Evidence uploads go through a server action and the proxy: both default limits (1 MB and
-  // 10 MB) sit below a 10 MB file plus the form around it (MAX_EVIDENCE_BYTES, FR5).
-  // BR4.6: both drop to 1mb once U48 removes the demo upload action (plan Step 28, ISS-517).
+  // BR4.6: no server action takes a file since U48 (ISS-690); evidence goes to
+  // `/api/evidence/upload`, which the proxy matcher skips and which caps its own body (WF3).
   experimental: {
-    serverActions: { bodySizeLimit: '11mb', allowedOrigins },
-    proxyClientMaxBodySize: '11mb',
+    serverActions: { bodySizeLimit: '1mb', allowedOrigins },
+    proxyClientMaxBodySize: '1mb',
   },
 };
 

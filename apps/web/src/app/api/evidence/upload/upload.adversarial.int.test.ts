@@ -172,6 +172,9 @@ async function uploadRequest(fields: {
     headers: {
       'content-type': encoded.headers.get('content-type') ?? '',
       'content-length': fields.contentLength ?? String(body.byteLength),
+      // U41 WF3: the route checks Host and Origin first.
+      origin: 'http://localhost:3000',
+      host: 'localhost:3000',
     },
   });
 }
@@ -226,7 +229,8 @@ describe('A2: the size and count limits hold under oversize, lying and concurren
 
       const response = await POST(await uploadRequest({ reviewPublicId: newId(), file }));
 
-      expect(response.status).toBe(400);
+      // U41 BR4.2: a request refused by its declared length answers 413 (C14 amendment).
+      expect(response.status).toBe(413);
       expect(await errorCodeOf(response)).toBe('evidence.too_large');
       expect(getRequestContext).not.toHaveBeenCalled();
       expect(await quarantinedFiles()).toHaveLength(before);

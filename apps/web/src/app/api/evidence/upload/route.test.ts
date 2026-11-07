@@ -98,7 +98,12 @@ function buildForm(options: FormOptions = {}): FormData {
 async function uploadRequest(form: FormData, length?: string | null): Promise<Request> {
   const encoded = new Response(form);
   const body = await encoded.arrayBuffer();
-  const headers = new Headers({ 'content-type': encoded.headers.get('content-type') ?? '' });
+  const headers = new Headers({
+    'content-type': encoded.headers.get('content-type') ?? '',
+    // U41 WF3: the route checks Host and Origin first.
+    origin: 'http://localhost:3000',
+    host: 'localhost:3000',
+  });
   const declared = length === undefined ? String(body.byteLength) : length;
   if (declared !== null) headers.set('content-length', declared);
   return new Request(URL_, { method: 'POST', body, headers });
@@ -255,18 +260,24 @@ describe('POST /api/evidence/upload: refusals before the body is read', () => {
   it('refuses a body declared over the cap without reading it (WF1 step 1)', async () => {
     const { response, body } = await post(buildForm(), String(MAX_FILE_BYTES + 65_537));
 
-    expect(response.status).toBe(400);
+    // U41 BR4.2: a request refused by its declared length answers 413 (C14 amendment).
+    expect(response.status).toBe(413);
     expect(body).toMatchObject({
       error: { code: 'evidence.too_large', messageKey: 'errors.evidence.tooLarge' },
     });
     expect(getRequestContext).not.toHaveBeenCalled();
   });
 
-  it('refuses a body without a Content-Length, so it stays bounded', async () => {
+  // U41 BR4.2, BR4.3: a body without a Content-Length is counted while it is read, not refused.
+  it('accepts a body without a Content-Length, read through the counting stream', async () => {
     const { response } = await post(buildForm(), null);
 
-    expect(response.status).toBe(411);
-    expect(runCommand).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(calledCommands()).toEqual([
+      'evidence.admitUpload',
+      'evidence.checkUpload',
+      'evidence.intake',
+    ]);
   });
 });
 

@@ -6,16 +6,25 @@ import {
   detectImageType,
   EVIDENCE_HEAD_BYTES,
   EVIDENCE_MAX_FILE_BYTES,
-  EVIDENCE_UPLOAD_CONTENT_LENGTH_CAP,
   screenUploadFile,
   type EvidenceByteStream,
   type EvidenceUploadAnswer,
 } from '@rogikotha/application';
 import { EvidenceUploadFields, newId, PUBLIC_ID_RE, type ErrorCode } from '@rogikotha/contracts';
 
+import { refusalResponse } from '@/lib/security/refusal';
+import {
+  checkDeclaredLength,
+  readCappedFormData,
+  UPLOAD_OVERHEAD_BYTES,
+} from '@/lib/security/request-limits';
+import { guardRouteRequest, logRequestRefused } from '@/security-settings';
 import { getRequestContext } from '@/server/auth';
 import { runCommand } from '@/server/command-call';
 import { getContainer } from '@/server/container';
+
+// U41 BR4.1: one file plus the multipart framing and the two small fields around it.
+const UPLOAD_MAX_REQUEST_BYTES = EVIDENCE_MAX_FILE_BYTES + UPLOAD_OVERHEAD_BYTES;
 
 /** The uploader's copy keys (frontend-components § Upload errors). */
 type UploadMessageKey =
@@ -158,24 +167,33 @@ async function deleteQuietly(key: string, correlationId: string): Promise<void> 
   }
 }
 
-// ASSUMPTION(U48): U41 owns the origin check and the Content-Length cap (WF1 step 1). Its lines
-// are not on the base yet, so the cap is enforced here and a missing length is refused, which
-// keeps the in-memory body bounded; U41 replaces these lines.
-function contentLengthRefusal(request: Request, correlationId: string): Response | null {
-  const declared = request.headers.get('content-length');
-  const length = declared === null || !/^\d+$/.test(declared) ? null : Number(declared);
-  if (length === null) {
-    return refuse(
-      { status: 411, code: 'validation', messageKey: 'ev.upload.errors.failed' },
-      correlationId,
-    );
-  }
-  return length > EVIDENCE_UPLOAD_CONTENT_LENGTH_CAP ? refuse(TOO_LARGE, correlationId) : null;
+// ASSUMPTION(U41): U41's refusals carry this route's `{error}` envelope, which the uploader reads,
+// although C14 names a bare AppError body (ISS-691).
+async function inRouteEnvelope(refused: Response): Promise<Response> {
+  const error: unknown = await refused.json();
+  return Response.json({ error }, { status: refused.status, headers: refused.headers });
+}
+
+/** U41 BR4.2, BR4.3: 413 with U48's too-large key and `Connection: close`. */
+function tooLargeRequest(correlationId: string): Promise<Response> {
+  logRequestRefused('too_large', correlationId);
+  return inRouteEnvelope(refusalResponse('too_large', correlationId, TOO_LARGE.messageKey));
+}
+
+/** U41 WF3 step 1: Host, Origin and the declared length, before any byte of the body is read. */
+function requestRefusal(request: Request, correlationId: string): Promise<Response> | null {
+  const guarded = guardRouteRequest(request);
+  if (guarded) return inRouteEnvelope(guarded);
+  const declared = checkDeclaredLength(request.headers, UPLOAD_MAX_REQUEST_BYTES);
+  if (declared.outcome === 'allowed') return null;
+  if (declared.kind === 'too_large') return tooLargeRequest(correlationId);
+  logRequestRefused(declared.kind, correlationId);
+  return inRouteEnvelope(refusalResponse(declared.kind, correlationId));
 }
 
 async function upload(request: Request, trace: { correlationId: string }): Promise<Response> {
-  const capped = contentLengthRefusal(request, trace.correlationId);
-  if (capped) return capped;
+  const refused = requestRefusal(request, trace.correlationId);
+  if (refused) return refused;
 
   const { actor } = await getRequestContext();
   // The commands log under the actor's id, so the answer and the logs share it.
@@ -190,12 +208,10 @@ async function upload(request: Request, trace: { correlationId: string }): Promi
     return refuseCode(admitted.error.code, correlationId, admitted.error.retryAfterSec);
   }
 
-  let form: FormData;
-  try {
-    form = await request.formData();
-  } catch {
-    return refuse(NO_FILE, correlationId);
-  }
+  const parsed = await readCappedFormData(request, UPLOAD_MAX_REQUEST_BYTES);
+  if ('refused' in parsed) return tooLargeRequest(correlationId);
+  if ('malformed' in parsed) return refuse(NO_FILE, correlationId);
+  const form = parsed.ok;
   const reviewPublicId = form.get('reviewPublicId');
   if (typeof reviewPublicId !== 'string' || !PUBLIC_ID_RE.test(reviewPublicId)) {
     return refuse(NOT_FOUND, correlationId);
