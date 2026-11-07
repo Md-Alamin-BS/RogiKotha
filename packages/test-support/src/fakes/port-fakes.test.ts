@@ -509,9 +509,8 @@ describe('InMemoryEvidenceRepository', () => {
       uploadedByAccountId: 'account-9',
       state: 'quarantined',
     });
-    await expect(repo.insertQuarantined(TX, { ...NEW, id: 'other' })).rejects.toThrow(
-      /duplicate idempotency_key/,
-    );
+    expect(await repo.insertQuarantined(TX, { ...NEW, id: 'other' })).toBe('key_taken');
+    expect(await repo.countCounting(TX, 'review-9')).toEqual({ count: 1, bytes: 100 });
   });
 
   it('moves an item only from the state it is in (compare-and-set)', async () => {

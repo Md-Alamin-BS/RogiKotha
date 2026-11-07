@@ -110,11 +110,11 @@ export class InMemoryEvidenceRepository implements EvidenceRepository, Transacti
     });
   }
 
-  insertQuarantined(_tx: Tx, item: NewQuarantinedEvidence): Promise<void> {
+  insertQuarantined(_tx: Tx, item: NewQuarantinedEvidence): Promise<'inserted' | 'key_taken'> {
     void _tx;
     return this.guard('insertQuarantined', () => {
       if (this.live().some((i) => i.idempotencyKey === item.idempotencyKey)) {
-        throw new Error('InMemoryEvidenceRepository: duplicate idempotency_key');
+        return 'key_taken' as const;
       }
       this.items.set(item.id, {
         id: item.id,
@@ -134,6 +134,7 @@ export class InMemoryEvidenceRepository implements EvidenceRepository, Transacti
         createdAt: item.now,
         updatedAt: null,
       });
+      return 'inserted' as const;
     });
   }
 

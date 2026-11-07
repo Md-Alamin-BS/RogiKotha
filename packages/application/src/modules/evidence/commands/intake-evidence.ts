@@ -58,7 +58,7 @@ export function intakeEvidenceCommand(deps: EvidenceModuleDeps) {
       const now = deps.clock.now();
       const id = ports.ids.newId();
       const publicId = ports.ids.newPublicId();
-      await repo.insertQuarantined(tx, {
+      const inserted = await repo.insertQuarantined(tx, {
         id,
         publicId,
         artifactId: ports.ids.newId(),
@@ -73,6 +73,15 @@ export function intakeEvidenceCommand(deps: EvidenceModuleDeps) {
         storageKey: input.file.key,
         now,
       });
+      if (inserted === 'key_taken') {
+        // The review lock does not cover a key sent for another review at the same instant (R-05);
+        // the winner has committed, so the key now reads as held by that other review.
+        const winner = await existingForKey(repo, tx, input.idempotencyKey, reviewId, actor);
+        if (!winner.ok) return winner;
+        return winner.data === null
+          ? refused('not_found', actor)
+          : ok({ ...winner.data, created: false });
+      }
       await repo.appendCustody(tx, {
         itemId: id,
         event: 'received',
