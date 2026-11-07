@@ -236,8 +236,11 @@ for (const locale of ['en', 'bn'] as const) {
         if (!box) throw new Error(`${selector} is not on the page`);
         await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
         await page.mouse.down();
-        await page.waitForTimeout(300);
-        const transform = await target.evaluate((element) => getComputedStyle(element).transform);
+        // The press transition, if any, is read once it has finished (BR1.7: no fixed sleep).
+        const transform = await target.evaluate(async (element) => {
+          await Promise.all(element.getAnimations().map((animation) => animation.finished));
+          return getComputedStyle(element).transform;
+        });
         // Released away from the target so the press does not become a click.
         await page.mouse.move(0, 0);
         await page.mouse.up();
