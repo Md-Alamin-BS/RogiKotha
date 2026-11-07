@@ -34,6 +34,29 @@ const isBanner = (text: string): boolean => {
   return FRAMEWORK_BANNER.some((rule) => rule.test(plain));
 };
 
+// ASSUMPTION(U50): when the browser closes a page while its HTML still streams, React aborts the
+// render and Next prints this four-line block outside the app logger (ISS-783). Only the whole
+// block is exempt, never one of its lines alone; it is still scanned for sentinels.
+const CLIENT_CLOSED_BLOCK = [
+  /^\s*⨯ Error: The destination stream closed early\.$/,
+  /^\s*at ignore-listed frames \{$/,
+  /^\s*digest: '\d+'$/,
+  /^\}$/,
+];
+
+/** Indexes of the lines that form a whole client-closed block. */
+function clientClosedLines(lines: string[]): Set<number> {
+  const plain = lines.map((line) => line.replace(ANSI_COLOUR, ''));
+  const exempt = new Set<number>();
+  plain.forEach((_line, start) => {
+    const whole = CLIENT_CLOSED_BLOCK.every((rule, offset) =>
+      rule.test(plain[start + offset] ?? ''),
+    );
+    if (whole) CLIENT_CLOSED_BLOCK.forEach((_rule, offset) => exempt.add(start + offset));
+  });
+  return exempt;
+}
+
 const readLines = (file: string): string[] =>
   readFileSync(path.join(logsDir(), file), 'utf8').split(/\r?\n/);
 
@@ -68,9 +91,10 @@ for (const file of LOG_FILES) {
   test(`OPS logs every line of ${file} is JSON`, () => {
     const lines = readLines(file).filter((line) => line.trim() !== '');
     expect(lines.length, `${file} has log lines`).toBeGreaterThan(0);
+    const clientClosed = clientClosedLines(lines);
     const plain = lines
-      .map((line, index) => ({ line: index + 1, text: line }))
-      .filter(({ text }) => !isJson(text) && !isBanner(text))
+      .map((line, index) => ({ index, line: index + 1, text: line }))
+      .filter(({ index, text }) => !isJson(text) && !isBanner(text) && !clientClosed.has(index))
       .map(({ line, text }) => `line ${line} (${text.length} characters)`);
     expect(plain, `${file} lines that are not JSON`).toEqual([]);
   });
