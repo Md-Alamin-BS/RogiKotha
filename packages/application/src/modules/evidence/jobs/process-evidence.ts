@@ -23,7 +23,7 @@ import type {
   ScanAbortSignal,
   Tx,
 } from '../../../ports';
-import type { EvidenceProcessorDeps } from '../ports';
+import type { EvidenceProcessorDeps } from '../worker-ports';
 
 export interface ProcessEvidenceInput {
   /** The internal item id from the `evidence.received` payload. */

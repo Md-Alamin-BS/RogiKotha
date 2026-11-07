@@ -85,7 +85,8 @@ interface WorkerItemRow {
   id: string;
   review_id: string;
   state: EvidenceState;
-  created_at: Date;
+  // A raw `execute` returns timestamptz as text, not as a Date.
+  created_at: Date | string;
   declared_mime: string;
   detected_mime: 'image/jpeg' | 'image/png' | null;
   original_bytes: string | number;
@@ -243,7 +244,7 @@ export class PgEvidenceRepository implements EvidenceRepository {
       detectedMime: row.detected_mime,
       originalBytes: Number(row.original_bytes),
       originalSha256: row.original_sha256,
-      createdAt: row.created_at,
+      createdAt: new Date(row.created_at),
       storageKey: row.storage_key,
       latestCustody: row.latest_custody,
     };

@@ -8,12 +8,28 @@
 // database credentials"). `container.test.ts` greps this package's source
 // for the auth library and the two forbidden commands, as a second net
 // behind the boundary lint (T-010).
-import { createCrypto, createSmtpMailTransport } from '@rogikotha/adapters';
+import {
+  createClamdScanner,
+  createCrypto,
+  createFsEvidenceReader,
+  createSmtpMailTransport,
+} from '@rogikotha/adapters';
 import type { Crypto, EmailCatalog, MailTransport } from '@rogikotha/application';
-import { sendEmailDelivery } from '@rogikotha/application/worker';
+import {
+  createProcessEvidence,
+  createSweepEvidence,
+  sendEmailDelivery,
+} from '@rogikotha/application/worker';
+import type {
+  EvidenceProcessorDeps,
+  ProcessEvidenceInput,
+  ProcessEvidenceResult,
+  SweepEvidenceResult,
+} from '@rogikotha/application/worker';
 import {
   PgBossQueue,
   PgEmailDeliveryRepository,
+  PgEvidenceRepository,
   PgOutbox,
   PgOutboxRelayStore,
   PgUnitOfWork,
@@ -65,6 +81,12 @@ export interface WorkerContainer {
   emailCatalog: EmailCatalog;
   /** One `mail.send` job through the application use case; throws to ask pg-boss for a retry. */
   sendEmail(job: MailSendJob): Promise<void>;
+  /** What the processor is built from: the file reader and the scanner, no writer, no filename seal. */
+  evidenceDeps: EvidenceProcessorDeps;
+  /** One `evidence.process` attempt; throws to ask pg-boss for a retry. */
+  processEvidence(input: ProcessEvidenceInput): Promise<ProcessEvidenceResult>;
+  /** One `evidence.sweep` run. */
+  sweepEvidence(): Promise<SweepEvidenceResult>;
   close(): Promise<void>;
 }
 
@@ -96,6 +118,20 @@ export function buildContainer(env: WorkerEnv): WorkerContainer {
     logger,
   };
 
+  const evidenceDeps: EvidenceProcessorDeps = {
+    unitOfWork: mailDeps.unitOfWork,
+    evidenceRepository: new PgEvidenceRepository(),
+    files: createFsEvidenceReader(env.STORAGE_ROOT),
+    scanner: createClamdScanner({ host: env.CLAMD_HOST, port: env.CLAMD_PORT }),
+    outbox,
+    clock,
+    logger,
+    // The worker's `hash` is SHA-256 and needs no MAC key.
+    hasher: mailCrypto,
+  };
+  const processEvidence = createProcessEvidence(evidenceDeps);
+  const sweepEvidence = createSweepEvidence(evidenceDeps);
+
   return {
     db,
     outbox,
@@ -106,6 +142,9 @@ export function buildContainer(env: WorkerEnv): WorkerContainer {
     mailCrypto,
     mailTransport,
     emailCatalog,
+    evidenceDeps,
+    processEvidence,
+    sweepEvidence,
     sendEmail: async (job) => {
       const outcome = await sendEmailDelivery(job, mailDeps);
       if (outcome.status === 'retry') throw new MailRetry(outcome.errorCode, outcome.attempts);

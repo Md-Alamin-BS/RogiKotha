@@ -6,7 +6,7 @@ import { ok } from '@rogikotha/contracts';
 import { EVIDENCE_PROCESSING_DEADLINE_SEC, sweepReason } from '@rogikotha/domain';
 
 import type { StuckEvidenceRecord } from '../../../ports';
-import type { EvidenceSweepDeps } from '../ports';
+import type { EvidenceSweepDeps } from '../worker-ports';
 
 /** Items ended per run; the cron runs every 5 minutes, so a backlog drains over a few runs. */
 export const EVIDENCE_SWEEP_BATCH = 100;

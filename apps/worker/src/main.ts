@@ -112,7 +112,11 @@ async function main(): Promise<void> {
       continue;
     }
     await ctx.queue.ensureQueue(name);
-    await ctx.queue.work(name, (payload: unknown) => def.handler(payload, ctx), def.opts);
+    await ctx.queue.work(
+      name,
+      (payload: unknown, attempt) => def.handler(payload, ctx, attempt),
+      def.opts,
+    );
     if (def.cron !== undefined) {
       await ctx.queue.schedule(name, def.cron);
     }

@@ -1,7 +1,9 @@
 // Job registry (task step 6). Later tasks add one entry here plus a file
 // under `handlers/` — nothing else in `main.ts` needs to change.
-import type { WorkOptions } from '@rogikotha/database';
+import type { JobAttempt, WorkOptions } from '@rogikotha/database';
 
+import { evidenceProcessHandler } from './handlers/evidence-process.js';
+import { evidenceSweepHandler } from './handlers/evidence-sweep.js';
 import { mailSendHandler } from './handlers/mail-send.js';
 import { outboxRelayHandler } from './handlers/outbox-relay.js';
 import type { WorkerContainer } from './container.js';
@@ -19,10 +21,12 @@ export type JobName =
   | 'mail.send'
   | 'retention.expire'
   | 'data.export'
-  | 'data.delete';
+  | 'data.delete'
+  | 'evidence.sweep';
 
 export interface JobDefinition {
-  handler: (payload: unknown, ctx: WorkerContainer) => Promise<void>;
+  /** `attempt` is pg-boss's metadata of a queue-driven job; a poller passes none. */
+  handler: (payload: unknown, ctx: WorkerContainer, attempt?: JobAttempt) => Promise<void>;
   opts?: WorkOptions;
   cron?: string;
   /** Set only for a self-polling handler that is not driven through
@@ -40,4 +44,7 @@ export const JOBS: Partial<Record<JobName, JobDefinition>> = {
   'outbox.relay': { handler: outboxRelayHandler, intervalMs: 2000 },
   // Queue-driven: `queueEmail` enqueues it on the command's transaction (T-101 WF12, WF13).
   'mail.send': { handler: mailSendHandler },
+  // U48 WF2: queued by the relay on `evidence.received`; the sweep is a cron safety net (WF2b).
+  'evidence.process': { handler: evidenceProcessHandler },
+  'evidence.sweep': { handler: evidenceSweepHandler, cron: '*/5 * * * *' },
 };

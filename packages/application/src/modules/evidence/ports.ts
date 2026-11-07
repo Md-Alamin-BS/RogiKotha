@@ -4,17 +4,15 @@
 // command come from `CommandPorts` at call time, as in the Review module.
 import type {
   Clock,
-  Crypto,
-  EvidenceFileReader,
   EvidenceFileWriter,
   EvidenceRepository,
   Logger,
-  Outbox,
   RateLimiter,
-  ScannerPort,
   UnitOfWork,
 } from '../../ports';
 import type { ReviewSeams } from '../review';
+
+export type { EvidenceProcessorDeps, EvidenceSweepDeps } from './worker-ports';
 
 /** Seals the cleaned file name before storage and opens it for its author only (BR2.6). */
 export interface FilenameSeal {
@@ -38,20 +36,3 @@ export interface EvidenceModuleDeps {
   logger: Logger;
   review: EvidenceReviewSeams;
 }
-
-// ASSUMPTION(U48): § 2 lists no outbox for the worker objects, but BR4.7 has every state change
-// write its outbox row in the same transaction, and the worker has no `CommandPorts`.
-export interface EvidenceProcessorDeps {
-  unitOfWork: UnitOfWork;
-  evidenceRepository: EvidenceRepository;
-  files: EvidenceFileReader;
-  scanner: ScannerPort;
-  outbox: Outbox;
-  clock: Clock;
-  logger: Logger;
-  // ASSUMPTION(U48): § 2 names no hasher, but BR4.3 re-checks the sha256 and `application` has no
-  // crypto of its own; the worker passes its existing `mailCrypto`, whose `hash` is SHA-256.
-  hasher: Pick<Crypto, 'hash'>;
-}
-
-export type EvidenceSweepDeps = Omit<EvidenceProcessorDeps, 'scanner' | 'hasher'>;

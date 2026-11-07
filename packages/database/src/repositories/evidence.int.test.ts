@@ -408,6 +408,7 @@ describe('PgEvidenceRepository, worker side as rk_worker (Step 25)', () => {
       storageKey: item.storageKey,
       latestCustody: 'scan_unavailable',
     });
+    expect(facts?.createdAt).toBeInstanceOf(Date);
     expect(WORKER_ITEM_COLUMNS).not.toContain('original_filename_enc');
     expect(WORKER_ITEM_COLUMNS).not.toContain('uploaded_by_account_id');
     expect(WORKER_ITEM_SELECT).not.toMatch(/original_filename_enc|uploaded_by_account_id|\*/);

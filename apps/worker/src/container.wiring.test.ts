@@ -115,3 +115,23 @@ describe('buildContainer', () => {
     await second.close();
   });
 });
+
+describe('the evidence processor wiring (U48 BR3.6)', () => {
+  it('holds the file reader and no writer, so the worker cannot put an original into quarantine', async () => {
+    const container = buildContainer(aWorkerEnv());
+    await container.close();
+
+    const files = container.evidenceDeps.files as unknown as Record<string, unknown>;
+    expect(typeof files.readQuarantined).toBe('function');
+    expect('putQuarantined' in files).toBe(false);
+    expect('filenameSeal' in container.evidenceDeps).toBe(false);
+  });
+
+  it('offers the processor and the sweep to the handlers', async () => {
+    const container = buildContainer(aWorkerEnv());
+    await container.close();
+
+    expect(typeof container.processEvidence).toBe('function');
+    expect(typeof container.sweepEvidence).toBe('function');
+  });
+});
