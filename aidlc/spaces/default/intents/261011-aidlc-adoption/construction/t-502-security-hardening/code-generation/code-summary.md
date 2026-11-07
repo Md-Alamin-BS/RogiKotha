@@ -202,7 +202,7 @@ Written and run by an agent that did not write U41's code. Files: `apps/web/src/
 - `apps/web/src/server/actions/review.ts:228` (Step 10): U47 owns that file and is rewriting it now. U41 routes the call after U47 merges and this branch is rebased. Until then, Step 11's `no-console` rule leaves that line alone through a temporary file exception in `eslint.config.mjs`, not an inline disable, because U41 does not edit that file. The exception is removed at the rebase. The demo upload action `actions/evidence.ts:158,225` has the same kind of temporary exception until U48 removes it (Step 28).
   - Closed 2026-11-08 by the merge with `main`: neither file has a `console` call any more, and both exceptions are removed.
 
-## Proposed `ISS-` rows (numbered at Step 38, at merge)
+## Proposed `ISS-` rows (numbered at Step 38; see "Issues found and fixed in U41" below for the final numbers)
 
 - `S1` worker/logging — free-text `message` (`err.message`) in four worker log calls (`main.ts:38`, `health.ts:20`, `pg-boss-queue.ts:139,252`); found in U41, owner T-009; to be fixed in U41 by the BR6.2 value scrub (Step 8).
 - `S3` auth/dependencies — `better-auth` 1.7.14 is four security patches behind 1.7.18 (session revocation through the cookie cache, email links bound to the issuing account, OTP guessing, wildcard `trustedOrigins`); a separate bump task, owner's decision.
@@ -215,3 +215,62 @@ Written and run by an agent that did not write U41's code. Files: `apps/web/src/
 - `S3` api/contract (added as ISS-691 on 2026-11-08, because the route comment names it): C14 says `/api/*` errors use the bare AppError body, but U48's upload route and `EvidenceUploader` use `{error: AppError}`. U41's guard and size refusals are re-wrapped in the route's envelope so the uploader shows the too-large copy (`route.ts` `inRouteEnvelope`). Found in U41 (Step 29). Owner: Contract Design / U50, to align C14 with the route or the route with C14. ASSUMPTION(U41).
 - `S4` evidence/web (added as ISS-692): U41's design replaces U48's 411 for a missing `Content-Length` with the counting stream (BR4.2, BR4.3), and answers 413 rather than 400 to a declared length over the cap; three U48 assertions follow (`route.test.ts` two, `upload.adversarial.int.test.ts` one). Found in U41 (Step 30). Recorded for U48's owner; C14's 413 note is Step 37.
 - `S4` tests/boundaries (added as ISS-693): `log-scrub.int.test.ts` is in `apps/web/src/`, not the design's `server/`, because `web-server` may not import the upload route in `app/`. Found in U41 (Step 32). ASSUMPTION(U41).
+
+## Steps 36–38 (2026-11-08)
+
+- **Step 36 (threat notes):** `docs/security/local-demo-threat-notes.md` was checked against the built code. Every test it names exists on the branch; the "test in Step <n>" markers are gone and the adversarial results are named (A1 break ISS-696, A4 break ISS-697, A2, A3 and A5 no break). The `rk.theme` and `rk.motion` rows now name `server/actions/preferences.test.ts` (the Step 36 note assumed `lib/cookies.test.ts`, which tests only the readers), the `rk.lang` row names `packages/i18n/src/routing.test.ts`, and the `rk.dont_remember` row says it has no test of its own. The residuals gained ISS-698, ISS-699, the shape-based limit of the value check, the TLS-by-configuration limit and the result of Step 27 (b): `APP_ALLOWED_ORIGINS` is read again at `next start`.
+- **Step 37 (records of the decision):** the dated C14 release-1 amendment is appended under C14 in `inception/contract-design/contract-summary.md`. It describes the real answers, including the route's `{error: AppError}` envelope (ISS-691) and the missing-length case counted rather than refused (ISS-692). The `## Amendments — release 1 (FD-105)` section sits above "Goal" in `docs/implementation/tasks/T-502-security-hardening.md`. FD-116 is appended to `docs/status/decision-log.md` and marked "awaiting the owner's confirmation". ASSUMPTION(U41): the number is FD-116 as the task assigned; `main` had no FD-116 at 6842749 (highest FD-115, U50 holds FD-120 to FD-122). If U46 or another Unit lands an FD-116 first, renumber at merge.
+- **Step 38 (records):** `docs/implementation/ISSUES.md` holds ISS-690 to ISS-717 (the table below); `traceability.json` maps steps to rules to criteria (AC3.1.5 stays "Deferred", FD-105); `source-manifest.json` lists the 64 literal paths (no bracketed path was touched; `aidlc/`, `.claude/` and `.agents/` are left out).
+
+## Inventory, coverage and files outside the owned paths
+
+- Inventory: see "Inventory" above (logger calls and console calls with their classification). After the merge, the only direct `console` use is in the two loggers, `packages/database/src/migrate.ts`, `reset.ts` and `packages/test-support/src/seed/seed.ts`, all permanent file exceptions (ISS-705).
+- Coverage: the before figures were not measured (ASSUMPTION(U41) at Step 1), so no before and after delta is claimed. The after figures are in the Step 33 table and in "Sign-off" below; the 80% floor is met in all four packages and never lowered.
+- Files edited outside the owned paths (each is the smallest change that works):
+  - U48's route tests and helpers: `apps/web/src/app/api/evidence/upload/route.test.ts`, `upload.int.test.ts`, `upload.adversarial.int.test.ts`, `evidence-upload.int.smoke.test.ts` (the `origin` and `host` headers; three assertions follow the 413/counting behaviour, ISS-692).
+  - `apps/web/src/app/not-found.tsx` and `root.test.tsx` (BR1.4, `await connection()`), `apps/web/src/instrumentation-client.ts` (new, ISS-708).
+  - `apps/web/src/server/i18n-request.ts` and test (new), `apps/web/src/i18n/request.ts` and test (deleted), `packages/i18n/src/request.ts` and test (the `onIntlError` reporter, ISS-706).
+  - `packages/application/src/index.ts`, `worker.ts`, `ports/logger.ts` (log-policy exports and the U48 id fields), `eslint.config.mjs`, `infra/compose/.env.example`, `apps/web/playwright.config.ts`, `apps/web/e2e/smoke/security-headers.spec.ts` (new; one test id fixed, ISS-694), `docs/status/dependency-check-log.md`.
+  - Tests placed outside the design's folders for boundary reasons: ISS-693 and ISS-716.
+- Open S2 rows `ISS-139` and `ISS-141` name T-502 as a backstop but are outside U41's narrowed scope (FD-105); they stay with T-304 and T-309.
+
+## Issues found and fixed in U41
+
+| ISS | Sev | Status | What |
+|---|---|---|---|
+| ISS-690 | S4 | fixed in U41 (Step 28) | Body limits stay 11 MB while a demo upload action exists; now 1 MB |
+| ISS-691 | S3 | open, U50 | C14 bare AppError body versus the route's `{error: AppError}` envelope |
+| ISS-692 | S4 | recorded for U48's owner | Three U48 assertions changed (413 and counting stream) |
+| ISS-693 | S4 | open | `log-scrub.int.test.ts` placed in `apps/web/src/` |
+| ISS-694 | S3 | fixed in U41 (Step 33) | Security spec followed a renamed test id |
+| ISS-695 | S2 | open, T-101 / U11 | `demo.spec.ts` expects `/sign-in`, T-101 sends `/verify-email` (blocks the phase gate, not U41) |
+| ISS-696 | S2 | fixed in U41 (Step 34) | Server action run on `/_next/*` and `/__nextjs*` with no Origin |
+| ISS-697 | S1 | fixed in U41 (Steps 8 and 34) | Worker `message` field carried error text; now always `[scrubbed]` |
+| ISS-698 | S4 | residual | Next.js bare 500 for a malformed percent-encoded path |
+| ISS-699 | S4 | residual | Next.js prints the first characters of a non-JSON action body |
+| ISS-700 to ISS-703 | S4 | deferred to release 2 (FD-105) | Rate-limit table and network key; `assertAppMode()`; FD-072 adversarial test; PWA `worker-src` / `manifest-src` |
+| ISS-704 | S3 | open, owner | better-auth 1.7.14 behind 1.7.18 security patches |
+| ISS-705 | S4 | open, owner to confirm | Fifth `no-console` exception (`seed.ts`) and the database tools |
+| ISS-706 | S4 | open, owner to confirm | next-intl request config moved to `server/i18n-request.ts` |
+| ISS-707 | S3 | open, owner | Shared development database lacks migration 0011 |
+| ISS-708 | S4 | open, owner to confirm | `instrumentation-client.ts` turns zod's JIT off in the browser |
+| ISS-709 | S3 | open, U47 / U46 | Slugged ids accept any suffix; no canonical redirect |
+| ISS-710 | S4 | open, release 2 | `UPLOAD_OVERHEAD_BYTES` and the cap as module constants (C18) |
+| ISS-711 | S4 | accepted | `style-src 'unsafe-inline'`, no CSP reporting endpoint, static files skip the Host check |
+| ISS-712 | S4 | accepted | TLS-only features tested by configuration; `__Secure-` not `__Host-`; preference cookies not `Secure` |
+| ISS-713 | S4 | open, release 2 | `trustedOrigins` inert while FD-104 closes the library routes |
+| ISS-714 | S4 | accepted | Scrubbed error messages, one line per refusal, `db.reset_required` code |
+| ISS-715 | S4 | fixed in U41 (Step 28) | Temporary `no-console` exceptions for `review.ts` and `evidence.ts` |
+| ISS-716 | S4 | open, owner to confirm | `security-settings.ts` and tests placed by the boundary matrix, not the design's `server/` |
+| ISS-717 | S4 | open, U50 | Only two e2e specs re-run after the Step 34 fixes |
+
+The only `ISS-` numbers used are 690 to 717; ISS-718 and ISS-719 stay free.
+
+## Sign-off
+
+Delegated by the owner on 2026-11-04 (the owner's standing delegation of the sign-off of high-risk Units to the agents). Written 2026-11-08 by the agent that did plan Steps 35 to 38, not by the agent that wrote the adversarial tests (Step 34) or by the one that wrote the Unit's code.
+
+- Adversarial results (A1 to A5, Step 34, separate agent): two breaks, both fixed and kept as tests. ISS-696 (S2): a server action ran on `/_next/*` and `/__nextjs*` with no `Origin`; `proxy.ts` now runs the Host and Origin check first. ISS-697 (S1): the worker's `message` field kept a code-shaped error text; it is now always `[scrubbed]`. A2 (upload size bypass, RSS measured), A3 (CSP and nonce payloads, both locales) and A5 (cookies and cross-site use) found nothing. Two framework residuals are recorded, not passed: ISS-698 and ISS-699 (S4).
+- Gate counts (final run on this branch, 2026-11-08): `pnpm format:check` clean; `pnpm check` exit 0 (358 test files, 4 350 passed, 2 expected fail, 1 skipped; all-package line coverage 96.1%, 9 438 of 9 821; no threshold failed; the 80% floor holds for `apps/web`, `apps/worker`, `packages/application` and `packages/i18n`); `pnpm smoke` 30 files / 59 tests; `pnpm test:int` ran inside `pnpm check` and earlier at Step 33 (63 files / 431 tests); browser: `security-headers.spec.ts` and `motion.spec.ts` 20 of 20 after the Step 34 fixes.
+- Open `ISS-` rows: S2 ISS-695 (`demo.spec.ts` red, owner T-101 / U11; blocks the phase gate, not this Unit's Build and Test). S3 ISS-691, ISS-704, ISS-707, ISS-709. S4 ISS-692, ISS-693, ISS-700 to ISS-703, ISS-705, ISS-706, ISS-708, ISS-710, ISS-713, ISS-716, ISS-717 and the accepted or residual ISS-698, ISS-699, ISS-711, ISS-712, ISS-714. No open S1. Fixed in U41: ISS-690, ISS-694, ISS-696, ISS-697, ISS-715.
+- The owner's own check is still wanted on: FD-116 (awaiting the owner's confirmation), and the ASSUMPTION(U41) choices behind ISS-705, ISS-706, ISS-708 and ISS-716.
