@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComposerDraftVM, ComposerVM, DraftPayload } from '@rogikotha/contracts';
 
@@ -8,6 +8,8 @@ import {
   discardDraftAction,
   duplicateHintAction,
   previewAction,
+  publishDraftAction,
+  publishFacilityVisitAction,
   saveDraftAction,
 } from '@/server/actions/review';
 import { Composer } from './Composer';
@@ -20,15 +22,18 @@ vi.mock('@/server/actions/review', () => ({
   previewAction: vi.fn(),
   duplicateHintAction: vi.fn(),
   discardDraftAction: vi.fn(),
+  publishDraftAction: vi.fn(),
+  publishFacilityVisitAction: vi.fn(),
 }));
 const refresh = vi.fn();
+const push = vi.fn();
 vi.mock('@/i18n/routing', () => ({
   Link: ({ href, children, ...rest }: { href: string; children?: ReactNode }) => (
     <a href={String(href)} {...rest}>
       {children}
     </a>
   ),
-  useRouter: () => ({ refresh }),
+  useRouter: () => ({ refresh, push }),
 }));
 
 const NOW = new Date('2026-11-07T10:00:00Z');
@@ -253,6 +258,148 @@ describe.each(['en', 'bn'] as const)('the composer shell in %s', (locale: TestLo
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe.each(['en', 'bn'] as const)('the composer steps 2 to 4 in %s', (locale: TestLocale) => {
+  const t = translatorFor(locale);
+
+  const ticks = async (user: ReturnType<typeof userEvent.setup>) => {
+    for (const key of ['confirm1', 'confirm2', 'confirm3', 'age']) {
+      await user.click(screen.getByTestId(`compose-attest-${key}`));
+    }
+  };
+
+  it('plugs in the story, how-it-went and check steps through the rail', async () => {
+    const user = userEvent.setup();
+    renderInLocale(<Composer vm={someVm()} initialStep={1} now={NOW} />, locale);
+
+    await user.click(screen.getByTestId('compose-step-2'));
+    expect(screen.getByTestId('compose-step-story')).toBeInTheDocument();
+    await user.click(screen.getByTestId('compose-step-3'));
+    expect(screen.getByTestId('compose-step-how')).toBeInTheDocument();
+    await user.click(screen.getByTestId('compose-step-4'));
+    expect(screen.getByTestId('compose-step-check')).toBeInTheDocument();
+    expect(screen.getByText(t('disclaimer.long'))).toHaveAttribute('data-static', 'disclaimer');
+  });
+
+  it('publishes a doctor draft once the four boxes are ticked, after saving it', async () => {
+    const user = userEvent.setup();
+    vi.mocked(publishDraftAction).mockResolvedValue({
+      formError: 'errors.review.minFields',
+      fieldErrors: { doctor: 'errors.review.missingDoctor' },
+    });
+    renderInLocale(
+      <Composer vm={someVm({ draft: draftOf({ step: 4 }) })} initialStep={4} now={NOW} />,
+      locale,
+    );
+
+    await ticks(user);
+    await user.click(screen.getByTestId('compose-publish'));
+
+    await waitFor(() =>
+      expect(publishDraftAction).toHaveBeenCalledWith({
+        draftId: '11111111-1111-4111-8111-111111111111',
+        identityMode: 'pseudonymous',
+        attestation: true,
+      }),
+    );
+    expect(publishFacilityVisitAction).not.toHaveBeenCalled();
+  });
+
+  it('lists the missing fields with links that open the step they are on', async () => {
+    const user = userEvent.setup();
+    vi.mocked(publishDraftAction).mockResolvedValue({
+      formError: 'errors.review.minFields',
+      fieldErrors: {
+        doctor: 'errors.review.missingDoctor',
+        story: 'errors.review.missingStory',
+      },
+    });
+    renderInLocale(
+      <Composer vm={someVm({ draft: draftOf({ step: 4 }) })} initialStep={4} now={NOW} />,
+      locale,
+    );
+
+    await ticks(user);
+    await user.click(screen.getByTestId('compose-publish'));
+
+    const summary = await screen.findByTestId('compose-error');
+    expect(summary).toHaveTextContent(t('errors.review.minFields'));
+    const links = within(screen.getByTestId('compose-error-fields')).getAllByRole('button');
+    expect(links.map((l) => l.textContent)).toEqual([t('compose.doctor'), t('compose.story')]);
+
+    await user.click(links[1] as HTMLElement);
+    expect(screen.getByTestId('compose-step-story')).toBeInTheDocument();
+    expect(screen.getByTestId('compose-step-2')).toHaveAttribute('aria-current', 'step');
+  });
+
+  it('publishes a facility draft through the facility action', async () => {
+    const user = userEvent.setup();
+    vi.mocked(publishFacilityVisitAction).mockResolvedValue({
+      formError: 'errors.common.validation',
+      fieldErrors: {},
+    });
+    renderInLocale(
+      <Composer
+        vm={someVm({
+          branches: [{ publicId: 'br00000001', label: 'Synthetic Clinic' }],
+          draft: draftOf({ target: 'facility', step: 4 }),
+        })}
+        initialStep={4}
+        now={NOW}
+      />,
+      locale,
+    );
+
+    expect(screen.queryByRole('button', { name: t('compose.identity.anon') })).toBeNull();
+    await ticks(user);
+    await user.click(screen.getByTestId('compose-publish'));
+
+    await waitFor(() => expect(publishFacilityVisitAction).toHaveBeenCalledTimes(1));
+    expect(publishDraftAction).not.toHaveBeenCalled();
+  });
+
+  it('keeps Publish disabled for an anonymous review that adds a doctor', async () => {
+    const user = userEvent.setup();
+    renderInLocale(
+      <Composer
+        vm={someVm({
+          draft: draftOf({
+            step: 4,
+            identityMode: 'anonymous',
+            newDoctor: { name: 'Dr. Synthetic New' },
+          }),
+        })}
+        initialStep={4}
+        now={NOW}
+      />,
+      locale,
+    );
+
+    await ticks(user);
+    expect(screen.getByTestId('compose-publish')).toBeDisabled();
+    expect(screen.getByTestId('compose-anon-blocked')).toHaveTextContent(
+      t('compose.anonNewDoctor'),
+    );
+    await user.click(
+      within(screen.getByTestId('compose-anon-blocked')).getByRole('button', {
+        name: t('compose.stepName.care'),
+      }),
+    );
+    expect(screen.getByTestId('compose-step-care')).toBeInTheDocument();
+  });
+
+  it('saves and goes back to the write page on Save and finish later', async () => {
+    const user = userEvent.setup();
+    renderInLocale(
+      <Composer vm={someVm({ draft: draftOf({ step: 4 }) })} initialStep={4} now={NOW} />,
+      locale,
+    );
+
+    await user.click(screen.getByTestId('compose-save-exit'));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/write'));
   });
 });
 

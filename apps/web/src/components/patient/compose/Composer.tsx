@@ -4,12 +4,22 @@ import { useCallback, useEffect, useMemo, useReducer, useState, type ReactNode }
 import { useLocale, useTranslations } from 'next-intl';
 import type { ComposerVM, FacilityPreviewVM, Locale, PreviewVM } from '@rogikotha/contracts';
 
-import { duplicateHintAction, previewAction, saveDraftAction } from '@/server/actions/review';
+import { useRouter } from '@/i18n/routing';
+import {
+  duplicateHintAction,
+  previewAction,
+  publishDraftAction,
+  publishFacilityVisitAction,
+  saveDraftAction,
+} from '@/server/actions/review';
 import { composerReducer, initComposerState, type ComposerStep } from './composer-reducer';
 import { FormErrorSummary } from './FormErrorSummary';
 import { periodOptions } from './period';
 import { PreviewAside } from './PreviewAside';
 import { StepCare } from './StepCare';
+import { StepCheck } from './StepCheck';
+import { StepHowItWent } from './StepHowItWent';
+import { StepStory } from './StepStory';
 import { STEP_HEADING_ID, StepRail } from './StepRail';
 import { useAutosave, type AutosaveAnswer } from './use-autosave';
 
@@ -23,6 +33,26 @@ const FIELD_LABELS: Record<string, string> = {
   tags: 'compose.tags',
   identity: 'compose.identity.label',
   attestation: 'compose.confirmTitle',
+  newDoctorName: 'compose.addName',
+  newDoctorSpecialtyId: 'compose.addSpecialty',
+  newDoctorChamber: 'compose.addChamber',
+  newDoctorBmdc: 'compose.addBmdc',
+};
+
+/** The step each refusable field is on, so the summary can take the author to it. */
+const FIELD_STEP: Record<string, ComposerStep> = {
+  doctor: 1,
+  branch: 1,
+  relationship: 1,
+  period: 1,
+  newDoctorName: 1,
+  newDoctorSpecialtyId: 1,
+  newDoctorChamber: 1,
+  newDoctorBmdc: 1,
+  story: 2,
+  tags: 2,
+  identity: 4,
+  attestation: 4,
 };
 
 const STEP_NAME_KEY: Record<ComposerStep, string> = {
@@ -80,7 +110,7 @@ export function Composer({ vm, initialStep, doctorPublicId, renderPreview, now }
     });
   }, []);
 
-  useAutosave({
+  const { flush } = useAutosave({
     payload: state.payload,
     draftId: state.draftId,
     dispatch,
@@ -88,6 +118,36 @@ export function Composer({ vm, initialStep, doctorPublicId, renderPreview, now }
     enabled: !state.publishing,
     onSaved,
   });
+
+  const router = useRouter();
+
+  // Publish saves the last change first, then hands the draft to the publish action, which
+  // redirects on success. A refusal comes back as message keys for the summary (WF4, WF5).
+  const publish = useCallback(async () => {
+    const draftId = await flush();
+    if (draftId === undefined) {
+      dispatch({
+        type: 'publishRefused',
+        errors: { fieldErrors: {}, formError: 'compose.draftNotSaved' },
+      });
+      return;
+    }
+    dispatch({ type: 'publishStarted' });
+    const input = { draftId, identityMode: state.payload.identityMode, attestation: true };
+    const answer =
+      state.payload.target === 'facility'
+        ? await publishFacilityVisitAction(input)
+        : await publishDraftAction(input);
+    dispatch({
+      type: 'publishRefused',
+      errors: { fieldErrors: answer.fieldErrors, formError: answer.formError },
+    });
+  }, [flush, state.payload.identityMode, state.payload.target]);
+
+  const saveExit = useCallback(async () => {
+    await flush();
+    router.push('/write');
+  }, [flush, router]);
 
   const periods = useMemo(() => periodOptions(clock, locale), [clock, locale]);
   const today = clock.toISOString().slice(0, 10);
@@ -112,9 +172,15 @@ export function Composer({ vm, initialStep, doctorPublicId, renderPreview, now }
         ? 'compose.draftSaved'
         : null;
 
-  const refusedLabels = Object.keys(state.errors.fieldErrors)
-    .map((field) => FIELD_LABELS[field])
-    .filter((label): label is string => label !== undefined);
+  const refusedFields = Object.keys(state.errors.fieldErrors).filter(
+    (field) => FIELD_LABELS[field] !== undefined,
+  );
+  const refusedLabels = refusedFields.map((field) => FIELD_LABELS[field] as string);
+  const goToField = (label: string) => {
+    const field = refusedFields.find((f) => FIELD_LABELS[f] === label);
+    const step = field ? FIELD_STEP[field] : undefined;
+    if (step) dispatch({ type: 'step', step });
+  };
 
   return (
     <div className="c-grid" data-testid="composer">
@@ -127,6 +193,7 @@ export function Composer({ vm, initialStep, doctorPublicId, renderPreview, now }
           attempt={attempt}
           error={state.errors.formError ?? null}
           fields={refusedLabels}
+          onField={goToField}
         />
         <section className="panel c-step-body" data-testid={`compose-step-body-${state.step}`}>
           <h2 id={STEP_HEADING_ID} tabIndex={-1}>
@@ -142,7 +209,28 @@ export function Composer({ vm, initialStep, doctorPublicId, renderPreview, now }
               errors={state.errors.fieldErrors}
             />
           ) : null}
-          {/* TODO(U47): StepStory, StepHowItWent and StepCheck land with plan Steps 44 and 45. */}
+          {state.step === 2 ? (
+            <StepStory
+              payload={state.payload}
+              vm={vm}
+              duplicate={state.duplicate}
+              dispatch={dispatch}
+              errors={state.errors.fieldErrors}
+            />
+          ) : null}
+          {state.step === 3 ? <StepHowItWent payload={state.payload} dispatch={dispatch} /> : null}
+          {state.step === 4 ? (
+            <StepCheck
+              payload={state.payload}
+              vm={vm}
+              duplicate={state.duplicate}
+              dispatch={dispatch}
+              onPublish={() => void publish()}
+              onSaveExit={() => void saveExit()}
+              publishing={state.publishing}
+              errors={state.errors.fieldErrors}
+            />
+          ) : null}
         </section>
         <div className="callout warn" data-static="disclaimer">
           {t('disclaimer.long')}
