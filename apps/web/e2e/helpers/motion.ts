@@ -105,7 +105,13 @@ export async function expectReducedMotionOnly(page: Page): Promise<void> {
  */
 export async function expectNeverAnimated(element: Locator, label: string): Promise<void> {
   await expect(element, `${label} visible at once`).toBeVisible({ timeout: 1_000 });
-  const state = await element.evaluate((node) => {
+  const state = await element.evaluate(async (node) => {
+    // While a route's view transition runs, hit tests land on the root under its snapshot, so
+    // the cover check waits for it to finish (ISS-764).
+    const running = (
+      document as Document & { activeViewTransition?: { finished: Promise<unknown> } | null }
+    ).activeViewTransition;
+    if (running) await running.finished.catch(() => undefined);
     const durations = getComputedStyle(node)
       .transitionDuration.split(',')
       .map((value) => value.trim());

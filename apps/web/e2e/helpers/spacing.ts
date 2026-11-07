@@ -35,6 +35,9 @@ export async function clippedElements(page: Page): Promise<string[]> {
       if (!hides) continue;
       // A one-pixel visually-hidden box (screen-reader text) clips by design.
       if (element.clientWidth <= 1) continue;
+      // ASSUMPTION(U50): a text field scrolls its own value under the caret, which is the
+      // browser's native behaviour, not clipped content (ISS-775).
+      if (element.matches('input, textarea, select')) continue;
       if (element.scrollWidth > element.clientWidth + 1) {
         const id = element.id ? `#${element.id}` : '';
         const classes = [...element.classList].map((name) => `.${name}`).join('');

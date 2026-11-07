@@ -18,18 +18,20 @@ export function DeleteCommentButton({
 }) {
   const t = useTranslations();
   const announce = useAnnounce();
-  const [state, formAction, pending] = useActionState(deleteComment, IDLE);
+  // fix: U50 (ISS-772): spoken as the action returns, because a deleted comment's control
+  // unmounts with the refreshed thread before an effect could run.
+  const [state, formAction, pending] = useActionState(
+    async (previous: CommentActionState, form: FormData): Promise<CommentActionState> => {
+      const next = await deleteComment(previous, form);
+      if (next.status === 'done') announce(t(next.messageKey));
+      return next;
+    },
+    IDLE,
+  );
   const [confirming, setConfirming] = useState(false);
-  const handledAt = useRef(0);
   const openRef = useRef<HTMLButtonElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const confirmId = useId();
-
-  useEffect(() => {
-    if (state.status !== 'done' || state.at === handledAt.current) return;
-    handledAt.current = state.at;
-    announce(t(state.messageKey));
-  });
 
   // The safe choice takes focus when the question appears, and the control gets it back on cancel.
   const returnFocus = useRef(false);

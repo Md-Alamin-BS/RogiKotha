@@ -19,13 +19,48 @@ const COMMENT_MAX = 2_000;
 const comment = (page: Page, body: string): Locator =>
   page.locator('article.comment').filter({ hasText: body }).first();
 
+/**
+ * Keeps every text `#sr-live` speaks, in order. The region clears after a second and a late
+ * arrival note ("Page: ...") may replace a message at once, so the log is read, not the region.
+ */
+async function recordAnnouncements(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const log: string[] = [];
+    (window as Window & { __announced?: string[] }).__announced = log;
+    new MutationObserver((records) => {
+      const region = document.getElementById('sr-live');
+      // Each write replaces the region's text node: one record per announcement.
+      for (const record of records) {
+        if (region && record.target === region && record.addedNodes.length > 0) {
+          const text = region.textContent ?? '';
+          if (text !== '') log.push(text);
+        }
+      }
+    }).observe(document, { subtree: true, childList: true });
+  });
+}
+
+/** Waits until `#sr-live` has spoken `message` once more than before `act` ran. */
+async function expectAnnounced(page: Page, message: string, act: () => Promise<void>) {
+  const count = () =>
+    page.evaluate(
+      (text) =>
+        ((window as Window & { __announced?: string[] }).__announced ?? []).filter(
+          (said) => said === text,
+        ).length,
+      message,
+    );
+  const before = await count();
+  await act();
+  await expect.poll(count, { message: `announced "${message}"` }).toBe(before + 1);
+}
+
 async function post(page: Page, locale: Locale, body: string): Promise<void> {
   const box = page.locator('.composer-box:not(.reply-box)');
   await box.getByRole('textbox').fill(body);
-  await box
-    .getByRole('button', { name: msg(locale, 'experience.commentPost'), exact: true })
-    .click();
-  await expect(page.locator('#sr-live')).toHaveText(msg(locale, 'experience.commentPosted'));
+  await expectAnnounced(page, msg(locale, 'experience.commentPosted'), () =>
+    box.getByRole('button', { name: msg(locale, 'experience.commentPost'), exact: true }).click(),
+  );
   await expect(comment(page, body)).toBeVisible();
 }
 
@@ -33,8 +68,9 @@ async function remove(page: Page, locale: Locale, body: string): Promise<void> {
   const label = msg(locale, 'experience.deleteComment');
   const item = comment(page, body);
   await item.getByRole('button', { name: label, exact: true }).first().click();
-  await item.getByRole('group').getByRole('button', { name: label, exact: true }).first().click();
-  await expect(page.locator('#sr-live')).toHaveText(msg(locale, 'experience.commentDeleted'));
+  await expectAnnounced(page, msg(locale, 'experience.commentDeleted'), () =>
+    item.getByRole('group').getByRole('button', { name: label, exact: true }).first().click(),
+  );
 }
 
 forEachLocale('P4.15', 'comment, reply, delete', async ({ page, browser, locale }) => {
@@ -45,15 +81,21 @@ forEachLocale('P4.15', 'comment, reply, delete', async ({ page, browser, locale 
   try {
     await registerConfirmed(member.page, locale, 1);
     const b = member.page;
+    await recordAnnouncements(b);
     await b.goto(review.path);
     const thread = b.getByTestId('comment-thread');
     await expect(thread).toBeVisible();
     await expect(thread.getByTestId('contribution-gate')).toHaveCount(0);
 
-    // 2001 characters are refused, and the text stays in the field.
+    // 2001 characters are refused, and the text stays in the field. The field itself stops at
+    // 2000 (`maxlength`); the limit is lifted in the page so the server's own refusal is what
+    // answers (ISS-767).
     const tooLong = 'x'.repeat(COMMENT_MAX + 1);
     const box = b.locator('.composer-box:not(.reply-box)');
-    await box.getByRole('textbox').fill(tooLong);
+    const field = box.getByRole('textbox');
+    await expect(field).toHaveAttribute('maxlength', String(COMMENT_MAX));
+    await field.evaluate((element) => element.removeAttribute('maxlength'));
+    await field.fill(tooLong);
     await box
       .getByRole('button', { name: msg(locale, 'experience.commentPost'), exact: true })
       .click();
@@ -73,10 +115,11 @@ forEachLocale('P4.15', 'comment, reply, delete', async ({ page, browser, locale 
     await comment(b, first).getByRole('button', { name: replyLabel, exact: true }).click();
     const replyBox = b.locator('.reply-box');
     await replyBox.getByRole('textbox').fill(reply);
-    await replyBox
-      .getByRole('button', { name: msg(locale, 'experience.replyPost'), exact: true })
-      .click();
-    await expect(b.locator('#sr-live')).toHaveText(msg(locale, 'experience.commentPosted'));
+    await expectAnnounced(b, msg(locale, 'experience.commentPosted'), () =>
+      replyBox
+        .getByRole('button', { name: msg(locale, 'experience.replyPost'), exact: true })
+        .click(),
+    );
     const replied = b.locator('.comment-replies article.comment').filter({ hasText: reply });
     await expect(replied).toBeVisible();
     await expect(

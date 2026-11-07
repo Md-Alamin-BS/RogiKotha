@@ -18,6 +18,8 @@ const STATIC_SELECTORS = [
   'p.demo[role="note"]',
   '[data-static="disclaimer"]',
   '[data-static="emergency"]',
+  // The /emergency page is itself the guidance; motion.css holds it static (ISS-763).
+  '#view-emergency',
 ];
 const SETTLE_AFTER_MS = 6_000;
 
@@ -114,7 +116,7 @@ forEachLocale(
 
     await page.goto(`/${locale}/emergency`);
     await hydrated(page);
-    await expect(page.locator('[data-static="emergency"]').first()).toBeVisible();
+    await expect(page.locator('#view-emergency')).toBeVisible();
     await expectStaticStill(page);
   },
 );

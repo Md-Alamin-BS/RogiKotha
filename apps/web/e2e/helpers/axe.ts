@@ -57,6 +57,40 @@ export function blockingViolations(
     .filter((violation) => violation.nodes.length > 0);
 }
 
+/** BR4.6: nothing plays past 5 s, so a page settles within that. */
+const SETTLE_TIMEOUT_MS = 5_000;
+
+/**
+ * Waits until no finite animation or transition is running. axe measures colour as painted, so a
+ * list row still fading in (`[data-reveal-list]`) reads as low contrast (ISS-768).
+ */
+export async function settleMotion(page: Page): Promise<void> {
+  const running = () =>
+    page.evaluate(() =>
+      document
+        .getAnimations()
+        .filter(
+          (animation) =>
+            animation.playState === 'running' &&
+            animation.effect?.getTiming().iterations !== Number.POSITIVE_INFINITY &&
+            // A scroll-driven animation (the reading-progress bar) runs for as long as the page.
+            animation.timeline === document.timeline,
+        )
+        .map((animation) => {
+          const effect = animation.effect as KeyframeEffect | null;
+          const target = effect?.target;
+          const name =
+            animation instanceof CSSTransition
+              ? `transition ${animation.transitionProperty}`
+              : animation instanceof CSSAnimation
+                ? `animation ${animation.animationName}`
+                : 'script animation';
+          return `${name} on ${target?.tagName.toLowerCase() ?? '?'}.${target?.className ?? ''}${effect?.pseudoElement ?? ''}`;
+        }),
+    );
+  await expect.poll(running, { timeout: SETTLE_TIMEOUT_MS, message: 'motion settled' }).toEqual([]);
+}
+
 const describe = (violation: AxeViolation): string =>
   `${violation.id} (${violation.impact ?? 'unknown'}): ${violation.help} at ${violation.nodes
     .map((node) => JSON.stringify(node.target))
@@ -71,6 +105,7 @@ export async function expectNoSeriousViolations(
   label = new URL(page.url()).pathname,
   testInfo: TestInfo = test.info(),
 ): Promise<void> {
+  await settleMotion(page);
   const results = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
   await testInfo.attach(`axe ${label}`, {
     body: JSON.stringify(results, null, 2),

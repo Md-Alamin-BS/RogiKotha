@@ -28,6 +28,7 @@ import {
   refuseProduction,
   RELEASE1_ACCOUNTS,
   seedIfEmpty,
+  SERVE_COMMANDS,
   stopPlan,
   stopTree,
 } from '../demo.mjs';
@@ -251,6 +252,20 @@ describe('run and banner', () => {
       shell: false,
     });
     expect(commandFor('docker', ['info'], 'win32')).toMatchObject({ shell: false });
+  });
+
+  it('serves the web build and runs the worker from its source under tsx, never dist/main.js', () => {
+    const commands = Object.fromEntries(SERVE_COMMANDS);
+    expect(Object.keys(commands)).toEqual(['web', 'worker']);
+    expect(commands.web).toEqual(['--filter', '@rogikotha/web', 'start']);
+    expect(commands.worker).toEqual([
+      '--filter',
+      '@rogikotha/worker',
+      'exec',
+      'tsx',
+      'src/main.ts',
+    ]);
+    expect(existsSync(path.join(repoRoot, 'apps', 'worker', 'src', 'main.ts'))).toBe(true);
   });
 
   it('lists only the release-1 accounts, with the shared password and the stop and reset commands', () => {

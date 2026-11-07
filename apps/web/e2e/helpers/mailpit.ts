@@ -57,7 +57,8 @@ export function appLinks(message: Pick<MailpitMessage, 'Text' | 'HTML'>, prefix:
   const found = new Set<string>();
   for (const body of [message.Text, decodeEntities(message.HTML)]) {
     for (const match of body.matchAll(/https?:\/\/[^\s"'<>)]+/g)) {
-      const link = match[0].replace(/[.,;]+$/, '');
+      // Sentence punctuation after a link is not part of it, the Bengali danda included (ISS-771).
+      const link = match[0].replace(/[.,;:!?।]+$/u, '');
       if (link.startsWith(prefix)) found.add(link);
     }
   }

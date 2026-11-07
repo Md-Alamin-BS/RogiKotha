@@ -8,12 +8,18 @@ export interface FocusStop {
   focusVisible: boolean;
   outlineStyle: string;
   boxShadow: string;
+  /**
+   * Focus sits on a date field's own calendar button inside the browser's shadow tree: the host
+   * then matches no `:focus`, and the browser draws that button's ring itself (ISS-776).
+   */
+  nativePicker?: boolean;
 }
 
 export const MAX_TAB_STOPS = 200;
 
 /** What a stop looks like when the focus ring cannot be seen; null when it can. */
 export function focusProblem(stop: FocusStop): string | null {
+  if (stop.nativePicker === true) return null;
   if (!stop.focusVisible) return `${stop.target} is focused without :focus-visible`;
   if (stop.outlineStyle === 'none' && stop.boxShadow === 'none') {
     return `${stop.target} has no outline and no box-shadow`;
@@ -33,6 +39,9 @@ export async function readFocus(page: Page): Promise<FocusStop | null> {
       focusVisible: element.matches(':focus-visible'),
       outlineStyle: style.outlineStyle,
       boxShadow: style.boxShadow,
+      nativePicker:
+        element.matches('input:is([type="date"], [type="month"], [type="time"], [type="week"])') &&
+        !element.matches(':focus'),
     };
   });
 }

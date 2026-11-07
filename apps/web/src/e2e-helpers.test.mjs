@@ -230,4 +230,13 @@ describe('the Mailpit link pick (BR6.1)', () => {
     );
     expect(links).toEqual([link]);
   });
+
+  it('leaves the Bengali danda after a link out of the link', () => {
+    const link = 'http://127.0.0.1:3107/bn/reset-password?token=q69R';
+    const links = mailpit.appLinks(
+      { Text: `লিংকটি খুলুন: ${link}।`, HTML: '' },
+      'http://127.0.0.1:3107/bn/reset-password',
+    );
+    expect(links).toEqual([link]);
+  });
 });

@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+
 import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test';
 
 import { displayName, RUN_PASSWORD, runEmail, runUsername } from '../fixtures/synthetic';
@@ -29,9 +31,22 @@ export function newRunAccount(locale: Locale, index = 0): RunAccount {
   };
 }
 
+/**
+ * Gives the page's context its own client address, so the per-network register and mail limits
+ * (5 and 10 an hour) count this test alone, never the whole run from 127.0.0.1 (ISS-761). The app
+ * reads the first `x-forwarded-for` value outside production; the limits themselves never change.
+ */
+export async function freshNetwork(page: Page): Promise<void> {
+  const group = (): string => randomBytes(2).toString('hex');
+  // IPv6 documentation prefix (RFC 3849): never a real network.
+  const address = `2001:db8:${group()}:${group()}:${group()}::1`;
+  await page.context().setExtraHTTPHeaders({ 'x-forwarded-for': address });
+}
+
 /** Fills and submits the register form that is already open; lands on the pending screen. */
 export async function fillRegistration(page: Page, account: RunAccount): Promise<void> {
   const { locale } = account;
+  await freshNetwork(page);
   await page.locator('#f-register-email').fill(account.email);
   await page.locator('#f-register-password').fill(account.password);
   await page.locator('#f-register-username').fill(account.username);
@@ -97,16 +112,22 @@ export async function registerConfirmed(
   return account;
 }
 
+/**
+ * Signs in from the `locale` page. Without `next` the app lands on `/me` in the account's own
+ * language (BR4.4), which is `accountLocale`: a run account's is the locale it registered in, a
+ * seeded account's is the seed's.
+ */
 export async function signIn(
   page: Page,
   locale: Locale,
   credentials: { email: string; password: string },
   next?: string,
+  accountLocale: Locale = locale,
 ): Promise<void> {
   await page.goto(`/${locale}/sign-in${next ? `?next=${encodeURIComponent(next)}` : ''}`);
   await page.locator('#f-signin-email').fill(credentials.email);
   await page.locator('#f-signin-password').fill(credentials.password);
   await page.getByTestId('signin-form-submit-button').click();
-  await expect(page).toHaveURL(next ? new RegExp(`${next}$`) : new RegExp(`/${locale}/me$`));
+  await expect(page).toHaveURL(next ? new RegExp(`${next}$`) : new RegExp(`/${accountLocale}/me$`));
   await expect(page.getByTestId('masthead-account-menu-button')).toBeVisible();
 }

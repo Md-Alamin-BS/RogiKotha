@@ -4,6 +4,7 @@ import { R1_TITLE } from '../fixtures/seed-facts';
 import { CHANGED_PASSWORD, RUN_PASSWORD, runEmail } from '../fixtures/synthetic';
 import {
   fillRegistration,
+  freshNetwork,
   newRunAccount,
   registerConfirmed,
   secondDevice,
@@ -109,6 +110,7 @@ describeEachLocale('P2.8', 'register, confirm, sign in, reset', (locale, title) 
 
     // The unknown address goes first: when the known address's mail has arrived, any mail for the
     // unknown one would have arrived before it.
+    await freshNetwork(page);
     const after = since();
     for (const email of [unknown, account.email]) {
       await page.goto(`/${locale}/reset-password`);
@@ -155,6 +157,7 @@ describeEachLocale('P2.8', 'register, confirm, sign in, reset', (locale, title) 
 
 forEachLocale('P2.8c', 'invalid form', async ({ page, locale, open }) => {
   const refused = newRunAccount(locale, 1);
+  await freshNetwork(page);
   await open('/register');
   await page.locator('#f-register-email').fill(refused.email);
   await page.locator('#f-register-password').fill(refused.password);

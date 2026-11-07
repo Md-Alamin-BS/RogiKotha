@@ -3,10 +3,10 @@ import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
 
 import {
+  CLAIM_REVIEW_TITLE,
   LIMITED_DATA_THRESHOLD,
   PROFILE_DOCTOR,
   R1_TITLE,
-  R4_TITLE,
   SEEDED_TOPICS,
   SEEDED_USERNAMES,
   SPARSE_DOCTOR,
@@ -17,6 +17,7 @@ import { msg } from '../helpers/messages';
 import { checkPage } from '../helpers/page-check';
 import {
   capsuleCounts,
+  emergencyNumber,
   expectEmergencyNumbers,
   expectNoAsciiDigitInCapsules,
   expectOfTotal,
@@ -315,9 +316,16 @@ forEachLocale('P1.5b', 'topics', async ({ page, locale, open }) => {
     .click();
   await expect(page).toHaveURL(new RegExp(`/${locale}/topics/[^/?]+$`));
   await expect(page.locator('h1')).toHaveText(SEEDED_TOPICS[locale][0] ?? '');
+  // A topic page carries the compact panel: the ambulance and health-line numbers from the
+  // configuration in one line, in the locale's digits; the full list is on /emergency (ISS-763).
   const emergency = page.getByTestId('emergency-panel');
   await expect(emergency, 'emergency guidance on a topic page').toBeVisible();
-  await expectEmergencyNumbers(emergency, locale, emergency.locator('p.note'));
+  await expect(emergency.locator('p.note')).toHaveText(
+    msg(locale, 'emergency.compactLine', {
+      ambulance: emergencyNumber('ambulance', locale),
+      healthLine: emergencyNumber('healthLine', locale),
+    }),
+  );
   await checkPage(page, locale, { emergency: true, rules: ['emergency guidance'] });
 });
 
@@ -334,9 +342,11 @@ forEachLocale('P1.6', 'experience', async ({ page, request, locale }) => {
   const order = ['compose.symptoms', 'compose.diagnosis', 'compose.treatment', 'compose.after'].map(
     (key) => msg(locale, key),
   );
-  const headings = (
-    await page.getByTestId('experience-sections').locator('h2').allInnerTexts()
-  ).map((heading) => heading.trim());
+  const headings =
+    // Text content, not inner text: English section heads are set in capitals by CSS.
+    (await page.getByTestId('experience-sections').locator('h2').allTextContents()).map((heading) =>
+      heading.trim(),
+    );
   expect(headings.length, 'detailed sections').toBeGreaterThan(0);
   expect(headings).toEqual(order.filter((heading) => headings.includes(heading)));
 
@@ -366,8 +376,8 @@ forEachLocale('P1.6', 'experience', async ({ page, request, locale }) => {
   expect(probe.ok(), 'an original is never served to a signed-out reader').toBe(false);
   expect(probe.headers()['content-type'] ?? '').not.toMatch(/^image\//);
 
-  // ASSUMPTION(U50): r1 stores no claim, so the Reviewer's label is read on r4 (ISS-753).
-  await openExperienceByTitle(page, locale, R4_TITLE[locale]);
+  // ASSUMPTION(U50): r1 stores no claim, so the Reviewer's label is read on r6 (ISS-753).
+  await openExperienceByTitle(page, locale, CLAIM_REVIEW_TITLE[locale]);
   const labels = page.getByTestId('reviewer-labels');
   await expect(labels.locator('.reviewer-label').first()).toContainText(
     msg(locale, 'label.reviewerLabel'),

@@ -134,8 +134,9 @@ forEachLocale('P3.11', 'compose and publish', async ({ page, locale }) => {
 
   await stepTo(page, locale, 4, 'compose.stepName.check');
   await chooseIdentityAndAttest(page, locale, 'anonymous');
+  // Where the layout stacks, the preview sits in a `details` that opens by itself on step 4.
   const details = page.getByTestId('compose-preview-details');
-  if (await details.isVisible()) await details.locator('summary').click();
+  if ((await details.count()) > 0) await expect(details).toHaveAttribute('open', '');
   const preview = page.getByTestId('compose-preview');
   await expect(preview).toContainText(title);
   await expect(preview).toContainText(msg(locale, 'label.reviewerLabel'));
@@ -151,8 +152,12 @@ forEachLocale('P3.11', 'compose and publish', async ({ page, locale }) => {
   await expect
     .poll(
       () =>
+        // The scroll-driven reading-progress bar runs for as long as the page; it is not motion.
         page.evaluate(
-          () => document.getAnimations().filter((a) => a.playState === 'running').length,
+          () =>
+            document
+              .getAnimations()
+              .filter((a) => a.playState === 'running' && a.timeline === document.timeline).length,
         ),
       { message: 'animations still running after the tick ended', timeout: 5_000 },
     )
@@ -289,14 +294,14 @@ forEachLocale('P3.12', 'attach and scan', async ({ page, browser, request, local
       ],
     },
   ];
+  // The uploader speaks a refusal through its polite status line, never an alert (ISS-766).
+  const status = uploader.getByTestId('evidence-upload-message');
+  await expect(status).toHaveAttribute('role', 'status');
   for (const { name, file, messages } of refusals) {
     await attach(page, name, file);
-    await expect(
-      uploader
-        .getByRole('alert')
-        .filter({ hasText: new RegExp(messages.map(escapeRegExp).join('|')) }),
-      `${name} is refused`,
-    ).toBeVisible();
+    await expect(status, `${name} is refused`).toHaveText(
+      new RegExp(messages.map(escapeRegExp).join('|')),
+    );
     await expect(rowOf(page, name)).toHaveCount(0);
   }
 

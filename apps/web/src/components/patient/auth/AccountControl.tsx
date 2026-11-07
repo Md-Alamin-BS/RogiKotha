@@ -42,6 +42,10 @@ export function AccountControl({ account }: { account: MastheadAccount | null })
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
 
+  // fix: U50 (ISS-774): signing out from the sheet keeps this control mounted, so the sheet is
+  // closed here; otherwise it reopens by itself, holding focus, at the next sign-in.
+  if (!account && open) setOpen(false);
+
   if (!account) {
     return (
       <Link
@@ -73,7 +77,13 @@ export function AccountControl({ account }: { account: MastheadAccount | null })
         data-testid="masthead-account-menu-button"
         onClick={() => setOpen(true)}
       >
-        <span aria-hidden="true">{accountInitials(account.displayName)}</span>
+        {/* fix: U50 (ISS-769): CSS draws the initials, so the button's only text is its label
+            naming the reader (WCAG 2.5.3, axe label-content-name-mismatch). */}
+        <span
+          aria-hidden="true"
+          className="account-initials"
+          data-initials={accountInitials(account.displayName)}
+        />
       </button>
       <Sheet open={open} title={account.displayName} onClose={close}>
         <p className="sub">

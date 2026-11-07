@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 
-import { SEEDED_USERNAMES, SHARED_PASSWORD } from '../fixtures/seed-facts';
+import { SEEDED_ACCOUNT_LOCALE, SEEDED_USERNAMES, SHARED_PASSWORD } from '../fixtures/seed-facts';
 import { commentSentinel, RUN_EMAIL_DOMAIN } from '../fixtures/synthetic';
 import { registerConfirmed, secondDevice, signIn } from '../helpers/accounts';
 import { publishQuickReview } from '../helpers/content';
@@ -20,10 +20,13 @@ forEachLocale('SMOKE home', 'renders with the demo marker', async ({ page, open,
 
 forEachLocale('SMOKE sign-in', 'a seeded account signs in', async ({ page, locale }) => {
   // Seeded accounts are only signed in to, never changed (BR1.5).
-  await signIn(page, locale, {
-    email: `${SEEDED_USERNAMES.shirin}@${RUN_EMAIL_DOMAIN}`,
-    password: SHARED_PASSWORD,
-  });
+  await signIn(
+    page,
+    locale,
+    { email: `${SEEDED_USERNAMES.shirin}@${RUN_EMAIL_DOMAIN}`, password: SHARED_PASSWORD },
+    undefined,
+    SEEDED_ACCOUNT_LOCALE,
+  );
 });
 
 forEachLocale(

@@ -230,6 +230,16 @@ export function childEnv(root, fileEnv, processEnv = process.env) {
 }
 
 /**
+ * The two children `serve` runs. ASSUMPTION(U50): the worker runs its TS source under its own
+ * tsx, because `node dist/main.js` cannot load the workspace packages' TS source (ISS-193,
+ * ISS-759); the build step still builds it.
+ */
+export const SERVE_COMMANDS = [
+  ['web', ['--filter', '@rogikotha/web', 'start']],
+  ['worker', ['--filter', '@rogikotha/worker', 'exec', 'tsx', 'src/main.ts']],
+];
+
+/**
  * How to spawn a command. On Windows `pnpm` is a `.cmd` shim, which Node only runs through a
  * shell; the command is passed as one string so no argument array goes to the shell (DEP0190).
  */
@@ -499,11 +509,8 @@ function serve(root, env) {
   mkdirSync(path.join(root, '.data'), { recursive: true });
 
   const children = {};
-  for (const [name, filter] of [
-    ['web', '@rogikotha/web'],
-    ['worker', '@rogikotha/worker'],
-  ]) {
-    const spec = commandFor('pnpm', ['--filter', filter, 'start']);
+  for (const [name, args] of SERVE_COMMANDS) {
+    const spec = commandFor('pnpm', args);
     const child = spawn(spec.file, spec.args, {
       cwd: root,
       env: environment,

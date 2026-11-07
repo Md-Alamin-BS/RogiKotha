@@ -15,6 +15,9 @@ export const SEEDED_USERNAMES = {
   namedTanvir: 'named_tanvir-ahmed',
 } as const;
 
+/** The language the seed stores on every seeded account; sign-in lands in it (BR4.4). */
+export const SEEDED_ACCOUNT_LOCALE: Locale = 'en';
+
 type Named = Readonly<Record<Locale, string>>;
 
 /** d1, the read-only profile doctor of P1.4 and r1's doctor. */
@@ -32,11 +35,17 @@ export const SPARSE_DOCTOR: Named = { en: 'Dr. Lutfun Nahar', bn: 'ডা. ল�
  */
 export const WRITE_TARGET_DOCTOR: Named = { en: 'Dr. Rezaul Karim', bn: 'ডা. রেজাউল করিম' };
 
+/**
+ * The seed stores every review in Bengali only (`seed-content.ts`, `language: 'bn'`), and a
+ * review is shown in the language it was written in, so both locales show the Bengali title
+ * (ISS-762).
+ */
+const writtenInBengali = (bn: string): Named => ({ en: bn, bn });
+
 /** r1's seeded title, used to open it; its public id comes from the URL. */
-export const R1_TITLE: Named = {
-  en: 'She actually explained why my sugar was swinging',
-  bn: 'কেন আমার সুগার ওঠানামা করছিল, উনি আসলেই বুঝিয়ে বললেন',
-};
+export const R1_TITLE: Named = writtenInBengali(
+  'কেন আমার সুগার ওঠানামা করছিল, উনি আসলেই বুঝিয়ে বললেন',
+);
 
 /** BR7.3: read by path, never imported from packages/test-support (BR7.4). */
 export const EVIDENCE_FIXTURES = [
@@ -95,12 +104,12 @@ export const SEEDED_TOPICS: Readonly<Record<Locale, readonly string[]>> = {
 
 /**
  * ASSUMPTION(U50): r1 carries no stored claim (corpus `claims: []`), so P1.6 reads the
- * Reviewer's label on r4 (claim `secondOpinion`, doctor d1) instead (ISS-753).
+ * Reviewer's label on r6 (claim `wrongDiagnosis`, doctor d2). r4 has a claim too but is seeded
+ * hidden pending review, so it is never listed (ISS-753, ISS-762).
  */
-export const R4_TITLE: Named = {
-  en: 'Felt dismissed when I raised the side effects',
-  bn: 'পার্শ্বপ্রতিক্রিয়ার কথা বলায় গুরুত্ব পাইনি',
-};
+export const CLAIM_REVIEW_TITLE: Named = writtenInBengali(
+  'প্রেসারের চিকিৎসা হলো, পরে দেখা গেল আরও কিছু আছে',
+);
 
 /** A username no account holds, for the author page's unknown-name case. */
 export const UNKNOWN_USERNAME = 'no_such_author_e2e';

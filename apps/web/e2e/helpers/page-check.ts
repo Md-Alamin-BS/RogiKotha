@@ -197,7 +197,8 @@ export async function overflowFindings(page: Page): Promise<string[]> {
       const box = element.getBoundingClientRect();
       if (box.width === 0 || box.height === 0) continue;
       if (getComputedStyle(element).visibility === 'hidden') continue;
-      if (box.right > window.innerWidth + 1 && !scrollsByDesign(element)) {
+      // A mobile layout viewport widens to the content, so the edge is the root's client width.
+      if (box.right > root.clientWidth + 1 && !scrollsByDesign(element)) {
         const id = element.id ? `#${element.id}` : '';
         found.push(`${element.tagName.toLowerCase()}${id} right ${Math.round(box.right)}`);
       }
@@ -253,7 +254,8 @@ export async function checkPage(
   for (const disclaimer of await disclaimers.all()) {
     if (await disclaimer.isVisible()) await expectNeverAnimated(disclaimer, 'disclaimer');
   }
-  const emergency = page.locator('[data-static="emergency"]');
+  // The /emergency page is itself the guidance: motion.css holds `#view-emergency` static (ISS-763).
+  const emergency = page.locator('[data-static="emergency"], #view-emergency');
   if (options.emergency) await expect(emergency.first(), 'emergency guidance').toBeVisible();
   for (const panel of await emergency.all()) {
     if (await panel.isVisible()) await expectNeverAnimated(panel, 'emergency guidance');

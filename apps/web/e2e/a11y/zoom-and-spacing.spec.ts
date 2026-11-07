@@ -46,8 +46,9 @@ async function composeToPreview(page: Page, locale: Locale): Promise<void> {
 
   await page.getByTestId('compose-step-4').click();
   await chooseIdentityAndAttest(page, locale, 'pseudonymous');
+  // At 200 % the layout stacks: the preview's `details` opens by itself on step 4.
   const details = page.getByTestId('compose-preview-details');
-  if (await details.isVisible()) await details.locator('summary').click();
+  if ((await details.count()) > 0) await expect(details).toHaveAttribute('open', '');
   await expect(page.getByTestId('compose-preview'), 'the preview step is reached').toBeVisible();
   await expect(page.getByTestId('compose-publish'), 'Publish stays reachable').toBeVisible();
   await expectReflow(page, 'composer step 4 (preview)');

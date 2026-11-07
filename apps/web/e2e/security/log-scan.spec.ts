@@ -24,7 +24,15 @@ const FRAMEWORK_BANNER = [
   /^\s*▲ Next\.js \d+\.\d+\.\d+/,
   /^\s*- (Local|Network|Environments|Experiments):/,
   /^\s*✓ (Starting\.\.\.|Ready in \d+(\.\d+)?m?s)$/,
+  /^\s*✓ Running next\.config\.ts took \d+(\.\d+)?m?s$/,
 ];
+
+// The banner is coloured: its ANSI colour codes are dropped before it is matched (ISS-777).
+const ANSI_COLOUR = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
+const isBanner = (text: string): boolean => {
+  const plain = text.replace(ANSI_COLOUR, '');
+  return FRAMEWORK_BANNER.some((rule) => rule.test(plain));
+};
 
 const readLines = (file: string): string[] =>
   readFileSync(path.join(logsDir(), file), 'utf8').split(/\r?\n/);
@@ -62,7 +70,7 @@ for (const file of LOG_FILES) {
     expect(lines.length, `${file} has log lines`).toBeGreaterThan(0);
     const plain = lines
       .map((line, index) => ({ line: index + 1, text: line }))
-      .filter(({ text }) => !isJson(text) && !FRAMEWORK_BANNER.some((rule) => rule.test(text)))
+      .filter(({ text }) => !isJson(text) && !isBanner(text))
       .map(({ line, text }) => `line ${line} (${text.length} characters)`);
     expect(plain, `${file} lines that are not JSON`).toEqual([]);
   });

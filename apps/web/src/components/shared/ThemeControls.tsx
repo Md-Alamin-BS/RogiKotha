@@ -132,7 +132,7 @@ export function ThemeControls({
         transitionTypes={[LANGUAGE_SWITCH_TRANSITION]}
         className="ctl"
         title={t('a11y.lang')}
-        aria-pressed={locale === 'bn'}
+        // fix: U50 (ISS-760): a link cannot carry aria-pressed (axe aria-allowed-attr); the glyph names the target.
         onClick={() => {
           writeNote(otherLocale, pathname);
           startTransition(() => {
