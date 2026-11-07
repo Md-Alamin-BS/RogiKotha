@@ -546,6 +546,7 @@ export type MessageKey =
   | 'ev.state.ready'
   | 'ev.state.redact'
   | 'ev.state.scanning'
+  | 'ev.status.failed'
   | 'ev.status.pending'
   | 'ev.status.ready'
   | 'ev.status.rejected'
@@ -1504,6 +1505,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'ev.state.ready',
   'ev.state.redact',
   'ev.state.scanning',
+  'ev.status.failed',
   'ev.status.pending',
   'ev.status.ready',
   'ev.status.rejected',

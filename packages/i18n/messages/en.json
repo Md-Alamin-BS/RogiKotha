@@ -716,7 +716,8 @@
     "status": {
       "ready": "Ready",
       "pending": "Scan pending",
-      "rejected": "Not accepted"
+      "rejected": "Not accepted",
+      "failed": "Could not be checked — try again later"
     },
     "note": {
       "count": "Files attached: {count}"

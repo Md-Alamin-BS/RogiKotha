@@ -19,15 +19,19 @@ import {
   type ReviewModule,
   type ReviewReadModule,
   type TaxonomyModule,
+  createEvidenceModule,
+  type EvidenceFileWriter,
+  type EvidenceModule,
+  type FilenameSeal,
 } from '@rogikotha/application';
 import { DEFAULT_CONFIG_VALUES, newId, newPublicId } from '@rogikotha/contracts';
 import {
   createArgon2PasswordHasher,
   createCrypto,
   createMemoryRateLimiter,
+  createFsEvidenceWriter,
 } from '@rogikotha/adapters';
 import {
-  createInterimPublicEvidenceCount,
   PgAccountRepository,
   PgAuditWriter,
   PgBossQueue,
@@ -41,6 +45,7 @@ import {
   PgReviewModuleRepository,
   PgReviewReadRepository,
   PgTaxonomyModuleRepository,
+  PgEvidenceRepository,
 } from '@rogikotha/database';
 
 import { createAfterResponse } from './after-response';
@@ -76,8 +81,23 @@ export interface WebContainer {
   identity: WebIdentity;
   /** U47: the review commands and queries, and the four seams other modules call (C9). */
   review: ReviewModule;
-  /** U47 (C17): the count the experience page's evidence slot shows; U48 binds Evidence here. */
+  /** U47 (C17): the count the experience page's evidence slot shows; Evidence's own since U48. */
   publicEvidence: PublicEvidenceCount;
+  /** U48: the evidence commands and the quarantine writer the upload route uses; never a reader (BR3.6). */
+  evidence: WebEvidence;
+}
+
+export type WebEvidence = EvidenceModule & { files: EvidenceFileWriter };
+
+/** BR2.6: the cleaned file name is sealed with the field cipher; an unopenable name reads null. */
+function filenameSealOf(crypto: Crypto): FilenameSeal {
+  return {
+    seal: (name) => crypto.encrypt(name),
+    open: (sealed) => {
+      const opened = crypto.decryptText(sealed);
+      return opened.ok ? opened.data || null : null;
+    },
+  };
 }
 
 /** BR7.4: defaults only until T-105 gives the runtime settings. */
@@ -148,11 +168,15 @@ function buildContainer(): WebContainer {
     app: { appUrl: env.appUrl, termsVersion: env.termsVersion },
   };
 
-  // U46 (functional-spec § 6): the interim PublicEvidenceCount keeps today's public meaning until
-  // U48 binds Evidence's implementation here.
+  // U48 (C17): the review reads count through Evidence's module, which is built after the review
+  // module it needs, so the binding forwards at call time.
   const reviewReads = createReviewReadModule({
     reviews: new PgReviewReadRepository(),
-    evidence: createInterimPublicEvidenceCount(db),
+    evidence: {
+      countPublicEvidence: (reviewId) => evidence.publicEvidenceCount.countPublicEvidence(reviewId),
+      countPublicEvidenceByReview: (reviewIds) =>
+        evidence.publicEvidenceCount.countPublicEvidenceByReview(reviewIds),
+    },
     config: ports.config,
   });
   const directory = createDirectoryModule({
@@ -194,8 +218,25 @@ function buildContainer(): WebContainer {
     taxonomy: { ensureProvisionalTerm: taxonomy.ensureProvisionalTerm },
     cards: reviewReads.listExperienceCards,
   });
-  // The same interim binding the review reads use above; U48 replaces both with Evidence's.
-  const publicEvidence = createInterimPublicEvidenceCount(db);
+  const evidenceFiles = createFsEvidenceWriter(env.storageRoot);
+  const evidence: WebEvidence = {
+    ...createEvidenceModule({
+      unitOfWork,
+      evidenceRepository: new PgEvidenceRepository(),
+      files: evidenceFiles,
+      filenameSeal: filenameSealOf(ports.crypto),
+      rateLimiter: ports.rateLimiter,
+      clock,
+      logger,
+      review: {
+        reviewIdForPublicId: (tx, input) => review.reviewIdForPublicId(tx, input),
+        isReviewAuthor: (tx, input) => review.isReviewAuthor(tx, input),
+        isReviewPublished: (tx, input) => review.isReviewPublished(tx, input),
+      },
+    }),
+    files: evidenceFiles,
+  };
+  const publicEvidence = evidence.publicEvidenceCount;
 
   // Built member by member, so the closed members are not on the object at run time either.
   const webIdentity: WebIdentity = {
@@ -215,6 +256,7 @@ function buildContainer(): WebContainer {
     identity: webIdentity,
     review,
     publicEvidence,
+    evidence,
   };
 }
 

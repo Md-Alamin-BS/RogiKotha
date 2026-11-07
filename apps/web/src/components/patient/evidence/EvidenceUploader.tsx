@@ -21,6 +21,7 @@ const FILE_CLASS: Record<OwnEvidenceFile['status'], string> = {
   ready: 'ev-file done',
   pending: 'ev-file',
   rejected: 'ev-file bad',
+  failed: 'ev-file bad',
 };
 
 function FileRow({ file }: { file: OwnEvidenceFile }) {
@@ -46,7 +47,10 @@ export function EvidenceUploader({ reviewPublicId, files, maxFiles, maxBytes }: 
     maxMb: formatNumber(Math.round(maxBytes / BYTES_PER_MB), locale),
     maxFiles: formatNumber(maxFiles, locale),
   };
-  const counted = files.filter((file) => file.status !== 'rejected').length;
+  // A `failed` file stops counting, as a rejected one does (BR6.1).
+  const counted = files.filter(
+    (file) => file.status === 'pending' || file.status === 'ready',
+  ).length;
   const canUpload = counted < maxFiles;
   const hasError = state.status === 'error';
 

@@ -7,8 +7,10 @@
 // so an action that trusted a forged id would change the victim's rows and fail these tests.
 import { defineCommand } from '@rogikotha/application';
 import {
+  GetForAuthorInput,
   PublishReviewInput,
   ok,
+  type OwnEvidenceList,
   type DemoCurrentAccount,
   type DemoReviewEditRow,
 } from '@rogikotha/contracts';
@@ -215,6 +217,21 @@ const modulePublish = defineCommand<PublishReviewInput, { publicId: string }>({
   },
 });
 
+// U48: the list goes through `evidence.getForAuthor`; this stand-in answers the world's author
+// only, so the test still proves the action passes the session's actor and nothing from the form.
+const moduleGetForAuthor = defineCommand<GetForAuthorInput, OwnEvidenceList | null>({
+  name: 'evidence.getForAuthor',
+  input: GetForAuthorInput,
+  requires: { authenticated: true, verifiedEmail: true },
+  handle: ({ input, actor }) => {
+    const review = world.reviews.get(input.reviewPublicId);
+    if (review?.ownerAccountId !== actor.accountId) return Promise.resolve(ok(null));
+    return Promise.resolve(
+      ok({ reviewPublicId: input.reviewPublicId, files: [], maxFiles: 10, maxBytes: 15_728_640 }),
+    );
+  },
+});
+
 /** The container `getActor()` reads: the stubbed session and the world's profiles. */
 function installContainer(): void {
   const findProfileByAuthUserId = (_tx: unknown, authUserId: string) => {
@@ -245,6 +262,7 @@ function installContainer(): void {
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
     },
     review: { publish: modulePublish },
+    evidence: { getForAuthor: moduleGetForAuthor },
   } as unknown as ReturnType<typeof getContainer>);
 }
 

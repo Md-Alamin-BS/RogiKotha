@@ -26,3 +26,13 @@ export {
 } from './module';
 export { EvidenceAttemptAborted, ScannerUnavailable } from './jobs/process-evidence';
 export { EVIDENCE_SWEEP_BATCH } from './jobs/sweep-evidence';
+export {
+  detectImageType,
+  EVIDENCE_HEAD_BYTES,
+  EVIDENCE_MAX_FILE_BYTES,
+  EVIDENCE_UPLOAD_CONTENT_LENGTH_CAP,
+  screenUploadFile,
+  type EvidenceImageMime,
+  type UploadFileFacts,
+  type UploadScreen,
+} from './upload-screen';

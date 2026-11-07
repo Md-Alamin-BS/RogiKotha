@@ -19,13 +19,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getCurrentAccount } from '@/server/auth/session';
 import { encrypt } from '@/server/crypto';
+import { runCommand } from '@/server/command-call';
+import type * as Container from '@/server/container';
 import { evidence, reviews } from '@/server/data';
 import { listOwnEvidenceFiles, uploadEvidence, type EvidenceUploadState } from './evidence';
 
+const evidenceModule = vi.hoisted(() => ({ getForAuthor: { name: 'evidence.getForAuthor' } }));
+
+vi.mock('@/server/command-call', () => ({ runCommand: vi.fn() }));
+// `server/crypto.ts` still builds its column cipher through the real container module.
+vi.mock('@/server/container', async (importOriginal) => ({
+  ...(await importOriginal<typeof Container>()),
+  getContainer: () => ({ evidence: evidenceModule }),
+}));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('@/server/auth/session', () => ({ getCurrentAccount: vi.fn() }));
 vi.mock('@/server/data', () => ({
-  DEMO_READY_EVIDENCE_STATES: ['preview_ready', 'published'],
   reviews: { getOwnReviewForEdit: vi.fn() },
   evidence: {
     addEvidenceItem: vi.fn(),
@@ -342,11 +351,21 @@ describe("someone else's experience", () => {
     expect(clamd!.connections()).toBe(0);
   });
 
+  // U48: the list goes through `evidence.getForAuthor`, whose authorship check is tested in the
+  // module (evidence-author.test.ts); here the action may hand it nothing but the review id.
   it("a signed-in stranger cannot list the author's files", async () => {
     vi.mocked(getCurrentAccount).mockResolvedValue(buildAccount(STRANGER_ID, 'stranger_tuli'));
     vi.mocked(evidence.listOwnEvidence).mockResolvedValue([buildOwnRow('preview_ready')]);
+    vi.mocked(runCommand).mockResolvedValue({
+      ok: false,
+      error: { code: 'not_found', messageKey: 'errors.common.notFound', correlationId: 'c' },
+    } as never);
 
     await expect(listOwnEvidenceFiles(VICTIM_REVIEW_PUBLIC_ID)).resolves.toBeNull();
+    expect(vi.mocked(runCommand).mock.calls).toEqual([
+      [evidenceModule.getForAuthor, { reviewPublicId: VICTIM_REVIEW_PUBLIC_ID }],
+    ]);
+    expect(evidence.listOwnEvidence).not.toHaveBeenCalled();
   });
 
   it('the owner cannot record the upload under another account by forging form fields', async () => {

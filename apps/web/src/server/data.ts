@@ -32,5 +32,3 @@ export const doctors = bindDb(demo.doctors);
 export const evidence = bindDb(demo.evidence);
 export const reviews = bindDb(demo.reviews);
 export const session = bindDb(demo.session);
-
-export const DEMO_READY_EVIDENCE_STATES = demo.evidence.DEMO_READY_EVIDENCE_STATES;

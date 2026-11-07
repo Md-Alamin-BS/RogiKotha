@@ -5,14 +5,17 @@ import {
   type DemoEvidenceMime,
   type DemoOwnEvidenceRow,
   type DemoScanResult,
+  type OwnEvidenceList,
 } from '@rogikotha/contracts';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { getCurrentAccount } from '@/server/auth/session';
 import { scanBytes } from '@/server/clamav';
-import { decryptToString, encrypt } from '@/server/crypto';
-import { DEMO_READY_EVIDENCE_STATES, evidence, reviews } from '@/server/data';
+import { runCommand } from '@/server/command-call';
+import { getContainer } from '@/server/container';
+import { encrypt } from '@/server/crypto';
+import { evidence, reviews } from '@/server/data';
 import {
   MAX_EVIDENCE_BYTES,
   MAX_EVIDENCE_PER_REVIEW,
@@ -21,26 +24,50 @@ import {
   storeOriginal,
 } from '@/server/storage';
 
-// Attachments on an experience (FR5). Only the experience's author uploads and sees the files;
-// the public sees the ready count alone (FR5.3). Originals never leave the server.
+// Attachments on an experience (FR5, U48). Only the experience's author lists and removes the
+// files; the public sees the count alone (FR5.3). Uploads go to `POST /api/evidence/upload`.
+// Originals never leave the server.
 
-export type OwnEvidenceStatus = 'ready' | 'pending' | 'rejected';
+export type { OwnEvidenceFile, OwnEvidenceList, OwnEvidenceStatus } from '@rogikotha/contracts';
 
-/** One of the author's files, as the uploader shows it. No storage key, hash or id. */
-export interface OwnEvidenceFile {
-  publicId: string;
-  /** The decrypted original file name; null when it is empty or cannot be decrypted. */
-  name: string | null;
-  status: OwnEvidenceStatus;
-  size: number;
+/**
+ * The signed-in author's files on their experience, or null for anyone else (signed out, not the
+ * author, unknown or malformed id). Pages render the uploader only when this is not null.
+ */
+export async function listOwnEvidenceFiles(
+  reviewPublicId: string,
+): Promise<OwnEvidenceList | null> {
+  const result = await runCommand(getContainer().evidence.getForAuthor, { reviewPublicId });
+  return result.ok ? result.data : null;
 }
 
-export interface OwnEvidenceList {
-  reviewPublicId: string;
-  files: OwnEvidenceFile[];
-  maxFiles: number;
-  maxBytes: number;
+export type RemoveEvidenceState =
+  | { status: 'removed' }
+  | {
+      status: 'error';
+      messageKey:
+        'ev.upload.errors.signedOut' | 'ev.upload.errors.notFound' | 'ev.upload.errors.failed';
+    };
+
+/** Removes one of the actor's own files (WF4, BR6.3); anyone else's reads as not found. */
+export async function removeEvidence(itemPublicId: string): Promise<RemoveEvidenceState> {
+  const result = await runCommand(getContainer().evidence.remove, { itemPublicId });
+  if (!result.ok) {
+    const code = result.error.code;
+    if (code === 'forbidden') return { status: 'error', messageKey: 'ev.upload.errors.signedOut' };
+    if (code === 'not_found' || code === 'validation') {
+      return { status: 'error', messageKey: 'ev.upload.errors.notFound' };
+    }
+    return { status: 'error', messageKey: 'ev.upload.errors.failed' };
+  }
+  revalidatePath('/[locale]/experiences/[id]', 'page');
+  revalidatePath('/[locale]/experiences/[id]/edit', 'page');
+  return { status: 'removed' };
 }
+
+// ASSUMPTION(U48): the demo-slice upload action below stays until Step 42 moves
+// `EvidenceUploader` to the route; Step 42 deletes it with `EvidenceUploadState`, and Step 45
+// deletes `server/{clamav,storage}.ts` and the `evidence` re-export in `server/data.ts`.
 
 export type EvidenceMessageKey =
   | 'ev.upload.errors.signedOut'
@@ -69,21 +96,6 @@ const DONE_MESSAGE: Record<DemoScanResult, EvidenceMessageKey> = {
   infected: 'ev.upload.done.rejected',
 };
 
-function statusOf(row: DemoOwnEvidenceRow): OwnEvidenceStatus {
-  if ((DEMO_READY_EVIDENCE_STATES as readonly string[]).includes(row.state)) return 'ready';
-  if (row.state === 'rejected') return 'rejected';
-  return 'pending';
-}
-
-function decryptedName(sealed: Uint8Array): string | null {
-  try {
-    return decryptToString(sealed) || null;
-  } catch {
-    // A rotated or wrong key must not break the author's page; the name then reads "Not provided".
-    return null;
-  }
-}
-
 /** Only the last path segment of the browser-sent name, trimmed and bounded. */
 function cleanFilename(name: string): string {
   return (name.split(/[\\/]/).pop() ?? '').trim().slice(0, MAX_FILENAME_LENGTH);
@@ -96,34 +108,6 @@ function countsTowardsLimit(row: DemoOwnEvidenceRow): boolean {
 
 async function findOwnReview(reviewPublicId: string, accountId: string) {
   return reviews.getOwnReviewForEdit(reviewPublicId, accountId);
-}
-
-/**
- * The signed-in author's files on their experience, or null for anyone else (signed out, not the
- * author, unknown or malformed id). Pages render the uploader only when this is not null.
- */
-export async function listOwnEvidenceFiles(
-  reviewPublicId: string,
-): Promise<OwnEvidenceList | null> {
-  const parsedId = reviewPublicIdSchema.safeParse(reviewPublicId);
-  if (!parsedId.success) return null;
-  const account = await getCurrentAccount();
-  if (!account) return null;
-  const review = await findOwnReview(parsedId.data, account.accountId);
-  if (!review) return null;
-
-  const rows = await evidence.listOwnEvidence(review.id, account.accountId);
-  return {
-    reviewPublicId: parsedId.data,
-    files: rows.map((row) => ({
-      publicId: row.publicId,
-      name: decryptedName(row.originalFilenameEnc),
-      status: statusOf(row),
-      size: row.size,
-    })),
-    maxFiles: MAX_EVIDENCE_PER_REVIEW,
-    maxBytes: MAX_EVIDENCE_BYTES,
-  };
 }
 
 async function storeScanAndRecord(
