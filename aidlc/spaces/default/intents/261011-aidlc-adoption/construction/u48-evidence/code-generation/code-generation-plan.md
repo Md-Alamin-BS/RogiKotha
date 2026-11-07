@@ -1,0 +1,277 @@
+# Code Generation plan — U48 `u48-evidence` (T-303 + T-304, FD-105)
+
+## Summary
+
+- Builds: the Evidence module for release 1: the domain rules (`packages/domain/src/evidence/`: limits, public and processing states, magic bytes, the full PNG and JPEG structure check, the transition table, `cleanFilename`), the upload route `POST /api/evidence/upload` into private quarantine with the C18 limits (15 MB per file, 10 files and 100 MB per review), the rate limit and the read-only pre-check, the worker's `evidence.process` job (validate, then scan, fail closed) and the `evidence.sweep` job, the author's own list and removal, `countPublicEvidence` (C17), and new internals for `EvidenceSection`, `AuthorEvidence` and `EvidenceUploader` with their C16 props kept
+- Touches: U48's owned paths (domain, application module and ports, `storage-fs` and `scanner-clamd` adapters, the evidence repository, the evidence contracts, the evidence fakes, the worker's two evidence handlers, `app/api/evidence/`, `server/actions/evidence.ts`, `components/patient/evidence/`), the deletion of `server/{clamav,storage}.ts` and `demo/evidence.ts`, plus the append-only or one-line shared edits listed below (`container.ts` in web and worker, `data.ts`, `registry.ts`, `main.ts`, `outbox-relay.ts`, `pg-boss-queue.ts`, `queue-declaration.ts`, the comment in `schema/evidence.ts`, `en.json`, `bn.json`, the regenerated `keys.ts`, `ISSUES.md`, `dependency-check-log.md`) and the records
+- Tests: domain tests for every § 4 transition and every structure case, application tests with `test-support` fakes for each command, the processor and the sweep, adapter tests on a temp dir and a fake clamd socket, queue and repository integration tests on the assigned test database, worker registry and relay tests, route and component tests in `en` and `bn`, two smoke files (module and route), and 3–5 adversarial tests (A1–A5) by a separate agent (high-risk Unit: evidence)
+
+## Inputs
+
+- Functional Design: `construction/u48-evidence/functional-design/`: `functional-spec.md` (WF1–WF5, § 4 transitions, § 5 ports, § 7 shared edits, § 8 tests, § 9 issue rows, § 10 risks), `rules.md` (BR1.1–BR8.3), `entities.md` (ENT-001–ENT-011), `frontend-components.md` (components, copy, upload errors, tests), `functional-design-questions.md` (Q1–Q7, adversarial angles, the Review 01 decisions), `traceability.json`, and `reviews/review-01.md` (R-01–R-13).
+- Unit entry U48 in `inception/units-generation/unit-of-work.md` (owned paths, depends on U47, FD-035, FD-036, FD-070, FD-105).
+- Task files `docs/implementation/tasks/T-303-evidence-intake.md` and `T-304-worker-evidence-pipeline.md`, read together.
+- `main` as merged with U47 (reviews module, `ReviewSeams`, the `EvidenceSection` slot) and U46 (`PublicEvidenceCount` port and its interim binding). Both must be on the Bolt's base before Step 4 (Step 1 checks it).
+
+## Review points already settled in the design
+
+Review 01 R-01 to R-13 and the limits (Q1 answer B) were decided under the owner's delegation of 2026-11-04 and are written into the design (`functional-design-questions.md` § "Review 01 findings"). This plan builds them as written:
+
+1. **Limits (Q1 B):** 15 MB, 10 files, 100 MB (C18); `total_too_large` kept (Step 4, Step 27).
+2. **R-01:** the attempt comes from pg-boss metadata (`includeMetadata: true`, `JobAttempt`), last attempt `retryCount >= retryLimit`; singleton key `evidence.process:<eventId>`; expiry stays 300 s, the handler budget is 120 s (Step 20, Step 30).
+3. **R-02:** resume from `validating` or `scanning`; `failed`/`unknown` for a missing original; `failed`/`processing_timeout` on the last attempt and past the 3600 s deadline; the `evidence.sweep` job (Steps 8, 30, 31).
+4. **R-03:** `EvidenceSection({reviewPublicId})` renders only the note; `AuthorEvidence({reviewPublicId})` loads its own list; `OwnEvidenceFile.status` only widens (Step 41, Step 42).
+5. **R-04:** the full PNG and JPEG structure check (Steps 6, 7, 10).
+6. **R-05:** idempotency right after authorization, before count and total (Steps 26, 27).
+7. **R-06:** no migration; the schema comment is corrected; BR4.8 held by the worker column list (Step 23, Step 25).
+8. **R-07:** `RELAY['evidence.stateChanged'] = []` (Step 34).
+9. **R-08:** existing keys reused; old scan-during-request copy changed or deleted in one commit (Step 40).
+10. **R-09:** split `EvidenceFileWriter` and `EvidenceFileReader` with a web container test (Steps 14, 16, 38).
+11. **R-10:** exact custody values per transition (Step 8, Step 11).
+12. **R-11:** read-only pre-check before the write, 30 uploads per account per hour (Steps 26, 36).
+13. **R-12:** the merge-time grep of `demo/reviews.ts` (Step 53).
+14. **R-13:** list and removal check authorship and uploader, not publication (Step 28, Step 29).
+
+## Where it runs
+
+- The Unit runs in its own git worktree on its own Bolt branch `bolt/u48-evidence`, cut from `main`, under the swarm (FD-094). `DATABASE_URL_TEST` in the worktree points at the one test database the orchestrator assigned to this worktree (U9's note: the reset guard accepts names ending in `_test`, so use `rogikotha_wN_test`), never at another worktree's database.
+- Run only one database-touching command at a time in the worktree (`pnpm check`, `pnpm test`, `pnpm test:coverage`, `pnpm test:int`, `pnpm smoke`).
+- The quarantine root in the worktree is the worktree's own `STORAGE_ROOT` (default `./.data/storage` under the worktree), never a shared directory. clamd is the compose ClamAV, read-only use; the integration and smoke tests use the fake scanner unless a step says otherwise.
+- There is no GitHub Actions workflow and no CI (FD-102). The gate is local only: `pnpm check` and `pnpm smoke` on the Bolt branch, then `pnpm check` again on `main` after the squash merge.
+- Commits carry only the human's own git identity. Never run `git reset --hard`, `git checkout --` or `git clean`. Commit only owned paths and the listed shared files, after reading `git diff --cached`.
+
+## Steps (test-after, per the Testing Contract)
+
+**Phase A — baseline and runner**
+
+- [ ] **Step 1** — Baseline in the worktree on `bolt/u48-evidence`. Confirm U47 and U46 are merged on the base (`packages/application/src/modules/review/` exists with `reviewIdForPublicId`, `isReviewAuthor`, `isReviewPublished`; `PublicEvidenceCount` and its interim binding are in `apps/web/src/server/container.ts`; `EvidenceSection` exists under `components/patient/evidence/`). If not, stop and report. Confirm `DATABASE_URL_TEST` names the assigned database. Run `pnpm infra:up`, `pnpm build` once (typed routes), then `timeout 1200 pnpm check` and `timeout 600 pnpm smoke`, both green. Record file and test counts and the line coverage of `domain`, `application`, `adapters`, `database`, `contracts`, `apps/web`, `apps/worker`. Read the open `ISSUES.md` rows with Area `evidence` (and the worker, queue and outbox rows). An open `S1` there stops the Unit.
+- [ ] **Step 2** — Dependency check (functional-spec § 10 R3, R5): the log entry for `pg-boss` (12.31, `includeMetadata`, `JobWithMetadata.retryCount`/`retryLimit`, `signal`), `next` (route handler `request.formData()` with a 15 MB body) and the clamd `INSTREAM` protocol. Reuse an entry under 3 days old, otherwise re-check the pinned versions as current stable and append a dated entry to `docs/status/dependency-check-log.md`. No new dependency. Confirm no new FD entry is needed (FD-035, FD-036, FD-070, FD-105 and C8, C14–C19 cover U48; no migration, no data-boundary change).
+- [ ] **Step 3** — Verify the test runner (Vitest 4 through `vitest.workspace.ts`; projects `domain`, `contracts`, `application`, `adapters`, `test-support`, `database`, `worker`, `worker-int`, `web`, `web-int`) and confirm the exact unit-scoped commands in `unit-test-instructions.md`. Run the existing evidence tests with them (`apps/web/src/server/{clamav,storage,storage.adversarial}.test.ts`, `server/actions/evidence{,.adversarial}.test.ts`, `components/patient/evidence/`, `packages/database/src/demo/evidence*.test.ts`) and record the count before any change; correct a command in `unit-test-instructions.md` if it does not run.
+
+**Phase B — domain (business logic, `packages/domain/src/evidence/`)**
+
+- [ ] **Step 4** — Create `limits.ts` (the seven ENT-006 constants with C18's values: `EVIDENCE_MAX_FILE_BYTES = 15_728_640`, `EVIDENCE_MAX_PER_REVIEW = 10`, `EVIDENCE_MAX_TOTAL_BYTES = 104_857_600`, `EVIDENCE_UPLOAD_LIMIT = 30`, `EVIDENCE_UPLOAD_WINDOW_SEC = 3600`, `EVIDENCE_ATTEMPT_BUDGET_MS = 120_000`, `EVIDENCE_PROCESSING_DEADLINE_SEC = 3600`, plus `EVIDENCE_UPLOAD_CONTENT_LENGTH_CAP = EVIDENCE_MAX_FILE_BYTES + 65_536`) and `states.ts` (`PUBLIC_EVIDENCE_STATES = ['preview_ready', 'published'] as const`, `COUNTING_STATES`, `PROCESSING_STATES`, `authorStatusOf(state)` → `pending | ready | rejected | failed | null`, BR5.1, BR6.1). Add `index.ts` in the folder and append `export * from './evidence/index.js'` to `packages/domain/src/index.ts`. The state names come from `packages/contracts`' enums only if `domain` may import them; otherwise repeat the literal union with a type test (domain imports nothing).
+- [ ] **Step 5** — Create `file-type.ts` with `detectImageType(head: Uint8Array)` (JPEG `FF D8 FF`, PNG 8-byte signature; else `null`) and `extensionMatches(name, mime)` (`.jpg`/`.jpeg` ↔ `image/jpeg`, `.png` ↔ `image/png`, case-insensitive, BR2.1); and `filename.ts` with `cleanFilename(raw)` (last path segment on `/` and `\`, control characters removed, trimmed, at most 200 characters, empty → `null`, BR2.6).
+- [ ] **Step 6** — In `file-type.ts`, add `imageStructureValid(bytes)` for PNG (BR4.3): signature, first chunk `IHDR` of length 13, width and height in 1–20000, every chunk length within the buffer, every chunk CRC-32 correct (a local table-based CRC-32, no dependency), last chunk `IEND`, no byte after `IEND`. Returns `ok` or `{reason: 'malformed' | 'type_mismatch'}`.
+- [ ] **Step 7** — In `file-type.ts`, extend `imageStructureValid` for JPEG (BR4.3): `SOI`, a marker walk with segment lengths inside the buffer, an `SOF0`–`SOF15` (not `DHT`/`JPG`/`DAC`) before the first `SOS`, height and width in 1–20000, entropy-coded data scanned to `EOI` (skipping `FF 00` and `RSTn`), no byte after the final `EOI`; an EXIF thumbnail's inner `SOI`/`EOI` inside `APP1` is skipped as segment data.
+- [ ] **Step 8** — Create `transitions.ts`: the § 4 table as data (`from`, `event`, `to`, `failReason?`, `custody: readonly CustodyEvent[]`, `outbox: boolean`), `nextOnScan(result, {lastAttempt})` and `sweepReason(latestCustody)` (`scan_unavailable` → `scanner_unavailable`, else `processing_timeout`), and `canTransition(from, to)`. Append to the folder's `index.ts`.
+- [ ] **Step 9** — Write and run `limits.test.ts`, `states.test.ts` (`authorStatusOf` for every `EVIDENCE_STATES` value; `PUBLIC_EVIDENCE_STATES` exactly two), `filename.test.ts` (`../../a.png`, `C:\Users\x\scan.PNG`, control characters, 300 characters, empty) and the detection half of `file-type.test.ts` (JPEG, PNG, GIF, a PNG header on a text body, a renamed `.exe`; extension and MIME agreement). Byte inputs come from a local helper `packages/domain/src/evidence/image-bytes.test-helpers.ts` (builds a minimal valid PNG with correct CRCs and a minimal baseline JPEG), because `domain` imports nothing, including `test-support`.
+- [ ] **Step 10** — Write and run the structure half of `file-type.test.ts`: pass a valid PNG, a baseline JPEG, a progressive JPEG and a JPEG with an EXIF thumbnail; fail a PNG truncated after IHDR, without IEND, with a first chunk other than IHDR, with one wrong CRC, with HTML after IEND, with width 0 and 20001; a JPEG truncated before EOI, with a ZIP after EOI, with no SOF before SOS, with height 0 and 20001. Also run the real fixtures `packages/test-support/fixtures/{photo.jpg,broken.jpg,not-a-png.png}` through it only if the boundaries matrix allows `domain` tests to read files by path; otherwise they are covered in Step 17.
+- [ ] **Step 11** — Write and run `transitions.test.ts`: one test per § 4 row (from, event, to, fail reason, exact custody values, outbox yes or no); every state not listed refuses; `removed` reachable from every state but `removed`; `sweepReason` for both reasons; `sanitising`, `privacy_confirmed`, `original_expired` never a target.
+
+**Phase C — contracts**
+
+- [ ] **Step 12** — `packages/contracts/src/schemas/evidence.ts`: zod schemas for the upload form fields (`reviewPublicId` as a public id, `idempotencyKey` UUID), `CheckUploadInput`, `IntakeInput`, `RemoveEvidenceInput {itemPublicId}`, `GetForAuthorInput`, the envelope payload `{itemId}`; append `evidence.rate_limited` and `evidence.upload_failed` to `packages/contracts/src/errors.ts` (append-only, beside the existing `evidence.*` codes) with their HTTP status in the route map if `errors.ts` holds one. `packages/contracts/src/view-models/evidence.ts`: `OwnEvidenceList`, `OwnEvidenceFile` (status union `pending | ready | rejected | failed`, optional `reasonKey`), `EvidenceNoteVM`, moved from `apps/web/src/server/actions/evidence.ts` with the same names and fields. Append the barrel exports in `packages/contracts/src/index.ts`.
+- [ ] **Step 13** — Write and run `packages/contracts/src/schemas/evidence.test.ts`: each schema's accepted and refused inputs (bad UUID, empty id, extra field stripped), and that the two new error codes are in the error-code list. `i18n:check` maps `errors.evidence.*` to ErrorCodes, so Step 40 adds no `errors.evidence.rateLimited`/`uploadFailed` key; the route uses the `ev.upload.errors.*` keys (frontend-components § Upload errors).
+
+**Phase D — ports and fakes**
+
+- [ ] **Step 14** — Ports in `packages/application/src/ports/`: `repositories/evidence.ts` (`EvidenceRepository`, § 5 method list, with `ProcessingFacts` holding no `originalFilenameEnc` and no `uploadedByAccountId`), `evidence-storage.ts` (`EvidenceFileWriter {putQuarantined, delete}`, `EvidenceFileReader {readQuarantined, delete}`; no path or URL in any return), `scanner.ts` (`ScannerPort.scan(stream, {signal}) → {result: 'clean' | 'infected' | 'unavailable', scannerVersion?}`, never rejects). Append to `ports/index.ts`. The unit entry names `ports/storage.ts`; the design names `evidence-storage.ts`; take the design's name and note it `ASSUMPTION(U48)` in the file header.
+- [ ] **Step 15** — Fakes in `packages/test-support/src/fakes/`: extend `storage.ts` (an in-memory writer and reader built separately, with `maxBytes`, a forced fault and a missing key), extend `scanner.ts` (scripted `clean`, `infected`, `unavailable`, and a hang that honours `signal`), add `evidence-repository.ts` (in-memory, compare-and-set semantics, custody and outbox capture). Append to `fakes/index.ts`. Extend `builders/evidence.ts` (append-only) with an item builder per state and an `imageBytes({kind, ...})` builder for PNG and JPEG test bodies. Write and run their tests in `fakes/port-fakes.test.ts` (append cases) so each fake can fail.
+
+**Phase E — adapters**
+
+- [ ] **Step 16** — `packages/adapters/src/storage-fs/`: `index.ts` with `createFsEvidenceWriter(root)` and `createFsEvidenceReader(root)`, moved from `apps/web/src/server/storage.ts` (BR3.1–BR3.6): key `^[0-9a-f]{32}$` from `crypto.randomBytes(16)`, path built by `path.join(root, 'quarantine', key)` and checked inside the root after `path.resolve`, a key that fails the pattern throws before any file call; `putQuarantined` streams to a temp name with its own byte counter (`too_large` past `maxBytes`, partial file deleted) and a running sha256, then renames; `readQuarantined` → stream or `original_missing`; `delete` of a missing key is not an error. Append the export to `packages/adapters/src/index.ts`.
+- [ ] **Step 17** — Write and run `storage-fs/storage-fs.test.ts` on a temp dir: put and read back with size and sha256; `maxBytes + 1` → `too_large` and no file left; keys with `..`, `/`, uppercase and 31 characters throw before any `fs` call; the writer has no `readQuarantined`, the reader no `putQuarantined`; missing key → `original_missing`; delete twice is fine. Carry over the angles of `apps/web/src/server/storage.adversarial.test.ts` into `storage-fs/storage-fs.adversarial.test.ts` before Step 45 deletes the old file.
+- [ ] **Step 18** — `packages/adapters/src/scanner-clamd/index.ts` with `createClamdScanner({host, port, timeoutMs: 15_000})`, moved from `apps/web/src/server/clamav.ts` (keep the IPv4 note): `zINSTREAM` with 4-byte length chunks and a zero terminator, `stream: OK` → `clean`, `FOUND` → `infected`, anything else, an early close, an error, the timeout or an aborted `signal` → `unavailable`; the version from `VERSION` when clamd answers it. Never rejects. Append the export to the adapters barrel.
+- [ ] **Step 19** — Write and run `scanner-clamd/scanner-clamd.test.ts` with a fake clamd `net.Server` on `127.0.0.1:0`: OK, FOUND, ERROR, garbage, closing early, never answering (timeout), an aborted signal; the chunk framing the fake receives. Carry over the cases of `apps/web/src/server/clamav.test.ts`.
+
+**Phase F — queue (shared edits)**
+
+- [ ] **Step 20** — `packages/database/src/queue/pg-boss-queue.ts`: `export interface JobAttempt {jobId, retryCount, retryLimit, signal}`, `JobHandler<T> = (payload: T, attempt: JobAttempt) => Promise<void> | void`, `work()` fetches with `includeMetadata: true` and passes the attempt. `queue-declaration.ts`: on `evidence.process` write `expireInSeconds: 300` explicitly and replace the `ASSUMPTION(CR-011)` note with U48's decision (BR4.6); add `'evidence.sweep'` with `DEFAULT_QUEUE_DECLARATION`. Append-only to the queue `index.ts` if `JobAttempt` must be exported.
+- [ ] **Step 21** — Write and run: extend `pg-boss-queue.int.test.ts` (a job that fails once arrives with `retryCount` 0 then 1 and the declared `retryLimit`; the signal is an `AbortSignal`), and a declaration test (append to the existing queue test or a new `queue-declaration.test.ts`) pinning `evidence.process` (`retryLimit 3`, `retryDelay 10`, backoff, `expireInSeconds 300`) and `evidence.sweep`. `apps/worker/src/handlers/mail-send.test.ts` and `mail-send.int.test.ts` run unchanged and green.
+
+**Phase G — repository (data model and data access)**
+
+- [ ] **Step 22** — `packages/database/src/repositories/evidence.ts`, web-side methods: `lockReview` (`SELECT … FOR UPDATE` on the review row or `pg_advisory_xact_lock` keyed by review id), `countCounting → {count, bytes}` over `COUNTING_STATES`, `findByIdempotencyKey`, `insertQuarantined` (item `quarantined` with `detected_mime`, sealed name; artifact `original`, `public false`; custody `received` with `{bytes, mime}`; outbox `evidence.received {itemId}` through the existing outbox writer), `listForAuthor` (oldest first, `removed` and `original_expired` omitted), `findOwned`, `countPublic` and `countPublicByReview` if U46's port has the batched form. No change to the schema except Step 23's comment.
+- [ ] **Step 23** — Same file, worker-side methods: `processingFacts` with an explicit column list (`id`, `review_id`, `state`, `created_at`, `declared_mime`, `detected_mime`, `original_bytes`, `original_sha256`, the artifact's `storage_key`, BR4.8), `stuckItems(olderThan, limit)` (`FOR UPDATE SKIP LOCKED`, oldest first), `latestCustody`, `transition(from, to, failReason?) → boolean` (compare-and-set, sets `updated_at`), `appendCustody` (actor `worker` or `account:<id>`, details allowlist), `markOriginalDeleted`, and the `evidence.stateChanged {itemId, reviewId, state}` outbox append. Correct the comment in `packages/database/src/schema/evidence.ts` to say `0005` grants table-wide SELECT and BR4.8 keeps the columns out (comment only).
+- [ ] **Step 24** — Write and run `packages/database/src/repositories/evidence.int.test.ts` part 1 (`database` project, assigned test DB): insert writes item, artifact, custody and outbox in one transaction; two concurrent intakes on a review holding 9 items leave exactly 10; `countCounting` excludes `rejected`, `failed`, `removed`; `countPublic` counts only `preview_ready` and `published`; the idempotency key is unique; `listForAuthor` returns nothing for another account.
+- [ ] **Step 25** — Same file, part 2: compare-and-set refuses a stale `from`; `stuckItems` skips a row locked by another transaction and skips younger and final items; the processing-facts SQL selects neither `original_filename_enc` nor `uploaded_by_account_id` (assert on the result keys and on the column list); the `evidence.stateChanged` payload has exactly three keys; custody details carry no file name, key or account id. Run it under the `rk_worker` role if `validator-probes.int.test.ts` already gives a way to, else record that as an S4 row.
+
+**Phase H — application module (`packages/application/src/modules/evidence/`)**
+
+- [ ] **Step 26** — `ports.ts` (the web deps, the processor deps, the sweep deps, § 2), `module.ts` (`createEvidenceModule`, `createEvidenceProcessor`, `createEvidenceSweep`), `commands/admit-upload.ts` (one `rateLimiter.hit('evidence.upload:account:<accountId>', 30, 3600)`, BR2.7) and `commands/check-upload.ts` (read-only: confirmed actor BR1.1, review resolved and authored and published through the U47 seams BR1.2, idempotency BR2.5, count BR2.3, total with this file's size BR2.4). Each command built with `defineCommand`, expected failures as `err(...)`.
+- [ ] **Step 27** — `commands/intake-evidence.ts`: one `unitOfWork.run` in WF1 step 8's order (review check, idempotency → existing item, `lockReview`, count, total, `insertQuarantined` with the name sealed by `filenameSeal`). Returns `{itemId: publicId, state}`. Logs only allowlisted fields (BR7.1).
+- [ ] **Step 28** — `queries/get-for-author.ts` (authorship and uploader only, not publication, BR1.3; `OwnEvidenceList` with `maxFiles`, `maxBytes`, names opened by `filenameSeal`, `reasonKey` from BR6.2's map), `commands/remove-evidence.ts` (compare-and-set to `removed`, custody `removed`, audit row `evidence:<itemId>`, outbox; after commit `files.delete` and `markOriginalDeleted`, a failed delete logged with itemId and error class only), `queries/count-public-evidence.ts` (C17 implementation). Append the module to `packages/application/src/index.ts` (append-only).
+- [ ] **Step 29** — Write and run `modules/evidence/evidence-upload.test.ts` with the `test-support` fakes: intake happy path; each refusal (signed out, unconfirmed, another account's review, unpublished review, type, 15 MB + 1 byte, eleventh file, a seventh 15 MB file after six) with the quarantined key deleted by the caller contract; pre-check refusing another account's review and a full review with no `putQuarantined` call; an idempotent repeat answered by the pre-check with no write; the retry of the upload that made the tenth item answering that item, not `too_many`; the 31st upload in an hour `rate_limited`. And `modules/evidence/evidence-author.test.ts`: list and remove on an unpublished review by its author succeed; remove by another account `not_found`; one audit assertion on remove; `countPublicEvidence` ignores non-public states.
+- [ ] **Step 30** — `jobs/process-evidence.ts` (WF2 steps 3–9, BR4.2–BR4.10): load facts; finish when missing or final; deadline → `failed`/`processing_timeout`; `quarantined → validating` or resume; `readQuarantined` (`original_missing` → `failed`/`unknown`); sha256, size, magic bytes, `imageStructureValid` (reject: delete file first, then `rejected` with the reason); `validating → scanning`; `scanner.scan` under 15 s; clean → `preview_ready`; infected → delete, `rejected`/`malware`; unavailable → custody `scan_unavailable {attempt}`, throw `ScannerUnavailable` unless last attempt, then `failed`/`scanner_unavailable`; last attempt other error or budget abort → `failed`/`processing_timeout` in a new transaction, rethrow only if that write fails. Every write is one transaction with its custody and outbox (BR4.7); a move to `failed` deletes the file after commit.
+- [ ] **Step 31** — `jobs/sweep-evidence.ts` (WF2b, BR4.11): `stuckItems(now − 3600 s, 100)`, per item one transaction: compare-and-set from the state read → `failed` with `sweepReason(latestCustody)`, custody `failed` (actor `worker`), outbox; after commit delete the original and `markOriginalDeleted`. A lost race (compare-and-set false) is not an error. Returns `{ended}`.
+- [ ] **Step 32** — Write and run `modules/evidence/process-evidence.test.ts` and `sweep-evidence.test.ts`: clean, infected, malformed, unavailable with attempts left (throws, item unchanged, no outbox), unavailable on the last attempt (no throw), retry finding `validating` (ends `preview_ready`), retry finding `scanning` (re-validates, scans again, custody `scan_started` again), missing original, unexpected error on the last attempt, the same error before the last attempt (rethrows), a budget abort, an item past the deadline; the sweep's two reasons, younger and final items left alone, file deleted, a race lost to a removal without error. Custody values asserted exactly per § 4.
+- [ ] **Step 33** — Smoke: add `packages/application/src/modules/evidence/evidence.smoke.test.ts`: with the fakes, intake a PNG (state `quarantined`, count 0), run the processor with the fake scanner answering clean, and `countPublicEvidence` returns 1. Run it alone (command in `unit-test-instructions.md`).
+
+**Phase I — worker (API / job endpoint)**
+
+- [ ] **Step 34** — `apps/worker/src/handlers/evidence-process.ts` (zod check of the C15 envelope; malformed → log and finish, as `mail-send.ts` does; `processEvidence({itemId, attempt: retryCount + 1, lastAttempt: retryCount >= retryLimit, signal: AbortSignal.any([signal, AbortSignal.timeout(120_000)])})`) and `handlers/evidence-sweep.ts`; append both to `handlers/index.ts`. Shared one-line or append edits: `registry.ts` (`'evidence.sweep'` in `JobName`, the two entries with `cron: '*/5 * * * *'` for the sweep, optional third `attempt` parameter on `JobDefinition.handler`), `main.ts` (`ctx.queue.work(name, (payload, attempt) => def.handler(payload, ctx, attempt), def.opts)`), `outbox-relay.ts` (`'evidence.stateChanged': []`), `container.ts` (reader, scanner from `CLAMD_HOST`/`CLAMD_PORT`, processor, sweep; no writer, no `filenameSeal`).
+- [ ] **Step 35** — Write and run `handlers/evidence-process.test.ts` and `handlers/evidence-sweep.test.ts` (malformed envelope finishes; attempt mapping at `retryCount` 0 and 3; budget signal combined), append cases to `registry.test.ts` (both entries, the sweep's cron), `outbox-relay.test.ts` (`RELAY['evidence.stateChanged']` equals `[]`, `evidence.received` still `['evidence.process']`), `main.test.ts` (the attempt is passed through) and `container.wiring.test.ts` (the processor deps hold no `putQuarantined`). Then `handlers/evidence-process.int.test.ts` (`worker-int`): an intake row plus a quarantined file on a temp root, the handler run with a fake scanner, the item ends `preview_ready` with the custody rows.
+
+**Phase J — web server (API / endpoint)**
+
+- [ ] **Step 36** — `apps/web/src/app/api/evidence/upload/route.ts` (WF1): leave the origin-check and Content-Length lines for U41 but enforce `EVIDENCE_UPLOAD_CONTENT_LENGTH_CAP` here if U41's lines are not on the base yet (marked `ASSUMPTION(U48)`); session actor (401, 403); `admitUpload` (429 with `retryAfter`); `request.formData()`, exactly one `file` part (400 `noFile`); `detectImageType` and `extensionMatches` (400 `type_rejected`), size (400 `too_large`, empty is `type_rejected`); `checkUpload` (404, 400, or 200 with the existing item); `putQuarantined`; `runCommand(intake)`; on any `err`, idempotent answer or throw, delete the key (BR3.4); the status and `messageKey` map of frontend-components § Upload errors. No route reads an original (BR3.5).
+- [ ] **Step 37** — `apps/web/src/server/actions/evidence.ts` slimmed to `listOwnEvidenceFiles(reviewPublicId)` (thin `runCommand(c.evidence.getForAuthor, …)`) and `removeEvidence(itemPublicId)` (then `revalidatePath` for the experience page), re-exporting `OwnEvidenceList` and `OwnEvidenceFile` from contracts; it stops calling `demo/reviews.ts`. `apps/web/src/server/container.ts` (append-only): the `evidence` field built with `createFsEvidenceWriter(env.STORAGE_ROOT)` only, `filenameSeal` wrapping the existing field cipher, and the C17 binding line swapped to `countPublicEvidence`. `apps/web/src/server/data.ts`: remove the `evidence` and `DEMO_READY_EVIDENCE_STATES` re-exports. Add `STORAGE_ROOT` to `apps/web/src/server/env.ts` only if the web tier has no such variable yet (append-only).
+- [ ] **Step 38** — Write and run `apps/web/src/app/api/evidence/upload/route.test.ts` (each row of the § 4 "Upload request outcome" with the module mocked; key deleted on every refusal and on a thrown error; no submitted file name in any response or log), `server/actions/evidence.test.ts` (rewritten for the slim file: list `null` for a non-author, remove maps `not_found`, `revalidatePath` called), and append to `server/container.test.ts` (the evidence deps hold no `readQuarantined`, BR3.6; `publicEvidenceCount` is the module's). Rewrite `server/actions/evidence.adversarial.test.ts` and `server/actions/ownership.adversarial.test.ts` evidence cases for the new shape only where they call removed functions; keep every assertion's intent.
+- [ ] **Step 39** — Write and run `apps/web/src/app/api/evidence/upload/upload.int.test.ts` (`web-int`, assigned test DB, temp `STORAGE_ROOT`): a confirmed author uploads a PNG to their published review → 200 with a public id, item `quarantined`, one file on disk, one `evidence.received` outbox row; a repeat with the same key → 200, same item, still one file; another account → 404 and no file.
+
+**Phase K — i18n and UI (frontend behaviour)**
+
+- [ ] **Step 40** — `packages/i18n/messages/en.json` and `bn.json` in the same commit (frontend-components § Copy): change `ev.status.pending`, `ev.status.ready`, `ev.upload.hint`, `errors.evidence.tooMany`; add `ev.status.failed`, `ev.reason.{malware,notImage,tooLarge,couldNotCheck}`, `ev.guidance.photograph`, `ev.removeNamed`, `ev.upload.done.received`, `ev.upload.errors.{unconfirmed,rateLimited}`; before deleting `ev.upload.done.{ready,pending,rejected}`, `ev.upload.pendingNote` and `ev.upload.rejectedNote`, grep `apps` and `packages` for each; a key with a caller outside `components/patient/evidence/` stays and gets an S3 row. Bengali copy as written in the design, flagged for the owner's copy review at U50 (FD-042). Regenerate `packages/i18n/src/keys.ts` with its script, never by hand, and again after every rebase. Run `timeout 300 pnpm i18n:check`.
+- [ ] **Step 41** — Components: `EvidenceNote.tsx` (`count > 0`: `evidence.status` and `ev.note.count`; `0`: `label.noDocuments`; numerals in the active language), `EvidenceSection.tsx` (new internals per WF3, props `{reviewPublicId}` unchanged, nothing for an unknown or unpublished review), `AuthorEvidence.tsx` (WF3b, props unchanged).
+- [ ] **Step 42** — `EvidenceUploader.tsx` (client; one `fetch` per file to the route with a fresh `crypto.randomUUID()` key, client size pre-check, disabled at `maxFiles` files in `pending` or `ready`, polite live region, focus stays on the input, `router.refresh()`), and a new `EvidenceFileRow.tsx` (presentational, no server imports; name or `label.notProvided`, size in active numerals, status, reason, `ev.guidance.photograph`, `ev.failNote` for `rejected` and `failed`, Remove with `ev.removeNamed`). Styles: only if a new class is needed, in the patient section of `apps/web/src/styles/patient.css` with `/* added: U48 reason */`, on FD-091 tokens, no motion of its own. Update `evidence-test-support.ts` builders for the widened status.
+- [ ] **Step 43** — Write and run the component tests in `en` and `bn`: `EvidenceNote.test.tsx` (0 and 3), new `EvidenceSection.test.tsx` (only the note, no file list or name, for the author and a visitor; nothing for unpublished), `AuthorEvidence.test.tsx` (nothing for a non-author, the uploader for the author), new `EvidenceFileRow.test.tsx` (each status with and without a name; reason and Remove for `rejected` and `failed`), `EvidenceUploader.test.tsx` (disabled at 10 counting, enabled when one is `failed`; refused type; too large; rate-limit message with minutes), and new `evidence-copy.test.ts` (no `ev.*` or `evidence.*` value contains "verified" or "approved" in `en`, or "যাচাইকৃত" or "অনুমোদিত" in `bn`).
+- [ ] **Step 44** — Smoke: add `apps/web/src/app/api/evidence/upload/evidence-upload.int.smoke.test.ts` (as `register-verify.int.smoke.test.ts` does): upload a PNG through the route handler, see it `quarantined`, run the processor with the fake scanner, and see `countPublicEvidence` return 1 and `EvidenceNote` show the count. Run `timeout 600 pnpm smoke`; the suite only grows.
+
+**Phase L — demo replacement and configuration**
+
+- [ ] **Step 45** — Deletions (BR8.1, BR8.2), each after a grep of `apps` and `packages` shows no caller: `packages/database/src/demo/evidence.ts` with `evidence.int.test.ts` and `evidence.adversarial.test.ts` (their angles now live in Steps 24–25 and 49), its line in `demo/index.ts`; `apps/web/src/server/clamav.ts`, `clamav.test.ts`, `storage.ts`, `storage.test.ts`, `storage.adversarial.test.ts` (covered by Steps 17 and 19); the contract types `DemoScanResult`, `DemoAddEvidenceInput`, `DemoOwnEvidenceRow`, `DemoEvidenceMime` in `packages/contracts/src/view-models/demo.ts` once unused. A name that still has a caller stays, gets an S4 row, and U50 removes it. Run `timeout 300 pnpm typecheck`.
+- [ ] **Step 46** — `infra/compose/.env.example` (owned lines): keep `CLAMD_HOST`/`CLAMD_PORT`, add `CLAMD_TIMEOUT_MS` only if the adapter reads it, and a comment that the evidence limits are module constants in `packages/domain/src/evidence/limits.ts` (C18, S4 row), not variables. `STORAGE_ROOT` documented for web and worker if Step 37 added it.
+
+**Phase M — gate, adversarial tests, sign-off and records**
+
+- [ ] **Step 47** — Gate: `timeout 1200 pnpm check` and `timeout 600 pnpm smoke`, both green, plus `timeout 900 pnpm test:int`, `npx impeccable detect apps/web/src --no-advisory` and `timeout 300 pnpm contrast`. Each package U48 touches stays at or above 80% lines, and `domain`, `application` and `adapters` record their figure (never lowered, D10). Grep `apps/web/src` for a scan call (`scanner`, `clamd`, `INSTREAM`) outside `server/container.ts`: none (BR8.2).
+- [ ] **Step 48** — Acceptance rows: run AC7.1.1–AC7.1.6 and the T-303 and T-304 acceptance rows, and record expected against observed in this step's note (rows that need a browser or a live clamd are marked "not run here" with the automated evidence that covers them). Include one live check with the compose ClamAV: the EICAR test string in a PNG-named file is refused at intake (`type_rejected`), and a valid PNG ends `preview_ready` through the real worker.
+- [ ] **Step 49** — Adversarial tests (high-risk Unit: evidence, team practice step 5). A separate agent, not the one that wrote the code, writes and runs 3–5 tests from `functional-spec.md` § 8: A1 disguised file, truncated PNG and the two polyglots refused or rejected `malformed` and never counted; A2 a 16 MB file, an eleventh file (also two sent at the same instant) and a file past 100 MB refused; A3 upload, list and remove on another account's review or item answer 404 and change nothing; A4 a crafted key or file name with `../` never reaches outside the evidence root; A5 clamd stopped → item stays `scanning` through the retries, ends `failed`/`scanner_unavailable`, never counted, the author sees Could not be checked with Remove, no route returns an original's bytes; a worker killed on the last attempt is ended by the sweep. Files: `packages/application/src/modules/evidence/evidence.adversarial.test.ts`, `apps/web/src/app/api/evidence/upload/upload.adversarial.int.test.ts`, `packages/adapters/src/storage-fs/storage-fs.adversarial.test.ts` (extend). Fix every break inside the owned paths, add an `ISS-` row per break, and re-run Step 47.
+- [ ] **Step 50** — Delegated sign-off. Record a written sign-off in `construction/u48-evidence/code-generation/code-summary.md` under `## Sign-off`, written by the agent and labelled "delegated by the owner on 2026-11-04". It names the A1–A5 results, the gate counts, the coverage figures and any open `ISS-` rows. Owner reviews of copy and look move to the U50 release check and stay on `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`.
+- [ ] **Step 51** — `docs/implementation/ISSUES.md`: the nine rows of `functional-spec.md` § 9, plus every defect, workaround or `ASSUMPTION(U48)` from Steps 1–49, each with a severity and `Found in U48 u48-evidence`; close any open evidence row the build fixes with `Status` naming U48. Take the next free `ISS-` numbers at merge time and renumber if another Bolt lands first.
+- [ ] **Step 52** — Records: `code-summary.md` (files, counts, coverage before and after, the bracket-free list of route paths, § "Issues found and fixed in U48" for the Build and Test record), `traceability.json` (step → BR → AC), `source-manifest.json` with literal paths only (no `[`, `]` or `*`); the amendments and Hand-off in `docs/implementation/tasks/T-303-evidence-intake.md` and `T-304-worker-evidence-pipeline.md` (`FD-0nn:` labels on changed acceptance rows, FD-074).
+- [ ] **Step 53** — At merge, after the rebase on `main` (BR8.2): for each of `getOwnReviewForEdit`, `personasOf`, `updateOwnReview`, `snapshotOf` and `getReviewByPublicId` in `packages/database/src/demo/reviews.ts`, grep `apps` and `packages` for callers; delete only those with none (the file too when no export is left), in its own commit followed by `timeout 1200 pnpm check`; record the grep result and what was deleted in U48's Build and Test record. Anything still called stays for the next Unit; U50 removes leftovers.
+
+## Story and rule traceability
+
+| Step | Rules | Stories (acceptance criteria) |
+|---|---|---|
+| 1–3 | — (baseline, dependency check, runner) | — |
+| 4, 9 | BR2.2–BR2.4, BR2.7, BR4.6, BR4.9, BR5.1, BR6.1 | US7.1 (AC7.1.3, AC7.1.5) |
+| 5–7, 9–10 | BR2.1, BR2.6, BR4.3 | US7.1 (AC7.1.1, AC7.1.2) |
+| 8, 11 | BR4.2, BR4.4, BR4.5, BR4.7, BR4.10, BR4.11 | US7.1 (AC7.1.4, AC7.1.6) |
+| 12–13 | BR2.5, BR6.2 | US7.1 (AC7.1.3, AC7.1.4) |
+| 14–15 | BR3.6, BR4.8 | US7.1 (AC7.1.2) |
+| 16–19 | BR3.1–BR3.6, BR4.5, BR4.6 | US7.1 (AC7.1.1, AC7.1.2) |
+| 20–21 | BR4.1, BR4.6, BR4.9 | US7.1 (AC7.1.5) |
+| 22–25 | BR2.3, BR2.4, BR2.5, BR4.2, BR4.7, BR4.8, BR4.11, BR5.2 | US7.1 (AC7.1.3, AC7.1.6) |
+| 26–29 | BR1.1–BR1.3, BR2.3–BR2.8, BR4.1, BR5.2, BR6.2, BR6.3, BR7.1 | US7.1 (AC7.1.1, AC7.1.3, AC7.1.4) |
+| 30–33 | BR4.2–BR4.11 | US7.1 (AC7.1.1, AC7.1.4, AC7.1.5) |
+| 34–35 | BR4.1, BR4.6, BR4.8, BR4.9, BR4.12 | US7.1 (AC7.1.5) |
+| 36–39 | BR1.1, BR1.2, BR2.1–BR2.8, BR3.4, BR3.5, BR3.6, BR6.3, BR8.1 | US7.1 (AC7.1.1–AC7.1.4) |
+| 40–44 | BR5.3, BR5.4, BR5.5, BR6.1–BR6.4 | US7.1 (AC7.1.4, AC7.1.5, AC7.1.6) |
+| 45–46 | BR8.1, BR8.2 | — |
+| 47–49 | BR2.1–BR2.4, BR3.2, BR3.5, BR4.3, BR4.5, BR4.11, BR8.2 | US7.1 (AC7.1.1–AC7.1.6) |
+| 50–53 | BR8.2, BR8.3 | — |
+
+Not covered by U48 in release 1 (FD-105): re-encoding and metadata removal (AC7.1.1 part, T-305), the evidence viewer and noindex evidence pages (AC7.1.6 part, T-308), retention expiry (BR8.3, T-309).
+
+## Owned paths
+
+- `packages/domain/src/evidence/`
+- `packages/application/src/modules/evidence/`
+- `packages/application/src/ports/repositories/evidence.ts`, `ports/evidence-storage.ts`, `ports/scanner.ts`
+- `packages/adapters/src/storage-fs/`, `packages/adapters/src/scanner-clamd/`
+- `packages/database/src/repositories/evidence.ts` and its tests
+- `packages/database/src/demo/evidence.ts` (deleted)
+- `packages/contracts/src/schemas/evidence.ts`, `packages/contracts/src/view-models/evidence.ts`
+- `packages/test-support/src/fakes/{storage,evidence-repository,scanner}.ts`, `packages/test-support/src/seed/seed-evidence.ts` (not expected to change), the evidence fixtures in `packages/test-support/fixtures/`
+- `apps/worker/src/handlers/evidence-process.ts`, `apps/worker/src/handlers/evidence-sweep.ts` and their tests
+- `apps/web/src/app/api/evidence/` (U41 later adds only the origin check)
+- `apps/web/src/server/actions/evidence.ts` and its tests
+- `apps/web/src/server/clamav.ts`, `apps/web/src/server/storage.ts` and their tests (deleted)
+- `apps/web/src/components/patient/evidence/`
+- the `CLAMD_*` and evidence lines in `infra/compose/.env.example`
+
+## Shared files (append-only or the one line named)
+
+| File | U48 use |
+|---|---|
+| `apps/web/src/server/container.ts` | the `evidence` field (writer only) and the C17 binding line (Step 37) |
+| `apps/web/src/server/data.ts` | removal of the evidence re-exports (Step 37) |
+| `apps/web/src/server/env.ts` | `STORAGE_ROOT` only if absent (Step 37) |
+| `apps/worker/src/registry.ts` | `'evidence.sweep'` in `JobName`, two entries, optional `attempt` parameter (Step 34) |
+| `apps/worker/src/main.ts` | one line, the attempt pass-through (Step 34) |
+| `apps/worker/src/container.ts` | reader, scanner, processor, sweep (Step 34) |
+| `apps/worker/src/handlers/outbox-relay.ts`, `handlers/index.ts` | `'evidence.stateChanged': []`; the two handler exports (Step 34) |
+| `packages/database/src/queue/pg-boss-queue.ts`, `queue-declaration.ts` | `includeMetadata`, `JobAttempt`, `JobHandler`; the explicit expiry and the sweep entry (Step 20) |
+| `packages/database/src/schema/evidence.ts` | the comment correction only (Step 23) |
+| `packages/database/src/demo/index.ts`, `demo/reviews.ts` | the evidence line removed (Step 45); merge-time deletions per BR8.2 (Step 53) |
+| `packages/contracts/src/errors.ts`, `view-models/demo.ts` | two error codes appended (Step 12); demo evidence types removed when unused (Step 45) |
+| package barrels (`packages/*/src/index.ts`, `ports/index.ts`, `fakes/index.ts`, adapters `index.ts`) | append exports |
+| `packages/test-support/src/builders/evidence.ts`, `fakes/port-fakes.test.ts` | append builders and cases (Step 15) |
+| `packages/i18n/messages/en.json`, `bn.json` | the `ev.*` changes and `errors.evidence.tooMany`, both languages in one commit (Step 40) |
+| `packages/i18n/src/keys.ts` | generated; regenerate after every rebase, never merge by hand |
+| `apps/web/src/styles/patient.css` | only if a new class is needed, in the patient section (Step 42) |
+| `apps/web/src/server/container.test.ts`, `apps/worker/src/{registry,main,container.wiring}.test.ts`, `handlers/outbox-relay.test.ts` | append cases (Steps 35, 38) |
+| `docs/implementation/ISSUES.md` | append rows; update `Status` of rows U48 fixes (Step 51) |
+| `docs/status/dependency-check-log.md` | one entry if the existing one is older than 3 days (Step 2) |
+| `docs/status/decision-log.md` | not expected; append-only if a new FD is needed |
+| `docs/implementation/tasks/T-303-evidence-intake.md`, `T-304-worker-evidence-pipeline.md` | amendments and Hand-off (Step 52) |
+
+Merge rules: on rebase keep both sides of every append-only file and regenerate `keys.ts`. U48 adds no migration (grants confirmed in `0001` and `0005`, R-06); if one were ever needed it takes the next free number at merge time (after `0009` today), not at build time. Shared demo code is deleted only when a grep shows no caller left on the rebased branch (Steps 45 and 53); otherwise it stays and U50 removes it.
+
+## Testing Contract
+
+```json
+{
+  "version": 1,
+  "methodology": "test-after",
+  "source": "team",
+  "ordering": "Implement each testable layer, then write and run its unit tests, its integration tests against the isolated PostgreSQL test database (reset to a freshly migrated schema on every run), and extend the cumulative smoke suite.",
+  "scope": "classic",
+  "test_strategy": "minimal",
+  "project_type": "brownfield",
+  "applicable_notes": [
+    {
+      "layer": "org",
+      "text": "We treat tests as a first-class deliverable in every Bolt. The specific\nmethodology (TDD, BDD, ATDD, or classic test-after) is affirmed at\npractices-discovery and recorded in `team.md` under this heading with explicit\n`Methodology` and `Ordering` fields; Code Generation resolves those fields\nindependently from coverage, tooling, and scope notes.\n\nWhen no posture has been affirmed, our default per scope is:\n- **Methodology**: test-after\n- **Ordering**: implement each applicable testable layer, then write and run\n  that layer's tests.\n- `mvp`, `enterprise`, `feature`, `infra`, `classic` add an 80% line-coverage\n  floor and CI execution before merge.\n- `bugfix`, `security-patch` add a targeted regression for the specific\n  bug/vulnerability and require the existing suite to remain green.\n- `express` uses the Minimal strategy: requirement-driven unit tests (one per\n  requirement, with a happy-path floor per component); existing tests remain\n  green.\n- `poc`, `refactor`, `workshop` add no extra new-test floor and require the\n  existing suite to remain green.\n\nThe active `Test Strategy` still applies in every scope and determines test\nvolume/types. Scope floors are additive; they never reduce or replace the\nselected strategy.\n\nBuild and Test verifies defined coverage floors and affirmed quality targets;\nthey may not be weakened to make a step pass.\n\nAffirm a stricter posture in `team.md` if the team commits to one."
+    },
+    {
+      "layer": "team",
+      "text": "- **Methodology**: test-after\n- **Methodology evidence**: `01-conventions.md` §10 sets per-level test minimums that each task delivers together with its code, and §13's definition of done requires them green before hand-off. In git history, tests land in the same task commit as the implementation (for example T-007 and T-009). No source asks for tests to be written before the code, and test-after is the `org.md` default for the `classic` scope.\n- **Ordering**: Implement each testable layer, then write and run its unit tests, its integration tests against the isolated PostgreSQL test database (reset to a freshly migrated schema on every run), and extend the cumulative smoke suite.\n- Test levels follow `01-conventions.md` §10: domain (every state-transition table and policy function), application (each command's happy path, each authorization refusal and one audit assertion, using `test-support` fakes), database (`*.int.test.ts`, each repository method, migrations apply from empty), component (renders in both `en` and `bn`), and end-to-end with Playwright and axe from T-503.\n- Cumulative smoke suite: each unit adds at least one smoke assertion for what it delivered (`*.smoke.test.ts(x)`, and from T-503 also `apps/web/e2e/smoke/*.spec.ts`). `pnpm smoke` runs the whole suite every time. The suite only grows: removing or skipping a smoke assertion needs a recorded reason.\n- Integration tests: `pnpm test:int` runs the database project against `DATABASE_URL_TEST` (the `rogikotha_test` database, separate from the development database). It resets that database to an empty, freshly migrated schema and runs test files serially. It needs the compose PostgreSQL running.\n- Coverage: an 80% line-coverage floor per package, measured with Vitest `@vitest/coverage-v8` (already installed). T-010 adds the thresholds and the CI run before merge, and raises any package below 80%. Until T-010 lands, the floor cannot be measured: no Vitest config has a coverage block yet. Work before T-010 (CR-009) records \"coverage not measured yet\" at Build and Test; from T-010 on the floor is enforced, and it applies to a package once that package has source code (the empty `domain`, `application` and `adapters` packages are exempt until then). We do not claim a coverage figure we have not measured, and once the floor exists it is never lowered to make a step pass (D10).\n- Existing suites stay green: `pnpm check` (typecheck, lint, unit and integration tests, i18n parity, build) and `pnpm smoke` must pass after every unit, with no assertion removed or skipped. In brownfield work we run the full suite before changing anything, to record a baseline.\n- Test names read as sentences. We use builders, not hand-written fixture objects, and we never assert on implementation details (class names, internal calls). A test must be able to fail.\n- UI units also pass `npx impeccable detect apps/web/src --no-advisory` and `pnpm contrast` cleanly before they are done (`01-conventions.md` §7.8)."
+    }
+  ],
+  "obligations": {
+    "strategy": "minimal",
+    "strategy_volume": [
+      "One verifiable test per requirement at the narrowest effective level.",
+      "At least one happy-path unit test per component.",
+      "Unit tests are the default; a bugfix/security scope floor may require an integration or E2E regression when that is the narrowest level that reproduces the defect."
+    ],
+    "scope_floor": [
+      "Keep the existing test suite green.",
+      "This scope adds no extra new-test floor beyond the selected test strategy."
+    ],
+    "combination_rule": "Apply every selected-strategy obligation and every scope-floor obligation; neither replaces the other, and a targeted scope regression may add the narrowest necessary test type beyond the strategy default."
+  },
+  "plan_profile": {
+    "methodology": "test-after",
+    "runner_step": "Verify the existing test runner/configuration and record the exact unit-scoped command.",
+    "runner_ready_before_first_test": true,
+    "testable_layers": [
+      "Data model / database behavior",
+      "Repository / data access",
+      "Business logic",
+      "API / endpoint",
+      "Frontend behavior"
+    ],
+    "steps": [
+      "Project structure and production configuration skeleton.",
+      "Verify the existing test runner/configuration and record the exact unit-scoped command.",
+      "Data model / database behavior - implement.",
+      "Data model / database behavior - write and run its tests after implementation.",
+      "Repository / data access - implement.",
+      "Repository / data access - write and run its tests after implementation.",
+      "Business logic - implement.",
+      "Business logic - write and run its tests after implementation.",
+      "API / endpoint - implement.",
+      "API / endpoint - write and run its tests after implementation.",
+      "Frontend behavior - implement.",
+      "Frontend behavior - write and run its tests after implementation.",
+      "Environment/build configuration.",
+      "Documentation and traceability."
+    ]
+  },
+  "input_sha256": "sha256:eb26df65a70c60644a0bdc6b6fa19a28a2583bae7b61a57b814612d8ad43ebb9",
+  "contract_sha256": "sha256:57d068825625cb257445b363810a0b4bbe01d375329dd0df119f640f95c1c9f4"
+}
+```
+
+Applicable layers: data model and repository (the evidence repository on the existing T-005 tables, Steps 22–25; no migration), business logic (the domain rules and the application module, Steps 4–11 and 26–33), API and endpoint (the queue, the worker jobs and the upload route, Steps 20–21, 34–39) and frontend behaviour (components and copy, Steps 40–44). Environment and build configuration: the `.env.example` lines and the regenerated `keys.ts` (Steps 40, 46). Documentation and traceability: Steps 50–53.
+
+## Design decisions taken
+
+Q1–Q7 and the review points R-01 to R-13 were decided in the Functional Design under the owner's delegation of 2026-11-04. High-risk Unit (evidence): the adversarial tests in Step 49 are written by a separate agent, and the sign-off in Step 50 is agent-written and labelled "delegated by the owner on 2026-11-04".

@@ -16,6 +16,20 @@ This decision is binding and overrides the text below where they differ.
 
 - **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-207 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Read first, step 4.5, the motion step and the acceptance checks.
 
+## Amendments — release 1 (FD-105)
+
+These decisions are binding and override the text below where they differ. Release 1 builds Half B and re-checks Half A inside Unit U20 `t-207-discover-emergency-about`, after U46 (FD-105; record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-207-discover-emergency-about/`).
+
+- **No search box (FD-105)** — the hero search box, its suggestions and the search page are T-205 and T-206, deferred to release 2. The opener holds three browse links instead (`nav.home-browse`, named by `discover.browseAll`: doctors, hospitals and clinics, health topics). `Discover.tsx` is not created; the home is `components/patient/home/Home.tsx`. Changes: Depends on (T-206 dropped), Owned paths, step 4.1.
+- **Chips** — up to five topics with accounts, most accounts first, ties by name in the active language, each linking `/topics/{publicId}` instead of `/search?q=` (design Question 3). Changes: step 4.1 and the "Chips and grid" check.
+- **Latest accounts** — four U46 `AccountRow`s from `review.listExperienceCards({limit: 4})` (on the container's `reviewReads`); the demo home row and the unused `DiscoverVM` contract are deleted (design Question 10).
+- **Teaser** — `directory.listFacilities({page: 1, pageSize: 3})`; the sub line shows the visit count, `facility.noVisits` instead of `0`, nothing when feedback is hidden, and a Limited data tag. Changes: step 4.4 and the hard-rule reading that the raw `0` stays.
+- **Section-level failure** — a failing list leaves out only its own section and is logged; the opener and the emergency panel always render (design Question 6).
+- **FD-109** — the lawful-access section is the last section of both `/terms` and `/privacy` (the owner's answer of 2026-10-29), and nowhere else. Changes: step 3 and the "FD-022 placement" check.
+- **Emergency** — `/emergency` reads `config.current().emergency` (closes ISS-171 for release 1; live configuration stays T-105, ISS-601); the inline style becomes `.emerg-note`, and the `BMDC` literal becomes `emergview.bmdcShort`.
+- **Localized 404** — `app/[locale]/(patient)/not-found.tsx` with a `[...rest]` catch-all, and a root fallback reading both dictionaries (closes ISS-120).
+- **Changed acceptance rows** — "Discover block order": opener (one h1, browse links, chips, note) → emergency → browse grid → facilities → how → latest. "Chips and grid": chips link `/topics/{id}`, most accounts first. "FD-022 placement": the lawful section on `/terms` and `/privacy`, absent from `/`, `/about`, `/emergency`. "Locales": the tests run under `describe.each(['en', 'bn'])`, so `-t "bn"` selects the Bengali set (closes ISS-151). "Visual": no hero box. New row "404": `/bn/nope` gives the Bengali 404 in the patient chrome. The Lighthouse check (NFR13, AC2.4.6) is U50's gated run.
+
 > Scheduling note: the master plan lists T-207 with only T-008 as a dependency and runs it early
 > (step 4). Because Discover reuses the shared primitives, run it **after T-202/T-203/T-206**, or run
 > the Emergency/About/Terms/Privacy half early and the Discover half later. Both halves are itemised
@@ -137,3 +151,11 @@ See the checklist above; test names: `Emergency.test.tsx`, `About.test.tsx`, `Po
 
 ### Run record
 Claude Code · claude-sonnet-5 · effort high · branch `task/t-207a-discover-emergency-about`, start commit `75f9655` (`build/demo`).
+
+### Release 1 hand-off — U20 `t-207-discover-emergency-about` (2026-11-06)
+
+- **What changed**: Half B, the Discover home (`app/[locale]/(patient)/page.tsx`, `components/patient/home/{Home,TeaserRow}.tsx`, `pick-chips.ts`, `teaser-sub.ts`), on U46's queries and shared primitives; Emergency on the `ConfigProvider` with `.emerg-note` and `emergview.bmdcShort`; Terms with the lawful section last (FD-109); the localized 404 and catch-all; six new keys in both dictionaries; U20's section of `patient.css`; the demo home components and `DiscoverVM` deleted. Full list, counts and coverage: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-207-discover-emergency-about/code-generation/code-summary.md`.
+- **Not done and why**: the hero search box (T-205, T-206) and live configuration (T-105) are release 2 (FD-105). The reduced-motion walk, the live 404 status and the chips on the seeded database are left for Build and Test (ISS-606).
+- **Questions for the owner**: ISS-603 (`emergview.bmdcShort` Bengali value, FD-042 copy review) and ISS-604 (add a `section` log field to the logger port).
+- **Issues**: fixed ISS-120, ISS-151, ISS-152, ISS-171 (release 1); new ISS-600 to ISS-606 (working numbers, renumbered at merge if U47 merges first).
+- **Gate**: `pnpm check` and `pnpm smoke` green on `bolt/t-207-discover-emergency-about`; see the Gate section of `code-summary.md`.

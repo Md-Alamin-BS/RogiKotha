@@ -1,0 +1,91 @@
+{
+  "stage": "code-generation",
+  "unit": "t-207-discover-emergency-about",
+  "version": 1,
+  "writes": [
+    {
+      "path": "apps/web/src/app/not-found.tsx"
+    },
+    {
+      "path": "apps/web/src/app/pages.test.tsx"
+    },
+    {
+      "path": "apps/web/src/app/root.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/About.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/Emergency.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/Emergency.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/Policy.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/Policy.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/emergency-about-policy.smoke.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/fd-022-lawful-placement.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/home/Home.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/home/Home.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/home/TeaserRow.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/home/home.smoke.test.tsx"
+    },
+    {
+      "path": "apps/web/src/components/patient/home/pick-chips.test.ts"
+    },
+    {
+      "path": "apps/web/src/components/patient/home/pick-chips.ts"
+    },
+    {
+      "path": "apps/web/src/components/patient/home/teaser-sub.test.ts"
+    },
+    {
+      "path": "apps/web/src/components/patient/home/teaser-sub.ts"
+    },
+    {
+      "path": "apps/web/src/lib/titles.ts"
+    },
+    {
+      "path": "apps/web/src/styles/patient.css"
+    },
+    {
+      "path": "docs/implementation/03-routes-and-contracts.md"
+    },
+    {
+      "path": "docs/implementation/ISSUES.md"
+    },
+    {
+      "path": "docs/implementation/tasks/T-207-discover-emergency-about.md"
+    },
+    {
+      "path": "docs/status/decision-log.md"
+    },
+    {
+      "path": "packages/contracts/src/index.ts"
+    },
+    {
+      "path": "packages/i18n/messages/bn.json"
+    },
+    {
+      "path": "packages/i18n/messages/en.json"
+    },
+    {
+      "path": "packages/i18n/src/keys.ts"
+    }
+  ]
+}

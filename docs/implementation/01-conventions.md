@@ -165,7 +165,7 @@ export interface Actor {
 - `requires` on a command may include: `authenticated`, `verifiedEmail`, `notRestricted`, `staffRole: [...]`, `capability: '...'`, `stepUp: true`, `owner: (input, actor) => …`.
 - Every command that changes state writes an `audit_events` row in the same transaction. Details are an **allowlisted** object: ids, enums, counts, before/after for config values. Never free text from users, never emails, never file names, never review bodies.
 - The reporter of a report is never included in any projection except the `moderation.revealReporter` query, which itself writes an `identity_reveals` audit row.
-- Note (2026-11-06, U47, FD-112): a review publish is audited with the author persona as actor, `persona:<personaId>`, and `review_versions.actor_id` holds that persona id, in every identity mode. `AuditActor` gains `persona:${string}`; never write `account:<id>` on an audit row that names a review, because it would link an anonymous review to its account outside `persona_links`.
+- Note (2026-11-06, U47, FD-113): a review publish is audited with the author persona as actor, `persona:<personaId>`, and `review_versions.actor_id` holds that persona id, in every identity mode. `AuditActor` gains `persona:${string}`; never write `account:<id>` on an audit row that names a review, because it would link an anonymous review to its account outside `persona_links`.
 
 ## 6. Internationalisation (AD-9)
 

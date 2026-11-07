@@ -164,7 +164,7 @@ describe('PublishReviewInput', () => {
 });
 
 describe("Reviewer's label codes", () => {
-  it("are the prototype's three codes (FD-110)", () => {
+  it("are the prototype's three codes (FD-111)", () => {
     expect(REVIEWER_LABEL_CODES).toEqual(['wrongDx', 'wrongRx', 'secondOpinion']);
   });
 });

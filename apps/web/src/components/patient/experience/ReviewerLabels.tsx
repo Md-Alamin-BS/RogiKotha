@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 
 // The author's claims (concept-04b renderAccount, `.reviewer-label`). Each is framed as the
 // author's own label, never as a platform finding (BR5.3); a stored label with no code is shown as
-// written (FD-110).
+// written (FD-111).
 export function ReviewerLabels({ claims }: { claims: readonly ExperienceClaimVM[] }) {
   const t = useTranslations();
   if (claims.length === 0) return null;

@@ -546,7 +546,10 @@
     "kicker": "Bangladesh · Public beta",
     "latest": "From the latest accounts",
     "browseDoctors": "Browse doctors",
-    "latestEmpty": "No experiences have been published yet."
+    "latestEmpty": "No experiences have been published yet.",
+    "browseAll": "Browse doctors, hospitals and topics",
+    "browseFacilities": "Browse hospitals & clinics",
+    "browseTopics": "Browse health topics"
   },
   "email": {
     "existing": {
@@ -595,7 +598,8 @@
     "healthLine": "National health helpline",
     "intro": "This page lists the national emergency numbers for Bangladesh. Tap to call from a phone, or read them aloud if you need to. These numbers work 24 hours, every day, free from any mobile network.",
     "poison": "Poison information centre",
-    "title": "Emergency help"
+    "title": "Emergency help",
+    "bmdcShort": "BMDC"
   },
   "errors": {
     "auth": {
@@ -939,6 +943,10 @@
     "results": "Results",
     "viewDoctor": "View doctor",
     "viewFacility": "View hospital"
+  },
+  "notFound": {
+    "body": "The page may have moved, or the address may be mistyped.",
+    "home": "Go to the home page"
   },
   "notif": {
     "draftExpiring": "A draft will be removed in {days} days if you do not finish it.",

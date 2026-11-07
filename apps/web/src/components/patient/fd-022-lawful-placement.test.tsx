@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -8,14 +8,12 @@ import { NextIntlClientProvider, type AbstractIntlMessages } from 'next-intl';
 import { About } from './About';
 import { Emergency, type EmergencyConfig } from './Emergency';
 import { Policy } from './Policy';
+import { Home } from './home/Home';
 
-// FD-022 (docs/status/decision-log.md): the lawful-access disclosure appears
-// only in the Privacy Policy, never as a banner or warning anywhere else.
-// T-207's task file asks for a test that greps every page this task built
-// for the sentence and finds it nowhere but /privacy — Discover, the doctor
-// profile and the experience page are Half B / later tasks and do not exist
-// yet, so this covers exactly the pages Half A owns: /emergency, /about,
-// /terms, /privacy.
+// FD-008, FD-022 and FD-109 (docs/status/decision-log.md): the lawful-access
+// disclosure is the last section of both legal pages, /terms and /privacy,
+// never a banner or warning anywhere else. This renders the pages T-207 owns:
+// /, /emergency, /about, /terms and /privacy.
 
 const require = createRequire(import.meta.url);
 const i18nEntryPath = require.resolve('@rogikotha/i18n');
@@ -49,32 +47,27 @@ function renderHtml(node: ReactElement, locale: 'en' | 'bn'): string {
   return html;
 }
 
-describe('FD-022 lawful-access placement', () => {
-  it('the lawful-access sentence appears on /privacy and nowhere else built so far, in English', () => {
-    const pages = {
-      emergency: renderHtml(<Emergency config={EMERGENCY_CONFIG} locale="en" />, 'en'),
-      about: renderHtml(<About />, 'en'),
-      terms: renderHtml(<Policy kind="terms" />, 'en'),
-      privacy: renderHtml(<Policy kind="privacy" />, 'en'),
-    };
+vi.mock('@/i18n/routing', async () => ({
+  Link: (await import('./shared/link-test-support')).PlainLink,
+}));
 
-    expect(pages.emergency).not.toContain(LAWFUL_BODY_EN);
-    expect(pages.about).not.toContain(LAWFUL_BODY_EN);
-    expect(pages.terms).not.toContain(LAWFUL_BODY_EN);
-    expect(pages.privacy).toContain(LAWFUL_BODY_EN);
+const LAWFUL_BODY = { en: LAWFUL_BODY_EN, bn: LAWFUL_BODY_BN } as const;
+
+describe.each(['en', 'bn'] as const)('FD-022 lawful-access placement in %s', (locale) => {
+  it('appears on /terms and /privacy', () => {
+    expect(renderHtml(<Policy kind="terms" />, locale)).toContain(LAWFUL_BODY[locale]);
+    expect(renderHtml(<Policy kind="privacy" />, locale)).toContain(LAWFUL_BODY[locale]);
   });
 
-  it('the lawful-access sentence appears on /privacy and nowhere else built so far, in Bengali', () => {
-    const pages = {
-      emergency: renderHtml(<Emergency config={EMERGENCY_CONFIG} locale="bn" />, 'bn'),
-      about: renderHtml(<About />, 'bn'),
-      terms: renderHtml(<Policy kind="terms" />, 'bn'),
-      privacy: renderHtml(<Policy kind="privacy" />, 'bn'),
-    };
-
-    expect(pages.emergency).not.toContain(LAWFUL_BODY_BN);
-    expect(pages.about).not.toContain(LAWFUL_BODY_BN);
-    expect(pages.terms).not.toContain(LAWFUL_BODY_BN);
-    expect(pages.privacy).toContain(LAWFUL_BODY_BN);
+  it('appears nowhere on /, /about or /emergency', () => {
+    const home = renderHtml(
+      <Home chips={[]} browse={[]} facilities={[]} latest={[]} emergency={EMERGENCY_CONFIG} />,
+      locale,
+    );
+    expect(home).not.toContain(LAWFUL_BODY[locale]);
+    expect(renderHtml(<About />, locale)).not.toContain(LAWFUL_BODY[locale]);
+    expect(
+      renderHtml(<Emergency config={EMERGENCY_CONFIG} locale={locale} />, locale),
+    ).not.toContain(LAWFUL_BODY[locale]);
   });
 });

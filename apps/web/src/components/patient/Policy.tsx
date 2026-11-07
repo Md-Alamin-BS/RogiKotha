@@ -8,9 +8,17 @@ interface PolicySection {
   bodyKey: string;
 }
 
+// FD-008, FD-022 and FD-109: the lawful-access section is the last section of both legal pages,
+// /terms and /privacy, and appears nowhere else (tested by the FD-022 placement test).
+const LAWFUL_SECTION: PolicySection = {
+  key: 'lawful',
+  titleKey: 'policy.privacy.lawful',
+  bodyKey: 'policy.privacy.lawfulBody',
+};
+
 // Task step 3: "Terms sections reuse existing bodies" (what the service is
 // not, labels are the author's claim, moderation), then the two new
-// Terms-only sections, in this order.
+// Terms-only sections, in this order, then the lawful-access section (FD-109).
 const TERMS_SECTIONS: PolicySection[] = [
   { key: 'limits', titleKey: 'aboutview.limitsTitle', bodyKey: 'aboutview.limitsBody' },
   { key: 'reviewer', titleKey: 'aboutview.reviewerTitle', bodyKey: 'aboutview.reviewerBody' },
@@ -25,15 +33,15 @@ const TERMS_SECTIONS: PolicySection[] = [
     titleKey: 'policy.terms.enforcement',
     bodyKey: 'policy.terms.enforcementBody',
   },
+  LAWFUL_SECTION,
 ];
 
 // Task step 3 + FD-022: identity choices/redaction (reused from About), what
-// we keep, then the lawful-access sentence as its OWN section — the only
-// place in the app this sentence appears (tested by the FD-022 grep test).
+// we keep, then the lawful-access sentence as its OWN section, as on /terms (FD-109).
 const PRIVACY_SECTIONS: PolicySection[] = [
   { key: 'identity', titleKey: 'aboutview.privacyTitle', bodyKey: 'aboutview.privacyBody' },
   { key: 'data', titleKey: 'policy.privacy.data', bodyKey: 'policy.privacy.dataBody' },
-  { key: 'lawful', titleKey: 'policy.privacy.lawful', bodyKey: 'policy.privacy.lawfulBody' },
+  LAWFUL_SECTION,
 ];
 
 // Port of the same "panel head + about-sections" shell as About

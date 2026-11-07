@@ -39,7 +39,7 @@ Every package stays above the 80% floor (D10); `apps/web` fell by 1.8 points bec
 
 ## Files outside U47's owned paths
 
-Shared files changed additively, as the plan lists them: `packages/i18n/messages/{en,bn}.json`, `packages/i18n/src/keys.ts` (generated), `apps/web/src/styles/patient.css`, `apps/web/src/server/container.ts`, `app/[locale]/(patient)/me/page.tsx`, the U46 files for the two optional card filters (`packages/contracts/src/schemas/directory.ts`, `repositories/review-reads.ts`, `directory-module.ts` exports, `directory-repositories.ts`), `taxonomy/index.ts` and `ports/repositories/taxonomy.ts`, `ports/outbox.ts`, `contracts/src/errors.ts`, the package barrels, `demo/doctors.ts`, `fakes/repositories-superset.test.ts`, `docs/status/decision-log.md` (FD-109 to FD-112), `docs/implementation/01-conventions.md` (dated note in §5), `docs/implementation/ISSUES.md`, and the three task files.
+Shared files changed additively, as the plan lists them: `packages/i18n/messages/{en,bn}.json`, `packages/i18n/src/keys.ts` (generated), `apps/web/src/styles/patient.css`, `apps/web/src/server/container.ts`, `app/[locale]/(patient)/me/page.tsx`, the U46 files for the two optional card filters (`packages/contracts/src/schemas/directory.ts`, `repositories/review-reads.ts`, `directory-module.ts` exports, `directory-repositories.ts`), `taxonomy/index.ts` and `ports/repositories/taxonomy.ts`, `ports/outbox.ts`, `contracts/src/errors.ts`, the package barrels, `demo/doctors.ts`, `fakes/repositories-superset.test.ts`, `docs/status/decision-log.md` (FD-110 to FD-113), `docs/implementation/01-conventions.md` (dated note in §5), `docs/implementation/ISSUES.md`, and the three task files.
 
 Not listed in the plan, each recorded as an owned-path addition:
 
@@ -78,7 +78,14 @@ Rows ISS-519 to ISS-546 are new in `docs/implementation/ISSUES.md`.
 ## Hand-off to the merge
 
 - `main` now also carries T-207 (and later commits), so the squash merge meets `patient.css`, `en.json`, `bn.json`, `container.ts`, `pages.test.tsx` and `ISSUES.md` appends: keep both sides, then regenerate `packages/i18n/src/keys.ts` (`pnpm --filter @rogikotha/i18n keys`) and run `pnpm i18n:check`.
-- FD numbers FD-109 to FD-112 and ISS numbers ISS-519 to ISS-546 are taken on this branch; renumber at merge if another Bolt took them (U47's reserved range is ISS-517 to ISS-599).
+- FD numbers FD-110 to FD-113 and ISS numbers ISS-519 to ISS-546 are taken on this branch; renumber at merge if another Bolt took them (U47's reserved range is ISS-517 to ISS-599).
+- FD-109..FD-112 renumbered to FD-110..FD-113 at merge because U20 took FD-109.
+
+## Merge with main (2026-11-07, U20 T-207)
+
+- Conflicts: the plan kept this branch's ticked steps (main had only the unticked copy); `patient.css` keeps U47's section, then U20's (no shared selector); `ISSUES.md` keeps ISS-517..ISS-546, then ISS-600..ISS-606; `decision-log.md` keeps U20's FD-109 and U47's rows as FD-110..FD-113.
+- Fix: `apps/web/src/app/pages.test.tsx` had two `vi.mock` calls each for `@/server/container` and `@/server/command-call` after the auto-merge, and the later U47 mocks hid U20's, so `/` and `/emergency` failed (no `taxonomy`, `directory.listFacilities` or `ports.config`). They are now one mock each, carrying both Units' members.
+- ISS-528 (1) is partly stale after the merge: the home now reads `reviewReads.listExperienceCards`, so only tests still call `listRecentPublishedReviews`.
 - The plan and `unit-test-instructions.md` exist as untracked copies in the main checkout; remove or replace them before the merge, or git refuses to overwrite them.
 - The seams (`ReviewSeams`, `Tx` first), the slot props (`{reviewPublicId}`) and the `authorIdentityModeOf` seam freeze at this merge (BR6.8).
 - A fresh worktree needs `pnpm build` once before `pnpm lint` (ISS-544).

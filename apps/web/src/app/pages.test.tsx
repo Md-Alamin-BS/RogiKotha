@@ -113,7 +113,9 @@ vi.mock('@/server/actions/account', () => ({
 
 // U47: the experience, index, author and /me pages read the review module through the container;
 // an empty module stands in, answering the one fixed experience. The page slots read their own
-// data and have their own tests (experience/slots.test.tsx).
+// data and have their own tests (experience/slots.test.tsx). The home reads U46's queries and the
+// configuration through the container (U20 WF2); empty lists and the default settings stand in,
+// and home-page.test.tsx covers its sections.
 vi.mock('@/server/command-call', () => ({
   runCommand: vi.fn((command: { name: string }, raw: Record<string, unknown>) => {
     const answers: Record<string, unknown> = {
@@ -140,14 +142,19 @@ vi.mock('@/server/command-call', () => ({
       'review.countExperiences': { total: 0 },
       'review.authorCards': { header: { username: raw.username }, page: { items: [] } },
       'review.listOwnReviews': [],
+      'taxonomy.listConditions': [],
+      'directory.listFacilities': { items: [], total: 0 },
     };
     return Promise.resolve({ ok: true, data: answers[command.name] });
   }),
 }));
-vi.mock('@/server/container', () => {
+vi.mock('@/server/container', async () => {
+  const { DEFAULT_CONFIG_VALUES } = await import('@rogikotha/contracts');
   const command = (name: string) => ({ name });
   return {
     getContainer: () => ({
+      taxonomy: { listConditions: command('taxonomy.listConditions') },
+      directory: { listFacilities: command('directory.listFacilities') },
       review: {
         getExperience: command('review.getExperience'),
         countExperiences: command('review.countExperiences'),
@@ -157,7 +164,11 @@ vi.mock('@/server/container', () => {
         isReviewAuthor: () => Promise.resolve(false),
       },
       reviewReads: { listExperienceCards: command('review.listExperienceCards') },
-      ports: { unitOfWork: { read: (fn: (tx: unknown) => unknown) => fn({}) } },
+      ports: {
+        unitOfWork: { read: (fn: (tx: unknown) => unknown) => fn({}) },
+        config: { current: () => Promise.resolve(DEFAULT_CONFIG_VALUES) },
+        logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+      },
     }),
   };
 });

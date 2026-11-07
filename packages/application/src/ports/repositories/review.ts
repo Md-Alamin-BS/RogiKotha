@@ -231,7 +231,7 @@ export interface NewReviewVersion {
   snapshot: Record<string, unknown>;
   changeKind: 'publish';
   actorKind: 'author';
-  /** The author persona id, never an account id (FD-112). */
+  /** The author persona id, never an account id (FD-113). */
   actorId: string;
   now: Date;
 }
@@ -280,7 +280,7 @@ export interface EligibleReviewRecord {
   title: string;
   body: string | null;
   sections: ReviewSectionsRecord | null;
-  /** As stored: release-1 codes or seeded labels written as is (FD-110). */
+  /** As stored: release-1 codes or seeded labels written as is (FD-111). */
   claims: { label: string }[];
   language: ReviewLanguage;
   publishedAt: Date;

@@ -120,3 +120,7 @@ Line coverage after (from `coverage/coverage-summary.json`; floor 80% per packag
 | All files | 94.61% (5,979/6,319) |
 
 Before: Step 1 did not write its counts or coverage table into the record, so this record claims no "before" figure. The gate re-run at merge (Step 18), on `main` before and after the squash, gives the comparison.
+
+## Merge-time gate on main (2026-11-06)
+
+After U9 (21c1c59), U11 (a135232) and U46 (153a65c) were squash-merged, `pnpm check` on `main` exited 0: 269 test files, 2767 tests passed plus 2 expected failures, i18n parity 913 keys. `pnpm smoke` exited 0: 21 files, 41 tests. ISS-516 (S1, a closing brace dropped from `patient.css` by the branch merge of U9, found and fixed in U46) is part of this Unit's found-and-fixed list.

@@ -30,6 +30,7 @@ export type ViewName =
   | 'reset'
   | 'terms'
   | 'privacy'
+  | 'not-found'
   | 'queue'
   | 'evidence'
   | 'providers'
@@ -82,6 +83,9 @@ export function titleForView(view: ViewName, t: Translate): string {
       return t('policy.terms.title');
     case 'privacy':
       return t('policy.privacy.title');
+    // ASSUMPTION(U20): the patient 404 (BR4.2) is a view of its own, titled by its heading.
+    case 'not-found':
+      return t('errors.common.notFound');
     case 'register':
       return t('auth.register.title');
     case 'signin':

@@ -16,7 +16,7 @@ This decision is binding and overrides the text below where they differ.
 
 - **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-307 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, the motion step and the acceptance checks.
 
-## Amendments — release 1 (FD-105, FD-109..FD-112)
+## Amendments — release 1 (FD-105, FD-110..FD-113)
 
 These decisions are binding and override the text below where they differ. Release 1 builds this task inside Unit U47 `u47-reviews`, together with T-301 and T-306 (record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u47-reviews/`).
 
@@ -25,7 +25,7 @@ These decisions are binding and override the text below where they differ. Relea
 - **Slots (C16)** — `CommentThread`, `EvidenceSection` and `ReviewHistory` take only `reviewPublicId` and fetch for themselves; their props freeze at U47's merge.
 - **Indexing and errors** — the experience page is indexable with the title `<title> — <brand>`; `not_found` and `validation` become `notFound()` before any read of the authorship; the author page is `noindex` and answers an unknown username and a username with no public reviews with the same empty page (status 200).
 - **Index** — 20 cards a page from `reviewReads.listExperienceCards` with `review.countExperiences`; a bad cursor redirects (307) to the first page; `experiences/loading.tsx` is a static skeleton with no animation.
-- **FD-109..FD-112** — no checkbox lists on the page; labels are the Reviewer's labels of the three codes; the facility account is not on this page; audit and version actors are personas.
+- **FD-110..FD-113** — no checkbox lists on the page; labels are the Reviewer's labels of the three codes; the facility account is not on this page; audit and version actors are personas.
 - **Acceptance commands as built** — run `pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/components/patient/experience apps/web/src/app` (`experience.test.tsx`, `slots.test.tsx`, `experiences/[id]/page.test.tsx`, `experiences/page.test.tsx`, `authors/[username]/page.test.tsx`, `me/page.test.tsx`); the component names `FollowUpSpine` and `Tombstone` do not exist in release 1. Bengali digits are asserted in `experiences/page.test.tsx` and `slots.test.tsx`.
 
 ## Goal

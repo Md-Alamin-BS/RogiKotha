@@ -1,0 +1,50 @@
+export const meta = {
+  name: 'build-batch2-chunks',
+  description: 'Build U47 reviews and U20 discover pages in parallel, each as a chain of short step-range agents that commit after each chunk',
+  phases: [{ title: 'Build', detail: 'step-range chunks per Unit, committed after each' }, { title: 'Records', detail: 'gate, records, commit' }],
+}
+const ROOT = 'C:\\Users\\BS01395\\Documents\\GitHub'
+const REC = 'aidlc/spaces/default/intents/261011-aidlc-adoption/construction'
+const FOLLOWUP = `Two review follow-ups from merged Units, fixed here because U47 owns the pages they affect:
+(a) U9 review Major: sign-in drops return targets without a locale prefix. \`requireAccount\` (apps/web/src/server/auth/session.ts) and \`requireContributor\` pass a bare returnTo (/write, /experiences/<id>, /experiences/<id>/edit) as next, and \`safeAuthNext\` (server/actions/auth-form.ts) refuses paths without a locale, so readers land on /{locale}/me. Prefix the active locale inside requireAccount/requireContributor (and wherever the C16 gate builds its sign-in link), and add a test that follows the full path to the sign-in page's next.
+(b) U11 review Major: \`WebContainer.identity\` (apps/web/src/server/container.ts) exposes the whole identity module (ownership.ownPersonaIds, ownsPersona, personaFor) to every getContainer() caller. Narrow the exported type to the members pages/actions legitimately need (publicProjection and ownsPersona as used), keep ownership/personaFor local to buildContainer for the review and community factories, and widen the BR3.6 boundary scans (identity-boundary tests) from server/actions/** and app/api/** to app/** and server/**.
+Add an ISSUES.md row for each, Found in U9 / U11 review, Status fixed in U47.`
+const UNITS = [
+  { id: 'U47', u: 'u47-reviews', wt: 'rk-u47', db: 'rogikotha_test_w4',
+    chunks: [['1-5', 'baseline, FD rows, dependency check, seam check, runner'], ['6-12', 'domain and contracts with their tests'], ['13-20', 'ports, database repository and its tests, test-support'], ['21-31', 'application module, seams, commands, queries, factory, taxonomy addition'], ['32-34', 'application tests'], ['35-38', 'web container, actions and their tests'], ['39-46', 'i18n keys and the composer with its tests'], ['47-54', 'write page, experience components and pages, slots, /me addition, CSS, experience tests'], ['55-58', 'demo code retirement (grep for callers first), moved tests, smoke'], ['FOLLOWUP', 'the two review follow-ups below'], ['59-60', 'the gate and the acceptance rows']], rec: '61' },
+  { id: 'U20', u: 't-207-discover-emergency-about', wt: 'rk-u20', db: 'rogikotha_test_w5',
+    chunks: [['1-5', 'baseline, FD row, runner, keys, no lower-layer change'], ['6-12', 'home helpers, teaser row, home rewrite, CSS'], ['13-19', 'pages, emergency, policy, not-found, clean-up'], ['20-21', 'smoke and the gate']], rec: '22' },
+]
+const head = (x, steps, what) => `Conversation language: English
+
+You are a developer for Unit ${x.id} \`${x.u}\` of RogiKotha release 1. Work ONLY in the git worktree ${ROOT}\\${x.wt} (branch bolt/${x.u}, based on main 153a65c which has U9, U11 and U46 merged). Never touch ${ROOT}\\rogikotha or the other worktrees: other developers work in parallel.
+
+SETUP (do it only if missing): copy ${ROOT}\\rogikotha\\.env into the worktree root and change ONLY the DATABASE_URL_TEST database name to \`${x.db}\` (create it on the compose PostgreSQL at port 5433 if it does not exist; never print secrets); \`timeout 600 pnpm install --frozen-lockfile\`.
+
+YOUR SCOPE: ${steps === 'FOLLOWUP' ? 'the follow-up fixes below' : `plan Step(s) ${steps} only`} (${what}). Plan: ${REC}/${x.u}/code-generation/code-generation-plan.md; test instructions beside it; design: ${REC}/${x.u}/functional-design/.
+
+BE FAST: read only your step text, the design sections it cites, and the files you change or call; \`git log --stat -3\` shows what exists. Start writing within your first 10 tool calls. Save as you go.
+
+Rules: every command has an outer \`timeout\` (≤1500 s); DB-touching commands one at a time; file tools for writing; every user-facing string in BOTH en.json and bn.json (real Bengali); shared files append-only; synthetic data only; no tool/model/agent identity anywhere; never git reset --hard / checkout -- / clean; never touch .github/workflows; never run any \`aidlc\` command; Result err(...) for expected failures; respect eslint.boundaries.mjs. Narrower reversible option when unclear, marked ASSUMPTION(${x.id}).
+
+FINISH: tick your step checkbox(es) in the plan, run the unit-scoped tests for what you changed (green), then \`git add -A && git commit -m "${x.u}: ${steps === 'FOLLOWUP' ? 'review follow-ups from U9 and U11' : 'plan step(s) ' + steps}"\` (configured identity, no trailer). Report what you did, test results, the commit sha, and any ASSUMPTION or proposed ISS row.`
+const R = { type: 'object', properties: { summary: { type: 'string' }, tests: { type: 'string' }, green: { type: 'boolean' }, commit: { type: 'string' }, notes: { type: 'array', items: { type: 'string' } } }, required: ['summary', 'tests', 'green', 'commit', 'notes'] }
+async function run(prompt, label, phase) {
+  const o = { label, phase, /* BUILDER: add agentType, model and effort for the builder agent here */ schema: R }
+  let r = await agent(prompt, o)
+  if (r === null) r = await agent(prompt + '\n\nAn earlier attempt was cut off: check `git status` and the plan checkboxes, keep what exists, finish the rest.', { ...o, label: label + ' (retry)' })
+  return r
+}
+const out = await parallel(UNITS.map(x => async () => {
+  const notes = []
+  for (const [s, w] of x.chunks) {
+    const p = head(x, s, w) + (s === 'FOLLOWUP' ? '\n\n' + FOLLOWUP : '')
+    const r = await run(p, `${x.id}:${s === 'FOLLOWUP' ? 'follow-ups' : 'steps ' + s}`, 'Build')
+    if (!r) return { unit: x.u, stopped: `chunk ${s} failed twice`, notes }
+    notes.push(`${s}: ${r.summary.slice(0, 600)} | ${r.tests.slice(0, 300)} | ${r.commit} | ${r.notes.join('; ').slice(0, 600)}`)
+  }
+  const rec = await run(head(x, x.rec, 'records') + `\n\nWork so far: ${JSON.stringify(notes)}.
+Write: ISSUES.md rows (Found in ${x.id} ${x.u}; next free ids after the last row on main, which ends at ISS-516; U47 and U20 run in parallel, so U47 numbers from ISS-517 upward and U20 from ISS-600 upward to avoid collisions, renumbered at merge); ${REC}/${x.u}/code-generation/code-summary.md (built, gate counts, coverage, files outside owned paths, ISS ids); traceability.json (upstream ids from ../functional-design/traceability.json mapped to files); source-manifest.json {stage:"code-generation", unit, version:1, writes:[{path}]} from \`git diff --name-only main\` EXCLUDING paths under aidlc/, .claude/ and .agents/ and paths with [ ] or * (list those in code-summary.md). Then \`timeout 300 pnpm format:check\` (prettier --write this Unit's files if needed), a final \`timeout 1500 pnpm check\` and \`timeout 600 pnpm smoke\`, both green (re-run a single 5000 ms or worker timeout before trusting it), and commit.`, `${x.id}:records`, 'Records')
+  return { unit: x.u, notes, records: rec }
+}))
+return out

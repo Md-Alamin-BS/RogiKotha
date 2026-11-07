@@ -23,7 +23,7 @@ const PageParams = {
   pageSize: z.number().int().min(1).max(100).optional(),
 };
 
-/** The release-1 Reviewer's labels: the prototype's three codes (FD-110, BR3.8). */
+/** The release-1 Reviewer's labels: the prototype's three codes (FD-111, BR3.8). */
 export const REVIEWER_LABEL_CODES = ['wrongDx', 'wrongRx', 'secondOpinion'] as const;
 export type ReviewerLabelCode = (typeof REVIEWER_LABEL_CODES)[number];
 

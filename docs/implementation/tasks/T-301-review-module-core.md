@@ -17,15 +17,15 @@ These decisions are binding and override the text below where they differ.
 - **FD-080 / C9 — `repeatEpisode` on `review.published`** — The event payload is `{reviewId, doctorId, branchId?, repeatEpisode: boolean}`. `repeatEpisode` is true when the same account already has a published review of the same doctor that shares a condition tag and the same treatment period (AC6.1.4). The review still publishes. The payload never names the earlier review. The exact matching rule (what counts as the same period, how tags are compared) is written in this task's Functional Design. T-403 builds the worker job that consumes the flag. Changes: step 5 (`review.publish`), Hard-rule checklist and new acceptance rows.
 - **FD-090 — worker grant on `review_drafts`** — Drafts expire after 30 days, and the hourly `retention.expire` job (T-309) must warn 4 days before and purge expired drafts. The worker has no grant on `review_drafts` today, so this task adds a forward-only migration that grants `rk_worker` `SELECT (id, account_id, expires_at)` and `DELETE` on `review_drafts`, and nothing on `payload_enc`. This is a worker-grant change (data boundary) and needs its own decision entry, which the orchestrator adds as FD-090; the migration is not applied before that entry exists. T-309 builds the job. Changes: Owned paths, step 4 (`expireDrafts` stays a web-tier method; the worker purge is T-309's) and new acceptance rows.
 
-## Amendments — release 1 (FD-105, FD-109..FD-112)
+## Amendments — release 1 (FD-105, FD-110..FD-113)
 
 These decisions are binding and override the text below where they differ. Release 1 builds this task inside Unit U47 `u47-reviews`, together with T-306 and T-307 (record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u47-reviews/`).
 
 - **FD-105 — what release 1 builds** — drafts (encrypted, minimal, capped at 10 live per account), `review.publish` and `facilityReview.publish`, the projection, the module surface and the four seams of C9 release 1. The state machine of §17 shrinks to `(none) → published`; hide, remove, delete and restore are release 2 (T-302), so the acceptance row "Transition table complete" is deferred. Changes: Goal, Steps and the acceptance row above.
-- **FD-109** — the FR46 checkboxes ("What went well / What could improve") are deferred; AC6.2.3 is narrowed to its sentiment half. Changes: the projection and `DraftPayload` carry sentiment and outcome only.
-- **FD-110** — Reviewer's labels are the prototype's three codes; stored labels that are not codes are shown as written.
-- **FD-111** — facility visit accounts are named or pseudonymous; an anonymous one is refused as `validation` on `identity`.
-- **FD-112** — the author persona (`persona:<id>`) is the actor of the publish audit row and of `review_versions.actor_id`, never the account. BR3.12: an anonymous publish with a new doctor is refused with `review.anonymous_new_doctor` and writes nothing.
+- **FD-110** — the FR46 checkboxes ("What went well / What could improve") are deferred; AC6.2.3 is narrowed to its sentiment half. Changes: the projection and `DraftPayload` carry sentiment and outcome only.
+- **FD-111** — Reviewer's labels are the prototype's three codes; stored labels that are not codes are shown as written.
+- **FD-112** — facility visit accounts are named or pseudonymous; an anonymous one is refused as `validation` on `identity`.
+- **FD-113** — the author persona (`persona:<id>`) is the actor of the publish audit row and of `review_versions.actor_id`, never the account. BR3.12: an anonymous publish with a new doctor is refused with `review.anonymous_new_doctor` and writes nothing.
 - **FD-080 as built** — `review.published` carries `{reviewId, doctorId, branchId: null}` and no `repeatEpisode`; the three FD-080 acceptance rows are deferred to the Unit that builds the repeat-episode job (T-403).
 - **FD-090 as built** — no migration and no `rk_worker` grant in release 1 (U47 adds none); the worker purge and the expiry warning are T-309's (ISS-520). The row "FD-090: worker grant is narrow" is deferred.
 - **Acceptance commands as built** — the `@rk/...` filters do not exist; run the unit-scoped commands of `construction/u47-reviews/code-generation/unit-test-instructions.md`: `pnpm exec vitest run --config vitest.workspace.ts --project domain|contracts|application packages/<package>/src/review` (or `modules/review`), `--project database packages/database/src/repositories/review-module.int.test.ts review-reads.int.test.ts` and `--project web-int apps/web/src/server/review-module.int.test.ts` (run `--project test-support-seed` first against a fresh test database, ISS-545). Rows run against the matching tests: "Publish minimum fields" and "Rate limit" in `publish.test.ts`, "Anonymous alias scoped" in `review-module.int.test.ts` (`web-int`) and `projection.test.ts`, "Facility isolation" in `review-reads.int.test.ts`, "No scalar score" in `packages/contracts/src/schemas/review.test.ts`. "Preview equals public" holds up to the optional `period`, `relationship` and `doctor` of `PreviewVM` (ISS-534).
@@ -145,7 +145,7 @@ Built in release 1 by Unit U47 `u47-reviews` (branch `bolt/u47-reviews`, 2026-11
 
 ### Not done and why
 - State machine beyond `(none) → published`, `repeatEpisode`, the FD-090 grant and the draft purge: release 2 (T-302, T-403, T-309); ISS-520.
-- Custom Reviewer's labels, the FR46 checkboxes and anonymous facility visits: FD-109 to FD-111; ISS-526, ISS-527.
+- Custom Reviewer's labels, the FR46 checkboxes and anonymous facility visits: FD-110 to FD-112; ISS-526, ISS-527.
 
 ### Questions for the human
 - Allow U+200C and U+200D in long text and tag text, for Bengali conjunct input (ISS-530)?

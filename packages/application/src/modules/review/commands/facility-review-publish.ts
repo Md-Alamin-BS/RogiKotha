@@ -1,5 +1,5 @@
 // `facilityReview.publish` (WF5, BR3.10, BR4.8): `forbidden` while facility feedback is off; the
-// branch, period, story and criteria are checked and an anonymous mode is refused (FD-111) before
+// branch, period, story and criteria are checked and an anonymous mode is refused (FD-112) before
 // the shared publish limit is hit (BR1.3). Then, in the one transaction: the persona, the
 // `facility_reviews` row with every criterion key, the audit row with the persona actor and the
 // draft deletion. No outbox event, and never a doctor's review or figures (hard rule).

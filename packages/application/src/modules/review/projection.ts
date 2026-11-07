@@ -77,7 +77,7 @@ export function sectionTexts(sections: ReviewSectionsRecord | null): (string | u
 
 const LABEL_CODES: ReadonlySet<string> = new Set(REVIEWER_LABEL_CODES);
 
-/** A known code, or a seeded label shown as written; always under Reviewer's label (FD-110). */
+/** A known code, or a seeded label shown as written; always under Reviewer's label (FD-111). */
 export function claimOf(label: string): ExperienceClaimVM {
   return LABEL_CODES.has(label) ? { code: label as ReviewerLabelCode } : { text: label };
 }

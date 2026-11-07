@@ -25,7 +25,7 @@
 - **Sensors**: on (from scope classic)
 - **Learnings**: on (from scope classic)
 - **Summary Confirmation**: off (from scope classic)
-- **Plan Approval**: on (set by a command)
+- **Plan Approval**: off (set by you)
 - **Collaborators**: off (set by a command)
 
 ## Workspace State
@@ -43,7 +43,7 @@
 - **Revision Count**: 11
 - **Construction Checkpoints**: enabled
 - **Construction Iteration**: stage-major
-- **Construction Execution**: swarm
+- **Construction Execution**: serial
 
 
 
@@ -59,6 +59,18 @@
 - **Unit Ownership**: solo
 
 - **Skeleton Stance**: off
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -187,7 +199,7 @@ Per unit: [TBD]
 - **Current Stage**: code-generation
 - **Next Stage**: build-and-test
 - **Status**: Running
-- **Last Updated**: 2026-11-05T12:36:43Z
+- **Last Updated**: 2026-11-06T12:45:26Z
 
 - **Construction Autonomy Mode**: autonomous
 

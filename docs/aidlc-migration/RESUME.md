@@ -1,5 +1,7 @@
 # Resume point — Construction run (saved 2026-10-29; demo slice updated 2026-11-01)
 
+> **2026-11-06 evening: the latest handoff is [handoff-2026-11-06/README.md](handoff-2026-11-06/README.md).** It is the last push of that day; read it first. It supersedes the "where things stand" parts below.
+
 Read this first when the session restarts. **On another computer, start with [CONTINUE-ON-ANOTHER-DEVICE.md](CONTINUE-ON-ANOTHER-DEVICE.md).** It lists exactly where the run stopped, what was in flight, and the next steps in order. The owner's decisions and every agent-made call are in [OWNER-REVIEW-QUEUE.md](OWNER-REVIEW-QUEUE.md).
 
 ## Owner instructions in force
