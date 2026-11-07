@@ -85,6 +85,8 @@ vi.mock('@rogikotha/database', () => {
     createInterimPublicEvidenceCount: vi.fn(() => ({})),
     // U48's block.
     PgEvidenceRepository: Stub,
+    // U49's block.
+    PgCommunityRepository: Stub,
   };
 });
 vi.mock('./better-auth/instance', () => ({

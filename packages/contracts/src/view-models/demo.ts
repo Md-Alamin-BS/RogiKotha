@@ -178,13 +178,6 @@ export interface DemoCreateReviewInput {
   language: DemoReviewLanguage;
 }
 
-export interface DemoUpdateReviewFields {
-  title: string;
-  body: string;
-  sentiment: Sentiment | null;
-  outcome: Outcome | null;
-}
-
 export interface DemoComment {
   id: string;
   publicId: string;

@@ -18,7 +18,6 @@ import {
   err,
   ok,
   type Actor,
-  type DemoCurrentAccount,
   type ErrorCode,
   type Result,
 } from '@rogikotha/contracts';
@@ -28,9 +27,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { redirect } from '@/i18n/routing';
 import { getRequestContext } from '@/server/auth';
-import { requireContributor } from '@/server/auth/session';
 import { getContainer } from '@/server/container';
-import { reviews } from '@/server/data';
 import {
   discardDraftAction,
   duplicateHintAction,
@@ -38,8 +35,6 @@ import {
   publishDraftAction,
   publishFacilityVisitAction,
   saveDraftAction,
-  saveReviewEdit,
-  type EditFormState,
 } from './review';
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
@@ -72,101 +67,12 @@ vi.mock('@/i18n/routing', () => ({
     throw new Error('NEXT_REDIRECT');
   }),
 }));
-vi.mock('@/server/auth/session', () => ({ requireContributor: vi.fn() }));
-vi.mock('@/server/data', () => ({
-  reviews: { updateOwnReview: vi.fn() },
-}));
 
-const PUBLIC_ID = 'a1b2c3d4e5';
-
-function anAccount(overrides: Partial<DemoCurrentAccount> = {}): DemoCurrentAccount {
-  return {
-    accountId: '0190f5a2-0000-7000-8000-000000000001',
-    authUserId: 'auth-user-1',
-    username: 'abba_of_two',
-    displayName: 'Abba of Two',
-    locale: 'en',
-    status: 'active',
-    currentPersonaId: '0190f5a2-0000-7000-8000-0000000000aa',
-    pseudonymousPersonaId: null,
-    pseudonymousDisplayName: null,
-    ...overrides,
-  };
-}
-
-function anEditForm(overrides: Record<string, string> = {}): FormData {
-  const form = new FormData();
-  const fields = {
-    publicId: PUBLIC_ID,
-    title: 'Calm, but the follow-up was slow',
-    body: 'The follow-up appointment took three weeks to arrange this time.',
-    sentiment: 'mixed',
-    outcome: 'helped',
-    ...overrides,
-  };
-  for (const [name, value] of Object.entries(fields)) form.set(name, value);
-  return form;
-}
-
-const editStart: EditFormState = { attempt: 0, values: null, fieldErrors: {}, formError: null };
-
+// The edit rows (the author's correction, another account's review, a malformed id, a signed-out
+// save, a refused field) moved to review-edit.test.ts with `correctReviewAction` (U22).
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(getLocale).mockResolvedValue('en');
-  vi.mocked(requireContributor).mockResolvedValue(anAccount());
-  vi.mocked(reviews.updateOwnReview).mockResolvedValue({ ok: true, data: { version: 2 } });
-});
-
-describe('editing an experience', () => {
-  it("saves the author's correction and opens the experience again", async () => {
-    await expect(saveReviewEdit(editStart, anEditForm())).rejects.toThrow('NEXT_REDIRECT');
-
-    expect(reviews.updateOwnReview).toHaveBeenCalledWith(PUBLIC_ID, anAccount().accountId, {
-      title: 'Calm, but the follow-up was slow',
-      body: 'The follow-up appointment took three weeks to arrange this time.',
-      sentiment: 'mixed',
-      outcome: 'helped',
-    });
-    expect(redirect).toHaveBeenCalledWith({ href: `/experiences/${PUBLIC_ID}`, locale: 'en' });
-  });
-
-  it("answers someone else's experience with not found and does not redirect", async () => {
-    vi.mocked(reviews.updateOwnReview).mockResolvedValue({ ok: false, reason: 'not_found' });
-
-    const state = await saveReviewEdit(editStart, anEditForm());
-
-    expect(state).toMatchObject({ attempt: 1, formError: 'errors.common.notFound' });
-    expect(redirect).not.toHaveBeenCalled();
-  });
-
-  it('never touches the database for a malformed public id', async () => {
-    const state = await saveReviewEdit(editStart, anEditForm({ publicId: "x' or 1=1" }));
-
-    expect(state.formError).toBe('errors.common.notFound');
-    expect(reviews.updateOwnReview).not.toHaveBeenCalled();
-  });
-
-  it('sends a signed-out visitor to sign in, back to the edit page', async () => {
-    vi.mocked(requireContributor).mockRejectedValue(new Error('NEXT_REDIRECT'));
-
-    await expect(saveReviewEdit(editStart, anEditForm())).rejects.toThrow('NEXT_REDIRECT');
-
-    expect(requireContributor).toHaveBeenCalledWith({ returnTo: `/experiences/${PUBLIC_ID}/edit` });
-    expect(reviews.updateOwnReview).not.toHaveBeenCalled();
-  });
-
-  it('refuses an invalid sentiment and a too-long body next to their fields', async () => {
-    const state = await saveReviewEdit(
-      editStart,
-      anEditForm({ sentiment: 'five-stars', body: 'x'.repeat(10_001) }),
-    );
-
-    expect(state.fieldErrors).toEqual({
-      sentiment: 'errors.common.validation',
-      body: 'formErrors.compose.bodyTooLong',
-    });
-    expect(reviews.updateOwnReview).not.toHaveBeenCalled();
-  });
 });
 
 const ACCOUNT_ID = '0190f5a2-0000-7000-8000-000000000001';

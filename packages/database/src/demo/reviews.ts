@@ -1,15 +1,8 @@
 // Remaining demo-slice experience functions (FR4, FR6.1), each kept until the Unit that retires it:
 //   getReviewByPublicId   - U48 (comments) and U49 (evidence), then U50.
-//   getOwnReviewForEdit   - U22 (edit an own review).
-//   updateOwnReview       - U22 (edit an own review).
-// Publishing now runs through the review module (U47); the demo writers were deleted with it.
-import {
-  type DemoOutcome,
-  type DemoReviewDetail,
-  type DemoReviewEditRow,
-  type DemoUpdateReviewFields,
-  type Locale,
-} from '@rogikotha/contracts';
+//   getOwnReviewForEdit   - U22 no longer calls it; deleted at merge after a caller grep (Step 33).
+// Publishing and correcting now run through the review module (U47, U22); the demo writers are gone.
+import { type DemoReviewDetail, type DemoReviewEditRow, type Locale } from '@rogikotha/contracts';
 import { and, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 
 import type { Db, Tx } from '../client';
@@ -19,16 +12,6 @@ import { personaLinks, personas } from '../schema/identity';
 import { reviews, reviewVersions } from '../schema/review';
 import { taxonomyTerms } from '../schema/taxonomy';
 import { DEMO_READY_EVIDENCE_STATES } from './ready-evidence-states';
-
-/** The fields a `review_versions.snapshot` keeps for a quick review. */
-function snapshotOf(fields: DemoUpdateReviewFields) {
-  return {
-    title: fields.title,
-    body: fields.body,
-    sentiment: fields.sentiment,
-    outcome: fields.outcome,
-  };
-}
 
 /** Personas of one account, as a subquery: ownership is "one of my personas wrote it". */
 function personasOf(db: Db | Tx, accountId: string) {
@@ -140,50 +123,4 @@ export async function getOwnReviewForEdit(
     .limit(1);
   if (!row) return null;
   return { ...row, body: row.body ?? '' };
-}
-
-/**
- * Updates title, body, sentiment and outcome of the author's own experience, bumps `version` and
- * `updated_at`, and writes a `review_versions` row (`change_kind = 'correction'`), in one
- * transaction. `not_found` also covers "someone else's experience", so ownership is not leaked.
- */
-export function updateOwnReview(
-  db: Db,
-  publicId: string,
-  accountId: string,
-  fields: DemoUpdateReviewFields,
-): Promise<DemoOutcome<{ version: number }, 'not_found'>> {
-  return db.transaction(async (tx) => {
-    // One conditional update, so the ownership check and the write cannot be split by a race.
-    const [updated] = await tx
-      .update(reviews)
-      .set({
-        title: fields.title,
-        body: fields.body,
-        sentiment: fields.sentiment,
-        outcome: fields.outcome,
-        version: sql`${reviews.version} + 1`,
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(reviews.publicId, publicId),
-          eq(reviews.kind, 'quick'),
-          isPublished,
-          inArray(reviews.authorPersonaId, personasOf(tx, accountId)),
-        ),
-      )
-      .returning({ id: reviews.id, version: reviews.version });
-    if (!updated) return { ok: false, reason: 'not_found' } as const;
-
-    await tx.insert(reviewVersions).values({
-      reviewId: updated.id,
-      version: updated.version,
-      snapshot: snapshotOf(fields),
-      changeKind: 'correction',
-      actorKind: 'author',
-      actorId: accountId,
-    });
-    return { ok: true, data: { version: updated.version } } as const;
-  });
 }

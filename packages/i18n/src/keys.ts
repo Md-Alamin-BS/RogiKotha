@@ -331,7 +331,9 @@ export type MessageKey =
   | 'compose.drafts.saved'
   | 'compose.drafts.title'
   | 'compose.drafts.untitled'
+  | 'compose.edit.correctionNote'
   | 'compose.edit.intro'
+  | 'compose.edit.reload'
   | 'compose.edit.save'
   | 'compose.edit.title'
   | 'compose.edit.versionNote'
@@ -363,6 +365,7 @@ export type MessageKey =
   | 'compose.preview'
   | 'compose.previewEmpty'
   | 'compose.publish'
+  | 'compose.publishNotSaved'
   | 'compose.publishedNote'
   | 'compose.redact'
   | 'compose.redactBody'
@@ -441,6 +444,7 @@ export type MessageKey =
   | 'crit.staff'
   | 'crit.waiting'
   | 'demo.banner'
+  | 'disclaimer.comments'
   | 'disclaimer.long'
   | 'disclaimer.short'
   | 'discover.browse'
@@ -506,6 +510,8 @@ export type MessageKey =
   | 'errors.common.rateLimited'
   | 'errors.common.validation'
   | 'errors.community.blocked'
+  | 'errors.community.commentHidden'
+  | 'errors.community.commentLength'
   | 'errors.community.mentionAnonymous'
   | 'errors.community.replyDepth'
   | 'errors.config.invariant'
@@ -525,7 +531,9 @@ export type MessageKey =
   | 'errors.retention.previewDrift'
   | 'errors.review.anonymousNewDoctor'
   | 'errors.review.attestationRequired'
+  | 'errors.review.correctionsLimit'
   | 'errors.review.draftsFull'
+  | 'errors.review.editConflict'
   | 'errors.review.minFields'
   | 'errors.review.missingBranch'
   | 'errors.review.missingDoctor'
@@ -594,8 +602,11 @@ export type MessageKey =
   | 'experience.currentNote'
   | 'experience.currentStatus'
   | 'experience.dangerWarning'
+  | 'experience.deleteCancel'
   | 'experience.deleteComment'
+  | 'experience.deleteConfirm'
   | 'experience.discussion'
+  | 'experience.discussionClosed'
   | 'experience.editComment'
   | 'experience.editExperience'
   | 'experience.edited'
@@ -605,6 +616,7 @@ export type MessageKey =
   | 'experience.laterCare'
   | 'experience.laterCareNote'
   | 'experience.linkWarning'
+  | 'experience.noComments'
   | 'experience.openEvidence'
   | 'experience.otherAccounts'
   | 'experience.outcomeLabel'
@@ -623,6 +635,7 @@ export type MessageKey =
   | 'experience.saveComment'
   | 'experience.sentimentLabel'
   | 'experience.signInToComment'
+  | 'experience.threadTruncated'
   | 'experience.timeline'
   | 'experience.writtenBy'
   | 'experience.yourExperience'
@@ -682,6 +695,23 @@ export type MessageKey =
   | 'hero.browse'
   | 'hero.cta'
   | 'hero.title'
+  | 'history.corrected'
+  | 'history.field.after'
+  | 'history.field.claims'
+  | 'history.field.diagnosis'
+  | 'history.field.outcome'
+  | 'history.field.sentiment'
+  | 'history.field.story'
+  | 'history.field.symptoms'
+  | 'history.field.treatment'
+  | 'history.kind.corrected'
+  | 'history.kind.edited'
+  | 'history.kind.published'
+  | 'history.originalHeading'
+  | 'history.showOriginal'
+  | 'history.unavailable'
+  | 'history.version'
+  | 'history.yourVersions'
   | 'how.1.b'
   | 'how.1.t'
   | 'how.2.b'
@@ -1296,7 +1326,9 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.drafts.saved',
   'compose.drafts.title',
   'compose.drafts.untitled',
+  'compose.edit.correctionNote',
   'compose.edit.intro',
+  'compose.edit.reload',
   'compose.edit.save',
   'compose.edit.title',
   'compose.edit.versionNote',
@@ -1328,6 +1360,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.preview',
   'compose.previewEmpty',
   'compose.publish',
+  'compose.publishNotSaved',
   'compose.publishedNote',
   'compose.redact',
   'compose.redactBody',
@@ -1406,6 +1439,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'crit.staff',
   'crit.waiting',
   'demo.banner',
+  'disclaimer.comments',
   'disclaimer.long',
   'disclaimer.short',
   'discover.browse',
@@ -1471,6 +1505,8 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.common.rateLimited',
   'errors.common.validation',
   'errors.community.blocked',
+  'errors.community.commentHidden',
+  'errors.community.commentLength',
   'errors.community.mentionAnonymous',
   'errors.community.replyDepth',
   'errors.config.invariant',
@@ -1490,7 +1526,9 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.retention.previewDrift',
   'errors.review.anonymousNewDoctor',
   'errors.review.attestationRequired',
+  'errors.review.correctionsLimit',
   'errors.review.draftsFull',
+  'errors.review.editConflict',
   'errors.review.minFields',
   'errors.review.missingBranch',
   'errors.review.missingDoctor',
@@ -1559,8 +1597,11 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'experience.currentNote',
   'experience.currentStatus',
   'experience.dangerWarning',
+  'experience.deleteCancel',
   'experience.deleteComment',
+  'experience.deleteConfirm',
   'experience.discussion',
+  'experience.discussionClosed',
   'experience.editComment',
   'experience.editExperience',
   'experience.edited',
@@ -1570,6 +1611,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'experience.laterCare',
   'experience.laterCareNote',
   'experience.linkWarning',
+  'experience.noComments',
   'experience.openEvidence',
   'experience.otherAccounts',
   'experience.outcomeLabel',
@@ -1588,6 +1630,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'experience.saveComment',
   'experience.sentimentLabel',
   'experience.signInToComment',
+  'experience.threadTruncated',
   'experience.timeline',
   'experience.writtenBy',
   'experience.yourExperience',
@@ -1647,6 +1690,23 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'hero.browse',
   'hero.cta',
   'hero.title',
+  'history.corrected',
+  'history.field.after',
+  'history.field.claims',
+  'history.field.diagnosis',
+  'history.field.outcome',
+  'history.field.sentiment',
+  'history.field.story',
+  'history.field.symptoms',
+  'history.field.treatment',
+  'history.kind.corrected',
+  'history.kind.edited',
+  'history.kind.published',
+  'history.originalHeading',
+  'history.showOriginal',
+  'history.unavailable',
+  'history.version',
+  'history.yourVersions',
   'how.1.b',
   'how.1.t',
   'how.2.b',

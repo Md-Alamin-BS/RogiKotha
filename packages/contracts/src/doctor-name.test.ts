@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { doctorNameKey, doctorNameLetterCount, hasControlOrFormat } from './doctor-name';
+import {
+  doctorNameKey,
+  doctorNameLetterCount,
+  hasControlOrFormat,
+  hasControlOrFormatExceptJoiners,
+} from './doctor-name';
 
 describe('doctorNameKey', () => {
   it('ignores a Dr. or Prof. Dr. title, case and spaces', () => {
@@ -45,5 +50,34 @@ describe('hasControlOrFormat', () => {
   it('accepts ordinary Bengali and English names', () => {
     expect(hasControlOrFormat('ডা. সিনথেটিক রহমান')).toBe(false);
     expect(hasControlOrFormat('Dr. Synthetic Rahman')).toBe(false);
+  });
+});
+
+describe('hasControlOrFormatExceptJoiners', () => {
+  const ZWJ = String.fromCodePoint(0x200d);
+  const ZWNJ = String.fromCodePoint(0x200c);
+
+  it('accepts the Bengali joiners ZWJ and ZWNJ, which the strict check refuses (FD-114)', () => {
+    const rab = `র${ZWJ}্যাব`;
+    const udjapon = `উদ্${ZWNJ}যাপন`;
+    expect(hasControlOrFormatExceptJoiners(rab)).toBe(false);
+    expect(hasControlOrFormatExceptJoiners(udjapon)).toBe(false);
+    expect(hasControlOrFormat(rab)).toBe(true);
+  });
+
+  it('still finds bidi overrides and isolates, zero-width space, BOM and controls', () => {
+    for (const cp of [0x202e, 0x202a, 0x2066, 0x2069, 0x200b, 0x200e, 0xfeff, 0x00ad, 0x0000]) {
+      expect(hasControlOrFormatExceptJoiners(`a${String.fromCodePoint(cp)}b`)).toBe(true);
+    }
+  });
+
+  it('allows line breaks and tabs only when asked, and nothing else with them (FD-115)', () => {
+    const typed = 'first line\r\nsecond\tline\nthird';
+    expect(hasControlOrFormatExceptJoiners(typed)).toBe(true);
+    expect(hasControlOrFormatExceptJoiners(typed, { lineBreaks: true })).toBe(false);
+    for (const cp of [0x0000, 0x000b, 0x000c, 0x0085, 0x202e, 0x2066, 0x200b]) {
+      const text = `a\n${String.fromCodePoint(cp)}b`;
+      expect(hasControlOrFormatExceptJoiners(text, { lineBreaks: true })).toBe(true);
+    }
   });
 });

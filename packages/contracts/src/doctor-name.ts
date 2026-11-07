@@ -17,6 +17,21 @@ export function hasControlOrFormat(text: string): boolean {
   return CONTROL_OR_FORMAT.test(text);
 }
 
+// Every Cc and Cf character except ZWNJ (U+200C) and ZWJ (U+200D): Bengali spelling needs them
+// (ra with ya-phala) and Bengali keyboards insert them (FD-114). Bidi controls stay refused.
+const CONTROL_OR_FORMAT_EXCEPT_JOINERS = /(?![\u{200C}\u{200D}])[\p{Cc}\p{Cf}]/u;
+
+/**
+ * Like `hasControlOrFormat`, but allows the two joiners of written Bengali (FD-114); with
+ * `lineBreaks`, also the `\n`, `\r` and `\t` a textarea produces (FD-115).
+ */
+export function hasControlOrFormatExceptJoiners(
+  text: string,
+  { lineBreaks = false }: { lineBreaks?: boolean } = {},
+): boolean {
+  return CONTROL_OR_FORMAT_EXCEPT_JOINERS.test(lineBreaks ? text.replace(/[\n\r\t]/g, '') : text);
+}
+
 /** Letters left once the title is removed; a usable name has at least three. */
 export function doctorNameLetterCount(name: string): number {
   return name.normalize('NFC').replace(TITLE, '').match(/\p{L}/gu)?.length ?? 0;

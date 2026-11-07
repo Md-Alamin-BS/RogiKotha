@@ -1,5 +1,5 @@
 import type { DraftPayloadInput, IdentityMode } from '@rogikotha/contracts';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { REVIEW_PUBLISH_LIMIT, REVIEW_PUBLISH_WINDOW_SEC } from './limits';
 import { publishRateLimitKey } from './publish-support';
@@ -425,6 +425,44 @@ describe('review.publish refusals', () => {
 
     const key = publishRateLimitKey(m.accountId);
     expect(w.fakes.rateLimiter.calls.filter((c) => c.key === key)).toHaveLength(1);
+  });
+});
+
+describe('review.publish claims its draft once (BR2.5)', () => {
+  it('answers not_found to a second publish of a draft that was already published', async () => {
+    const w = makeReviewModuleWorld();
+    const m = await w.member();
+    const draftId = await w.draftOf(m);
+
+    expectOk(await publishAs(w, m, draftId));
+    expect(expectErr(await publishAs(w, m, draftId)).code).toBe('not_found');
+
+    expect(w.reviews.reviews).toHaveLength(1);
+    expect(w.fakes.outbox.events).toHaveLength(1);
+  });
+
+  it('answers not_found and writes nothing when another publish claimed the draft after it was read', async () => {
+    const w = makeReviewModuleWorld();
+    const m = await w.member();
+    const draftId = await w.draftOf(m);
+    // The concurrent transaction deleted the row between this one's read and its claim.
+    vi.spyOn(w.reviews, 'deleteOwnDraft').mockResolvedValueOnce(false);
+
+    expect(expectErr(await publishAs(w, m, draftId)).code).toBe('not_found');
+
+    expectNothingWritten(w, 2);
+    const key = publishRateLimitKey(m.accountId);
+    expect(w.fakes.rateLimiter.calls.filter((c) => c.key === key)).toHaveLength(0);
+  });
+
+  it('gives the draft back when a later check refuses, so the author can publish it after fixing', async () => {
+    const w = makeReviewModuleWorld();
+    const m = await w.member();
+    const draftId = await w.draftOf(m, without(w.payload(), 'story'));
+
+    expect(expectErr(await publishAs(w, m, draftId)).code).toBe('review.min_fields');
+
+    expect(w.reviews.drafts.map((d) => d.id)).toEqual([draftId]);
   });
 });
 

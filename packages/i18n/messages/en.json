@@ -451,9 +451,11 @@
     "previewEmpty": "Your words will appear here.",
     "edit": {
       "title": "Edit your experience",
-      "intro": "You can change the title, your story and how you describe it. The doctor, the date and your name stay as they were published.",
+      "intro": "You can change the title, your story, how you describe it and your labels. The doctor, the date and your name stay as they were published.",
       "save": "Save changes",
-      "versionNote": "Each change is kept as a new version, and the experience shows “Edited”."
+      "versionNote": "Each change is kept as a new version, and the experience shows “Edited”.",
+      "correctionNote": "Changes to your story, sentiment, outcome or labels are shown as dated corrections, and the earlier wording stays readable under Show original.",
+      "reload": "Reload the latest version"
     },
     "addCancel": "Choose from the list instead",
     "addNote": "The doctor appears straight away, marked “Added by a member — not confirmed”. RogiKotha has not checked that this doctor exists or that these details are right.",
@@ -467,6 +469,7 @@
       "check": "Check and publish"
     },
     "draftNotSaved": "Not saved yet. Trying again shortly.",
+    "publishNotSaved": "Your latest changes could not be saved, so nothing was published. Fix the fields listed here or check your connection, then publish again.",
     "draftMissing": "That draft is no longer available, so a new one was started.",
     "drafts": {
       "title": "Your drafts",
@@ -536,7 +539,8 @@
   },
   "disclaimer": {
     "long": "Everything below is written by members of the public about their own or a witnessed experience. RogiKotha does not diagnose, does not verify clinical correctness, and does not decide whether care was negligent. Do not change or delay treatment based on what you read here.",
-    "short": "Patient-reported experiences. Not medical advice."
+    "short": "Patient-reported experiences. Not medical advice.",
+    "comments": "Comments are members' own experiences and views, not medical advice."
   },
   "discover": {
     "browse": "Browse by health topic",
@@ -632,7 +636,9 @@
     "community": {
       "blocked": "You can't reply to this account.",
       "mentionAnonymous": "Anonymous authors can't be @mentioned.",
-      "replyDepth": "Replies can only go one level deep here."
+      "replyDepth": "Replies can only go one level deep here.",
+      "commentLength": "Comment: write between {min} and {max} characters.",
+      "commentHidden": "Your comment holds hidden or control characters that can't be posted. Remove them, or type the text again, and post it."
     },
     "config": {
       "invariant": "That setting isn't recognised. Nothing was changed.",
@@ -671,7 +677,9 @@
       "missingTag": "Add at least one tag, or choose “Not sure”.",
       "periodInvalid": "Choose a month and year that is not in the future.",
       "missingBranch": "Choose the branch you visited.",
-      "draftsFull": "You already keep as many drafts as allowed. Continue one or discard one to start a new one."
+      "draftsFull": "You already keep as many drafts as allowed. Continue one or discard one to start a new one.",
+      "correctionsLimit": "You have made many corrections today. Please try again tomorrow.",
+      "editConflict": "This review changed in another tab — reload to see the latest."
     }
   },
   "formErrors": {
@@ -815,6 +823,11 @@
     "replyPost": "Post reply",
     "sentimentLabel": "Overall",
     "signInToComment": "Sign in to comment",
+    "noComments": "No comments yet.",
+    "discussionClosed": "The discussion for this experience is not available.",
+    "threadTruncated": "This discussion is long, so only the first 500 comments are shown.",
+    "deleteConfirm": "Delete this comment? This cannot be undone.",
+    "deleteCancel": "Keep comment",
     "yourExperience": "Your experience"
   },
   "facility": {
@@ -864,6 +877,29 @@
     "browse": "Browse experiences",
     "cta": "Share your experience",
     "title": "Read what patients actually went through."
+  },
+  "history": {
+    "corrected": "Corrected: {fields} — {date}",
+    "field": {
+      "after": "what happened afterwards",
+      "claims": "labels",
+      "diagnosis": "what they were told",
+      "outcome": "outcome",
+      "sentiment": "sentiment",
+      "story": "story",
+      "symptoms": "symptoms",
+      "treatment": "treatment"
+    },
+    "kind": {
+      "corrected": "Corrected",
+      "edited": "Edited",
+      "published": "Published"
+    },
+    "originalHeading": "Wording before this correction",
+    "showOriginal": "Show original",
+    "unavailable": "The edit history could not be loaded right now.",
+    "version": "Version {n}",
+    "yourVersions": "Your versions"
   },
   "how": {
     "1": {

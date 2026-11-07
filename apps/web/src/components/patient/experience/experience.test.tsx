@@ -180,7 +180,7 @@ describe.each(['en', 'bn'] as const)('the experience components in %s', (locale:
     expect(screen.getByText(t('disclaimer.long'))).toHaveAttribute('data-static', 'disclaimer');
   });
 
-  it('gives the author the tools, with the edit link for a quick review only', () => {
+  it('gives the author the tools, with the edit link for a quick and a detailed review', () => {
     const { unmount } = renderInLocale(
       locale,
       <ExperiencePage vm={aPage()} reviewPublicId={PUBLIC_ID} isAuthor published={false} />,
@@ -201,7 +201,10 @@ describe.each(['en', 'bn'] as const)('the experience components in %s', (locale:
       />,
     );
     expect(screen.getByTestId('author-tools')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: t('experience.editExperience') })).toBeNull();
+    expect(screen.getByRole('link', { name: t('experience.editExperience') })).toHaveAttribute(
+      'href',
+      `/experiences/${PUBLIC_ID}/edit`,
+    );
   });
 
   it('shows the margin with the doctor marks, the tags and the author’s other experiences', () => {

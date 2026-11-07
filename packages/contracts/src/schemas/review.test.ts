@@ -4,6 +4,8 @@ import { CRITERIA, CRITERION_VALUES } from '../enums';
 import { ERROR_CODES, errorMessageKey } from '../errors';
 import type { ExperiencePageVM, PageBylineVM } from '../view-models/experience';
 import {
+  CORRECTION_FIELDS,
+  CorrectReviewInput,
   DiscardDraftInput,
   DraftPayload,
   FacilityReviewPublishInput,
@@ -82,6 +84,48 @@ describe('DraftPayload', () => {
     expect(DraftPayload.safeParse({ story: 'Fine\u200Btext' }).success).toBe(false);
     expect(DraftPayload.safeParse({ title: 'Dr\u202EX' }).success).toBe(false);
     expect(DraftPayload.safeParse({ title: 'Two\nlines' }).success).toBe(false);
+  });
+
+  // FD-114: "rab" (ra, ZWJ, ya-phala) needs ZWJ; "udjapon" is typed with ZWNJ to stop a conjunct.
+  const ZWJ = String.fromCodePoint(0x200d);
+  const ZWNJ = String.fromCodePoint(0x200c);
+  const RLO = String.fromCodePoint(0x202e);
+  const WITH_ZWJ = `\u09B0${ZWJ}\u09CD\u09AF\u09BE\u09AC`;
+  const WITH_ZWNJ = `\u0989\u09A6\u09CD${ZWNJ}\u09AF\u09BE\u09AA\u09A8`;
+
+  it('saves Bengali words holding ZWJ or ZWNJ in the title, story, sections and typed tags', () => {
+    const parsed = DraftPayload.safeParse({
+      title: WITH_ZWJ,
+      story: `${WITH_ZWJ}\n${WITH_ZWNJ}`,
+      sections: { symptoms: WITH_ZWNJ, after: WITH_ZWJ },
+      tags: [{ group: 'symptom', text: WITH_ZWJ }],
+    });
+    expect(parsed.success).toBe(true);
+    // Stored as typed: the joiners are not stripped (BR3.9).
+    expect(parsed.data?.title).toBe(WITH_ZWJ);
+    expect(parsed.data?.story).toBe(`${WITH_ZWJ}\n${WITH_ZWNJ}`);
+  });
+
+  it('still refuses a bidi override, an isolate or another invisible character', () => {
+    expect(DraftPayload.safeParse({ story: `${WITH_ZWJ}${RLO}` }).success).toBe(false);
+    expect(DraftPayload.safeParse({ title: `${WITH_ZWNJ}${RLO}` }).success).toBe(false);
+    expect(DraftPayload.safeParse({ tags: [{ group: 'symptom', text: `${RLO}x` }] }).success).toBe(
+      false,
+    );
+    // Inside the text: `trim` would remove a trailing U+FEFF before the check runs.
+    for (const cp of [0x2066, 0x200b, 0xfeff, 0x0000]) {
+      const story = `${WITH_ZWJ}${String.fromCodePoint(cp)}${WITH_ZWNJ}`;
+      expect(DraftPayload.safeParse({ story }).success).toBe(false);
+    }
+  });
+
+  it('keeps the strict check for a new doctor name, as the directory does (FD-100)', () => {
+    expect(DraftPayload.safeParse({ newDoctor: { name: WITH_ZWJ } }).success).toBe(false);
+  });
+
+  it('names the refused field in the issue path', () => {
+    const parsed = DraftPayload.safeParse({ story: `x${RLO}y` });
+    expect(parsed.error?.issues[0]?.path).toEqual(['story']);
   });
 
   it('counts the story limit in graphemes, so 10 000 Bengali graphemes save', () => {
@@ -209,5 +253,96 @@ describe('no score anywhere (BR9.4)', () => {
         criteria,
       }).success,
     ).toBe(false);
+  });
+});
+
+describe('CorrectReviewInput', () => {
+  const quick = {
+    publicId: 'r3v1ew0001',
+    expectedVersion: 1,
+    title: 'Careful with my mother',
+    content: { kind: 'quick', story: 'A synthetic story that is long enough to count.' },
+    claims: [],
+  };
+  const detailed = {
+    ...quick,
+    content: { kind: 'detailed', sections: { symptoms: 'Fever', after: 'Better' } },
+    sentiment: 'mixed',
+    outcome: 'helped',
+    claims: ['wrongDx', 'A seeded label'],
+  };
+
+  it('accepts a quick and a detailed correction', () => {
+    expect(CorrectReviewInput.safeParse(quick).success).toBe(true);
+    expect(CorrectReviewInput.safeParse(detailed).success).toBe(true);
+  });
+
+  it.each(['doctorId', 'identityMode', 'tags', 'personaId', 'accountId'])(
+    'refuses the extra key %s',
+    (key) => {
+      expect(CorrectReviewInput.safeParse({ ...quick, [key]: 'x' }).success).toBe(false);
+    },
+  );
+
+  it('refuses a stale-looking version of zero', () => {
+    expect(CorrectReviewInput.safeParse({ ...quick, expectedVersion: 0 }).success).toBe(false);
+  });
+
+  it('counts the title in graphemes, so 120 Bengali letters fit and 121 do not', () => {
+    const bangla = (n: number) => 'ক'.repeat(n);
+    expect(CorrectReviewInput.safeParse({ ...quick, title: bangla(120) }).success).toBe(true);
+    expect(CorrectReviewInput.safeParse({ ...quick, title: bangla(121) }).success).toBe(false);
+  });
+
+  it('accepts Bengali words holding ZWJ or ZWNJ in the title, story and sections, as FD-114 does', () => {
+    const cp = (...points: number[]) => String.fromCodePoint(...points);
+    const zwj = cp(0x09b0, 0x200d, 0x09cd, 0x09af, 0x09be, 0x09ac);
+    const zwnj = cp(0x0989, 0x09a6, 0x09cd, 0x200c, 0x09af, 0x09be, 0x09aa, 0x09a8);
+    const quickParsed = CorrectReviewInput.safeParse({
+      ...quick,
+      title: zwj,
+      content: { kind: 'quick', story: `${zwj}\n${zwnj}` },
+    });
+    expect(quickParsed.data?.title).toBe(zwj);
+    const sections = { symptoms: zwnj, after: zwj };
+    expect(
+      CorrectReviewInput.safeParse({ ...quick, content: { kind: 'detailed', sections } }).success,
+    ).toBe(true);
+    expect(CorrectReviewInput.safeParse({ ...quick, title: `${zwj}${cp(0x202e)}` }).success).toBe(
+      false,
+    );
+  });
+
+  it('refuses content that mixes a story with sections', () => {
+    const mixed = { kind: 'quick', story: 'A synthetic story.', sections: { symptoms: 'x' } };
+    expect(CorrectReviewInput.safeParse({ ...quick, content: mixed }).success).toBe(false);
+    const other = { kind: 'detailed', sections: {}, story: 'A synthetic story.' };
+    expect(CorrectReviewInput.safeParse({ ...quick, content: other }).success).toBe(false);
+  });
+
+  it('refuses duplicate claims', () => {
+    expect(CorrectReviewInput.safeParse({ ...quick, claims: ['wrongDx', 'wrongDx'] }).success).toBe(
+      false,
+    );
+  });
+
+  it('refuses a rating-like key inside the sections', () => {
+    const content = { kind: 'detailed', sections: { symptoms: 'x', rating: '5' } };
+    expect(CorrectReviewInput.safeParse({ ...quick, content }).success).toBe(false);
+  });
+});
+
+describe('CORRECTION_FIELDS', () => {
+  it('keeps the fixed order of the design and never names the title', () => {
+    expect([...CORRECTION_FIELDS]).toEqual([
+      'story',
+      'symptoms',
+      'diagnosis',
+      'treatment',
+      'after',
+      'sentiment',
+      'outcome',
+      'claims',
+    ]);
   });
 });

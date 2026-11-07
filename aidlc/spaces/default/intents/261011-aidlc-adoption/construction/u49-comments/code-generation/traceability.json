@@ -1,0 +1,46 @@
+{
+  "stage": "code-generation",
+  "unit": "u49-comments",
+  "upstream_ids": [
+    "AC8.1.1", "AC8.1.2", "AC8.1.3", "AC8.1.4", "AC8.1.5", "AC8.1.6",
+    "AC3.3.1", "AC3.3.2", "AC3.3.3", "AC3.3.4", "AC3.3.5", "AC3.3.6"
+  ],
+  "coverage": [
+    { "id": "AC8.1.1", "status": "OK", "target": "BR1.1, BR1.3, BR1.4, BR5.2, BR5.3: packages/domain/src/community/{comment,thread}.ts; packages/application/src/modules/community/commands/post-comment.ts (+ .test.ts); packages/database/src/repositories/community.ts (+ community.int.test.ts, depth trigger); apps/web/src/components/patient/comments/{CommentForm,CommentActions,CommentThreadView}.tsx; steps 9, 15, 18, 26, 27" },
+    { "id": "AC8.1.2", "status": "OK", "target": "BR5.1: apps/web/src/components/patient/comments/{CommentDisclaimer,CommentThread}.tsx (+ CommentThread.test.tsx, disclaimer first in every state); packages/i18n/messages/{en,bn}.json disclaimer.comments; steps 24, 25, 27" },
+    { "id": "AC8.1.3", "status": "Deferred", "target": "Comment editing and its private history are release 2 (FD-105)" },
+    { "id": "AC8.1.4", "status": "OK", "target": "BR2.1, BR2.2, BR2.3, BR3.3: packages/domain/src/community/{deletion,thread}.ts; packages/application/src/modules/community/commands/delete-comment.ts (+ .test.ts); queries/get-thread.ts; comments.smoke.test.ts; apps/web/src/components/patient/comments/{CommentPlaceholder,DeleteCommentButton}.tsx; steps 9, 16, 19, 26, 28" },
+    { "id": "AC8.1.5", "status": "Deferred", "target": "The provider label and the privacy report are release 2 (FD-105)" },
+    { "id": "AC8.1.6", "status": "OK", "target": "BR1.2, BR1.4, BR5.4: packages/contracts/src/schemas/community.ts (+ community.test.ts); packages/application/src/modules/community/commands/post-comment.ts; apps/web/src/server/actions/comments.ts (+ comments.test.ts); apps/web/src/components/patient/comments/CommentForm.tsx; steps 5, 15, 21, 26" },
+    { "id": "AC3.3.1", "status": "OK", "target": "BR1.6, BR3.4: packages/application/src/modules/community/commands/post-comment.ts (the review's identity mode through authorIdentityModeOf); queries/get-thread.ts; steps 15, 17, 18" },
+    { "id": "AC3.3.2", "status": "OK", "target": "BR1.6, BR3.4, BR4.1, BR4.2: post-comment.ts (personaFor with the review id); apps/web/src/components/patient/experience/Byline.tsx (thread alias on the comment variant); apps/web/src/server/actions/ownership.adversarial.test.ts; steps 15, 18, 25" },
+    { "id": "AC3.3.3", "status": "OK", "target": "BR4.1, BR3.4: packages/contracts/src/view-models/thread.ts (public ids only); queries/get-thread.test.ts (thread JSON); CommentThreadView.test.tsx (rendered HTML); comments.test.ts (done result); steps 6, 19, 22, 27" },
+    { "id": "AC3.3.4", "status": "Deferred", "target": "Reactions are release 2 (FD-105); BR3.7 keeps every number out of the thread" },
+    { "id": "AC3.3.5", "status": "Deferred", "target": "The staff identity reveal is release 2 (FD-105)" },
+    { "id": "AC3.3.6", "status": "N/A", "target": "The review page and the writing flow are U47's; U49's slot adds no staff-access banner" }
+  ],
+  "reverse": [
+    { "id": "BR1.5", "status": "N/A", "target": "abuse limit: domain/community/limits.ts (30 per rolling hour), post-comment.ts, post-comment.test.ts; step 18" },
+    { "id": "BR1.7", "status": "N/A", "target": "transaction, audit and outbox: modules/community/audit.ts, ports/outbox.ts comment.posted; steps 15, 18" },
+    { "id": "BR2.4", "status": "N/A", "target": "audit row for deletes: delete-comment.ts, delete-comment.test.ts; steps 16, 19" },
+    { "id": "BR3.1", "status": "N/A", "target": "unknown or unpublished review gives a closed empty thread: get-thread.ts, CommentThread.tsx; steps 17, 19, 25" },
+    { "id": "BR3.2", "status": "N/A", "target": "neutral ordering, oldest first: domain/community/thread.ts, thread.test.ts; step 10" },
+    { "id": "BR3.5", "status": "N/A", "target": "own-comment flag without an ownership leak: get-thread.ts (ownsPersona once per live author, signed-in viewer only); step 19" },
+    { "id": "BR3.6", "status": "N/A", "target": "bounded thread read: domain/community/thread.ts capRows, repository threadRows limit 501; steps 9, 12, 19" },
+    { "id": "BR3.7", "status": "N/A", "target": "no number stands for quality: ThreadVM has no count, like or rank field; step 6" },
+    { "id": "BR5.5", "status": "N/A", "target": "slot never throws into the page: CommentThread.tsx fallback state, CommentThread.test.tsx; steps 25, 27" },
+    { "id": "BR6.1", "status": "N/A", "target": "demo code removal: packages/database/src/demo/comments.ts and comments.int.test.ts deleted; persona_links allowlists; steps 4, 23" }
+  ],
+  "steps": [
+    { "step": "1-4", "brs": [], "acs": [], "note": "baseline, seam checks, caller grep (merge with main, ISS-660)" },
+    { "step": "5-6", "brs": ["BR1.2", "BR3.7", "BR4.1"], "acs": ["AC8.1.6", "AC3.3.3"], "note": "contracts: inputs, ThreadVM" },
+    { "step": "7-8", "brs": [], "acs": [], "note": "no migration; the comments table and depth trigger already hold release 1" },
+    { "step": "9-10", "brs": ["BR1.2", "BR2.3", "BR3.2", "BR3.3", "BR3.6"], "acs": ["AC8.1.4"], "note": "domain community" },
+    { "step": "11-14", "brs": ["BR1.3", "BR3.6"], "acs": ["AC8.1.1"], "note": "repository port, PgCommunityRepository, fakes, builders" },
+    { "step": "15-19", "brs": ["BR1.1", "BR1.5", "BR1.6", "BR1.7", "BR2.1", "BR2.2", "BR2.4", "BR3.1", "BR3.4", "BR3.5"], "acs": ["AC8.1.1", "AC8.1.4", "AC3.3.1", "AC3.3.2", "AC3.3.3"], "note": "community module: post, delete, thread" },
+    { "step": "20-23", "brs": ["BR6.1", "BR4.1"], "acs": ["AC8.1.6", "AC3.3.3"], "note": "container wiring, actions, demo code removal" },
+    { "step": "24-28", "brs": ["BR5.1", "BR5.2", "BR5.3", "BR5.4", "BR5.5", "BR2.2"], "acs": ["AC8.1.1", "AC8.1.2", "AC8.1.4", "AC8.1.6", "AC3.3.2"], "note": "keys, components, tests, smoke" },
+    { "step": "29", "brs": [], "acs": ["AC8.1.1", "AC8.1.2", "AC8.1.4", "AC8.1.6", "AC3.3.1", "AC3.3.2", "AC3.3.3"], "note": "gate and acceptance rows" },
+    { "step": "30-31", "brs": [], "acs": [], "note": "docs, contracts and records" }
+  ]
+}

@@ -34,6 +34,8 @@
     { "path": "apps/web/src/server/logger.ts" },
     { "path": "apps/worker/src/container.ts" },
     { "path": "apps/worker/src/container.wiring.test.ts" },
+    { "path": "apps/worker/src/env.load.test.ts" },
+    { "path": "apps/worker/src/env.ts" },
     { "path": "apps/worker/src/handlers/evidence-process.int.test.ts" },
     { "path": "apps/worker/src/handlers/evidence-process.test.ts" },
     { "path": "apps/worker/src/handlers/evidence-process.ts" },

@@ -741,6 +741,16 @@ operations:
 
 **Note 2026-11-07 (U47 Code Generation): C7 and C6 as used by U47.** C7: `directory.addMemberDoctor` is called on the publish transaction for named and pseudonymous reviews only and is never called for an anonymous review (BR3.12); an anonymous publish with a new doctor is refused with `review.anonymous_new_doctor` and writes nothing. U47 maps the draft's `bmdc` to U46's `bmdcNumber`. C6: `taxonomy.listSpecialties` (new query, `[{id, name}]` by name in the reader's language) with the repository method `TaxonomyRepository.listPublished(tx, kind, locale)`; `taxonomy.ensureProvisionalTerm` is used for typed tags, whose term language is `bn` when the text has a Bengali letter, else `en`.
 
+**Note 2026-11-07 (U22 Code Generation, functional-spec § 2, § 6, § 8; review R-08): C9 and C16 as built by U22 in release 1.** Additive to U47's note; no frozen U47 signature changes.
+
+- `review.getOwnForEdit` is added (`modules/review/queries/get-own-for-edit.ts`): `{publicId}` → `EditReviewVM` (`publicId`, `kind`, `version`, `title`, `story` or `sections`, `sentiment`, `outcome`, `claims`, doctor display name) or `not_found`. It is a recorded additive operation beyond the C9 text. It checks in the order `reviewIdForPublicId` → `isReviewPublished` → `isReviewAuthor`, and every failure is the same `not_found` (BR1.1).
+- `review.correct` (`commands/correct.ts`): input `CorrectReviewInput` (`publicId`, `expectedVersion`, `kind`, title, story or sections, sentiment, outcome, claims; strict, no other key) → `{publicId, version, changed}`. Errors `validation`, `not_found`, `conflict` (stale `expectedVersion`), `rate_limited` (30 committed corrections per account in 24 hours, a `RateLimiter.reserveFailure` slot released on refusal or rollback; review R-07) and `forbidden` (gate). A no-op writes nothing. It takes no reason in release 1 and queues no email. It writes one `review_versions` row (`change_kind correction`, `actor_kind author`, `actor_id` = the author persona, FD-113), the audit row `review.corrected` with the persona actor (review R-06), and the outbox event `review.changed {reviewId, doctorId, branchId}` (C15).
+- `review.getHistory` returns `{editedAt?, corrections: [{at, fields, original}], versions?: [{version, at, kind, fields}]}`, replacing the `corrections: [{at, field}]` of the block above. The fields of one version are grouped under one date. `original` is the content of the version just before each material correction, and it is public to every reader, so the earlier account stays readable (AC6.3.2). A title-only edit adds no correction and no original. `versions` is present for the author only and carries no text. A missing `corrected` key in a stored snapshot reads as `[]` (review R-05).
+- The material fields are `CORRECTION_FIELDS` (`story`, `symptoms`, `diagnosis`, `treatment`, `after`, `sentiment`, `outcome`, `claims`), wider than the block's "diagnosis, treatment or outcome" (FD-105, U22 rules BR3.1).
+- C16: the internals of `<ReviewHistory reviewPublicId>` (props unchanged) and the edit route are U22's. The slot reads through `loadReviewHistory` in `apps/web/src/server/actions/review-slots.ts`, which replaces `loadLastEditedAt`; the application `lastEditedAt` stays on the module for U50.
+- R-08: the projection (`modules/review/projection.ts`) is not extended; all history reaches the page through the slot and `review.getHistory`. The repository extension is U47's `packages/database/src/repositories/review-module.ts` (`lockForCorrection`, `updateContent`, `findOwnForEdit`, `listVersions`, and U47's `insertVersion`); the T-302 stubs in `packages/database/src/repositories/review.ts` stay for U50.
+- Deferred to release 2 (FD-105): follow-ups, `delete`, tombstones, `restore`, `setState`, `redact` and `review.deletionStep`.
+
 ### C10 — Community
 
 **Release:** release 1 for `comment.post` (narrowed), `comment.delete` by the author and `community.thread`, provider U49; the consumer is U49's own `<CommentThread>` slot (C16). The release-1 amendments follow the block. Deferred to release 2 (FD-105): mentions, `comment.edit`, `block.set`, `block.unset`, `community.reactionsOf`, `reaction.set`, `comment.setState`, `community.deletionStep`, the `ModerationSignals` port and the `DiscussionPresence` implementation.
@@ -793,20 +803,23 @@ Release-1 amendments (FD-105, Q24):
 contract: C10 Community, release 1
 operations:
   - name: comment.post
-    input: "PostCommentInput {reviewPublicId, parentId?, body}; supersedes the reviewId field of the block above for release 1"
-    changes: "resolves reviewPublicId once through Review.reviewIdForPublicId (C9), then works with reviewId only; plain text; one reply level; the review must be published, checked with Review.isReviewPublished(reviewId) (C9), else not_found (also for an unknown publicId); persona from identity.personaFor (C4) with the review's reviewId; no mentions, no blocks, no discussion email; limit from the C18 constant on T-101's RateLimiter; outbox comment.posted {commentId, reviewId} only, the recipient fields return additively in release 2 with T-405"
-    errors: [community.reply_depth, rate_limited, not_found]
-    requires: verified (confirmed email) + account status active
+    input: "PostCommentInput {reviewPublicId, parentPublicId?, body}; public ids only, body trimmed, NFC-normalised, 1 to 2000 code points; supersedes the reviewId and parentId fields of the block above for release 1"
+    result: "{publicId}"
+    changes: "resolves reviewPublicId once through Review.reviewIdForPublicId (C9), then works with reviewId only; plain text; one reply level; the review must be published, checked with Review.isReviewPublished(reviewId) (C9), else not_found (also for an unknown publicId); persona from identity.personaFor (C4) with the review's reviewId; no mentions, no blocks, no discussion email; limit from the C18 constant on T-101's RateLimiter, 30 posts per account per rolling hour, refused calls not counted; outbox comment.posted {commentId, reviewId} only, the recipient fields return additively in release 2 with T-405"
+    errors: [validation, community.reply_depth, rate_limited {retryAfterSec}, not_found, forbidden, auth.email_unverified]
+    requires: verified (confirmed email) + account status active; ErrorCode has no unauthenticated, so a signed-out or restricted caller gets forbidden (ISS-669)
     built_by: U49
   - name: comment.delete
     kind: command (author only)
-    behaviour: "a comment with replies becomes a Comment deleted placeholder; one without replies is removed (FR72)"
+    input: "DeleteCommentInput {commentPublicId}"
+    result: "{placeholder: boolean}"
+    behaviour: "a comment with replies becomes a Comment deleted placeholder; one without replies is removed (FR72); an unknown, foreign or already deleted comment returns the same not_found; a restricted account may delete its own; audit only (persona actor, no body text), no outbox"
     built_by: U49
   - name: community.thread
     kind: query
     input: "{reviewPublicId}, resolved once through Review.reviewIdForPublicId (C9); an unknown or unpublished review gives an empty thread with no form"
-    result: "ThreadVM: comments with persona projections only, never an account id or an internal reviewId"
-    caller: "<CommentThread> slot (C16)"
+    result: "ThreadVM {open, items: [{kind: comment | placeholder, comment?, placeholderPublicId?, replies}], truncated}: persona projections only, never an account id, persona id or internal reviewId; a placeholder has no author, date or actions; `mine` is true only for a signed-in viewer's own live comment; at most 500 listed rows (truncated flag); persona projections read in batches of at most 200; no like, count or rank field"
+    caller: "<CommentThread> slot (C16), through apps/web/src/server/actions/comment-thread.ts"
     built_by: U49
 ```
 

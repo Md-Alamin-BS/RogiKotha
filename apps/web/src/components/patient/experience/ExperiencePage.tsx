@@ -27,8 +27,7 @@ export function ExperiencePage({
   published: boolean;
 }) {
   const t = useTranslations();
-  // ASSUMPTION(U47): the kept demo edit route opens quick reviews only; U22 removes this (BR6.6).
-  const editHref = vm.reviewKind === 'quick' ? `/experiences/${reviewPublicId}/edit` : undefined;
+  const editHref = `/experiences/${reviewPublicId}/edit`;
 
   return (
     <>

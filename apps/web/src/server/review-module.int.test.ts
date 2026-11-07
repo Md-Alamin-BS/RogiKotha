@@ -222,9 +222,10 @@ describe('publishing through getContainer().review (WF4)', () => {
       const anonTagText = `Synthetic anonymous symptom ${RUN_LETTERS}`;
       const personasBefore = await countOf('select count(*) as n from personas');
       const reviewsBefore = await countOf('select count(*) as n from reviews');
-      const deleteDraft = vi
-        .spyOn(PgReviewModuleRepository.prototype, 'deleteOwnDraft')
-        .mockRejectedValue(new Error('synthetic failure at the last step'));
+      // The draft is claimed first, so this fails late: the version row follows the review rows.
+      const insertVersion = vi
+        .spyOn(PgReviewModuleRepository.prototype, 'insertVersion')
+        .mockRejectedValue(new Error('synthetic failure after the review rows'));
 
       try {
         const named = await publish(
@@ -249,9 +250,9 @@ describe('publishing through getContainer().review (WF4)', () => {
 
         expect(named).toMatchObject({ ok: false, error: { code: 'internal' } });
         expect(anonymous).toMatchObject({ ok: false, error: { code: 'internal' } });
-        expect(deleteDraft).toHaveBeenCalledTimes(2);
+        expect(insertVersion).toHaveBeenCalledTimes(2);
       } finally {
-        deleteDraft.mockRestore();
+        insertVersion.mockRestore();
       }
 
       expect(
@@ -279,6 +280,34 @@ describe('publishing through getContainer().review (WF4)', () => {
           [shirin.accountId, karim.accountId],
         ]),
       ).toBe(2);
+    },
+    SLOW,
+  );
+
+  it(
+    'publishes one draft sent twice at the same time exactly once (BR2.5)',
+    async () => {
+      const author = await anAccount('twice', 'Twice Demo');
+      const draftId = await saveDraft(author, {
+        ...quickDraft({ doctorPublicId: doctorX }),
+        identityMode: 'pseudonymous',
+      });
+      const reviewsBefore = await countOf('select count(*) as n from reviews');
+      const input = { draftId, identityMode: 'pseudonymous', attestation: true } as const;
+
+      const results = await Promise.all([
+        container.review.publish.execute(input, call(author.actor())),
+        container.review.publish.execute(input, call(author.actor())),
+      ]);
+
+      expect(results.filter((r) => r.ok)).toHaveLength(1);
+      expect(results.filter((r) => !r.ok).map((r) => !r.ok && r.error.code)).toEqual(['not_found']);
+      expect(await countOf('select count(*) as n from reviews')).toBe(reviewsBefore + 1);
+      expect(
+        await countOf('select count(*) as n from review_drafts where account_id = $1', [
+          author.accountId,
+        ]),
+      ).toBe(0);
     },
     SLOW,
   );

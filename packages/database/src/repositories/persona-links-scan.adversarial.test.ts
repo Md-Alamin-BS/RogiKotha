@@ -24,7 +24,6 @@ const ALLOWED = [
   'packages/database/src/demo/accounts-create.ts',
   'packages/database/src/demo/reviews.ts',
   'packages/database/src/demo/session.ts',
-  'packages/database/src/demo/comments.ts',
 ];
 
 /** Migrations own the grants and constraints of the table (BR3.1). */

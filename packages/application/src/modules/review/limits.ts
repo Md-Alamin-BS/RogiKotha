@@ -26,3 +26,7 @@ export const REVIEW_PAGE_SIZE = 20;
 
 /** The own-review list on `/me` (BR7.3). */
 export const OWN_REVIEWS_LIMIT = 100;
+
+/** U22 BR1.4: committed corrections per account per sliding 24 hours. */
+export const CORRECTIONS_PER_DAY = 30;
+export const CORRECTIONS_WINDOW_SEC = 24 * 60 * 60;

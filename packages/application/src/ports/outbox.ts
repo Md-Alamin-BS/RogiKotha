@@ -26,6 +26,10 @@ export type OutboxPayloads = {
   // ASSUMPTION(U48): the plan names no step for these entries; added with the evidence ports.
   'evidence.received': { itemId: string };
   'evidence.stateChanged': { itemId: string; reviewId: string; state: EvidenceItemState };
+  /** U22 BR3.3: an accepted correction; ids only. */
+  'review.changed': { reviewId: string; doctorId: string; branchId: string | null };
+  /** U49 BR1.7: ids only; a deletion appends no event (BR2.4). */
+  'comment.posted': { commentId: string; reviewId: string };
 };
 
 export type OutboxEventName = keyof OutboxPayloads;

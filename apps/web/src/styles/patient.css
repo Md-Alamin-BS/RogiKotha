@@ -5209,3 +5209,45 @@ ul.browse-grid {
 .notfound .p-actions {
   margin-top: var(--space-5);
 }
+
+/* added: U49 review fix - keep typed line breaks */
+.comment-body {
+  white-space: pre-wrap;
+}
+
+/* added: U22 the edit history sits under the story with the page's rhythm */
+.review-history {
+  margin-top: var(--space-5);
+}
+/* added: U22 one dated correction line per material change, without list markers */
+.review-history .corrections {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+}
+/* added: U22 space between correction lines */
+.review-history .corrections > li + li {
+  margin-top: var(--space-3);
+}
+/* added: U22 the disclosures for the original wording and the author's versions */
+.original-text,
+.version-list {
+  margin-top: var(--space-2);
+}
+/* added: U22 the disclosure summary is a 44px target */
+.original-text > summary,
+.version-list > summary {
+  min-height: var(--target);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+/* added: U22 the earlier title reads as the earlier text, not as a heading */
+.original-text .original-title {
+  font-weight: 600;
+}
+/* added: U22 the version list keeps its numbers and sits inside the page measure */
+.version-list ol {
+  padding-inline-start: var(--space-5);
+  margin: 0;
+}

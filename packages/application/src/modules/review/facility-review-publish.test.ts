@@ -1,5 +1,5 @@
 import { CRITERIA, DEFAULT_CONFIG_VALUES } from '@rogikotha/contracts';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { publishRateLimitKey } from './publish-support';
 import { expectErr, expectOk, makeReviewModuleWorld } from './review-test-support';
@@ -119,5 +119,40 @@ describe('facilityReview.publish', () => {
     expect(error.code).toBe('validation');
     expect(w.reviews.facilityReviews).toHaveLength(0);
     expect(w.reviews.reviews).toHaveLength(0);
+  });
+
+  it('answers not_found to a second publish of the same draft (BR2.5)', async () => {
+    const w = makeReviewModuleWorld();
+    const m = await w.member();
+    const draftId = await w.draftOf(m, w.payload('facility'));
+    const input = { draftId, identityMode: 'named', attestation: true } as const;
+
+    expectOk(await w.review.facilityReviewPublish.execute(input, m.call));
+    expect(expectErr(await w.review.facilityReviewPublish.execute(input, m.call)).code).toBe(
+      'not_found',
+    );
+
+    expect(w.reviews.facilityReviews).toHaveLength(1);
+  });
+
+  it('answers not_found and writes nothing when another publish claimed the draft after it was read', async () => {
+    const w = makeReviewModuleWorld();
+    const m = await w.member();
+    const draftId = await w.draftOf(m, w.payload('facility'));
+    vi.spyOn(w.reviews, 'deleteOwnDraft').mockResolvedValueOnce(false);
+
+    const error = expectErr(
+      await w.review.facilityReviewPublish.execute(
+        { draftId, identityMode: 'named', attestation: true },
+        m.call,
+      ),
+    );
+
+    expect(error.code).toBe('not_found');
+    expect(w.reviews.facilityReviews).toHaveLength(0);
+    expect(w.fakes.audit.events).toHaveLength(0);
+    expect(w.identity.store.personas).toHaveLength(2);
+    const publishKey = publishRateLimitKey(m.accountId);
+    expect(w.fakes.rateLimiter.calls.filter((c) => c.key === publishKey)).toHaveLength(0);
   });
 });

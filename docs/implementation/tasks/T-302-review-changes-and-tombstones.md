@@ -27,6 +27,17 @@ These decisions are binding and override the text below where they differ.
 - **FD-077 / C9 — `review.deletionStep`** — T-302 builds the review module's deletion step commands, which T-410 wires in `modules/review/deletion-participant.ts`. Input `{accountId, keepHeld: true}`. Web tier: delete the account's drafts and its facility reviews (tombstone when discussion exists), skipping held rows. Worker entry: tombstone when discussion exists, else soft delete, each review of the account, skipping held rows. The hold lookup itself is T-309's `retention.activeHold`; until T-309 lands the step treats no row as held. Changes: Owned paths, a new step 5 command and acceptance rows.
 - **FD-079 / C3 — held items look deleted** — An author's `review.delete` of a held review behaves exactly as an unheld delete for the author: gone from every public view and the author's list, and the author is never told of the hold. T-309 adds the check; this task's `delete` must not branch on a hold or expose one in its result.
 
+## Amendments — release 1 (FD-105, FD-049 corrections part)
+
+These decisions are binding and override the text below where they differ. Release 1 builds only the corrections part of this task, inside Unit U22 `t-302-review-changes-and-tombstones` (record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-302-review-changes-and-tombstones/`).
+
+- **FD-105 — what release 1 builds** — the author corrects their own published review (FR69): `review.correct`, `review.getOwnForEdit` (a recorded additive query) and `review.getHistory`, the pure `packages/domain/src/review/versioning.ts`, the edit route and `EditForm` for quick and detailed reviews, `correctReviewAction` in `apps/web/src/server/actions/review-edit.ts`, and the internals of U47's `<ReviewHistory reviewPublicId>` slot. Follow-ups, `delete`, tombstones, `restore`, `setState`, `redact` and `review.deletionStep` are release 2, so the acceptance rows "Latest on top", "Tombstone vs delete", "Restore window", "Redaction only", "Grapheme safety", the FD-049, FD-087, FD-077 and FD-079 rows and the follow-up and delete events are deferred. FD-049's soft-delete rule stays binding for the release-2 build.
+- **Material change** — a correction to the story, a section, the sentiment, the outcome or the Reviewer's labels is material (`CORRECTION_FIELDS`); it writes a version row whose snapshot lists `corrected`, shows "Edited" and a dated correction line, and keeps the version just before it readable to every reader under "Show original" (AC6.3.2). A title-only edit writes a version row with `corrected: []`: "Edited" is shown, but no correction line and no original. No follow-up row is written for a correction in release 1. This replaces the row "Material edit creates version + dated correction".
+- **Not editable** — a review that is not published (and eligible) answers `not_found`, not `review.not_editable`; another account's review and an unknown id answer the same (BR1.1). This replaces the row "Hidden not editable".
+- **Repository** — the release-1 methods are on U47's `packages/database/src/repositories/review-module.ts` (`lockForCorrection`, `updateContent`, `findOwnForEdit`, `listVersions`, U47's `insertVersion`); the projection is not extended, and the T-302 stubs in `packages/database/src/repositories/review.ts` stay for U50 (review R-08). No table, column, migration or worker code. Step 8 is narrowed accordingly.
+- **Audit, events and limits** — the audit action is `review.corrected` with the author persona as actor, and `review_versions.actor_id` is the persona (FD-113); the outbox event is `review.changed {reviewId, doctorId, branchId}`; corrections send no email and take no reason; at most 30 committed corrections per account in 24 hours (`errors.review.correctionsLimit`); a stale `expectedVersion` answers `conflict` (`errors.review.editConflict`, with a reload link).
+- **Acceptance commands as built** — the `@rk/...` filters do not exist; run the unit-scoped commands of `construction/t-302-review-changes-and-tombstones/code-generation/unit-test-instructions.md` (`pnpm exec vitest run --config vitest.workspace.ts --project domain|contracts|application|database|web|web-int …`; run `--project test-support-seed` first against a fresh test database).
+
 ## Goal
 
 Everything that changes a published account after publication without erasing history: dated
@@ -131,9 +142,27 @@ Moderation cases, reports, the `moderation.decide` command itself (T-404 calls `
 
 ## Hand-off (implementer fills in)
 
+Built in release 1 by Unit U22 `t-302-review-changes-and-tombstones` (branch `bolt/t-302-review-changes-and-tombstones`, 2026-11-07), corrections part only; the full record is `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-302-review-changes-and-tombstones/code-generation/`.
+
 ### What changed
+- Domain `packages/domain/src/review/versioning.ts` (`normaliseContent`, `classifyChange`, `toVersionSnapshot`, `toHistory`); contracts `CorrectReviewInput`, `GetOwnForEditInput`, `GetHistoryInput`, `CORRECTION_FIELDS`, `EditReviewVM`, `ReviewHistoryVM`.
+- Review module: `review.correct`, `review.getOwnForEdit` (recorded addition) and `review.getHistory`; repository methods `lockForCorrection`, `updateContent`, `findOwnForEdit`, `listVersions` on `review-module.ts` and the fake; no migration.
+- Web: the edit route and `EditForm` for quick and detailed reviews, `correctReviewAction` in `server/actions/review-edit.ts`, the `<ReviewHistory>` slot internals with `OriginalText` and `VersionList`, the edit link for every review kind; the demo edit code only U22 called is removed.
+- i18n: the `history.*` keys, `compose.edit.reload`, `compose.edit.correctionNote`, `errors.review.correctionsLimit`, `errors.review.editConflict` in en and bn.
+
 ### Not done and why
+- Follow-ups, delete, tombstones, restore, `setState`, `redact` and `review.deletionStep`: release 2 (FD-105). Tags cannot be corrected, and the author's version list shows no texts (design § 10).
+- The shared demo items (`getOwnReviewForEdit`, `personasOf`, `getReviewByPublicId`, the `server/data` reviews binding, `DemoReviewEditRow`, `DemoUpdateReviewFields`, `demo/reviews.ts`) are deleted at merge only when no caller is left (plan Step 33); leftovers go to U50.
+
 ### Questions for the human
+- The Bengali copy of the new keys awaits review at U50 (FD-042).
+- A material correction keeps the earlier wording public, so an author cannot remove their own earlier text by correcting it until delete lands in release 2. Confirm this is acceptable for the demo.
+
 ### Follow-ups
+- Proposed `ISS-` rows (U22's range ISS-720–749, numbered at merge, plan Step 32): ISS-720 (S4, the original's `lang` comes from its script; add the content language to `OriginalTextVM` in release 2), ISS-721 (S4, tooling: a fresh worktree needs `next typegen` or a build before `pnpm check`'s lint), ISS-725 (S4, the two `errors.review.*` keys are field-error-only keys), and the five S4 rows of the design's § 10.
+
 ### `pnpm check` output summary
+- Green on the Bolt branch (plan Step 31): 302 test files, 3384 passed plus 2 expected failures; lint 0 errors; coverage lines 95.50% overall (domain 99.65%, contracts 100%, application 90.62%, database 98.11%, test-support 95.38%, apps/web 95.47%). `pnpm smoke`: 25 files, 47 tests. `pnpm test:int`: 58 files, 393 passed plus 2 expected failures.
+
 ### Hard-rule evidence
+- No score and Not provided: `versioning.test.ts`, `packages/contracts/src/schemas/review.test.ts`. Reviewer's label framing: `OriginalText.test.tsx`. Persona, never account, as the version and audit actor: `correct.test.ts`, `review-correction.int.test.ts` (`web-int`). Anonymity (same `not_found` for a real and a forged id): `correct.test.ts`, `get-history.test.ts`, `review-correction.int.test.ts`. Both dictionaries: `pnpm i18n:check`. No agent or tool attribution: `pnpm check:identity`. Acceptance rows executed expected against observed: plan Step 31.

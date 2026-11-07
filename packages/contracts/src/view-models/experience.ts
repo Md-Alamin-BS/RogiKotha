@@ -12,7 +12,12 @@ import type {
   Sentiment,
   TagGroup,
 } from '../enums';
-import type { ReviewLanguage, ReviewSectionKey, ReviewerLabelCode } from '../schemas/review';
+import type {
+  CorrectionField,
+  ReviewLanguage,
+  ReviewSectionKey,
+  ReviewerLabelCode,
+} from '../schemas/review';
 import type { BylineVM, ExperienceCardVM } from './experience-card';
 
 // The card moved to its own file with U46 (functional-spec § 7); U47 extends it there.
@@ -103,6 +108,63 @@ export interface FacilityPreviewVM {
   overall?: CriterionValue;
   /** Answered criteria only, in enum order. */
   criteria: { key: Criterion; value: CriterionValue }[];
+}
+
+/** `review.getOwnForEdit`: the author's current content for the edit form (ENT-105). */
+export interface EditReviewVM {
+  publicId: string;
+  kind: ReviewKind;
+  version: number;
+  title: string;
+  /** Quick reviews only. */
+  story?: string;
+  /** Detailed reviews only; empty sections absent. */
+  sections?: Partial<Record<ReviewSectionKey, string>>;
+  sentiment?: Sentiment;
+  outcome?: Outcome;
+  /** A reviewer's label code, or a seeded label exactly as stored. */
+  claims: string[];
+  /** Read-only display; null renders Not provided. */
+  doctorName: string | null;
+}
+
+/** The text of the version just before a material correction; a key the snapshot lacks is absent (ENT-106). */
+export interface OriginalTextVM {
+  kind: ReviewKind;
+  title: string;
+  story?: string;
+  sections?: Partial<Record<ReviewSectionKey, string>>;
+  /** Null renders Not provided: empty before, and named by the correction. */
+  sentiment?: Sentiment | null;
+  /** Null renders Not provided: empty before, and named by the correction. */
+  outcome?: Outcome | null;
+  /** Empty renders Not provided: no label before, and the labels named by the correction. */
+  claims?: string[];
+}
+
+export interface ReviewCorrectionVM {
+  /** ISO date. */
+  at: string;
+  fields: CorrectionField[];
+  original: OriginalTextVM;
+}
+
+export interface ReviewVersionVM {
+  version: number;
+  /** ISO date. */
+  at: string;
+  kind: 'published' | 'edited' | 'corrected';
+  fields: CorrectionField[];
+}
+
+/** `review.getHistory`; `versions` is present only for the author (ENT-106). */
+export interface ReviewHistoryVM {
+  /** ISO date of the newest correction; absent when never edited. */
+  editedAt?: string;
+  /** Oldest first. */
+  corrections: ReviewCorrectionVM[];
+  /** Newest first. */
+  versions?: ReviewVersionVM[];
 }
 
 /**

@@ -16,7 +16,7 @@ Full plan: aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u47-r
 Test instructions: aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u47-reviews/code-generation/unit-test-instructions.md
 
 [Approval Fingerprint]: sha256:v3:08bf06989dbcd7ba2f385d26969f09b20b35278986f924d57a12c5c390de2d90
-[Planned Source]: a5bafe5d7e40ea7c51545011873c7c9dba3f1ca234abb922b4ad1a76a6e76912
+[Planned Source]: ae83481117f5371828c6b0eac00837734e1d47999cb1431e0c80c271f8cb3020
 
 
 [Answer]: Plan approval off

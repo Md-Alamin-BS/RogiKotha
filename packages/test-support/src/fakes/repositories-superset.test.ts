@@ -15,7 +15,6 @@ import { describe, expect, it } from 'vitest';
 import {
   FakeAccountRepository,
   FakeAuditRepository,
-  FakeCommunityRepository,
   FakeConfigRepository,
   FakeDataRequestRepository,
   FakeDirectoryRepository,
@@ -28,6 +27,7 @@ import {
   FakeReviewRepository,
   FakeTaxonomyRepository,
 } from './repositories.js';
+import { FakeCommunityModuleRepository } from './community-repository.js';
 import { FakeEmailDeliveryRepository } from './email-delivery-repository.js';
 import { InMemoryEvidenceRepository } from './evidence-repository.js';
 
@@ -73,7 +73,8 @@ function fakeMethodNames(FakeClass: new () => unknown): string[] {
 const REPOSITORY_PAIRS: { file: string; FakeClass: new () => unknown }[] = [
   { file: 'account.ts', FakeClass: FakeAccountRepository },
   { file: 'audit.ts', FakeClass: FakeAuditRepository },
-  { file: 'community.ts', FakeClass: FakeCommunityRepository },
+  // U49: the release-1 repository is mirrored by its own fake; the old one keeps the T-004 names.
+  { file: 'community.ts', FakeClass: FakeCommunityModuleRepository },
   { file: 'config.ts', FakeClass: FakeConfigRepository },
   { file: 'data-requests.ts', FakeClass: FakeDataRequestRepository },
   { file: 'directory.ts', FakeClass: FakeDirectoryRepository },
