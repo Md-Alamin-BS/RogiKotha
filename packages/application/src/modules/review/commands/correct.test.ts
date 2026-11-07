@@ -202,6 +202,28 @@ describe('review.correct refusals: who', () => {
     expect(review().outcome).toBe('helped');
   });
 
+  it('gives not_found and writes nothing when the review is hidden while the lock is taken', async () => {
+    const w = makeReviewModuleWorld();
+    const m = await w.member();
+    const { publicId, review } = await quickReview(w, m);
+    const before = counts(w);
+    const lock = w.reviews.lockForCorrection.bind(w.reviews);
+    // A hide that commits between the first published check and the row lock.
+    w.reviews.lockForCorrection = (tx, reviewId) => {
+      review().state = 'hidden';
+      return lock(tx, reviewId);
+    };
+
+    const error = expectErr(await correct(w, m, quickInput(publicId, { outcome: 'none' })));
+
+    expect(error).toMatchObject({ code: 'not_found' });
+    // The refusal rolls back, so the fake's scripted hide is undone with it.
+    expect(review().outcome).toBe('helped');
+    expect(review().version ?? 1).toBe(1);
+    expect(counts(w)).toEqual(before);
+    expect(w.fakes.rateLimiter.failureCount(correctionRateLimitKey(m.accountId))).toBe(0);
+  });
+
   it('refuses an unconfirmed account and a restricted account at the gate', async () => {
     const w = makeReviewModuleWorld();
     const m = await w.member();

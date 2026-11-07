@@ -79,7 +79,6 @@ describe('review.getHistory', () => {
             story: STORY,
             sentiment: 'positive',
             outcome: 'helped',
-            claims: [],
           },
         },
       ],
@@ -87,6 +86,22 @@ describe('review.getHistory', () => {
     expect(expectOk(await history(w, signedOut(w), publicId))).toEqual(expected);
     expect(expectOk(await history(w, b.call, publicId))).toEqual(expected);
     expect(expectOk(await history(w, a.call, publicId))).toMatchObject(expected);
+  });
+
+  it('gives an outcome that was empty before the correction as null, read as Not provided', async () => {
+    const w = makeReviewModuleWorld();
+    const m = await w.member();
+    const publicId = await w.published(m, 'named');
+    await corrected(w, m, publicId, { outcome: undefined });
+    await corrected(w, m, publicId, { expectedVersion: 2, outcome: 'worse' });
+
+    const { corrections } = expectOk(await history(w, signedOut(w), publicId));
+
+    expect(corrections.map((c) => c.fields)).toEqual([['outcome'], ['outcome']]);
+    expect(corrections[0]!.original.outcome).toBe('helped');
+    expect(corrections[1]!.original.outcome).toBeNull();
+    expect(corrections[1]!.original.sentiment).toBe('positive');
+    expect(corrections[1]!.original).not.toHaveProperty('claims');
   });
 
   it('gives no reader an original after a title-only edit, only the Edited date', async () => {

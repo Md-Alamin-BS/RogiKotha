@@ -462,6 +462,46 @@ describe('seed', () => {
     }
   });
 
+  it("writes every review's version-1 snapshot in the shape of U47's publish, kind included (U22 R-01)", async () => {
+    const result = await pool.query<{
+      seed_ref: string;
+      kind: string;
+      title: string;
+      body: string | null;
+      sections: unknown;
+      sentiment: string | null;
+      outcome: string | null;
+      claims: unknown;
+      snapshot: Record<string, unknown>;
+    }>(`
+      select r.seed_ref, r.kind, r.title, r.body, r.sections, r.sentiment, r.outcome, r.claims,
+        v.snapshot
+      from reviews r join review_versions v on v.review_id = r.id and v.version = 1
+      where r.seed_ref is not null
+      order by r.seed_ref
+    `);
+    expect(result.rows).toHaveLength(REVIEWS.length);
+    expect(result.rows.some((r) => r.kind === 'detailed')).toBe(true);
+    for (const r of result.rows) {
+      const { snapshot } = r;
+      expect(snapshot.kind, r.seed_ref).toBe(r.kind);
+      expect(snapshot, r.seed_ref).toMatchObject({
+        title: r.title,
+        sentiment: r.sentiment,
+        outcome: r.outcome,
+        claims: r.claims,
+      });
+      if (r.kind === 'detailed') {
+        expect(snapshot, r.seed_ref).not.toHaveProperty('body');
+        expect(snapshot.sections, r.seed_ref).toEqual(r.sections);
+      } else {
+        expect(snapshot, r.seed_ref).not.toHaveProperty('sections');
+        expect(snapshot.body, r.seed_ref).toBe(r.body);
+      }
+      expect(Object.keys(snapshot), r.seed_ref).not.toContain('corrected');
+    }
+  });
+
   it("links d7's two composite-named chambers to branches f6 and f7", async () => {
     const result = await pool.query<{ seed_ref: string | null }>(`
       select b.seed_ref from doctor_chambers c

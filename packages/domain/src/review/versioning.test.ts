@@ -455,13 +455,13 @@ describe('toHistory', () => {
       {
         at: FIRST_EDIT.toISOString(),
         fields: ['outcome'],
+        // No labels and the labels not corrected: nothing to show for them.
         original: {
           kind: 'quick',
           title: 'A careful doctor',
           story: STORY,
           sentiment: 'positive',
           outcome: 'helped',
-          claims: [],
         },
       },
       {
@@ -473,7 +473,6 @@ describe('toHistory', () => {
           story: STORY,
           sentiment: 'positive',
           outcome: 'worse',
-          claims: [],
         },
       },
     ]);
@@ -528,6 +527,90 @@ describe('toHistory', () => {
       sections: { diagnosis: 'Malaria.' },
       claims: ['Seeded claim', 'wrongDx'],
     });
+  });
+
+  it('reads a legacy seed snapshot with a summary body and sections as detailed (review R-01)', () => {
+    // The pre-fix seed wrote the quick summary beside the sections and no kind.
+    const seed = {
+      title: 'সিড বিস্তারিত',
+      body: 'সারসংক্ষেপ, যা পাতায় দেখানো হয় না।',
+      sections: { symptoms: 'তিন দিন ধরে জ্বর।', after: 'এক সপ্তাহে সেরে গেছে।' },
+    };
+    const [line] = toHistory(
+      [
+        {
+          version: 1,
+          changeKind: 'publish',
+          createdAt: PUBLISHED,
+          corrected: undefined,
+          content: seed,
+        },
+        correctionRow(2, FIRST_EDIT, ['symptoms']),
+      ],
+      false,
+    ).corrections;
+    expect(line?.original).toEqual({
+      kind: 'detailed',
+      title: 'সিড বিস্তারিত',
+      sections: { symptoms: 'তিন দিন ধরে জ্বর।', after: 'এক সপ্তাহে সেরে গেছে।' },
+    });
+    expect(line?.original).not.toHaveProperty('story');
+  });
+
+  it('reads a legacy quick seed snapshot with no sections as quick', () => {
+    expect(
+      toOriginalText({ title: 'Seed quick', body: 'The seeded quick story.', sections: {} }),
+    ).toEqual({ kind: 'quick', title: 'Seed quick', story: 'The seeded quick story.' });
+  });
+
+  it('reads a complete seed snapshot by its kind, sentiment, outcome and labels', () => {
+    const detailedSeed = {
+      kind: 'detailed',
+      title: 'Seed detailed',
+      sections: { diagnosis: 'Typhoid.' },
+      sentiment: 'mixed',
+      outcome: 'helped',
+      claims: [{ label: 'wrongDx' }],
+    };
+    expect(toOriginalText(detailedSeed, ['outcome'])).toEqual({
+      kind: 'detailed',
+      title: 'Seed detailed',
+      sections: { diagnosis: 'Typhoid.' },
+      sentiment: 'mixed',
+      outcome: 'helped',
+      claims: ['wrongDx'],
+    });
+  });
+
+  it('keeps an empty earlier value as Not provided only for a field the correction names (review R-02)', () => {
+    const v1 = { ...toVersionSnapshot(quick({ sentiment: null, outcome: null }), []) };
+    const corrected = toOriginalText(v1, ['sentiment', 'outcome', 'claims']);
+    expect(corrected).toMatchObject({ sentiment: null, outcome: null, claims: [] });
+
+    const storyOnly = toOriginalText(v1, ['story']);
+    expect(storyOnly).not.toHaveProperty('sentiment');
+    expect(storyOnly).not.toHaveProperty('outcome');
+    expect(storyOnly).not.toHaveProperty('claims');
+  });
+
+  it('leaves out a named field the legacy snapshot lacks entirely', () => {
+    const original = toOriginalText({ title: 'Seed', body: 'The seeded quick story.' }, [
+      'sentiment',
+      'outcome',
+      'claims',
+    ]);
+    expect(original).toEqual({ kind: 'quick', title: 'Seed', story: 'The seeded quick story.' });
+  });
+
+  it('passes the correction fields to the original in the history', () => {
+    const v1 = toVersionSnapshot(quick({ outcome: null }), []);
+    const v2 = toVersionSnapshot(quick({ outcome: 'worse' }), ['outcome']);
+    const [line] = toHistory(
+      [publishRow(v1), correctionRow(2, FIRST_EDIT, ['outcome'], v2)],
+      false,
+    ).corrections;
+    expect(line?.original.outcome).toBeNull();
+    expect(line?.original.sentiment).toBe('positive');
   });
 
   it('never carries an actor, persona, account or reason', () => {

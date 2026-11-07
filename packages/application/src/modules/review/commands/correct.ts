@@ -90,6 +90,9 @@ export function correctCommand(deps: ReviewModulePorts) {
         }
         const locked = await reviews.lockForCorrection(tx, reviewId);
         if (locked === null) return notFound(actor);
+        // Again under the row lock: a hide or redaction committed after the first check (release 2)
+        // must not be corrected over (review R-04).
+        if (!(await isReviewPublished(reviews, tx, { reviewId }))) return notFound(actor);
         if (locked.version !== input.expectedVersion) {
           return err('conflict', { correlationId: actor.correlationId });
         }
