@@ -45,6 +45,7 @@ vi.mock('@/server/actions/profile', () => ({
   updateLanguageAction: vi.fn(),
 }));
 vi.mock('@/server/actions/review', () => ({ saveReviewEdit: vi.fn() }));
+vi.mock('@/server/actions/review-edit', () => ({ correctReviewAction: vi.fn() }));
 vi.mock('@/server/data', () => ({
   accounts: { getProfile: vi.fn(), listOwnReviews: vi.fn() },
   doctors: { getDoctor: vi.fn() },

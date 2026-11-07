@@ -179,13 +179,6 @@ export interface DemoCreateReviewInput {
   language: DemoReviewLanguage;
 }
 
-export interface DemoUpdateReviewFields {
-  title: string;
-  body: string;
-  sentiment: Sentiment | null;
-  outcome: Outcome | null;
-}
-
 export type DemoEvidenceMime = 'image/jpeg' | 'image/png';
 
 /** The outcome of the ClamAV scan of one upload. */
