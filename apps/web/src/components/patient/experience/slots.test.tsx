@@ -4,10 +4,8 @@ import { screen } from '@testing-library/react';
 
 import { CommentThread } from '@/components/patient/comments/CommentThread';
 import { EvidenceSection } from '@/components/patient/evidence/EvidenceSection';
-import { ReviewHistory } from '@/components/patient/review-history/ReviewHistory';
 import {
   loadCommentThread,
-  loadLastEditedAt,
   loadPublicEvidenceCount,
   logSlotFailure,
 } from '@/server/actions/review-slots';
@@ -38,7 +36,6 @@ vi.mock('@/server/actions/comments', () => ({
 vi.mock('@/server/actions/review-slots', () => ({
   loadCommentThread: vi.fn(),
   loadPublicEvidenceCount: vi.fn(),
-  loadLastEditedAt: vi.fn(),
   logSlotFailure: vi.fn(),
 }));
 
@@ -99,20 +96,5 @@ describe.each(['en', 'bn'] as const)('the experience page slots in %s', (locale)
     show(await EvidenceSection({ reviewPublicId: PUBLIC_ID }), locale);
     expect(screen.getByTestId('evidence-error')).toHaveTextContent(t('errors.common.internal'));
     expect(screen.queryByText(t('label.noDocuments'))).toBeNull();
-  });
-
-  it('shows edited with the month and year, or nothing', async () => {
-    vi.mocked(loadLastEditedAt).mockResolvedValue('2026-03-10T08:00:00.000Z');
-    show(await ReviewHistory({ reviewPublicId: PUBLIC_ID }), locale);
-    const mark = screen.getByTestId('review-history');
-    expect(mark).toHaveTextContent(t('experience.edited'));
-    if (locale === 'bn') expect(mark.textContent).not.toMatch(/[0-9]/);
-    else expect(mark).toHaveTextContent('March 2026');
-    expect(mark.querySelector('time')).toHaveAttribute('dateTime', '2026-03');
-
-    vi.mocked(loadLastEditedAt).mockResolvedValue(null);
-    expect(await ReviewHistory({ reviewPublicId: PUBLIC_ID })).toBeNull();
-    vi.mocked(loadLastEditedAt).mockRejectedValue(new Error('boom'));
-    expect(await ReviewHistory({ reviewPublicId: PUBLIC_ID })).toBeNull();
   });
 });

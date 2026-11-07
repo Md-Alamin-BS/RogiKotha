@@ -1,30 +1,61 @@
+import type { ReviewHistoryVM } from '@rogikotha/contracts';
 import type { Locale } from '@rogikotha/i18n';
 import { formatMonthYear } from '@rogikotha/i18n/format';
 import { getLocale, getTranslations } from 'next-intl/server';
 
 import { dhakaMonthYear } from '@/components/patient/experience/people';
-import { loadLastEditedAt, logSlotFailure } from '@/server/actions/review-slots';
+import { loadReviewHistory, logSlotFailure } from '@/server/actions/review-slots';
+import { OriginalText } from './OriginalText';
+import { VersionList } from './VersionList';
 
-// C16 slot (props frozen when U47 merges): "edited" with the month and year of the last edit, or
-// nothing for a review never edited (BR6.7). U22 swaps the source for the version history.
+// C16 slot (props frozen): the Edited mark, one dated line per material correction with the earlier
+// wording under Show original, and the author's own version list (BR4.1-BR4.5). It never throws.
 export async function ReviewHistory({ reviewPublicId }: { reviewPublicId: string }) {
-  let lastEditedAt: string | null;
+  let history: ReviewHistoryVM | null;
   try {
-    lastEditedAt = await loadLastEditedAt(reviewPublicId);
+    history = await loadReviewHistory(reviewPublicId);
   } catch (error: unknown) {
-    // The edit mark is secondary; a failed read leaves it out rather than breaking the page.
     logSlotFailure('history', error);
-    return null;
+    const t = await getTranslations();
+    return (
+      <p className="note" data-testid="review-history-error">
+        {t('history.unavailable')}
+      </p>
+    );
   }
-  if (lastEditedAt === null) return null;
+  if (history === null || history.editedAt === undefined) return null;
   const [t, locale] = await Promise.all([getTranslations(), getLocale()]);
-  const edited = dhakaMonthYear(new Date(lastEditedAt));
-  const month = String(edited.month).padStart(2, '0');
+  const month = (iso: string) => {
+    const parts = dhakaMonthYear(new Date(iso));
+    return {
+      text: formatMonthYear(parts, locale as Locale),
+      iso: `${parts.year}-${String(parts.month).padStart(2, '0')}`,
+    };
+  };
+  const edited = month(history.editedAt);
   return (
-    <p className="note" data-testid="review-history">
-      <time dateTime={`${edited.year}-${month}`}>
-        {`${t('experience.edited')} · ${formatMonthYear(edited, locale as Locale)}`}
-      </time>
-    </p>
+    <section className="review-history" data-testid="review-history">
+      <p className="note">
+        <time dateTime={edited.iso}>{`${t('label.edited')} · ${edited.text}`}</time>
+      </p>
+      {history.corrections.length > 0 ? (
+        <ul className="corrections" data-testid="review-corrections">
+          {history.corrections.map((correction) => {
+            const fields = correction.fields.map((field) => t(`history.field.${field}`)).join(', ');
+            return (
+              <li key={`${correction.at}-${fields}`}>
+                <p className="note">
+                  {t('history.corrected', { fields, date: month(correction.at).text })}
+                </p>
+                <OriginalText original={correction.original} />
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+      {history.versions !== undefined && history.versions.length > 0 ? (
+        <VersionList versions={history.versions} />
+      ) : null}
+    </section>
   );
 }
