@@ -1,136 +1,129 @@
-import type { DemoComment, DemoCommentThread } from '@rogikotha/contracts';
+import type { ReactNode } from 'react';
+import type { CommentVM, PersonaPublicVM, ThreadVM } from '@rogikotha/contracts';
 import type { Locale } from '@rogikotha/i18n';
 import { formatDate } from '@rogikotha/i18n/format';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { Link } from '@/i18n/routing';
 import { Byline } from '../experience/Byline';
 import { dhakaIsoDate } from '../experience/people';
 import { CommentActions } from './CommentActions';
-import { CommentForm } from './CommentForm';
+import { CommentPlaceholder } from './CommentPlaceholder';
 
-// Port of the discussion part of concept-04b's renderAccount() and its commentHtml() (app.js):
-// oldest first, one reply level, tombstones that keep a thread readable (FR6.1–FR6.3).
+// The discussion of concept-04b's renderAccount() on the release-1 view model: oldest first, one
+// reply level, placeholders that keep a thread readable (FR6.1–FR6.3). Text only, never markup.
 export function CommentThreadView({
   reviewPublicId,
-  threads,
-  signedIn,
+  thread,
+  canContribute,
 }: {
   reviewPublicId: string;
-  threads: DemoCommentThread[];
-  signedIn: boolean;
+  thread: ThreadVM;
+  canContribute: boolean;
 }) {
   const t = useTranslations();
-  const locale = useLocale();
 
   return (
     <section aria-labelledby="discussion-head">
       <h2 className="section-head" id="discussion-head">
         {t('experience.discussion')}
       </h2>
-      {threads.length > 0 ? (
+      {thread.items.length > 0 ? (
         <div>
-          {threads.map((thread) => (
-            <CommentItem
-              key={thread.publicId}
-              comment={thread}
-              replies={thread.replies}
-              reviewPublicId={reviewPublicId}
-              signedIn={signedIn}
-            />
-          ))}
+          {thread.items.map((item) => {
+            const replies = item.replies.map((reply) => (
+              <CommentItem
+                key={reply.publicId}
+                comment={reply}
+                reviewPublicId={reviewPublicId}
+                canContribute={canContribute}
+              />
+            ));
+            const replyList =
+              replies.length > 0 ? <div className="comment-replies">{replies}</div> : null;
+            if (item.kind === 'placeholder' || !item.comment) {
+              return (
+                <CommentPlaceholder key={item.placeholderPublicId ?? 'placeholder'}>
+                  {replyList}
+                </CommentPlaceholder>
+              );
+            }
+            return (
+              <CommentItem
+                key={item.comment.publicId}
+                comment={item.comment}
+                reviewPublicId={reviewPublicId}
+                canContribute={canContribute}
+              >
+                {replyList}
+              </CommentItem>
+            );
+          })}
         </div>
       ) : (
-        <p className="note">{t('mine.empty')}</p>
+        <p className="note">{t('experience.noComments')}</p>
       )}
-      <p className="note">{t('experience.replyLevel')}</p>
-
-      {signedIn ? (
-        <div className="composer-box">
-          <CommentForm reviewPublicId={reviewPublicId} />
-        </div>
-      ) : (
-        <p className="note">
-          <Link
-            className="link-btn"
-            // The locale prefix keeps `next` past `safeAuthNext` on the sign-in page (U9 review).
-            href={{
-              pathname: '/sign-in',
-              query: { next: `/${locale}/experiences/${reviewPublicId}` },
-            }}
-          >
-            {t('experience.signInToComment')}
-          </Link>
+      {thread.truncated ? (
+        <p className="note" data-testid="thread-truncated">
+          {t('experience.threadTruncated')}
         </p>
-      )}
+      ) : null}
+      <p className="note">{t('experience.replyLevel')}</p>
     </section>
   );
 }
 
+function bylineProps(author: PersonaPublicVM) {
+  if (author.kind === 'named') {
+    return { name: author.displayName, identity: 'real' as const };
+  }
+  if (author.kind === 'pseudonymous') {
+    return {
+      name: author.displayName,
+      identity: 'pseudo' as const,
+      username: author.username ?? undefined,
+    };
+  }
+  // Never a name, a link or initials for an anonymous author; the thread alias stays plain text.
+  return { name: null, identity: 'anon' as const, alias: author.displayName };
+}
+
 function CommentItem({
   comment,
-  replies,
   reviewPublicId,
-  signedIn,
+  canContribute,
+  children,
 }: {
-  comment: DemoComment;
-  /** Null for a reply, which can have none (one reply level). */
-  replies: DemoComment[] | null;
+  comment: CommentVM;
   reviewPublicId: string;
-  signedIn: boolean;
+  canContribute: boolean;
+  /** The reply list of a top-level comment. */
+  children?: ReactNode;
 }) {
   const t = useTranslations();
   const locale = useLocale() as Locale;
-  const replyList =
-    replies && replies.length > 0 ? (
-      <div className="comment-replies">
-        {replies.map((reply) => (
-          <CommentItem
-            key={reply.publicId}
-            comment={reply}
-            replies={null}
-            reviewPublicId={reviewPublicId}
-            signedIn={signedIn}
-          />
-        ))}
-      </div>
-    ) : null;
+  const isoDate = dhakaIsoDate(new Date(comment.postedAt));
+  const authorName = comment.author.kind === 'anonymous' ? null : comment.author.displayName;
 
-  if (comment.tombstone) {
-    return (
-      <article className="comment tombstone">
-        <p className="note">
-          <b>{t('experience.commentGone')}</b> {t('experience.commentGoneWhy')}
-        </p>
-        {replyList}
-      </article>
-    );
-  }
-
-  const isoDate = dhakaIsoDate(comment.createdAt);
   return (
     <article className="comment">
       <div className="comment-head">
         <Byline
           variant="comment"
-          name={comment.authorDisplayName}
-          identity={comment.authorDisplayName === null ? 'anon' : undefined}
+          {...bylineProps(comment.author)}
           when={formatDate(isoDate, locale)}
           whenDateTime={isoDate}
         />
-        {comment.canDelete ? (
-          <span className="badge plain">{t('experience.ownComment')}</span>
-        ) : null}
+        {comment.mine ? <span className="badge plain">{t('experience.ownComment')}</span> : null}
       </div>
       <p>{comment.body}</p>
       <CommentActions
         reviewPublicId={reviewPublicId}
         commentPublicId={comment.publicId}
-        authorName={comment.authorDisplayName}
-        canReply={signedIn && replies !== null}
-        canDelete={comment.canDelete}
+        authorName={authorName}
+        canReply={canContribute && !comment.isReply}
+        canDelete={comment.mine}
       />
-      {replyList}
+      {children}
     </article>
   );
 }

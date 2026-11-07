@@ -2,21 +2,10 @@ import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 
-import { CommentThread } from '@/components/patient/comments/CommentThread';
 import { EvidenceSection } from '@/components/patient/evidence/EvidenceSection';
 import { ReviewHistory } from '@/components/patient/review-history/ReviewHistory';
-import {
-  loadCommentThread,
-  loadLastEditedAt,
-  loadPublicEvidenceCount,
-  logSlotFailure,
-} from '@/server/actions/review-slots';
-import {
-  buildThread,
-  renderInLocale,
-  testTranslator,
-  type TestLocale,
-} from './experience-test-support';
+import { loadLastEditedAt, loadPublicEvidenceCount } from '@/server/actions/review-slots';
+import { renderInLocale, testTranslator, type TestLocale } from './experience-test-support';
 
 const active = vi.hoisted((): { locale: 'en' | 'bn' } => ({ locale: 'en' }));
 
@@ -31,12 +20,7 @@ vi.mock('@/i18n/routing', async () => {
   const support = await import('./experience-test-support');
   return { Link: support.TestLink };
 });
-vi.mock('@/server/actions/comments', () => ({
-  postComment: vi.fn(() => Promise.resolve({ status: 'idle' })),
-  deleteComment: vi.fn(() => Promise.resolve({ status: 'idle' })),
-}));
 vi.mock('@/server/actions/review-slots', () => ({
-  loadCommentThread: vi.fn(),
   loadPublicEvidenceCount: vi.fn(),
   loadLastEditedAt: vi.fn(),
   logSlotFailure: vi.fn(),
@@ -56,28 +40,6 @@ describe.each(['en', 'bn'] as const)('the experience page slots in %s', (locale)
   const t = testTranslator(locale);
   beforeEach(() => {
     active.locale = locale;
-  });
-
-  it('renders the discussion it read for the public id', async () => {
-    vi.mocked(loadCommentThread).mockResolvedValue({
-      threads: [buildThread({ body: 'A synthetic comment' })],
-      signedIn: false,
-    });
-    show(await CommentThread({ reviewPublicId: PUBLIC_ID }), locale);
-
-    expect(loadCommentThread).toHaveBeenCalledWith(PUBLIC_ID);
-    expect(screen.getByText('A synthetic comment')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: t('experience.signInToComment') })).toBeVisible();
-  });
-
-  it('renders no thread for an unknown review and an error line when the read fails', async () => {
-    vi.mocked(loadCommentThread).mockResolvedValue(null);
-    expect(await CommentThread({ reviewPublicId: PUBLIC_ID })).toBeNull();
-
-    vi.mocked(loadCommentThread).mockRejectedValue(new Error('boom'));
-    show(await CommentThread({ reviewPublicId: PUBLIC_ID }), locale);
-    expect(screen.getByText(t('errors.common.internal'))).toBeInTheDocument();
-    expect(logSlotFailure).toHaveBeenCalledWith('comments', expect.any(Error));
   });
 
   it('shows the evidence wording and count, or No documents', async () => {

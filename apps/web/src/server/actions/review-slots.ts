@@ -4,9 +4,6 @@
 // components only and must never become endpoints, since they handle the internal review id.
 // ASSUMPTION(U47): this file is a recorded addition beside `review.ts`; components may reach the
 // server only through `server/actions` (eslint.boundaries.mjs).
-import type { DemoCommentThread } from '@rogikotha/contracts';
-
-import { getActor } from '@/server/auth';
 import { getContainer } from '@/server/container';
 
 async function reviewIdOf(reviewPublicId: string): Promise<string | null> {
@@ -14,18 +11,6 @@ async function reviewIdOf(reviewPublicId: string): Promise<string | null> {
   return c.ports.unitOfWork.read((tx) =>
     c.review.reviewIdForPublicId(tx, { publicId: reviewPublicId }),
   );
-}
-
-// ASSUMPTION(U49): the demo comment read is gone with Step 23 (BR6.1), and the slot still takes
-// `DemoCommentThread[]`, so until Step 25 reads `community.getThread` through the new views this
-// answers an empty list; the post and delete actions already run on the Community module.
-export async function loadCommentThread(
-  reviewPublicId: string,
-): Promise<{ threads: DemoCommentThread[]; signedIn: boolean } | null> {
-  const reviewId = await reviewIdOf(reviewPublicId);
-  if (reviewId === null) return null;
-  const actor = await getActor();
-  return { threads: [], signedIn: actor.kind === 'account' };
 }
 
 /** How many documents the public may count (C17), until U48 binds Evidence's implementation. */

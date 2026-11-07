@@ -441,6 +441,7 @@ export type MessageKey =
   | 'crit.staff'
   | 'crit.waiting'
   | 'demo.banner'
+  | 'disclaimer.comments'
   | 'disclaimer.long'
   | 'disclaimer.short'
   | 'discover.browse'
@@ -585,8 +586,11 @@ export type MessageKey =
   | 'experience.currentNote'
   | 'experience.currentStatus'
   | 'experience.dangerWarning'
+  | 'experience.deleteCancel'
   | 'experience.deleteComment'
+  | 'experience.deleteConfirm'
   | 'experience.discussion'
+  | 'experience.discussionClosed'
   | 'experience.editComment'
   | 'experience.editExperience'
   | 'experience.edited'
@@ -596,6 +600,7 @@ export type MessageKey =
   | 'experience.laterCare'
   | 'experience.laterCareNote'
   | 'experience.linkWarning'
+  | 'experience.noComments'
   | 'experience.openEvidence'
   | 'experience.otherAccounts'
   | 'experience.outcomeLabel'
@@ -614,6 +619,7 @@ export type MessageKey =
   | 'experience.saveComment'
   | 'experience.sentimentLabel'
   | 'experience.signInToComment'
+  | 'experience.threadTruncated'
   | 'experience.timeline'
   | 'experience.writtenBy'
   | 'experience.yourExperience'
@@ -1397,6 +1403,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'crit.staff',
   'crit.waiting',
   'demo.banner',
+  'disclaimer.comments',
   'disclaimer.long',
   'disclaimer.short',
   'discover.browse',
@@ -1541,8 +1548,11 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'experience.currentNote',
   'experience.currentStatus',
   'experience.dangerWarning',
+  'experience.deleteCancel',
   'experience.deleteComment',
+  'experience.deleteConfirm',
   'experience.discussion',
+  'experience.discussionClosed',
   'experience.editComment',
   'experience.editExperience',
   'experience.edited',
@@ -1552,6 +1562,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'experience.laterCare',
   'experience.laterCareNote',
   'experience.linkWarning',
+  'experience.noComments',
   'experience.openEvidence',
   'experience.otherAccounts',
   'experience.outcomeLabel',
@@ -1570,6 +1581,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'experience.saveComment',
   'experience.sentimentLabel',
   'experience.signInToComment',
+  'experience.threadTruncated',
   'experience.timeline',
   'experience.writtenBy',
   'experience.yourExperience',
