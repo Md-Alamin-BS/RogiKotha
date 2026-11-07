@@ -66,6 +66,14 @@ timeout 300 pnpm contrast
 
 If a filter path does not match, pass it in quotes or as the path relative to `apps/web/e2e`, which is the Playwright `testDir`. Never replace a filter with a bare project-wide command when running the Unit's own tests; the gate commands at the end are the only whole-suite runs.
 
+## Runner check and counts before any change (plan Step 5, 2026-11-07)
+
+Every command above was checked on `bolt/u50-release-check` at `d3e2d66` and works as written:
+
+- `--project web apps/web/src/server/health.test.ts apps/web/src/server/env.test.ts`: 2 files, 16 tests passed. `health.smoke.test.ts` does not exist yet (Step 18).
+- `--project tooling scripts`: 6 files, 121 tests passed. The existing script tests sit directly in `scripts/*.test.mjs`; the tooling glob `**/*.test.mjs` also picks up the new `scripts/__tests__/` files, so no config change is needed.
+- `pnpm --filter @rogikotha/web exec playwright test --list`: 17 tests in 2 files (`smoke/motion.spec.ts`, `smoke/demo.spec.ts`) on the old single `chromium` project, with Playwright 1.64.1 and the Chromium builds already installed.
+
 ## What to cover (`functional-spec.md` § 10, `rules.md`)
 
 | Group | Tests |
