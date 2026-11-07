@@ -21,9 +21,15 @@ export function hasControlOrFormat(text: string): boolean {
 // (ra with ya-phala) and Bengali keyboards insert them (FD-114). Bidi controls stay refused.
 const CONTROL_OR_FORMAT_EXCEPT_JOINERS = /(?![\u{200C}\u{200D}])[\p{Cc}\p{Cf}]/u;
 
-/** Like `hasControlOrFormat`, but allows the two joiners of written Bengali (FD-114). */
-export function hasControlOrFormatExceptJoiners(text: string): boolean {
-  return CONTROL_OR_FORMAT_EXCEPT_JOINERS.test(text);
+/**
+ * Like `hasControlOrFormat`, but allows the two joiners of written Bengali (FD-114); with
+ * `lineBreaks`, also the `\n`, `\r` and `\t` a textarea produces (FD-115).
+ */
+export function hasControlOrFormatExceptJoiners(
+  text: string,
+  { lineBreaks = false }: { lineBreaks?: boolean } = {},
+): boolean {
+  return CONTROL_OR_FORMAT_EXCEPT_JOINERS.test(lineBreaks ? text.replace(/[\n\r\t]/g, '') : text);
 }
 
 /** Letters left once the title is removed; a usable name has at least three. */

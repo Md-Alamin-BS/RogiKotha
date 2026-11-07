@@ -108,6 +108,39 @@ describe('comment.post', () => {
     expect(w.comments.rows.size).toBe(0);
   });
 
+  it('refuses invisible and control characters before the limiter, so they are not counted (FD-115)', async () => {
+    const { w, reader, reviewPublicId } = await setup();
+    const ch = (cp: number) => String.fromCodePoint(cp);
+    const auditBefore = w.fakes.audit.events.length;
+
+    const refused = [
+      [ch(0x200b), 'errors.community.commentLength'],
+      [`a${ch(0x0000)}b`, 'errors.community.commentHidden'],
+      [`a${ch(0x202e)}b`, 'errors.community.commentHidden'],
+      [`a${ch(0x2066)}b`, 'errors.community.commentHidden'],
+    ] as const;
+    for (const [body, key] of refused) {
+      const error = expectErr(
+        await w.community.postComment.execute({ reviewPublicId, body }, reader.call),
+      );
+      expect(error.code).toBe('validation');
+      expect(error.fieldErrors).toEqual({ body: key });
+    }
+
+    expect(w.commentPostHits()).toBe(0);
+    expect(w.comments.rows.size).toBe(0);
+    expect(w.fakes.audit.events).toHaveLength(auditBefore);
+  });
+
+  it('posts a multi-line Bengali body with ZWJ and ZWNJ as typed', async () => {
+    const { w, reader, reviewPublicId } = await setup();
+    const body = `প্রথম লাইন: র${String.fromCodePoint(0x200d)}্যাব।\nদ্বিতীয় লাইন: উদ্${String.fromCodePoint(0x200c)}যাপন।`;
+
+    const publicId = await w.posted(reader.call, reviewPublicId, body);
+
+    expect(w.rowOf(publicId).body).toBe(body);
+  });
+
   it('gives an unknown and an unpublished review the same not_found', async () => {
     const { w, reader, reviewPublicId, reviewId } = await setup();
     const unknown = expectErr(

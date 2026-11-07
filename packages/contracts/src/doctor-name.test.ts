@@ -70,4 +70,14 @@ describe('hasControlOrFormatExceptJoiners', () => {
       expect(hasControlOrFormatExceptJoiners(`a${String.fromCodePoint(cp)}b`)).toBe(true);
     }
   });
+
+  it('allows line breaks and tabs only when asked, and nothing else with them (FD-115)', () => {
+    const typed = 'first line\r\nsecond\tline\nthird';
+    expect(hasControlOrFormatExceptJoiners(typed)).toBe(true);
+    expect(hasControlOrFormatExceptJoiners(typed, { lineBreaks: true })).toBe(false);
+    for (const cp of [0x0000, 0x000b, 0x000c, 0x0085, 0x202e, 0x2066, 0x200b]) {
+      const text = `a\n${String.fromCodePoint(cp)}b`;
+      expect(hasControlOrFormatExceptJoiners(text, { lineBreaks: true })).toBe(true);
+    }
+  });
 });

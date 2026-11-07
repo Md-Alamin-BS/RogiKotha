@@ -53,7 +53,8 @@ export interface CommunityRepository {
   insert(tx: Tx, row: NewCommentRow): Promise<PortResult<void, 'community.reply_depth'>>;
   /** Replies that are published and not deleted. */
   countLiveReplies(tx: Tx, commentId: string): Promise<number>;
-  markDeleted(tx: Tx, request: MarkDeletedRequest): Promise<void>;
+  /** Only a live comment changes; false when it was no longer live (a concurrent delete). */
+  markDeleted(tx: Tx, request: MarkDeletedRequest): Promise<boolean>;
   /** Listed rows (published and deleted_tombstone) of one review, oldest first, at most `limit` (BR3.6). */
   threadRows(tx: Tx, request: ThreadRowsRequest): Promise<CommentRecord[]>;
 }

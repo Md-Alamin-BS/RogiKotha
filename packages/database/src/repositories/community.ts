@@ -84,8 +84,10 @@ export class PgCommunityRepository implements CommunityRepository {
     );
   }
 
-  async markDeleted(tx: AppTx, request: MarkDeletedRequest): Promise<void> {
-    await executorOf(tx)
+  async markDeleted(tx: AppTx, request: MarkDeletedRequest): Promise<boolean> {
+    // The live condition is re-checked after a concurrent delete's row lock is released, so of
+    // two deletes at once only one changes the row (review-01 R-03).
+    const changed = await executorOf(tx)
       .update(comments)
       .set({
         state: 'deleted_tombstone',
@@ -93,7 +95,15 @@ export class PgCommunityRepository implements CommunityRepository {
         updatedAt: request.at,
         tombstone: request.tombstone,
       })
-      .where(eq(comments.id, request.commentId));
+      .where(
+        and(
+          eq(comments.id, request.commentId),
+          eq(comments.state, 'published'),
+          isNull(comments.deletedAt),
+        ),
+      )
+      .returning({ id: comments.id });
+    return changed.length > 0;
   }
 
   async threadRows(tx: AppTx, request: ThreadRowsRequest): Promise<CommentRecord[]> {

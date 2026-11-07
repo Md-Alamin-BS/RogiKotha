@@ -634,7 +634,9 @@
     "community": {
       "blocked": "You can't reply to this account.",
       "mentionAnonymous": "Anonymous authors can't be @mentioned.",
-      "replyDepth": "Replies can only go one level deep here."
+      "replyDepth": "Replies can only go one level deep here.",
+      "commentLength": "Comment: write between {min} and {max} characters.",
+      "commentHidden": "Your comment holds hidden or control characters that can't be posted. Remove them, or type the text again, and post it."
     },
     "config": {
       "invariant": "That setting isn't recognised. Nothing was changed.",

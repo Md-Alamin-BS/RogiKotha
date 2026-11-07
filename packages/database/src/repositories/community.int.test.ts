@@ -222,6 +222,56 @@ describe('markDeleted', () => {
     expect(stored).toMatchObject({ state: 'deleted_tombstone', tombstone: true });
   });
 
+  it('says whether it changed the row, and leaves an already deleted comment as it was', async () => {
+    const { reader, reviewId } = await scene();
+    const row = await insertOk(newRow(reviewId, reader));
+    const first = new Date('2026-06-01T10:00:00.000Z');
+
+    await expect(
+      repo.markDeleted(tx, { commentId: row.id, at: first, tombstone: false }),
+    ).resolves.toBe(true);
+    await expect(
+      repo.markDeleted(tx, { commentId: row.id, at: new Date(), tombstone: true }),
+    ).resolves.toBe(false);
+
+    const [stored] = await testDb.select().from(comments).where(eq(comments.id, row.id));
+    expect(stored).toMatchObject({ deletedAt: first, updatedAt: first, tombstone: false });
+  });
+
+  it('lets only one of two concurrent deletes change the comment (review-01 R-03)', async () => {
+    const { reader, reviewId } = await scene();
+    const row = await insertOk(newRow(reviewId, reader));
+    let firstUpdated!: () => void;
+    const updated = new Promise<void>((resolve) => (firstUpdated = resolve));
+
+    const [a, b] = await Promise.all([
+      testDb.transaction(async (drizzleTx) => {
+        const changed = await repo.markDeleted(appTx(drizzleTx), {
+          commentId: row.id,
+          at: new Date(),
+          tombstone: false,
+        });
+        firstUpdated();
+        // Hold the row lock while the second delete waits on it.
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        return changed;
+      }),
+      updated.then(() =>
+        testDb.transaction((drizzleTx) =>
+          repo.markDeleted(appTx(drizzleTx), {
+            commentId: row.id,
+            at: new Date(),
+            tombstone: true,
+          }),
+        ),
+      ),
+    ]);
+
+    expect([a, b]).toEqual([true, false]);
+    const [stored] = await testDb.select().from(comments).where(eq(comments.id, row.id));
+    expect(stored).toMatchObject({ state: 'deleted_tombstone', tombstone: false });
+  });
+
   it('touches no other comment', async () => {
     const { reader, reviewId } = await scene();
     const target = await insertOk(newRow(reviewId, reader));

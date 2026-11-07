@@ -5,6 +5,7 @@ import {
   expectErr,
   expectOk,
   makeCommunityWorld,
+  TX,
 } from '../community-test-support';
 
 async function setup() {
@@ -92,6 +93,28 @@ describe('comment.delete', () => {
     expect(asked).toHaveLength(2);
     expect(w.comments.snapshot()).toEqual(before);
     expect(w.fakes.audit.events).toHaveLength(auditBefore);
+  });
+
+  it('answers not_found with no second audit row when a concurrent delete got there first', async () => {
+    const { w, reader, reviewPublicId } = await setup();
+    const commentPublicId = await w.posted(reader.call, reviewPublicId);
+    const live = await w.comments.byPublicId(TX, { publicId: commentPublicId });
+    expectOk(await w.community.deleteComment.execute({ commentPublicId }, reader.call));
+    const afterFirst = w.comments.snapshot();
+    const auditAfterFirst = w.fakes.audit.events.length;
+    // The second request read the comment while it was still live.
+    w.comments.byPublicId = () => Promise.resolve(live);
+
+    const error = expectErr(
+      await w.community.deleteComment.execute({ commentPublicId }, reader.call),
+    );
+
+    expect(error.code).toBe('not_found');
+    expect(w.comments.snapshot()).toEqual(afterFirst);
+    expect(w.fakes.audit.events).toHaveLength(auditAfterFirst);
+    expect(
+      w.fakes.audit.events.filter((e) => e.action === 'comment.deleted').map((e) => e.targetId),
+    ).toEqual([w.rowOf(commentPublicId).id]);
   });
 
   it('refuses a signed-out caller', async () => {
