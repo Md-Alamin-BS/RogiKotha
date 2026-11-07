@@ -112,7 +112,11 @@ export interface EvidenceRepository {
   lockReview(tx: Tx, reviewId: string): Promise<void>;
   countCounting(tx: Tx, reviewId: string): Promise<EvidenceCountingTotals>;
   findByIdempotencyKey(tx: Tx, key: string): Promise<IdempotentEvidenceRecord | null>;
-  insertQuarantined(tx: Tx, item: NewQuarantinedEvidence): Promise<void>;
+  /**
+   * `key_taken` when another transaction committed the same idempotency key first; the caller's
+   * transaction stays usable and nothing was written (the unique index spans all reviews).
+   */
+  insertQuarantined(tx: Tx, item: NewQuarantinedEvidence): Promise<'inserted' | 'key_taken'>;
   /** Oldest first; `removed` and `original_expired` are left out. */
   listForAuthor(tx: Tx, reviewId: string, accountId: string): Promise<OwnEvidenceRecord[]>;
   findOwned(tx: Tx, publicId: string, accountId: string): Promise<OwnedEvidenceRecord | null>;

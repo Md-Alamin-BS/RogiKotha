@@ -21,10 +21,13 @@ import type {
 import type { CustodyEvent, EvidenceFailReason, EvidenceState } from '@rogikotha/contracts';
 import { and, asc, count, desc, eq, inArray, isNull, notInArray, sql } from 'drizzle-orm';
 
+import { uniqueViolationConstraint } from '../pg-error';
 import { evidenceArtifacts, evidenceCustodyEvents, evidenceItems } from '../schema/evidence';
 import { executorOf } from '../unit-of-work';
 import { isUuid } from './identity';
 import { NotImplemented } from './not-implemented';
+
+const IDEMPOTENCY_KEY_UNIQUE_CONSTRAINT = 'evidence_items_idempotency_key_unique';
 
 // `database` may not import `domain` (eslint.boundaries.mjs), so the domain lists are restated;
 // the integration tests pin which states each one counts.
@@ -142,35 +145,48 @@ export class PgEvidenceRepository implements EvidenceRepository {
     return row ?? null;
   }
 
-  async insertQuarantined(tx: AppTx, item: NewQuarantinedEvidence): Promise<void> {
-    const db = executorOf(tx);
-    await db.insert(evidenceItems).values({
-      id: item.id,
-      publicId: item.publicId,
-      reviewId: item.reviewId,
-      group: 'reviewed',
-      state: 'quarantined',
-      // The command admits only JPEG and PNG; the table's CHECK refuses anything else.
-      declaredMime: item.declaredMime as 'image/jpeg' | 'image/png',
-      detectedMime: item.detectedMime,
-      originalBytes: item.originalBytes,
-      originalSha256: item.originalSha256,
-      originalFilenameEnc: Buffer.from(item.originalFilenameEnc),
-      uploadedByAccountId: item.uploadedByAccountId,
-      idempotencyKey: item.idempotencyKey,
-      createdAt: item.now,
-    });
-    await db.insert(evidenceArtifacts).values({
-      id: item.artifactId,
-      itemId: item.id,
-      kind: 'original',
-      storageKey: item.storageKey,
-      sha256: item.originalSha256,
-      bytes: item.originalBytes,
-      mime: item.detectedMime,
-      public: false,
-      createdAt: item.now,
-    });
+  async insertQuarantined(
+    tx: AppTx,
+    item: NewQuarantinedEvidence,
+  ): Promise<'inserted' | 'key_taken'> {
+    try {
+      // A savepoint, so a lost idempotency-key race leaves the caller's transaction usable.
+      await executorOf(tx).transaction(async (savepoint) => {
+        await savepoint.insert(evidenceItems).values({
+          id: item.id,
+          publicId: item.publicId,
+          reviewId: item.reviewId,
+          group: 'reviewed',
+          state: 'quarantined',
+          // The command admits only JPEG and PNG; the table's CHECK refuses anything else.
+          declaredMime: item.declaredMime as 'image/jpeg' | 'image/png',
+          detectedMime: item.detectedMime,
+          originalBytes: item.originalBytes,
+          originalSha256: item.originalSha256,
+          originalFilenameEnc: Buffer.from(item.originalFilenameEnc),
+          uploadedByAccountId: item.uploadedByAccountId,
+          idempotencyKey: item.idempotencyKey,
+          createdAt: item.now,
+        });
+        await savepoint.insert(evidenceArtifacts).values({
+          id: item.artifactId,
+          itemId: item.id,
+          kind: 'original',
+          storageKey: item.storageKey,
+          sha256: item.originalSha256,
+          bytes: item.originalBytes,
+          mime: item.detectedMime,
+          public: false,
+          createdAt: item.now,
+        });
+      });
+    } catch (error) {
+      if (uniqueViolationConstraint(error) === IDEMPOTENCY_KEY_UNIQUE_CONSTRAINT) {
+        return 'key_taken';
+      }
+      throw error;
+    }
+    return 'inserted';
   }
 
   async listForAuthor(

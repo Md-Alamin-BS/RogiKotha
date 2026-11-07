@@ -64,15 +64,6 @@ async function setState(itemId: string, state: EvidenceState, createdAt?: Date):
     .where(eq(evidenceItems.id, itemId));
 }
 
-function pgCodeOf(error: unknown): unknown {
-  let current: unknown = error;
-  while (current instanceof Error) {
-    if ('code' in current && typeof current.code === 'string') return current.code;
-    current = current.cause;
-  }
-  return undefined;
-}
-
 async function asWorker<T>(run: (db: Db) => Promise<T>): Promise<T> {
   const { db, pool } = createDb(workerUrlForTestDb());
   try {
@@ -266,11 +257,61 @@ describe('PgEvidenceRepository, web side (Step 24)', () => {
     });
     expect(await repo.findByIdempotencyKey(appTxOf(testDb), newId())).toBeNull();
 
-    const error = await insert(
-      testDb,
-      newItem(reviewId, accountId, { idempotencyKey: first.idempotencyKey }),
-    ).catch((caught: unknown) => caught);
-    expect(pgCodeOf(error)).toBe('23505');
+    const duplicate = newItem(reviewId, accountId, { idempotencyKey: first.idempotencyKey });
+    const outcome = await testDb.transaction(async (drizzleTx) => {
+      const tx = appTxOf(drizzleTx);
+      const answer = await repo.insertQuarantined(tx, duplicate);
+      // The savepoint leaves the transaction usable after the refusal.
+      return { answer, found: await repo.findByIdempotencyKey(tx, first.idempotencyKey) };
+    });
+    expect(outcome.answer).toBe('key_taken');
+    expect(outcome.found?.id).toBe(first.id);
+    expect(
+      await testDb.select().from(evidenceItems).where(eq(evidenceItems.id, duplicate.id)),
+    ).toEqual([]);
+    expect(
+      await testDb
+        .select()
+        .from(evidenceArtifacts)
+        .where(eq(evidenceArtifacts.itemId, duplicate.id)),
+    ).toEqual([]);
+  });
+
+  it('answers key_taken to the second of two concurrent inserts of one key on different reviews', async () => {
+    const a = await reviewWithAuthor();
+    const b = await reviewWithAuthor();
+    const idempotencyKey = newId();
+    const itemA = newItem(a.reviewId, a.accountId, { idempotencyKey });
+    const itemB = newItem(b.reviewId, b.accountId, { idempotencyKey });
+
+    let releaseA: () => void = () => undefined;
+    const aHoldsKey = new Promise<void>((resolve) => {
+      releaseA = resolve;
+    });
+    let aInserted: () => void = () => undefined;
+    const aHasInserted = new Promise<void>((resolve) => {
+      aInserted = resolve;
+    });
+    const txA = testDb.transaction(async (drizzleTx) => {
+      const answer = await repo.insertQuarantined(appTxOf(drizzleTx), itemA);
+      aInserted();
+      await aHoldsKey;
+      return answer;
+    });
+    await aHasInserted;
+    // B blocks on A's uncommitted key until A commits, then loses the unique check.
+    const txB = testDb.transaction(async (drizzleTx) => {
+      const tx = appTxOf(drizzleTx);
+      const answer = await repo.insertQuarantined(tx, itemB);
+      return { answer, found: await repo.findByIdempotencyKey(tx, idempotencyKey) };
+    });
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    releaseA();
+
+    expect(await txA).toBe('inserted');
+    const lost = await txB;
+    expect(lost.answer).toBe('key_taken');
+    expect(lost.found).toMatchObject({ id: itemA.id, reviewId: a.reviewId });
   });
 
   it('lists only the uploader’s own visible items, oldest first, and finds nothing for another account', async () => {

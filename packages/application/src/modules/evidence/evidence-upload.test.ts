@@ -20,6 +20,17 @@ async function authorWithReview(opts: { published?: boolean } = {}) {
   return { w, account, call, review };
 }
 
+/** The next key read misses a row another request has just committed, as in the lock-free race of R-05. */
+function staleFirstKeyRead(w: ReturnType<typeof makeEvidenceWorld>): void {
+  const realFind = w.repo.findByIdempotencyKey.bind(w.repo);
+  let stale = true;
+  w.repo.findByIdempotencyKey = (tx, key) => {
+    if (!stale) return realFind(tx, key);
+    stale = false;
+    return Promise.resolve(null);
+  };
+}
+
 function errorCode(result: { ok: boolean; error?: { code: string } }): string | undefined {
   return result.ok ? undefined : result.error?.code;
 }
@@ -237,6 +248,38 @@ describe('evidence.intake', () => {
     });
 
     expect(errorCode(result)).toBe('not_found');
+    expect(w.repo.items.size).toBe(1);
+  });
+
+  it('answers not_found, not an error, when another review wins the same key between the check and the insert', async () => {
+    const { w, call, review } = await authorWithReview();
+    const { account: other, call: otherCall } = await w.confirmedCall();
+    const otherReview = w.addReview(other);
+    const idempotencyKey = newIdempotencyKey();
+    await w.upload(otherCall, { reviewPublicId: otherReview.publicId, idempotencyKey });
+    staleFirstKeyRead(w);
+
+    const { result, key } = await w.upload(call, {
+      reviewPublicId: review.publicId,
+      idempotencyKey,
+    });
+
+    expect(errorCode(result)).toBe('not_found');
+    expect(w.repo.items.size).toBe(1);
+    expect([...w.repo.items.values()][0]?.reviewId).toBe(otherReview.id);
+    expect(w.repo.custody).toHaveLength(1);
+    expect(w.store.files.has(key)).toBe(false);
+  });
+
+  it('answers the existing item when the same review and account win the key race', async () => {
+    const { w, call, review } = await authorWithReview();
+    const idempotencyKey = newIdempotencyKey();
+    await w.upload(call, { reviewPublicId: review.publicId, idempotencyKey });
+    staleFirstKeyRead(w);
+
+    const { result } = await w.upload(call, { reviewPublicId: review.publicId, idempotencyKey });
+
+    expect(result.ok && result.data.created).toBe(false);
     expect(w.repo.items.size).toBe(1);
   });
 });
