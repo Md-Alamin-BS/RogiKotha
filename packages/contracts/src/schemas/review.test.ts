@@ -4,6 +4,8 @@ import { CRITERIA, CRITERION_VALUES } from '../enums';
 import { ERROR_CODES, errorMessageKey } from '../errors';
 import type { ExperiencePageVM, PageBylineVM } from '../view-models/experience';
 import {
+  CORRECTION_FIELDS,
+  CorrectReviewInput,
   DiscardDraftInput,
   DraftPayload,
   FacilityReviewPublishInput,
@@ -209,5 +211,77 @@ describe('no score anywhere (BR9.4)', () => {
         criteria,
       }).success,
     ).toBe(false);
+  });
+});
+
+describe('CorrectReviewInput', () => {
+  const quick = {
+    publicId: 'r3v1ew0001',
+    expectedVersion: 1,
+    title: 'Careful with my mother',
+    content: { kind: 'quick', story: 'A synthetic story that is long enough to count.' },
+    claims: [],
+  };
+  const detailed = {
+    ...quick,
+    content: { kind: 'detailed', sections: { symptoms: 'Fever', after: 'Better' } },
+    sentiment: 'mixed',
+    outcome: 'helped',
+    claims: ['wrongDx', 'A seeded label'],
+  };
+
+  it('accepts a quick and a detailed correction', () => {
+    expect(CorrectReviewInput.safeParse(quick).success).toBe(true);
+    expect(CorrectReviewInput.safeParse(detailed).success).toBe(true);
+  });
+
+  it.each(['doctorId', 'identityMode', 'tags', 'personaId', 'accountId'])(
+    'refuses the extra key %s',
+    (key) => {
+      expect(CorrectReviewInput.safeParse({ ...quick, [key]: 'x' }).success).toBe(false);
+    },
+  );
+
+  it('refuses a stale-looking version of zero', () => {
+    expect(CorrectReviewInput.safeParse({ ...quick, expectedVersion: 0 }).success).toBe(false);
+  });
+
+  it('counts the title in graphemes, so 120 Bengali letters fit and 121 do not', () => {
+    const bangla = (n: number) => 'ক'.repeat(n);
+    expect(CorrectReviewInput.safeParse({ ...quick, title: bangla(120) }).success).toBe(true);
+    expect(CorrectReviewInput.safeParse({ ...quick, title: bangla(121) }).success).toBe(false);
+  });
+
+  it('refuses content that mixes a story with sections', () => {
+    const mixed = { kind: 'quick', story: 'A synthetic story.', sections: { symptoms: 'x' } };
+    expect(CorrectReviewInput.safeParse({ ...quick, content: mixed }).success).toBe(false);
+    const other = { kind: 'detailed', sections: {}, story: 'A synthetic story.' };
+    expect(CorrectReviewInput.safeParse({ ...quick, content: other }).success).toBe(false);
+  });
+
+  it('refuses duplicate claims', () => {
+    expect(CorrectReviewInput.safeParse({ ...quick, claims: ['wrongDx', 'wrongDx'] }).success).toBe(
+      false,
+    );
+  });
+
+  it('refuses a rating-like key inside the sections', () => {
+    const content = { kind: 'detailed', sections: { symptoms: 'x', rating: '5' } };
+    expect(CorrectReviewInput.safeParse({ ...quick, content }).success).toBe(false);
+  });
+});
+
+describe('CORRECTION_FIELDS', () => {
+  it('keeps the fixed order of the design and never names the title', () => {
+    expect([...CORRECTION_FIELDS]).toEqual([
+      'story',
+      'symptoms',
+      'diagnosis',
+      'treatment',
+      'after',
+      'sentiment',
+      'outcome',
+      'claims',
+    ]);
   });
 });

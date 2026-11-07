@@ -180,13 +180,60 @@ export const AddFollowUpInput = z
   })
   .strict();
 
-// TODO(T-301): the correctable field list/shape is owned by that task.
+/** The material parts of a review a correction can name, in the fixed order of ENT-103. */
+export const CORRECTION_FIELDS = [
+  'story',
+  'symptoms',
+  'diagnosis',
+  'treatment',
+  'after',
+  'sentiment',
+  'outcome',
+  'claims',
+] as const;
+export type CorrectionField = (typeof CORRECTION_FIELDS)[number];
+
+// ASSUMPTION(U22): a claim label is at most 200 graphemes and a review keeps at most 10; the
+// design fixes neither bound, and seeded labels are short sentences.
+export const CORRECTION_CLAIM_MAX = 200;
+export const CORRECTION_CLAIMS_MAX = 10;
+
+/** What the edit form sends: strict, so no key for doctor, identity, period, tags or persona (ENT-104). */
 export const CorrectReviewInput = z
   .object({
-    reviewId: z.string().min(1),
-    fields: z.unknown(),
+    publicId,
+    expectedVersion: z.number().int().min(1),
+    title: plainText(DRAFT_TITLE_MAX),
+    content: z.discriminatedUnion('kind', [
+      z.object({ kind: z.literal('quick'), story: longText(DRAFT_STORY_MAX) }).strict(),
+      z
+        .object({
+          kind: z.literal('detailed'),
+          sections: z
+            .object({
+              symptoms: longText(DRAFT_SECTION_MAX).optional(),
+              diagnosis: longText(DRAFT_SECTION_MAX).optional(),
+              treatment: longText(DRAFT_SECTION_MAX).optional(),
+              after: longText(DRAFT_SECTION_MAX).optional(),
+            })
+            .strict(),
+        })
+        .strict(),
+    ]),
+    sentiment: z.enum(SENTIMENTS).optional(),
+    outcome: z.enum(OUTCOMES).optional(),
+    claims: z
+      .array(plainText(CORRECTION_CLAIM_MAX, 1))
+      .max(CORRECTION_CLAIMS_MAX)
+      .refine((labels) => new Set(labels).size === labels.length, {
+        error: 'errors.common.validation',
+      }),
   })
   .strict();
+
+export const GetOwnForEditInput = z.object({ publicId }).strict();
+
+export const GetHistoryInput = z.object({ reviewPublicId: publicId }).strict();
 
 export const DeleteReviewInput = z.object({ reviewId: z.string().min(1) }).strict();
 
@@ -287,3 +334,6 @@ export type PreviewDraftInput = z.output<typeof PreviewDraftInput>;
 export type GetExperienceInput = z.output<typeof GetExperienceInput>;
 export type AuthorCardsInput = z.output<typeof AuthorCardsInput>;
 export type HasOwnReviewOfDoctorInput = z.output<typeof HasOwnReviewOfDoctorInput>;
+export type CorrectReviewInput = z.output<typeof CorrectReviewInput>;
+export type GetOwnForEditInput = z.output<typeof GetOwnForEditInput>;
+export type GetHistoryInput = z.output<typeof GetHistoryInput>;
