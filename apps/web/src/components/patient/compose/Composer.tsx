@@ -184,6 +184,15 @@ export function Composer({
     return () => window.clearTimeout(timer);
   }, [state.draftMissing]);
 
+  // T-011's `[data-step-dir]` slide runs from `@starting-style`, so the panel is keyed by step and
+  // the first render carries no direction (BR8.11).
+  const [shown, setShown] = useState<{ step: ComposerStep; dir?: 'forward' | 'back' }>({
+    step: state.step,
+  });
+  if (shown.step !== state.step) {
+    setShown({ step: state.step, dir: state.step > shown.step ? 'forward' : 'back' });
+  }
+
   const savedFlag = state.draftMissing
     ? 'compose.draftMissing'
     : state.save.status === 'failed'
@@ -215,7 +224,12 @@ export function Composer({
           fields={refusedLabels}
           onField={goToField}
         />
-        <section className="panel c-step-body" data-testid={`compose-step-body-${state.step}`}>
+        <section
+          key={state.step}
+          className="panel c-step-body"
+          data-step-dir={shown.dir}
+          data-testid={`compose-step-body-${state.step}`}
+        >
           <h2 id={STEP_HEADING_ID} tabIndex={-1}>
             {t(STEP_NAME_KEY[state.step])}
           </h2>

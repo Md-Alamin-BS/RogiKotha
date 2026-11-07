@@ -106,6 +106,20 @@ describe.each(['en', 'bn'] as const)('the composer shell in %s', (locale: TestLo
     expect(screen.getByRole('heading', { level: 2 })).toHaveFocus();
   });
 
+  it('slides a new step in from its direction of travel and not on first render', async () => {
+    const user = userEvent.setup();
+    renderInLocale(<Composer vm={someVm()} initialStep={2} now={NOW} />, locale);
+
+    expect(screen.getByTestId('compose-step-body-2')).not.toHaveAttribute('data-step-dir');
+
+    await user.click(screen.getByTestId('compose-step-4'));
+    expect(screen.getByTestId('compose-step-body-4')).toHaveAttribute('data-step-dir', 'forward');
+
+    await user.click(screen.getByTestId('compose-step-1'));
+    expect(screen.getByTestId('compose-step-body-1')).toHaveAttribute('data-step-dir', 'back');
+    expect(screen.getByRole('heading', { level: 2 })).toHaveFocus();
+  });
+
   it('preselects the doctor only from the link parameter', () => {
     const first = renderInLocale(
       <Composer vm={someVm()} initialStep={1} doctorPublicId="doc0000002" now={NOW} />,
