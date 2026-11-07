@@ -89,3 +89,7 @@ export const communitySchemas = {
   GetThreadInput,
   ReactionsOfInput,
 };
+
+export type PostCommentInput = z.output<typeof PostCommentInput>;
+export type DeleteCommentInput = z.output<typeof DeleteCommentInput>;
+export type GetThreadInput = z.output<typeof GetThreadInput>;

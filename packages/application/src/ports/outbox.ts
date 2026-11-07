@@ -20,6 +20,8 @@ export type OutboxPayloads = {
   'term.changed': { id: string };
   /** U47 BR4.6: ids only; a facility visit appends no event. */
   'review.published': { reviewId: string; doctorId: string; branchId: null };
+  /** U49 BR1.7: ids only; a deletion appends no event (BR2.4). */
+  'comment.posted': { commentId: string; reviewId: string };
 };
 
 export type OutboxEventName = keyof OutboxPayloads;
