@@ -86,9 +86,9 @@ function signedIn(locale: TestLocale) {
   vi.mocked(session.getCurrentAccountByAuthUserId).mockResolvedValue(HOLDER);
 }
 
-async function renderPage(locale: TestLocale) {
+async function renderPage(locale: TestLocale, search: { changed?: string } = {}) {
   active.locale = locale;
-  const element = await SecuritySettingsPage();
+  const element = await SecuritySettingsPage({ searchParams: Promise.resolve(search) });
   render(
     <NextIntlClientProvider locale={locale} messages={loadMessages(locale)}>
       {element}
@@ -158,6 +158,33 @@ describe.each(LOCALES)('the security page in %s', (locale) => {
     expect(screen.getByTestId('session-list')).toHaveTextContent(t('auth.security.thisDevice'));
     expect(getOwnAccount).toHaveBeenCalledTimes(1);
     expect(listSessions).toHaveBeenCalledTimes(1);
+  });
+
+  it('without ?changed=1, shows the change-password form and no confirmation', async () => {
+    signedIn(locale);
+    const t = await renderPage(locale);
+
+    expect(screen.queryByTestId('change-password-notice')).toBeNull();
+    expect(
+      screen.getByRole('button', { name: t('auth.security.changePassword') }),
+    ).toBeInTheDocument();
+  });
+
+  it('after a password change (?changed=1), shows the confirmation in place of the form', async () => {
+    signedIn(locale);
+    const t = await renderPage(locale, { changed: '1' });
+
+    expect(screen.getByTestId('change-password-notice')).toHaveTextContent(
+      t('auth.security.passwordChanged'),
+    );
+    expect(screen.queryByRole('button', { name: t('auth.security.changePassword') })).toBeNull();
+  });
+
+  it('any other ?changed value shows no confirmation', async () => {
+    signedIn(locale);
+    await renderPage(locale, { changed: 'yes' });
+
+    expect(screen.queryByTestId('change-password-notice')).toBeNull();
   });
 
   it('a failed sessions query blanks only the sessions section', async () => {

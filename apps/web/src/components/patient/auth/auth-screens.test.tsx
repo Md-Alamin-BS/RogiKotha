@@ -452,21 +452,25 @@ describe.each(LOCALES)('the session list in %s', (locale) => {
 });
 
 describe.each(LOCALES)('the change-password form in %s', (locale) => {
-  it('replaces itself with the confirmation on success', async () => {
-    vi.mocked(changePasswordForm).mockResolvedValue({
-      status: 'done',
-      formError: null,
-      fieldErrors: {},
-      notice: { key: 'auth.security.passwordChanged' },
-    });
-    const user = userEvent.setup();
-    const t = renderIn(locale, <ChangePasswordForm />);
+  it('after the redirect with changed, shows the confirmation in place of the form, announced once', () => {
+    const live = document.createElement('div');
+    live.id = 'sr-live';
+    document.body.append(live);
+    const t = renderIn(locale, <ChangePasswordForm changed />);
 
-    await user.click(screen.getByRole('button', { name: t('auth.security.changePassword') }));
-
-    expect(await screen.findByTestId('change-password-notice')).toHaveTextContent(
+    expect(screen.getByTestId('change-password-notice')).toHaveTextContent(
       t('auth.security.passwordChanged'),
     );
+    expect(screen.queryByRole('button', { name: t('auth.security.changePassword') })).toBeNull();
+    expect(live).toHaveTextContent(t('auth.security.passwordChanged'));
+    live.remove();
+  });
+
+  it('shows the form and no confirmation without changed', () => {
+    const t = renderIn(locale, <ChangePasswordForm />);
+
+    expect(screen.queryByTestId('change-password-notice')).toBeNull();
+    expect(screen.getByRole('button', { name: t('auth.security.changePassword') })).toBeVisible();
   });
 
   it('shows a wrong current password next to its field', async () => {
