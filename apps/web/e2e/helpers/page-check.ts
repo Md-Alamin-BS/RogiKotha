@@ -186,7 +186,7 @@ export async function overflowFindings(page: Page): Promise<string[]> {
     if (root.scrollWidth > root.clientWidth) {
       found.push(`document ${root.scrollWidth} > ${root.clientWidth}`);
     }
-    const scrollsByDesign = (element: Element) => {
+    const scrollsByDesign = (element: Node) => {
       for (let node = element.parentElement; node; node = node.parentElement) {
         const overflow = getComputedStyle(node).overflowX;
         if (overflow === 'auto' || overflow === 'scroll') return true;
@@ -201,6 +201,34 @@ export async function overflowFindings(page: Page): Promise<string[]> {
       if (box.right > root.clientWidth + 1 && !scrollsByDesign(element)) {
         const id = element.id ? `#${element.id}` : '';
         found.push(`${element.tagName.toLowerCase()}${id} right ${Math.round(box.right)}`);
+      }
+    }
+    // A clipping box (the sr-only pattern among others) keeps its overflow off the page; the
+    // body's own overflow-x is the viewport's, so the walk stops below it.
+    const clipped = (node: Node) => {
+      for (let el = node.parentElement; el && el !== document.body; el = el.parentElement) {
+        const overflow = getComputedStyle(el).overflowX;
+        if (overflow === 'hidden' || overflow === 'clip') return true;
+      }
+      return false;
+    };
+    // Text that spills out of a box that itself fits widens the document but no element rect.
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const parent = node.parentElement;
+      if (!parent || !node.textContent?.trim()) continue;
+      if (getComputedStyle(parent).visibility === 'hidden' || scrollsByDesign(node)) {
+        continue;
+      }
+      if (clipped(node)) continue;
+      range.selectNodeContents(node);
+      const box = range.getBoundingClientRect();
+      if (box.width > 0 && box.right > root.clientWidth + 1) {
+        const where = `${parent.tagName.toLowerCase()}${parent.className ? `.${String(parent.className).split(' ').join('.')}` : ''}`;
+        found.push(
+          `text in ${where} right ${Math.round(box.right)}: ${node.textContent.trim().slice(0, 30)}`,
+        );
       }
     }
     return found.slice(0, 20);
