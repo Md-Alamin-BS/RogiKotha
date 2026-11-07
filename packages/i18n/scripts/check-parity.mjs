@@ -60,6 +60,9 @@ const FIELD_ERROR_ONLY_KEYS = [
   'errors.review.periodInvalid',
   'errors.review.missingBranch',
   'errors.review.draftsFull',
+  // ASSUMPTION(U49): the comment body keys are message keys of `validation` (FD-115).
+  'errors.community.commentLength',
+  'errors.community.commentHidden',
 ];
 
 function flatten(obj, prefix = '') {

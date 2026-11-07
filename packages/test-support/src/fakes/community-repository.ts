@@ -93,18 +93,19 @@ export class FakeCommunityModuleRepository implements CommunityRepository, Trans
     return Promise.resolve(live.length);
   }
 
-  markDeleted(_tx: Tx, request: MarkDeletedRequest): Promise<void> {
+  markDeleted(_tx: Tx, request: MarkDeletedRequest): Promise<boolean> {
     const row = this.rows.get(request.commentId);
-    if (row) {
-      this.rows.set(row.id, {
-        ...row,
-        state: 'deleted_tombstone',
-        deletedAt: request.at,
-        updatedAt: request.at,
-        tombstone: request.tombstone,
-      });
+    if (!row || row.state !== 'published' || row.deletedAt !== null) {
+      return Promise.resolve(false);
     }
-    return Promise.resolve();
+    this.rows.set(row.id, {
+      ...row,
+      state: 'deleted_tombstone',
+      deletedAt: request.at,
+      updatedAt: request.at,
+      tombstone: request.tombstone,
+    });
+    return Promise.resolve(true);
   }
 
   threadRows(_tx: Tx, request: ThreadRowsRequest): Promise<CommentRecord[]> {

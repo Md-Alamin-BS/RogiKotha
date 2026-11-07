@@ -508,6 +508,8 @@ export type MessageKey =
   | 'errors.common.rateLimited'
   | 'errors.common.validation'
   | 'errors.community.blocked'
+  | 'errors.community.commentHidden'
+  | 'errors.community.commentLength'
   | 'errors.community.mentionAnonymous'
   | 'errors.community.replyDepth'
   | 'errors.config.invariant'
@@ -1471,6 +1473,8 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.common.rateLimited',
   'errors.common.validation',
   'errors.community.blocked',
+  'errors.community.commentHidden',
+  'errors.community.commentLength',
   'errors.community.mentionAnonymous',
   'errors.community.replyDepth',
   'errors.config.invariant',

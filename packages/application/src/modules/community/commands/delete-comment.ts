@@ -34,11 +34,13 @@ export function deleteCommentCommand(deps: CommunityModulePorts) {
 
       const liveReplies = await deps.comments.countLiveReplies(tx, comment.id);
       const tombstone = tombstoneOnDelete(liveReplies);
-      await deps.comments.markDeleted(tx, {
+      const changed = await deps.comments.markDeleted(tx, {
         commentId: comment.id,
         at: ports.clock.now(),
         tombstone,
       });
+      // A concurrent delete got there first: same answer as already deleted, and no second audit row.
+      if (!changed) return err('not_found', { correlationId });
       await ports.audit.write(
         tx,
         communityAudit.commentDeleted(comment.id, comment.authorPersonaId, { tombstone }),

@@ -69,7 +69,7 @@ function longText(max: number) {
   return z
     .string()
     .trim()
-    .refine((s) => !hasControlOrFormatExceptJoiners(s.replace(/[\n\r\t]/g, '')), {
+    .refine((s) => !hasControlOrFormatExceptJoiners(s, { lineBreaks: true }), {
       error: 'errors.common.validation',
     })
     .refine((s) => graphemeCount(s) <= max, { error: 'errors.common.validation' });
