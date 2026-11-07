@@ -18,6 +18,11 @@ const ALLOWED_FIELDS: ReadonlySet<string> = new Set<keyof LogFields>([
   'count',
   'durationMs',
   'retryAfterSec',
+  'itemId',
+  'state',
+  'failReason',
+  'attempt',
+  'errorClass',
 ]);
 
 export type LogLevel = 'info' | 'warn' | 'error';
