@@ -54,6 +54,15 @@ describe('PostCommentInput', () => {
     expect(parsed.data?.body).toBe(DECOMPOSED.normalize('NFC'));
   });
 
+  it('keeps the Bengali joiners ZWJ and ZWNJ in a word, as review text does (FD-114)', () => {
+    const ZWJ = String.fromCodePoint(0x200d);
+    const ZWNJ = String.fromCodePoint(0x200c);
+    const body = `র${ZWJ}্যাব উদ্${ZWNJ}যাপন`;
+    const parsed = post(body);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.body).toBe(body);
+  });
+
   it('keeps links, at-names and markdown as literal text', () => {
     const body = '**see** https://example.test @someone';
     expect(post(body).data?.body).toBe(body);

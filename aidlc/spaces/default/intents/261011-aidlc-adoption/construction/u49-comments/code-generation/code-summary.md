@@ -59,6 +59,16 @@ Each edit is minimal and recorded (ISS-668, ISS-672, ISS-673, ISS-674):
 
 No path in the diff contains `[`, `]` or `*`, and the bracketed experience route (`experiences/[id]/page.tsx`) was not touched (U47 mounts the slot through `ExperiencePage.tsx`), so `source-manifest.json` lists every path.
 
+## Merge with main
+
+`main` at `1924f24` (U47 review fixes: a publish claims its draft once, ZWNJ and ZWJ allowed in review text through `hasControlOrFormatExceptJoiners`, FD-114, ISS-547 and ISS-548) merged into this branch as `bf4d3d4`, without conflicts.
+
+- No renumbering: U49 adds no `FD-` entry, and its `ISS-660` to `ISS-678` do not overlap main's new rows.
+- i18n keys regenerated: unchanged at 961 keys (U49's six plus main's one).
+- FD-114 and comments: `PostCommentInput.body` (`packages/contracts/src/schemas/community.ts`) has no control or format character check and reuses no contracts helper, so ZWNJ and ZWJ were already accepted and nothing was switched. A test now pins that a Bengali comment with both joiners (`র` ZWJ `্যাব উদ্` ZWNJ `যাপন`) parses and keeps them (`community.test.ts`). The same absence means a comment also keeps other format characters (for example U+202E or U+200B) that review text refuses; this is reported to the owner, not changed here.
+- No merge fix was needed in code; `source-manifest.json` is unchanged, because the merge did not change U49's file list.
+- Gate after the merge: `pnpm format:check` clean; `pnpm check` exit 0, 303 files, 3362 tests passed plus 2 expected failures, i18n parity 961 keys; `pnpm smoke` 25 files, 47 tests passed. No timeout re-run was needed.
+
 ## `ISS-` ids for the Build and Test record
 
 - Found in U49 and fixed in U49: ISS-660 (stand-in comment source), ISS-662 (test database name), ISS-674 (two red tests at the gate).
