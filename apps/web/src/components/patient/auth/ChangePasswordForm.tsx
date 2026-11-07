@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { useAnnounce } from '@/lib/announce';
 import { changePasswordForm } from '@/server/actions/auth';
-import { ErrorSummary, PasswordField, useAuthMessage } from './AuthFields';
+import { ErrorSummary, PasswordField } from './AuthFields';
 import { PublishTick } from '../motion/PublishTick';
 import { useAuthForm } from './use-auth-form';
 
@@ -10,18 +12,27 @@ const FORM = 'change-password';
 
 /**
  * WF7 step 3, BR6.5: the current and the new password. Both fields come back empty after a
- * refusal; on `ok` the confirmation replaces the form with its one PublishTick.
+ * refusal; after a change the action redirects with `?changed=1` (ISS-778), and `changed` shows
+ * the confirmation in place of the form with its one PublishTick, announced once.
  */
-export function ChangePasswordForm() {
+export function ChangePasswordForm({ changed = false }: { changed?: boolean }) {
   const t = useTranslations();
-  const render = useAuthMessage();
+  const announce = useAnnounce();
+  const announced = useRef(false);
   const { state, formAction, pending, onSubmit, summaryRef } = useAuthForm(changePasswordForm);
   const errors = state.fieldErrors;
+  const notice = t('auth.security.passwordChanged');
 
-  if (state.status === 'done' && state.notice) {
+  useEffect(() => {
+    if (!changed || announced.current) return;
+    announced.current = true;
+    announce(notice);
+  }, [changed, announce, notice]);
+
+  if (changed) {
     return (
       <p className="callout" data-testid="change-password-notice">
-        <PublishTick>{render(state.notice)}</PublishTick>
+        <PublishTick>{notice}</PublishTick>
       </p>
     );
   }

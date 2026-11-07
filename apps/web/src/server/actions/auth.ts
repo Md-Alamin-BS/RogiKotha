@@ -309,7 +309,10 @@ export async function setNewPassword(
   });
 }
 
-/** WF7 step 3, BR6.5: changes the password; on `ok` the rotated session replaces the old one. */
+/**
+ * WF7 step 3, BR6.5: changes the password; on `ok` the rotated session replaces the old one and
+ * the browser goes back to the security page with `?changed=1`, which shows the notice.
+ */
 export async function changePasswordForm(
   _previous: ChangePasswordFormState,
   form: FormData,
@@ -324,7 +327,13 @@ export async function changePasswordForm(
     return passwordRefusal(result.error) ?? refusedForm(INTERNAL);
   }
   await applySessionEffect(result.data.session);
-  return doneWith('auth.security.passwordChanged');
+  revalidatePath('/', 'layout');
+  // ISS-778: a page rendered in this response still reads the revoked session from the request's
+  // headers, so only the next request, carrying the rotated cookie, can render signed in.
+  return redirectInLocale({
+    href: { pathname: '/me/security', query: { changed: '1' } },
+    locale: await getLocale(),
+  });
 }
 
 /**
