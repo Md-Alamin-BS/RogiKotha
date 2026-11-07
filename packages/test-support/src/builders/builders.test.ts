@@ -9,6 +9,7 @@
 import {
   CommentPostInput,
   ConfigValuesSchema,
+  DraftPayload,
   DecideCaseInput,
   FileReportInput,
   IntakeEvidenceInput,
@@ -28,7 +29,7 @@ import { anEvidenceItem, toIntakeEvidenceInput } from './evidence.js';
 import { aFacilityReview } from './facility-review.js';
 import { aPersona } from './persona.js';
 import { aReport, toFileReportInput } from './report.js';
-import { aReview, toPublishReviewInput } from './review.js';
+import { aDraftPayload, aReview, toPublishReviewInput } from './review.js';
 import { resetSeq } from './seq.js';
 
 describe('builders parse with their contracts schema', () => {
@@ -42,6 +43,22 @@ describe('builders parse with their contracts schema', () => {
 
   it('aReview() -> PublishReviewInput (publish subset)', () => {
     expect(() => PublishReviewInput.parse(toPublishReviewInput(aReview()))).not.toThrow();
+  });
+
+  it('aDraftPayload() -> DraftPayload in each variant (U47)', () => {
+    for (const variant of ['quick', 'detailed', 'facility'] as const) {
+      expect(() => DraftPayload.parse(aDraftPayload(variant))).not.toThrow();
+    }
+    expect(DraftPayload.parse(aDraftPayload('facility')).target).toBe('facility');
+    expect(DraftPayload.parse(aDraftPayload('detailed')).mode).toBe('detailed');
+    expect(aDraftPayload('quick', { identityMode: 'anonymous' }).identityMode).toBe('anonymous');
+  });
+
+  it('aReview() carries the release-1 columns with a well-formed public id (U47)', () => {
+    const r = aReview();
+    expect(r.publicId).toMatch(/^[0-9a-hjkmnp-tv-z]{10}$/);
+    expect(r).toMatchObject({ kind: 'quick', language: 'en', exactDate: null });
+    expect(r.periodMonth).toBeGreaterThanOrEqual(1);
   });
 
   it('aComment() -> CommentPostInput', () => {

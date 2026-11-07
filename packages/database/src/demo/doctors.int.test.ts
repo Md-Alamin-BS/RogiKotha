@@ -9,12 +9,7 @@ import { evidenceItems } from '../schema/evidence';
 import { personas } from '../schema/identity';
 import { reviews, reviewVersions, type ReviewSections } from '../schema/review';
 import { testDb } from '../test-setup';
-import {
-  EXCERPT_LENGTH,
-  getDoctor,
-  listDoctorOptions,
-  listRecentPublishedReviews,
-} from './doctors';
+import { EXCERPT_LENGTH, getDoctor, listRecentPublishedReviews } from './doctors';
 
 // Other test files share this database, so every assertion is scoped to rows built here.
 const run = newId().slice(-8);
@@ -154,9 +149,6 @@ async function buildComment(reviewId: string, personaId: string, deleted = false
 const recentCardsFor = async (doctorId: string) =>
   (await listRecentPublishedReviews(testDb, 10_000, 'en')).filter((c) => c.doctor.id === doctorId);
 
-const ids = <T extends { id: string }>(rows: T[], wanted: string[]) =>
-  rows.filter((r) => wanted.includes(r.id)).map((r) => r.id);
-
 describe('demo doctor directory', () => {
   it('finds one doctor by uuid or public id, with chambers in their order', async () => {
     const doctor = await buildDoctor();
@@ -276,15 +268,5 @@ describe('demo doctor directory', () => {
 
     expect(cards.map((c) => c.publicId)).toEqual([first.publicId, second.publicId]);
     await expect(listRecentPublishedReviews(testDb, 0, 'en')).resolves.toEqual([]);
-  });
-
-  it('offers every published doctor as a write-form choice, ordered by name', async () => {
-    const later = await buildDoctor({ nameEn: `Zz ${run} Option B` });
-    const earlier = await buildDoctor({ nameEn: `Zz ${run} Option A` });
-    const draft = await buildDoctor({ state: 'draft' });
-
-    const options = await listDoctorOptions(testDb, 'en');
-
-    expect(ids(options, [later.id, earlier.id, draft.id])).toEqual([earlier.id, later.id]);
   });
 });

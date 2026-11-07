@@ -8,7 +8,8 @@ import {
   testTranslator,
   type TestLocale,
 } from '../experience/experience-test-support';
-import { CommentThread } from './CommentThread';
+import { safeAuthNext } from '@/server/actions/auth-form';
+import { CommentThreadView } from './CommentThreadView';
 
 vi.mock('@/i18n/routing', async () => {
   const support = await import('../experience/experience-test-support');
@@ -21,12 +22,12 @@ vi.mock('@/server/actions/comments', () => ({
 
 function renderThread(
   locale: TestLocale,
-  threads: Parameters<typeof CommentThread>[0]['threads'],
+  threads: Parameters<typeof CommentThreadView>[0]['threads'],
   signedIn = true,
 ) {
   return renderInLocale(
     locale,
-    <CommentThread reviewPublicId="exp0000001" threads={threads} signedIn={signedIn} />,
+    <CommentThreadView reviewPublicId="exp0000001" threads={threads} signedIn={signedIn} />,
   );
 }
 
@@ -105,8 +106,13 @@ describe.each(['en', 'bn'] as const)('the comment thread in %s', (locale) => {
     renderThread(locale, [buildThread({ body: 'Visible to everyone' })], false);
     expect(screen.getByRole('link', { name: t('experience.signInToComment') })).toHaveAttribute(
       'href',
-      '/sign-in?next=%2Fexperiences%2Fexp0000001',
+      `/sign-in?next=%2F${locale}%2Fexperiences%2Fexp0000001`,
     );
+    const next = new URL(
+      screen.getByRole('link', { name: t('experience.signInToComment') }).getAttribute('href')!,
+      'http://localhost',
+    ).searchParams.get('next');
+    expect(safeAuthNext(next)).toBe(`/${locale}/experiences/exp0000001`);
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.queryByRole('button', { name: t('experience.reply') })).toBeNull();
     expect(screen.getByText('Visible to everyone')).toBeInTheDocument();

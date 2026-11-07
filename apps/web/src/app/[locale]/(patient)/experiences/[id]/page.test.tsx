@@ -1,29 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
-import type { DemoCurrentAccount, DemoReviewEditRow } from '@rogikotha/contracts';
+import type { ExperiencePageVM, Result } from '@rogikotha/contracts';
 
-import { getCurrentAccount } from '@/server/auth/session';
-import { comments, reviews } from '@/server/data';
 import {
-  buildReviewDetail,
-  buildThread,
   renderInLocale,
   testTranslator,
   type TestLocale,
 } from '@/components/patient/experience/experience-test-support';
-import ExperiencePage, { generateMetadata } from './page';
+import { getActor } from '@/server/auth';
+import { runCommand } from '@/server/command-call';
+import { getContainer } from '@/server/container';
+import ExperienceRoute, { generateMetadata } from './page';
 
 const active = vi.hoisted((): { locale: 'en' | 'bn' } => ({ locale: 'en' }));
 
 vi.mock('next-intl/server', async () => {
-  const { createTranslator: makeTranslator } = await import('next-intl');
   const support = await import('@/components/patient/experience/experience-test-support');
   return {
     getLocale: () => Promise.resolve(active.locale),
-    getTranslations: () =>
-      Promise.resolve(
-        makeTranslator({ locale: active.locale, messages: support.loadMessages(active.locale) }),
-      ),
+    getTranslations: () => Promise.resolve(support.testTranslator(active.locale)),
   };
 });
 vi.mock('next/navigation', () => ({
@@ -35,39 +30,60 @@ vi.mock('@/i18n/routing', async () => {
   const support = await import('@/components/patient/experience/experience-test-support');
   return { Link: support.TestLink, usePathname: () => '/experiences/exp0000001' };
 });
-vi.mock('@/server/auth/session', () => ({ getCurrentAccount: vi.fn() }));
-vi.mock('@/server/data', () => ({
-  reviews: { getReviewByPublicId: vi.fn(), getOwnReviewForEdit: vi.fn() },
-  comments: { listComments: vi.fn() },
-}));
-vi.mock('@/server/actions/comments', () => ({ postComment: vi.fn(), deleteComment: vi.fn() }));
-vi.mock('@/components/patient/evidence/EvidenceNote', () => ({
-  EvidenceNote: ({ count }: { count: number }) => <p>evidence note for {count}</p>,
-}));
-vi.mock('@/components/patient/evidence/AuthorEvidence', () => ({
-  AuthorEvidence: ({ reviewPublicId }: { reviewPublicId: string }) => (
-    <p>author evidence for {reviewPublicId}</p>
+vi.mock('@/server/auth', () => ({ getActor: vi.fn() }));
+vi.mock('@/server/command-call', () => ({ runCommand: vi.fn() }));
+vi.mock('@/server/container', () => ({ getContainer: vi.fn() }));
+// The page component and its slots have their own tests; here only the props matter.
+vi.mock('@/components/patient/experience/ExperiencePage', () => ({
+  ExperiencePage: (props: {
+    vm: ExperiencePageVM;
+    reviewPublicId: string;
+    isAuthor: boolean;
+    published: boolean;
+  }) => (
+    <article data-testid="experience-page">
+      <h1>{props.vm.title}</h1>
+      <p data-testid="props">
+        {JSON.stringify({
+          reviewPublicId: props.reviewPublicId,
+          isAuthor: props.isAuthor,
+          published: props.published,
+        })}
+      </p>
+    </article>
   ),
 }));
 
-const reader: DemoCurrentAccount = {
-  accountId: '0190f5a2-0000-7000-8000-000000000002',
-  authUserId: 'auth-user-2',
-  username: 'karim_reader',
-  displayName: 'Karim Reader',
-  locale: 'en',
-  status: 'active',
-  currentPersonaId: '0190f5a2-0000-7000-8000-0000000000bb',
-  pseudonymousPersonaId: null,
-  pseudonymousDisplayName: null,
-};
+const PUBLIC_ID = 'exp0000001';
+const REVIEW_ID = '0190f5a2-0000-7000-8000-0000000000e1';
+const ACTOR = { kind: 'account', accountId: '0190f5a2-0000-7000-8000-000000000002' };
 
-const params = (id: string) => ({ params: Promise.resolve({ id }) });
+const vm = {
+  kind: 'experience',
+  publicId: PUBLIC_ID,
+  title: 'Clear advice after a long wait',
+} as ExperiencePageVM;
 
-async function renderPage(locale: TestLocale, id = 'exp0000001') {
+let experience: Result<ExperiencePageVM>;
+const reviewIdForPublicId = vi.fn();
+const isReviewAuthor = vi.fn();
+const read = vi.fn((fn: (tx: unknown) => unknown) => fn({}));
+
+function props(id: string, search: Record<string, string> = {}) {
+  return { params: Promise.resolve({ id }), searchParams: Promise.resolve(search) };
+}
+
+async function renderPage(locale: TestLocale, id = PUBLIC_ID, search: Record<string, string> = {}) {
   active.locale = locale;
-  const element = await ExperiencePage(params(id));
-  return renderInLocale(locale, element);
+  return renderInLocale(locale, await ExperienceRoute(props(id, search)));
+}
+
+function shownProps(): { reviewPublicId: string; isAuthor: boolean; published: boolean } {
+  return JSON.parse(screen.getByTestId('props').textContent ?? '{}') as {
+    reviewPublicId: string;
+    isAuthor: boolean;
+    published: boolean;
+  };
 }
 
 describe.each(['en', 'bn'] as const)('the experience page in %s', (locale) => {
@@ -75,66 +91,82 @@ describe.each(['en', 'bn'] as const)('the experience page in %s', (locale) => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(reviews.getReviewByPublicId).mockResolvedValue(
-      buildReviewDetail({ readyEvidenceCount: 2 }),
-    );
-    vi.mocked(reviews.getOwnReviewForEdit).mockResolvedValue(null);
-    vi.mocked(comments.listComments).mockResolvedValue([
-      buildThread({ body: 'A comment from a reader' }),
-    ]);
-    vi.mocked(getCurrentAccount).mockResolvedValue(null);
+    experience = { ok: true, data: vm };
+    reviewIdForPublicId.mockResolvedValue(REVIEW_ID);
+    isReviewAuthor.mockResolvedValue(false);
+    vi.mocked(getActor).mockResolvedValue(ACTOR as never);
+    vi.mocked(getContainer).mockReturnValue({
+      review: {
+        getExperience: { name: 'review.getExperience' },
+        reviewIdForPublicId,
+        isReviewAuthor,
+      },
+      ports: { unitOfWork: { read } },
+    } as never);
+    vi.mocked(runCommand).mockImplementation((command: unknown) => {
+      const name = (command as { name: string }).name;
+      if (name !== 'review.getExperience') throw new Error(`unexpected ${name}`);
+      return Promise.resolve(experience);
+    });
   });
 
-  it('shows the experience, its evidence note and its comments to a signed-out reader', async () => {
-    await renderPage(locale);
+  it('shows a reader the experience, resolving the id and the authorship once', async () => {
+    await renderPage(locale, `${PUBLIC_ID}-clear-advice`);
 
     expect(document.getElementById('view-account')).not.toBeNull();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Clear advice after a long wait',
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(vm.title);
+    expect(shownProps()).toEqual({ reviewPublicId: PUBLIC_ID, isAuthor: false, published: false });
+    expect(runCommand).toHaveBeenCalledWith(
+      { name: 'review.getExperience' },
+      {
+        publicId: PUBLIC_ID,
+      },
     );
-    expect(screen.getByText('evidence note for 2')).toBeInTheDocument();
-    expect(screen.getByText('A comment from a reader')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: t('experience.signInToComment') })).toBeInTheDocument();
-    expect(screen.queryByText(/author evidence/)).toBeNull();
-    expect(reviews.getReviewByPublicId).toHaveBeenCalledWith('exp0000001', locale);
-    expect(comments.listComments).toHaveBeenCalledWith(buildReviewDetail().id, null);
-    expect(reviews.getOwnReviewForEdit).not.toHaveBeenCalled();
+    expect(reviewIdForPublicId).toHaveBeenCalledTimes(1);
+    expect(reviewIdForPublicId).toHaveBeenCalledWith({}, { publicId: PUBLIC_ID });
+    expect(isReviewAuthor).toHaveBeenCalledTimes(1);
+    expect(isReviewAuthor).toHaveBeenCalledWith({}, { reviewId: REVIEW_ID, actor: ACTOR });
   });
 
-  it('gives a signed-in reader who is not the author the comment form and no edit link', async () => {
-    vi.mocked(getCurrentAccount).mockResolvedValue(reader);
+  it('gives the author the author view and the published note only with ?published=1', async () => {
+    isReviewAuthor.mockResolvedValue(true);
+    const { unmount } = await renderPage(locale, PUBLIC_ID, { published: '1' });
+    expect(shownProps()).toEqual({ reviewPublicId: PUBLIC_ID, isAuthor: true, published: true });
+    unmount();
+
     await renderPage(locale);
-
-    expect(screen.getByRole('textbox', { name: t('experience.commentBox') })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: t('experience.editExperience') })).toBeNull();
-    expect(reviews.getOwnReviewForEdit).toHaveBeenCalledWith('exp0000001', reader.accountId);
-    expect(comments.listComments).toHaveBeenCalledWith(buildReviewDetail().id, reader.accountId);
+    expect(shownProps()).toMatchObject({ isAuthor: true, published: false });
   });
 
-  it('gives the author the edit link and the uploader', async () => {
-    vi.mocked(getCurrentAccount).mockResolvedValue(reader);
-    vi.mocked(reviews.getOwnReviewForEdit).mockResolvedValue({
-      publicId: 'exp0000001',
-    } as DemoReviewEditRow);
+  it('never shows the published note to someone who is not the author', async () => {
+    await renderPage(locale, PUBLIC_ID, { published: '1' });
+    expect(shownProps()).toMatchObject({ isAuthor: false, published: false });
+  });
+
+  it('skips the authorship check when the id resolves to no review', async () => {
+    reviewIdForPublicId.mockResolvedValue(null);
     await renderPage(locale);
-
-    expect(screen.getByRole('link', { name: t('experience.editExperience') })).toHaveAttribute(
-      'href',
-      '/experiences/exp0000001/edit',
-    );
-    expect(screen.getByText('author evidence for exp0000001')).toBeInTheDocument();
+    expect(shownProps()).toMatchObject({ isAuthor: false });
+    expect(isReviewAuthor).not.toHaveBeenCalled();
   });
 
-  it('is not found for an unknown or malformed experience id', async () => {
-    vi.mocked(reviews.getReviewByPublicId).mockResolvedValue(null);
+  it('is not found for an unknown or malformed id, before any read of the authorship', async () => {
+    experience = { ok: false, error: { code: 'not_found' } } as Result<ExperiencePageVM>;
     await expect(renderPage(locale, 'exp0000009')).rejects.toThrow('NEXT_NOT_FOUND');
     await expect(renderPage(locale, '../secret')).rejects.toThrow('NEXT_NOT_FOUND');
-    expect(reviews.getReviewByPublicId).toHaveBeenCalledTimes(1);
+    expect(runCommand).toHaveBeenCalledTimes(1);
+    expect(reviewIdForPublicId).not.toHaveBeenCalled();
   });
 
-  it('titles the browser tab with the experience title', async () => {
+  it('sends any other failed read to the error boundary', async () => {
+    experience = { ok: false, error: { code: 'internal' } } as Result<ExperiencePageVM>;
+    await expect(renderPage(locale)).rejects.toThrow('review.getExperience: internal');
+  });
+
+  it('titles the tab with the experience title and stays indexable', async () => {
     active.locale = locale;
-    const metadata = await generateMetadata(params('exp0000001'));
-    expect(metadata.title).toBe(`Clear advice after a long wait — ${t('brand.name')}`);
+    const metadata = await generateMetadata(props(PUBLIC_ID));
+    expect(metadata.title).toBe(`${vm.title} — ${t('brand.name')}`);
+    expect(metadata.robots).toBeUndefined();
   });
 });

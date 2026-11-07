@@ -47,6 +47,8 @@ export function listExperienceCardsQuery(deps: ReviewReadDeps) {
         ...(after ? { after } : {}),
         ...(input.doctorPublicId ? { doctorPublicId: input.doctorPublicId } : {}),
         ...(input.conditionPublicId ? { termPublicId: input.conditionPublicId } : {}),
+        ...(input.personaIds ? { personaIds: input.personaIds } : {}),
+        ...(input.excludePublicId ? { excludePublicId: input.excludePublicId } : {}),
       });
       const page = rows.slice(0, limit);
       const documents = await deps.evidence.countPublicEvidenceByReview(page.map((r) => r.id));

@@ -24,6 +24,7 @@ export * from './repositories/outbox';
 export * from './repositories/directory-module';
 export * from './repositories/taxonomy-module';
 export * from './repositories/review-reads';
+export * from './repositories/review-module';
 export * from './repositories/public-evidence-count-interim';
 export * from './search/index';
 export * from './queue/index';

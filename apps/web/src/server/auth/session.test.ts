@@ -131,7 +131,7 @@ describe('the write actions’ own refusal (requireContributor, BR8.1)', () => {
     signedInAs(null);
     await expect(requireContributor({ returnTo: '/write' })).rejects.toThrow('NEXT_REDIRECT');
     expect(redirect).toHaveBeenCalledWith({
-      href: { pathname: '/sign-in', query: { next: '/write' } },
+      href: { pathname: '/sign-in', query: { next: '/bn/write' } },
       locale: 'bn',
     });
   });
@@ -146,6 +146,25 @@ describe('the write actions’ own refusal (requireContributor, BR8.1)', () => {
     signedInWithStatus('restricted');
     await expect(requireContributor()).rejects.toThrow('NEXT_REDIRECT');
     expect(redirect).toHaveBeenCalledWith({ href: '/me', locale: 'bn' });
+  });
+
+  // U9 review: a bare return target used to reach sign-in without its locale, so `safeAuthNext`
+  // dropped it and the reader landed on `/me`. The full path through the sign-in page's `next` is
+  // followed in `app/[locale]/(patient)/signed-out.adversarial.test.ts`.
+  it.each([
+    ['/write', '/bn/write'],
+    ['/experiences/exp0000001', '/bn/experiences/exp0000001'],
+    ['/experiences/exp0000001/edit', '/bn/experiences/exp0000001/edit'],
+    ['/bn/me/security', '/bn/me/security'],
+    ['/en/write?doctor=doc0000001', '/en/write?doctor=doc0000001'],
+    ['//evil.example/write', '//evil.example/write'],
+  ])('passes %s to sign in as %s', async (returnTo, next) => {
+    signedInAs(null);
+    await expect(requireContributor({ returnTo })).rejects.toThrow('NEXT_REDIRECT');
+    expect(redirect).toHaveBeenCalledWith({
+      href: { pathname: '/sign-in', query: { next } },
+      locale: 'bn',
+    });
   });
 
   it('leaves requireAccount open to an unconfirmed account, so it reaches its own pages', async () => {

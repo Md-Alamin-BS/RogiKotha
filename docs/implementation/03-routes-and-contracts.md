@@ -81,7 +81,7 @@ export type Capability =
 | 'auth.username_invalid' | 'auth.age_required' | 'auth.terms_required' | 'auth.account_suspended'
 | 'auth.password_equals_email'
 | 'forbidden' | 'not_found' | 'conflict' | 'validation' | 'rate_limited' | 'internal'
-| 'review.min_fields' | 'review.attestation_required' | 'review.not_editable' | 'review.restore_expired'
+| 'review.min_fields' | 'review.attestation_required' | 'review.not_editable' | 'review.restore_expired' | 'review.anonymous_new_doctor'
 | 'evidence.too_many' | 'evidence.too_large' | 'evidence.total_too_large' | 'evidence.type_rejected' | 'evidence.not_previewable' | 'evidence.confirmation_required'
 | 'community.reply_depth' | 'community.blocked' | 'community.mention_anonymous'
 | 'moderation.duplicate_report' | 'moderation.narrative_locked' | 'moderation.self_appeal_review'

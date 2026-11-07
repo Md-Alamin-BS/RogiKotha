@@ -26,6 +26,7 @@ export const ERROR_CODES = [
   'review.attestation_required',
   'review.not_editable',
   'review.restore_expired',
+  'review.anonymous_new_doctor',
   'evidence.too_many',
   'evidence.too_large',
   'evidence.total_too_large',

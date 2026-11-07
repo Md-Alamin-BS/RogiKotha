@@ -1,131 +1,33 @@
-import type { DemoComment, DemoCommentThread } from '@rogikotha/contracts';
-import type { Locale } from '@rogikotha/i18n';
-import { formatDate } from '@rogikotha/i18n/format';
-import { useLocale, useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
-import { Link } from '@/i18n/routing';
-import { Byline } from '../experience/Byline';
-import { dhakaIsoDate } from '../experience/people';
-import { CommentActions } from './CommentActions';
-import { CommentForm } from './CommentForm';
+import { loadCommentThread, logSlotFailure } from '@/server/actions/review-slots';
+import { CommentThreadView } from './CommentThreadView';
 
-// Port of the discussion part of concept-04b's renderAccount() and its commentHtml() (app.js):
-// oldest first, one reply level, tombstones that keep a thread readable (FR6.1–FR6.3).
-export function CommentThread({
-  reviewPublicId,
-  threads,
-  signedIn,
-}: {
-  reviewPublicId: string;
-  threads: DemoCommentThread[];
-  signedIn: boolean;
-}) {
-  const t = useTranslations();
-
-  return (
-    <section aria-labelledby="discussion-head">
-      <h2 className="section-head" id="discussion-head">
-        {t('experience.discussion')}
-      </h2>
-      {threads.length > 0 ? (
-        <div>
-          {threads.map((thread) => (
-            <CommentItem
-              key={thread.publicId}
-              comment={thread}
-              replies={thread.replies}
-              reviewPublicId={reviewPublicId}
-              signedIn={signedIn}
-            />
-          ))}
-        </div>
-      ) : (
-        <p className="note">{t('mine.empty')}</p>
-      )}
-      <p className="note">{t('experience.replyLevel')}</p>
-
-      {signedIn ? (
-        <div className="composer-box">
-          <CommentForm reviewPublicId={reviewPublicId} />
-        </div>
-      ) : (
-        <p className="note">
-          <Link
-            className="link-btn"
-            href={{ pathname: '/sign-in', query: { next: `/experiences/${reviewPublicId}` } }}
-          >
-            {t('experience.signInToComment')}
-          </Link>
-        </p>
-      )}
-    </section>
-  );
-}
-
-function CommentItem({
-  comment,
-  replies,
-  reviewPublicId,
-  signedIn,
-}: {
-  comment: DemoComment;
-  /** Null for a reply, which can have none (one reply level). */
-  replies: DemoComment[] | null;
-  reviewPublicId: string;
-  signedIn: boolean;
-}) {
-  const t = useTranslations();
-  const locale = useLocale() as Locale;
-  const replyList =
-    replies && replies.length > 0 ? (
-      <div className="comment-replies">
-        {replies.map((reply) => (
-          <CommentItem
-            key={reply.publicId}
-            comment={reply}
-            replies={null}
-            reviewPublicId={reviewPublicId}
-            signedIn={signedIn}
-          />
-        ))}
-      </div>
-    ) : null;
-
-  if (comment.tombstone) {
+// C16 slot (props frozen when U47 merges): the experience page passes only the public id; the
+// slot resolves the review itself and reads the demo discussion until U49 swaps the source.
+// An unknown review renders no thread; a failed read stays inside the slot.
+export async function CommentThread({ reviewPublicId }: { reviewPublicId: string }) {
+  let thread: Awaited<ReturnType<typeof loadCommentThread>>;
+  try {
+    thread = await loadCommentThread(reviewPublicId);
+  } catch (error: unknown) {
+    logSlotFailure('comments', error);
+    const t = await getTranslations();
     return (
-      <article className="comment tombstone">
-        <p className="note">
-          <b>{t('experience.commentGone')}</b> {t('experience.commentGoneWhy')}
-        </p>
-        {replyList}
-      </article>
+      <section aria-labelledby="discussion-head" data-testid="comment-thread-error">
+        <h2 className="section-head" id="discussion-head">
+          {t('experience.discussion')}
+        </h2>
+        <p className="note">{t('errors.common.internal')}</p>
+      </section>
     );
   }
-
-  const isoDate = dhakaIsoDate(comment.createdAt);
+  if (thread === null) return null;
   return (
-    <article className="comment">
-      <div className="comment-head">
-        <Byline
-          variant="comment"
-          name={comment.authorDisplayName}
-          identity={comment.authorDisplayName === null ? 'anon' : undefined}
-          when={formatDate(isoDate, locale)}
-          whenDateTime={isoDate}
-        />
-        {comment.canDelete ? (
-          <span className="badge plain">{t('experience.ownComment')}</span>
-        ) : null}
-      </div>
-      <p>{comment.body}</p>
-      <CommentActions
-        reviewPublicId={reviewPublicId}
-        commentPublicId={comment.publicId}
-        authorName={comment.authorDisplayName}
-        canReply={signedIn && replies !== null}
-        canDelete={comment.canDelete}
-      />
-      {replyList}
-    </article>
+    <CommentThreadView
+      reviewPublicId={reviewPublicId}
+      threads={thread.threads}
+      signedIn={thread.signedIn}
+    />
   );
 }

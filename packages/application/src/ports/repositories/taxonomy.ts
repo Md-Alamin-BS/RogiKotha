@@ -54,6 +54,8 @@ export interface TaxonomyRepository {
   findByKey(tx: Tx, key: string, kind?: TermKind): Promise<TermMatchRecord[]>;
   /** Active canonical suggested terms of the kind, by suggested order, then name. */
   listSuggested(tx: Tx, kind: TermKind, locale: Locale): Promise<TermRecord[]>;
+  /** U47 (Q19): active canonical terms of the kind, by name; the composer's specialty list. */
+  listPublished(tx: Tx, kind: TermKind, locale: Locale): Promise<TermRecord[]>;
   /** Inserts unless an open provisional term holds the key; `null` when a race was lost. */
   insertProvisional(tx: Tx, term: NewProvisionalTerm): Promise<{ termId: string } | null>;
   /** The open provisional term of the kind holding the key, if any. */
