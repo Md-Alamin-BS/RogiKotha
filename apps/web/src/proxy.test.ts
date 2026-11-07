@@ -284,20 +284,34 @@ describe('proxy matcher', () => {
     '/api/health',
     '/api/auth/ok',
     '/_next/webpack-hmr',
+    '/_next/static/chunks/main.js',
+    '/api/evidence/upload/x',
   ])('matches %s', (path) => {
     expect(matches(path)).toBe(true);
   });
 
+  it('skips only the upload route, which runs its own guard', () => {
+    expect(matches('/api/evidence/upload')).toBe(false);
+  });
+
+  // U41 review-01 (ISS-718): on the real server a `Next-Action` POST to each of these paths ran
+  // `setTheme` while they were unmatched, with no Origin and with a forged Host alike.
   it.each([
-    '/api/evidence/upload',
-    '/_next/static/chunk.js',
-    '/_next/image',
     '/favicon.ico',
     '/robots.txt',
     '/sitemap.xml',
     '/manifest.webmanifest',
-  ])('skips exactly %s', (path) => {
-    expect(matches(path)).toBe(false);
+    '/_next/image',
+    '/_next/static/x',
+  ])('gives %s the Host check and the Origin rule for an unsafe method', (path) => {
+    const { run } = proxyFor(HTTP_APP);
+    const sameOrigin = { origin: 'http://localhost:3000', 'next-action': 'a1' };
+
+    expect(matches(path)).toBe(true);
+    expect(run(request(path, { host: 'evil.example' })).status).toBe(403);
+    expect(run(request(path, { 'next-action': 'a1' }, 'POST')).status).toBe(403);
+    expect(run(request(path, { origin: 'http://evil.example' }, 'POST')).status).toBe(403);
+    expect(run(request(path, sameOrigin, 'POST')).status).not.toBe(403);
   });
 
   it('is one entry that excludes no file extension', () => {

@@ -226,12 +226,20 @@ Written and run by an agent that did not write U41's code. Files: `apps/web/src/
 
 - Inventory: see "Inventory" above (logger calls and console calls with their classification). After the merge, the only direct `console` use is in the two loggers, `packages/database/src/migrate.ts`, `reset.ts` and `packages/test-support/src/seed/seed.ts`, all permanent file exceptions (ISS-705).
 - Coverage: the before figures were not measured (ASSUMPTION(U41) at Step 1), so no before and after delta is claimed. The after figures are in the Step 33 table and in "Sign-off" below; the 80% floor is met in all four packages and never lowered.
-- Files edited outside the owned paths (each is the smallest change that works):
-  - U48's route tests and helpers: `apps/web/src/app/api/evidence/upload/route.test.ts`, `upload.int.test.ts`, `upload.adversarial.int.test.ts`, `evidence-upload.int.smoke.test.ts` (the `origin` and `host` headers; three assertions follow the 413/counting behaviour, ISS-692).
+- Files edited outside the owned paths (each is the smallest change that works). Completed at review-01 (ISS-719) from `git show --stat a3d9a56` against U41's owned paths in `inception/units-generation/unit-of-work.md`; the earlier list left out the worker, log-policy, settings and route-rewrite entries:
+  - U48's upload route beyond "the origin check": `apps/web/src/app/api/evidence/upload/route.ts` also got the size cap (Step 29: `checkDeclaredLength` and `readCappedFormData` replace U48's `contentLengthRefusal`, the refusals are re-wrapped in the route's envelope, ISS-691, ISS-692).
+  - U48's route tests and helpers: `apps/web/src/app/api/evidence/upload/route.test.ts`, `upload.int.test.ts`, `upload.adversarial.int.test.ts`, `evidence-upload.int.smoke.test.ts` (the `origin` and `host` headers; three assertions follow the 413/counting behaviour, ISS-692); new in the same folder: `route.security.test.ts` (Step 30) and `route.adversarial.test.ts` (Step 34).
+  - U48's component folder: `apps/web/src/components/patient/evidence/EvidenceUploader.request-limit.test.tsx` (new, Step 31; no component change).
   - `apps/web/src/app/not-found.tsx` and `root.test.tsx` (BR1.4, `await connection()`), `apps/web/src/instrumentation-client.ts` (new, ISS-708).
   - `apps/web/src/server/i18n-request.ts` and test (new), `apps/web/src/i18n/request.ts` and test (deleted), `packages/i18n/src/request.ts` and test (the `onIntlError` reporter, ISS-706).
-  - `packages/application/src/index.ts`, `worker.ts`, `ports/logger.ts` (log-policy exports and the U48 id fields), `eslint.config.mjs`, `infra/compose/.env.example`, `apps/web/playwright.config.ts`, `apps/web/e2e/smoke/security-headers.spec.ts` (new; one test id fixed, ISS-694), `docs/status/dependency-check-log.md`.
-  - Tests placed outside the design's folders for boundary reasons: ISS-693 and ISS-716.
+  - Web settings and tests placed by the boundary matrix (ISS-693, ISS-716): `apps/web/src/security-settings.ts` and `security-settings.test.ts` (new), `security-cookies.test.ts` (new), `log-scrub.int.test.ts` (new), `security.adversarial.int.test.ts` (new), and beside the owned `proxy.ts`: `proxy.test.ts`, `proxy.smoke.test.ts` (new) and `proxy.adversarial.test.ts` (new).
+  - Tests beside other owned files: `apps/web/src/server/logger.test.ts`, `apps/worker/src/logger.test.ts`.
+  - Worker: `apps/worker/src/env.ts` and `env.load.test.ts` (Step 9, `worker.env_invalid`), `apps/worker/src/main.ts` and `main.test.ts` (Step 9, `worker.crashed` and `db.reset_required`), `apps/worker/src/log-scrub.test.ts` (new, Steps 23, 32 and 34).
+  - Application: `packages/application/src/ports/log-policy.ts` and `log-policy.test.ts` (new, Steps 5 and 6), `packages/application/src/index.ts`, `worker.ts`, `ports/logger.ts` (log-policy exports, `errorName` and the U48 id fields).
+  - Configuration and tooling: `eslint.config.mjs` (Step 11), `infra/compose/.env.example` beyond `APP_ALLOWED_ORIGINS` and `APP_URL` (the `APP_MODE` comment, Step 24), `apps/web/playwright.config.ts` (Step 24), `apps/web/e2e/smoke/security-headers.spec.ts` (new; one test id fixed, ISS-694).
+  - Records: `docs/implementation/ISSUES.md`, `docs/implementation/tasks/T-502-security-hardening.md` (release-1 amendment), `docs/status/decision-log.md` (FD-116), `docs/status/dependency-check-log.md`; at review-01 also `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`.
+  - Owned paths not changed: `apps/web/src/app/[locale]/layout.tsx`, `apps/web/src/app/[locale]/admin/layout.tsx` and `apps/web/src/server/auth.ts` (FD-116 items (3), (6) and (8) need no edit there).
+- Deleted files (ISS-706, ISS-719): `apps/web/src/i18n/request.ts` and `apps/web/src/i18n/request.test.ts`. `source-manifest.json` lists only files that exist, so the two deletions are recorded here and not in its `writes`.
 - Open S2 rows `ISS-139` and `ISS-141` name T-502 as a backstop but are outside U41's narrowed scope (FD-105); they stay with T-304 and T-309.
 
 ## Issues found and fixed in U41
@@ -263,8 +271,10 @@ Written and run by an agent that did not write U41's code. Files: `apps/web/src/
 | ISS-715 | S4 | fixed in U41 (Step 28) | Temporary `no-console` exceptions for `review.ts` and `evidence.ts` |
 | ISS-716 | S4 | open, owner to confirm | `security-settings.ts` and tests placed by the boundary matrix, not the design's `server/` |
 | ISS-717 | S4 | open, U50 | Only two e2e specs re-run after the Step 34 fixes |
+| ISS-718 | S2 | fixed in U41 review fixes (review-01) | Server action run on the unmatched root files and a missing `/_next/static/x`; the matcher now skips only the upload route |
+| ISS-719 | S4 | fixed in U41 review fixes (review-01) | Files-outside-owned-paths list incomplete; the two deleted files not recorded |
 
-The only `ISS-` numbers used are 690 to 717; ISS-718 and ISS-719 stay free.
+The `ISS-` numbers used are 690 to 719 (718 and 719 at review-01).
 
 ## Sign-off
 
@@ -274,3 +284,64 @@ Delegated by the owner on 2026-11-04 (the owner's standing delegation of the sig
 - Gate counts (final run on this branch, 2026-11-08): `pnpm format:check` clean; `pnpm check` exit 0 (358 test files, 4 350 passed, 2 expected fail, 1 skipped; all-package line coverage 96.1%, 9 438 of 9 821; no threshold failed; the 80% floor holds for `apps/web`, `apps/worker`, `packages/application` and `packages/i18n`); `pnpm smoke` 30 files / 59 tests; `pnpm test:int` ran inside `pnpm check` and earlier at Step 33 (63 files / 431 tests); browser: `security-headers.spec.ts` and `motion.spec.ts` 20 of 20 after the Step 34 fixes.
 - Open `ISS-` rows: S2 ISS-695 (`demo.spec.ts` red, owner T-101 / U11; blocks the phase gate, not this Unit's Build and Test). S3 ISS-691, ISS-704, ISS-707, ISS-709. S4 ISS-692, ISS-693, ISS-700 to ISS-703, ISS-705, ISS-706, ISS-708, ISS-710, ISS-713, ISS-716, ISS-717 and the accepted or residual ISS-698, ISS-699, ISS-711, ISS-712, ISS-714. No open S1. Fixed in U41: ISS-690, ISS-694, ISS-696, ISS-697, ISS-715.
 - The owner's own check is still wanted on: FD-116 (awaiting the owner's confirmation), and the ASSUMPTION(U41) choices behind ISS-705, ISS-706, ISS-708 and ISS-716.
+
+## Review fixes (review-01)
+
+Code Generation review-01 (verdict READY, one Major and three Minor findings) was answered on 2026-11-08 on branch `bolt/u41-review-fixes`, cut from `main` at `a3d9a56`. The owner delegated the decisions to the agent on 2026-11-04.
+
+### Major: `proxy.ts` `config.matcher` (ISS-718, S2)
+
+- **Finding.** The matcher skipped `/favicon.ico`, `/robots.txt`, `/sitemap.xml` and `/manifest.webmanifest`, but none of them exists: there is no `apps/web/public` and no metadata route. It also skipped `/_next/static/` and `/_next/image`. So those paths reached the app router with no Host check, no Origin rule and no page CSP. This is the same class of hole as ISS-696.
+- **Live probe before the fix** (the build of `a3d9a56`; `next start -p 3129 -H 127.0.0.1` with `APP_URL=http://localhost:3129`; a new database `rogikotha_e2e_w8b`, owner `rk_app`, with `pg_trgm`, `citext` and `pgcrypto`, built with `db:reset` and `db:seed`). Each request was a POST carrying the real `setTheme` id from `server-reference-manifest.json` in `Next-Action`, with the body `["dark"]`. Mode "no Origin" sent `Host: localhost:3129` and no Origin. Mode "forged Host" sent `Host: evil.example` with `Origin: http://evil.example`, which is how a DNS-rebinding page looks. Mode "same origin" is the control.
+
+  | Path | No Origin | Forged Host | Same origin |
+  |---|---|---|---|
+  | `/favicon.ico` | 200, `Set-Cookie: rk.theme=dark` (action ran) | 200, action ran | 200, action ran |
+  | `/robots.txt` | 200, action ran | 200, action ran | 200, action ran |
+  | `/sitemap.xml` | 200, action ran | 200, action ran | 200, action ran |
+  | `/manifest.webmanifest` | 200, action ran | 200, action ran | 200, action ran |
+  | `/_next/image` | 404, no action | 404, no action | 404, no action |
+  | `/_next/static/x` (missing) | 200, action ran | 200, action ran | 200, action ran |
+  | `/en/x` (control, matched) | 403, empty | 403, empty | 200, action ran |
+
+  A POST without `Next-Action` to `/_next/image` rendered the root not-found page with no CSP, so the image path is not only static bytes either. A `Next-Action` POST to a real chunk under `/_next/static/chunks/` got a 500 and ran nothing. A pattern cannot tell a missing static file from a real one, though, so the `/_next/static/` exclusion could not stay as it was.
+- **Fix.** `config.matcher` is now `['/((?!api/evidence/upload$).*)']`. Only the upload route is unmatched, and it runs `guardRouteRequest` itself. Static files and the image optimizer go through `checkRequest` (the Host check, and the Origin rule for an unsafe method), then the existing internal-path branch, which hands them on with no next-intl and no page CSP. The cost is one header comparison per static request. The ENT-016 comment in `proxy.ts` gives the reason. ENT-016 and BR3.4 in `functional-design/` (the approved design) were not edited. Their amendment is FD-116 item (1), amended in `docs/status/decision-log.md`, together with ISS-718.
+- **Test.** In `proxy.test.ts`, the "skips exactly" case is replaced by "skips only the upload route, which runs its own guard". A new `it.each` runs over `/favicon.ico`, `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest`, `/_next/image` and `/_next/static/x`. For each path the matcher matches; a foreign Host gets 403; a `Next-Action` POST with no Origin gets 403; a cross-origin POST gets 403; a same-origin POST is let through. `/_next/static/chunks/main.js` and `/api/evidence/upload/x` were added to the "matches" cases. Against the old matcher, all six new cases fail at `matches(path)`.
+- **Live probe after the fix** (same server set-up, rebuilt with `timeout 900 pnpm build`):
+
+  | Path | No Origin | Forged Host | Same origin (control) |
+  |---|---|---|---|
+  | `/favicon.ico` | 403, 0 bytes, no action | 403, 0 bytes, no action | 307 to `/en/favicon.ico` (next-intl), no action |
+  | `/robots.txt` | 403, no action | 403, no action | 307 to `/en/robots.txt`, no action |
+  | `/sitemap.xml` | 403, no action | 403, no action | 307, no action |
+  | `/manifest.webmanifest` | 403, no action | 403, no action | 307, no action |
+  | `/_next/image` | 403, no action | 403, no action | 404, no action |
+  | `/_next/static/x` | 403, no action | 403, no action | 200, action ran (same origin, as on any page) |
+  | `/en/x` | 403 | 403 | 200, action ran |
+
+  Real static files still load: a chunk answered 200 `application/javascript` from the app's own Host and 403 to `Host: evil.example`, and `/en` answered 200. The server log held only `security.request_refused` lines with `kind` and `status`; none named `evil.example`. The server was stopped afterwards. The probe scripts live outside the repository.
+- **Records corrected.** In `docs/security/local-demo-threat-notes.md`, § 1 gains a row for this threat and the § 2 residual "they hold public bytes only" is replaced. ISS-711 withdraws its third limit. FD-116 item (1) is amended and dated. The FD-116 status stays "awaiting the owner's confirmation".
+
+### Minor: FD-116 awaiting confirmation
+
+The status is left for the owner to decide. One row was added under "Owner reviews waiting" in `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`, in the style of the U48 row. It asks for the owner's own written sign-off for U41, the FD-116 confirmation, and a confirmation of ISS-705, ISS-706, ISS-708 and ISS-716, each with a suggestion.
+
+### Minor: files outside the owned paths (ISS-719, S4)
+
+The list under "Inventory, coverage and files outside the owned paths" was rebuilt from `git show --stat a3d9a56` against U41's owned paths in `unit-of-work.md`. It now covers the worker's `env.ts`, `main.ts` and their tests, `log-scrub.test.ts`, `packages/application/src/ports/log-policy.ts` and its test, `apps/web/src/security-settings.ts` and the other boundary-placed web files, the size-cap rewrite in `route.ts`, the new route and uploader tests, and the record files. It also names the owned paths that were not changed.
+
+### Minor: manifest (ISS-719)
+
+`apps/web/src/i18n/request.ts` and `request.test.ts`, deleted by the Unit, are recorded in the same section under "Deleted files". `source-manifest.json` lists existing files only, so its 64 entries stayed as they were. The one entry added is `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`, which is the only file these fixes change that was not already listed. That makes 65.
+
+### Gate (branch `bolt/u41-review-fixes`, 2026-11-08)
+
+| Command | Result |
+|---|---|
+| unit-scoped: `proxy.test.ts`, `proxy.adversarial.test.ts`, `proxy.smoke.test.ts`, `lib/security` | 12 files / 279 tests passed |
+| `timeout 300 pnpm format:check` | clean |
+| `timeout 1500 pnpm check` | exit 0. Vitest with coverage: 358 files, 4 355 passed, 2 expected fail, 1 skipped. Lines 96.03% (9 442 of 9 832); no threshold failed. Lint: 0 errors, 1 warning that is older than U41 (`packages/i18n/src/routing.ts:17`). i18n parity: 993 keys. Build green |
+| `timeout 600 pnpm smoke` | 30 files / 59 tests passed |
+| Browser: `security-headers.spec.ts` and `motion.spec.ts` on the app that `pnpm check` built (database `rogikotha_e2e_w8b`; a local config copy outside version control that differs only in port 3119 and the output folder) | 20 of 20 passed. Every script and stylesheet still loads now that static files go through the proxy, and no CSP violation was reported |
+
+ASSUMPTION(U41): the other e2e specs were not re-run. ISS-717 already leaves the whole suite to U50's release check.

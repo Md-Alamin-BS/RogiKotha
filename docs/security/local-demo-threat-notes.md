@@ -22,6 +22,7 @@ agent; their results are in `code-summary.md` (Step 34).
 | Resource exhaustion through upload | Declared-length check, counting stream, U48's per-file and per-review limits and rate limit (BR4.*) | `lib/security/__tests__/request-limits.test.ts`; `route.security.test.ts`; adversarial A2 (`route.adversarial.test.ts`, no break; a chunked 200 MB body stopped near the cap) | covered |
 | Upload truncated by the proxy | Upload route outside the proxy matcher (BR3.4) | `proxy.test.ts` matcher case | covered |
 | A page served without CSP or Host check through a dotted URL (`/en/experiences/<id>-a.b`) | Matcher excludes only named files, never an extension (BR3.4, ENT-016) | `proxy.test.ts` matcher cases; `proxy.smoke.test.ts` dotted-path case; adversarial A1 | covered |
+| A server action run through a path the proxy did not match (`/robots.txt`, `/favicon.ico`, `/sitemap.xml`, `/manifest.webmanifest`, `/_next/image`, a missing `/_next/static/x`), with no Origin or with a rebound Host | Since review-01 the matcher excludes only `/api/evidence/upload`; static files and the image optimizer get the Host check and the Origin rule (ENT-016 as amended, ISS-718) | `proxy.test.ts` "gives %s the Host check and the Origin rule for an unsafe method"; real-server probe of review-01 (`code-summary.md`, "Review fixes (review-01)") | covered |
 | Private data in logs | Key allowlist, value shape and event shape in both loggers (BR6.1 to BR6.6); no direct console output outside the loggers (BR6.7) | `packages/application/src/ports/log-policy.test.ts`; `apps/web/src/server/logger.test.ts`; `apps/worker/src/logger.test.ts`; `apps/worker/src/log-scrub.test.ts`; `apps/web/src/log-scrub.int.test.ts`; the `no-console` lint rule; adversarial A4 found that the worker kept a code-shaped `message`, fixed (ISS-697: `message` is always `[scrubbed]`) | covered |
 | Private data in output Next.js or Node prints on its own (an unhandled server error with its message and stack) | None in release 1: the application catches and logs code-shaped lines where it can; the framework's own printing is outside the logger | Adversarial A4 recorded what it prints: for a server-action POST whose body is not JSON, Next.js writes `SyntaxError: Unexpected token ...` with the first ten body characters to stderr (ISS-699) | residual |
 | Reporter identity leakage through headers or logs | No reporter identity exists in release 1 (reports are release 2, FD-105); the log policy drops any key not on the list and scrubs free text; no response header carries an account or persona id | `log-policy.test.ts` (an unknown `reporterAccountId` key is dropped); `security-headers.spec.ts` header inventory | covered for logs and headers; reporting itself deferred (FD-105, T-403) |
@@ -35,8 +36,13 @@ agent; their results are in `code-summary.md` (Step 34).
 
 - The in-memory limiters reset on restart and are per process.
 - No TLS, no WAF and no reverse proxy locally.
-- `/_next/static`, `/_next/image` and the four named root files (`/favicon.ico`, `/robots.txt`,
-  `/sitemap.xml`, `/manifest.webmanifest`) skip the Host check; they hold public bytes only.
+- Only `/api/evidence/upload` skips the proxy, and it runs the same Host and Origin guard itself.
+  Until review-01 the matcher also skipped `/_next/static`, `/_next/image` and four named root
+  files (`/favicon.ico`, `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest`) on the grounds that
+  they hold public bytes only. That did not hold: none of the four root files exists, and on the
+  real server a `Next-Action` POST to each root file and to a missing `/_next/static/x` ran
+  `setTheme` with no Origin and with a forged Host (ISS-718). Static files now pass through the
+  proxy too, at the cost of one header comparison per file request.
 - `style-src 'unsafe-inline'` stays on (style attributes), so CSS injection is not blocked by the CSP.
 - There is no CSP violation reporting endpoint.
 - Most error messages are written as `[scrubbed]` in logs, so a failure is diagnosed from its code
