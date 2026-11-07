@@ -7,7 +7,7 @@ import { expectNoSeriousViolations } from './axe';
 import { logsDir } from './env';
 import { expectLocale, type Locale } from './locale';
 import { allMessages, msg } from './messages';
-import { expectNeverAnimated } from './motion';
+import { expectNeverAnimated, expectReducedMotionOnly } from './motion';
 
 // BR2.5, BR2.8, BR3.5, BR3.6, BR4.3: what every walked page asserts, whatever the journey.
 // Page-specific hard rules (n of m, Limited data, Not provided, the evidence wording...) stay in
@@ -239,6 +239,8 @@ export async function checkPage(
     description: `${label}: ${(options.rules ?? []).join(', ') || 'common rules only'}`,
   });
 
+  // BR4.1: sampled first, while the navigation or step change that led here is still settling.
+  if (test.info().project.use.reducedMotion === 'reduce') await expectReducedMotionOnly(page);
   await expectLocale(page, locale);
 
   const marker = page
