@@ -227,9 +227,9 @@ export type NewReviewTag =
 export interface NewReviewVersion {
   reviewId: string;
   version: number;
-  /** `{kind, title, body | sections, sentiment, outcome, claims}` only (BR4.7). */
+  /** `{kind, title, body | sections, sentiment, outcome, claims}` only (BR4.7); U22 adds `corrected`. */
   snapshot: Record<string, unknown>;
-  changeKind: 'publish';
+  changeKind: 'publish' | 'correction';
   actorKind: 'author';
   /** The author persona id, never an account id (FD-113). */
   actorId: string;
@@ -305,6 +305,65 @@ export interface OwnReviewRecord {
   publishedAt: Date | null;
   /** A correction version exists (BR7.3). */
   edited: boolean;
+}
+
+// U22 (functional-spec § 5): the correction write and the history reads. No row below carries an
+// account id, an exact date, `actor_id` or `reason`.
+
+/** What `lockForCorrection` reads under `FOR UPDATE`: the ENT-101 columns and the ownership keys. */
+export interface CorrectionLockRow {
+  kind: ReviewKind;
+  title: string;
+  body: string | null;
+  sections: ReviewSectionsRecord | null;
+  sentiment: Sentiment | null;
+  outcome: Outcome | null;
+  claims: { label: string }[];
+  language: ReviewLanguage;
+  version: number;
+  /** Internal; the audit actor and the version row's `actor_id` (FD-113). */
+  authorPersonaId: string;
+  doctorId: string;
+  branchId: string | null;
+}
+
+/** The ENT-101 changeable columns and the correction time; nothing else is ever written. */
+export interface CorrectedContent {
+  title: string;
+  body: string | null;
+  sections: ReviewSectionsRecord | null;
+  sentiment: Sentiment | null;
+  outcome: Outcome | null;
+  claims: { label: string }[];
+  language: ReviewLanguage;
+  /** Becomes `updated_at`. */
+  now: Date;
+}
+
+/** The author's current content for the edit form (BR5.1). */
+export interface OwnEditRow {
+  publicId: string;
+  kind: ReviewKind;
+  version: number;
+  title: string;
+  body: string | null;
+  sections: ReviewSectionsRecord | null;
+  sentiment: Sentiment | null;
+  outcome: Outcome | null;
+  claims: { label: string }[];
+  /** In the requested locale; null when the doctor cannot be read. */
+  doctorName: string | null;
+}
+
+/** One `review_versions` row for the history read; never `actor_id` or `reason` (BR4.4). */
+export interface VersionHistoryRow {
+  version: number;
+  changeKind: 'publish' | 'correction' | 'moderation_redaction' | 'restore';
+  createdAt: Date;
+  /** The snapshot's `corrected` value as stored; absent or malformed is the caller's to read as `[]`. */
+  corrected: unknown;
+  /** The full snapshot, only for a version directly followed by a material correction. */
+  content?: unknown;
 }
 
 /** A visible doctor as the preview names it, in the requested locale. */
@@ -400,4 +459,21 @@ export interface ReviewModuleRepository {
     doctorId: string,
     personaIds: readonly string[],
   ): Promise<boolean>;
+
+  /** `SELECT … FOR UPDATE` of one review (BR3.3); null when it does not exist. */
+  lockForCorrection(tx: Tx, reviewId: string): Promise<CorrectionLockRow | null>;
+  /**
+   * Sets only the ENT-101 changeable columns, `version` and `updated_at` (BR1.3). False, and
+   * nothing written, when the review is not at `newVersion - 1`.
+   */
+  updateContent(
+    tx: Tx,
+    reviewId: string,
+    content: CorrectedContent,
+    newVersion: number,
+  ): Promise<boolean>;
+  /** The current content with the doctor's display name (BR5.1); ownership is the caller's check. */
+  findOwnForEdit(tx: Tx, reviewId: string, locale: Locale): Promise<OwnEditRow | null>;
+  /** Oldest first (BR4.2, BR4.4); `content` only for a version directly followed by a material correction. */
+  listVersions(tx: Tx, reviewId: string): Promise<VersionHistoryRow[]>;
 }

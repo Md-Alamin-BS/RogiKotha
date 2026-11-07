@@ -5,6 +5,10 @@
 // `persona_links` or `evidence_items`, and no public read selects `exact_date_enc` (FR42).
 import type {
   ActiveTermRef,
+  CorrectedContent,
+  CorrectionLockRow,
+  OwnEditRow,
+  VersionHistoryRow,
   PreviewDoctorRecord,
   DraftChange,
   DraftRecord,
@@ -621,5 +625,119 @@ export class PgReviewModuleRepository implements ReviewModuleRepository {
       )
       .limit(1);
     return row !== undefined;
+  }
+
+  async lockForCorrection(tx: Tx, reviewId: string): Promise<CorrectionLockRow | null> {
+    if (!isUuid(reviewId)) return null;
+    const [row] = await executorOf(tx)
+      .select({
+        kind: reviews.kind,
+        title: reviews.title,
+        body: reviews.body,
+        sections: reviews.sections,
+        sentiment: reviews.sentiment,
+        outcome: reviews.outcome,
+        claims: reviews.claims,
+        language: reviews.language,
+        version: reviews.version,
+        authorPersonaId: reviews.authorPersonaId,
+        doctorId: reviews.doctorId,
+        branchId: reviews.branchId,
+      })
+      .from(reviews)
+      .where(eq(reviews.id, reviewId))
+      .limit(1)
+      .for('update');
+    return row ? { ...row, claims: row.claims.map((c) => ({ label: c.label })) } : null;
+  }
+
+  async updateContent(
+    tx: Tx,
+    reviewId: string,
+    content: CorrectedContent,
+    newVersion: number,
+  ): Promise<boolean> {
+    if (!isUuid(reviewId)) return false;
+    const rows = await executorOf(tx)
+      .update(reviews)
+      .set({
+        title: content.title,
+        body: content.body,
+        sections: content.sections,
+        sentiment: content.sentiment,
+        outcome: content.outcome,
+        claims: content.claims,
+        language: content.language,
+        version: newVersion,
+        updatedAt: content.now,
+      })
+      .where(and(eq(reviews.id, reviewId), eq(reviews.version, newVersion - 1)))
+      .returning({ id: reviews.id });
+    return rows.length > 0;
+  }
+
+  async findOwnForEdit(tx: Tx, reviewId: string, locale: Locale): Promise<OwnEditRow | null> {
+    if (!isUuid(reviewId)) return null;
+    const [row] = await executorOf(tx)
+      .select({
+        publicId: reviews.publicId,
+        kind: reviews.kind,
+        version: reviews.version,
+        title: reviews.title,
+        body: reviews.body,
+        sections: reviews.sections,
+        sentiment: reviews.sentiment,
+        outcome: reviews.outcome,
+        claims: reviews.claims,
+        doctorName: locale === 'bn' ? doctors.nameBn : doctors.nameEn,
+      })
+      .from(reviews)
+      .leftJoin(doctors, eq(doctors.id, reviews.doctorId))
+      .where(eq(reviews.id, reviewId))
+      .limit(1);
+    return row ? { ...row, claims: row.claims.map((c) => ({ label: c.label })) } : null;
+  }
+
+  async listVersions(tx: Tx, reviewId: string): Promise<VersionHistoryRow[]> {
+    if (!isUuid(reviewId)) return [];
+    const db = executorOf(tx);
+    // The window runs over every version of the review, so the next row is seen before filtering.
+    const ordered = db
+      .select({
+        version: reviewVersions.version,
+        changeKind: reviewVersions.changeKind,
+        createdAt: reviewVersions.createdAt,
+        snapshot: reviewVersions.snapshot,
+        nextKind: sql<
+          string | null
+        >`lead(${reviewVersions.changeKind}) over (order by ${reviewVersions.version})`.as(
+          'next_kind',
+        ),
+        nextCorrected:
+          sql<unknown>`lead(${reviewVersions.snapshot} -> 'corrected') over (order by ${reviewVersions.version})`.as(
+            'next_corrected',
+          ),
+      })
+      .from(reviewVersions)
+      .where(eq(reviewVersions.reviewId, reviewId))
+      .as('ordered');
+    // `<> '[]'` and `jsonb_typeof` are safe on any jsonb value, so a malformed `corrected` is not
+    // material and cannot raise.
+    return db
+      .select({
+        version: ordered.version,
+        changeKind: ordered.changeKind,
+        createdAt: ordered.createdAt,
+        corrected: sql<unknown>`${ordered.snapshot} -> 'corrected'`,
+        content: sql<unknown>`case when ${ordered.nextKind} = 'correction'
+          and jsonb_typeof(${ordered.nextCorrected}) = 'array'
+          and ${ordered.nextCorrected} <> '[]'::jsonb
+          then ${ordered.snapshot} end`,
+      })
+      .from(ordered)
+      .orderBy(asc(ordered.version))
+      .then((rows) =>
+        rows.map(({ content, ...row }) => (content === null ? row : { ...row, content })),
+      );
   }
 }
