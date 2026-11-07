@@ -60,6 +60,10 @@ const FIELD_ERROR_ONLY_KEYS = [
   'errors.review.periodInvalid',
   'errors.review.missingBranch',
   'errors.review.draftsFull',
+  // ASSUMPTION(U22): the message keys of `rate_limited` (30 corrections a day) and `conflict`
+  // (stale `expectedVersion`) on `review.correct`; the generic keys do not fit (review R-04).
+  'errors.review.correctionsLimit',
+  'errors.review.editConflict',
 ];
 
 function flatten(obj, prefix = '') {

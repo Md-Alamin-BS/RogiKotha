@@ -1,7 +1,7 @@
 // Adversarial tests (plan Step 13): reach the signed-in pages without a usable session, and open
 // another author's edit page. The real `server/auth/session.ts` and `getActor()` run; only the
 // container's session lookup and the data layer are stubbed, so a page that skipped the check would read data here.
-import type { DemoCurrentAccount } from '@rogikotha/contracts';
+import { err, type DemoCurrentAccount } from '@rogikotha/contracts';
 import { redirect as redirectToSignIn } from '@rogikotha/i18n';
 import { headers } from 'next/headers';
 import { createElement, isValidElement, type ReactNode } from 'react';
@@ -78,6 +78,7 @@ const ACCOUNTS_BY_AUTH_USER = new Map<string, DemoCurrentAccount>(
 
 const getSession = vi.fn();
 const listDoctorsCommand = { name: 'directory.listDoctors', execute: vi.fn() };
+const getOwnForEditCommand = { name: 'review.getOwnForEdit', execute: vi.fn() };
 const NOW = new Date('2026-11-04T09:00:00Z');
 
 /** The Better Auth user behind the request's session cookie; null means no cookie at all. */
@@ -115,6 +116,7 @@ function installContainer(): void {
   vi.mocked(getContainer).mockReturnValue({
     env: { appMode: 'demo' },
     directory: { listDoctors: listDoctorsCommand },
+    review: { getOwnForEdit: getOwnForEditCommand },
     ports: {
       authGateway: { getSession, revokeSession: vi.fn(() => Promise.resolve()) },
       unitOfWork: { read: (work: (tx: unknown) => unknown) => work({}) },
@@ -160,6 +162,7 @@ function nothingWasRead(): void {
   expect(accounts.listOwnReviews).not.toHaveBeenCalled();
   expect(doctors.getDoctor).not.toHaveBeenCalled();
   expect(reviews.getOwnReviewForEdit).not.toHaveBeenCalled();
+  expect(getOwnForEditCommand.execute).not.toHaveBeenCalled();
 }
 
 beforeEach(() => {
@@ -170,6 +173,7 @@ beforeEach(() => {
     Promise.resolve(ACCOUNTS_BY_AUTH_USER.get(authUserId) ?? null),
   );
   vi.mocked(reviews.getOwnReviewForEdit).mockResolvedValue(null);
+  getOwnForEditCommand.execute.mockResolvedValue(err('not_found'));
 });
 
 describe.each([
@@ -236,7 +240,13 @@ describe("an attacker opening the victim's edit page (FR4.2)", () => {
   it('gets not found, looked up with their own account, and the editor is never built', async () => {
     await expect(editPage(VICTIM_REVIEW)).rejects.toThrow('NEXT_NOT_FOUND');
 
-    expect(reviews.getOwnReviewForEdit).toHaveBeenCalledWith(VICTIM_REVIEW, ATTACKER.accountId);
+    expect(getOwnForEditCommand.execute).toHaveBeenCalledTimes(1);
+    const [input, context] = getOwnForEditCommand.execute.mock.calls[0] as [
+      unknown,
+      { actor: { kind: string; accountId?: string } },
+    ];
+    expect(input).toEqual({ publicId: VICTIM_REVIEW });
+    expect(context.actor).toMatchObject({ kind: 'account', accountId: ATTACKER.accountId });
     expect(doctors.getDoctor).not.toHaveBeenCalled();
   });
 });

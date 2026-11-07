@@ -331,7 +331,9 @@ export type MessageKey =
   | 'compose.drafts.saved'
   | 'compose.drafts.title'
   | 'compose.drafts.untitled'
+  | 'compose.edit.correctionNote'
   | 'compose.edit.intro'
+  | 'compose.edit.reload'
   | 'compose.edit.save'
   | 'compose.edit.title'
   | 'compose.edit.versionNote'
@@ -523,7 +525,9 @@ export type MessageKey =
   | 'errors.retention.previewDrift'
   | 'errors.review.anonymousNewDoctor'
   | 'errors.review.attestationRequired'
+  | 'errors.review.correctionsLimit'
   | 'errors.review.draftsFull'
+  | 'errors.review.editConflict'
   | 'errors.review.minFields'
   | 'errors.review.missingBranch'
   | 'errors.review.missingDoctor'
@@ -673,6 +677,23 @@ export type MessageKey =
   | 'hero.browse'
   | 'hero.cta'
   | 'hero.title'
+  | 'history.corrected'
+  | 'history.field.after'
+  | 'history.field.claims'
+  | 'history.field.diagnosis'
+  | 'history.field.outcome'
+  | 'history.field.sentiment'
+  | 'history.field.story'
+  | 'history.field.symptoms'
+  | 'history.field.treatment'
+  | 'history.kind.corrected'
+  | 'history.kind.edited'
+  | 'history.kind.published'
+  | 'history.originalHeading'
+  | 'history.showOriginal'
+  | 'history.unavailable'
+  | 'history.version'
+  | 'history.yourVersions'
   | 'how.1.b'
   | 'how.1.t'
   | 'how.2.b'
@@ -1287,7 +1308,9 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.drafts.saved',
   'compose.drafts.title',
   'compose.drafts.untitled',
+  'compose.edit.correctionNote',
   'compose.edit.intro',
+  'compose.edit.reload',
   'compose.edit.save',
   'compose.edit.title',
   'compose.edit.versionNote',
@@ -1479,7 +1502,9 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.retention.previewDrift',
   'errors.review.anonymousNewDoctor',
   'errors.review.attestationRequired',
+  'errors.review.correctionsLimit',
   'errors.review.draftsFull',
+  'errors.review.editConflict',
   'errors.review.minFields',
   'errors.review.missingBranch',
   'errors.review.missingDoctor',
@@ -1629,6 +1654,23 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'hero.browse',
   'hero.cta',
   'hero.title',
+  'history.corrected',
+  'history.field.after',
+  'history.field.claims',
+  'history.field.diagnosis',
+  'history.field.outcome',
+  'history.field.sentiment',
+  'history.field.story',
+  'history.field.symptoms',
+  'history.field.treatment',
+  'history.kind.corrected',
+  'history.kind.edited',
+  'history.kind.published',
+  'history.originalHeading',
+  'history.showOriginal',
+  'history.unavailable',
+  'history.version',
+  'history.yourVersions',
   'how.1.b',
   'how.1.t',
   'how.2.b',
