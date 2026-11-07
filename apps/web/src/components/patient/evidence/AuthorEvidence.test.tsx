@@ -8,8 +8,9 @@ import { loadEvidenceMessages } from './evidence-test-support';
 
 vi.mock('@/server/actions/evidence', () => ({
   listOwnEvidenceFiles: vi.fn(),
-  uploadEvidence: vi.fn(),
+  removeEvidence: vi.fn(),
 }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 const REVIEW_PUBLIC_ID = 'r7x2k9m4pq';
 
@@ -31,8 +32,8 @@ describe('AuthorEvidence', () => {
     vi.mocked(listOwnEvidenceFiles).mockResolvedValue({
       reviewPublicId: REVIEW_PUBLIC_ID,
       files: [{ publicId: 'e1e1e1e1e1', name: 'xray.png', status: 'ready', size: 10 }],
-      maxFiles: 5,
-      maxBytes: 10 * 1024 * 1024,
+      maxFiles: 10,
+      maxBytes: 15 * 1024 * 1024,
     });
 
     await renderAuthorEvidence(locale);
@@ -40,13 +41,16 @@ describe('AuthorEvidence', () => {
     expect(listOwnEvidenceFiles).toHaveBeenCalledWith(REVIEW_PUBLIC_ID);
     expect(screen.getByTestId('evidence-uploader')).toBeInTheDocument();
     expect(screen.getByTestId('evidence-file')).toHaveTextContent(
-      locale === 'en' ? 'Ready' : 'প্রস্তুত',
+      locale === 'en' ? 'Attached' : 'যুক্ত হয়েছে',
     );
   });
 
-  it('renders nothing for anyone who is not the author', async () => {
-    vi.mocked(listOwnEvidenceFiles).mockResolvedValue(null);
-    const { container } = await renderAuthorEvidence('en');
-    expect(container).toBeEmptyDOMElement();
-  });
+  it.each(['en', 'bn'] as const)(
+    'renders nothing for anyone who is not the author (%s)',
+    async (locale) => {
+      vi.mocked(listOwnEvidenceFiles).mockResolvedValue(null);
+      const { container } = await renderAuthorEvidence(locale);
+      expect(container).toBeEmptyDOMElement();
+    },
+  );
 });

@@ -14,7 +14,7 @@ function renderNote(locale: 'en' | 'bn', count: number) {
 }
 
 describe('EvidenceNote', () => {
-  it('states exactly "Documents attached — not medically validated" with the ready count', () => {
+  it('states exactly "Documents attached — not medically validated" with the count', () => {
     const { getByTestId } = renderNote('en', 3);
     const note = getByTestId('evidence-note');
     expect(note.querySelector('.callout.warn b')?.textContent).toBe(
@@ -33,9 +33,15 @@ describe('EvidenceNote', () => {
     expect(note.textContent).not.toMatch(/[0-9]/);
   });
 
-  it('renders nothing when no file is ready', () => {
-    const { container } = renderNote('en', 0);
-    expect(container).toBeEmptyDOMElement();
+  it.each([
+    ['en', 'No documents'],
+    ['bn', 'কোনো কাগজপত্র নেই'],
+  ] as const)('says No documents, never a 0, when the count is 0 (%s)', (locale, expected) => {
+    const { getByTestId, queryByTestId } = renderNote(locale, 0);
+    const none = getByTestId('evidence-none');
+    expect(none.textContent).toContain(expected);
+    expect(none.textContent).not.toMatch(/[0০]/);
+    expect(queryByTestId('evidence-note')).toBeNull();
   });
 
   it('never shows a file, an image or a link', () => {

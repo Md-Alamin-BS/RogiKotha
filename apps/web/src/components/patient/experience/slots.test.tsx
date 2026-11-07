@@ -86,12 +86,14 @@ describe.each(['en', 'bn'] as const)('the experience page slots in %s', (locale)
     expect(screen.getByTestId('evidence-note')).toHaveTextContent(t('evidence.status'));
     unmount();
 
-    for (const count of [0, null]) {
-      vi.mocked(loadPublicEvidenceCount).mockResolvedValue(count);
-      const shown = show(await EvidenceSection({ reviewPublicId: PUBLIC_ID }), locale);
-      expect(screen.getByTestId('evidence-none')).toHaveTextContent(t('label.noDocuments'));
-      shown.unmount();
-    }
+    vi.mocked(loadPublicEvidenceCount).mockResolvedValue(0);
+    show(await EvidenceSection({ reviewPublicId: PUBLIC_ID }), locale);
+    expect(screen.getByTestId('evidence-none')).toHaveTextContent(t('label.noDocuments'));
+  });
+
+  it('renders no evidence section for an unknown or unpublished review', async () => {
+    vi.mocked(loadPublicEvidenceCount).mockResolvedValue(null);
+    expect(await EvidenceSection({ reviewPublicId: PUBLIC_ID })).toBeNull();
   });
 
   it('says the evidence read failed rather than No documents', async () => {

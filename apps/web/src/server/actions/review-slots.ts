@@ -28,11 +28,16 @@ export async function loadCommentThread(
   return { threads, signedIn: actor.kind === 'account' };
 }
 
-/** How many documents the public may count (C17), until U48 binds Evidence's implementation. */
+/** How many documents the public may count (C17); null for an unknown or unpublished review. */
 export async function loadPublicEvidenceCount(reviewPublicId: string): Promise<number | null> {
-  const reviewId = await reviewIdOf(reviewPublicId);
+  const c = getContainer();
+  // BR5.2: no count for an unknown or unpublished review.
+  const reviewId = await c.ports.unitOfWork.read(async (tx) => {
+    const id = await c.review.reviewIdForPublicId(tx, { publicId: reviewPublicId });
+    return id !== null && (await c.review.isReviewPublished(tx, { reviewId: id })) ? id : null;
+  });
   if (reviewId === null) return null;
-  return getContainer().publicEvidence.countPublicEvidence(reviewId);
+  return c.publicEvidence.countPublicEvidence(reviewId);
 }
 
 /** When the review was last edited (BR6.7); null when never, or for an unknown id. */

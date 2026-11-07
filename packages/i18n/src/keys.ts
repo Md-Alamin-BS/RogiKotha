@@ -536,9 +536,17 @@ export type MessageKey =
   | 'errors.review.periodInvalid'
   | 'errors.review.restoreExpired'
   | 'ev.failNote'
+  | 'ev.guidance.photograph'
   | 'ev.note.count'
+  | 'ev.reason.couldNotCheck'
+  | 'ev.reason.malware'
+  | 'ev.reason.notImage'
+  | 'ev.reason.tooLarge'
   | 'ev.remove'
+  | 'ev.removeNamed'
   | 'ev.replace'
+  | 'ev.size.kb'
+  | 'ev.size.mb'
   | 'ev.state.checking'
   | 'ev.state.failed'
   | 'ev.state.processing'
@@ -550,21 +558,19 @@ export type MessageKey =
   | 'ev.status.pending'
   | 'ev.status.ready'
   | 'ev.status.rejected'
-  | 'ev.upload.done.pending'
-  | 'ev.upload.done.ready'
-  | 'ev.upload.done.rejected'
+  | 'ev.upload.done.received'
   | 'ev.upload.errors.failed'
   | 'ev.upload.errors.noFile'
   | 'ev.upload.errors.notFound'
+  | 'ev.upload.errors.rateLimited'
   | 'ev.upload.errors.signedOut'
   | 'ev.upload.errors.tooLarge'
   | 'ev.upload.errors.tooMany'
+  | 'ev.upload.errors.unconfirmed'
   | 'ev.upload.fileLabel'
   | 'ev.upload.hint'
   | 'ev.upload.limitReached'
   | 'ev.upload.listLabel'
-  | 'ev.upload.pendingNote'
-  | 'ev.upload.rejectedNote'
   | 'ev.upload.submit'
   | 'ev.upload.uploading'
   | 'evidence.group.later'
@@ -1495,9 +1501,17 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.review.periodInvalid',
   'errors.review.restoreExpired',
   'ev.failNote',
+  'ev.guidance.photograph',
   'ev.note.count',
+  'ev.reason.couldNotCheck',
+  'ev.reason.malware',
+  'ev.reason.notImage',
+  'ev.reason.tooLarge',
   'ev.remove',
+  'ev.removeNamed',
   'ev.replace',
+  'ev.size.kb',
+  'ev.size.mb',
   'ev.state.checking',
   'ev.state.failed',
   'ev.state.processing',
@@ -1509,21 +1523,19 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'ev.status.pending',
   'ev.status.ready',
   'ev.status.rejected',
-  'ev.upload.done.pending',
-  'ev.upload.done.ready',
-  'ev.upload.done.rejected',
+  'ev.upload.done.received',
   'ev.upload.errors.failed',
   'ev.upload.errors.noFile',
   'ev.upload.errors.notFound',
+  'ev.upload.errors.rateLimited',
   'ev.upload.errors.signedOut',
   'ev.upload.errors.tooLarge',
   'ev.upload.errors.tooMany',
+  'ev.upload.errors.unconfirmed',
   'ev.upload.fileLabel',
   'ev.upload.hint',
   'ev.upload.limitReached',
   'ev.upload.listLabel',
-  'ev.upload.pendingNote',
-  'ev.upload.rejectedNote',
   'ev.upload.submit',
   'ev.upload.uploading',
   'evidence.group.later',

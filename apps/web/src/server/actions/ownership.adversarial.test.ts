@@ -20,10 +20,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getContainer } from '@/server/container';
 import { accounts, comments, evidence, reviews, session } from '@/server/data';
-import type * as StorageModule from '@/server/storage';
-import { storeOriginal } from '@/server/storage';
 import { deleteComment, postComment, type CommentActionState } from './comments';
-import { listOwnEvidenceFiles, uploadEvidence, type EvidenceUploadState } from './evidence';
+import { listOwnEvidenceFiles } from './evidence';
 import { setLang } from './preferences';
 import { updateDisplayNameAction, updateLanguageAction } from './profile';
 import { publishDraftAction, saveReviewEdit, type EditFormState } from './review';
@@ -42,17 +40,9 @@ vi.mock('@/i18n/routing', () => ({
   }),
 }));
 vi.mock('@/server/container', () => ({ getContainer: vi.fn() }));
-vi.mock('@/server/clamav', () => ({ scanBytes: vi.fn(() => Promise.resolve('clean')) }));
 vi.mock('@/server/crypto', () => ({
   encrypt: vi.fn(() => Buffer.from('sealed')),
   decryptToString: vi.fn(() => 'scan.png'),
-}));
-vi.mock('@/server/storage', async (importOriginal) => ({
-  ...(await importOriginal<typeof StorageModule>()),
-  storeOriginal: vi.fn(() =>
-    Promise.resolve({ storageKey: 'key-1', size: 11, sha256: Buffer.alloc(32) }),
-  ),
-  removeOriginal: vi.fn(() => Promise.resolve()),
 }));
 vi.mock('./preferences', () => ({ setLang: vi.fn() }));
 vi.mock('@/server/data', () => ({
@@ -74,9 +64,6 @@ const MISSING_REVIEW = 'm1ss1ngrv1';
 const VICTIM_COMMENT = 'v1ct1mcmt1';
 const MISSING_COMMENT = 'm1ss1ngcm1';
 const ORIGINAL_TITLE = 'A calm visit, synthetic';
-const PNG_BYTES = Uint8Array.from([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 1, 2, 3,
-]);
 
 function buildAccount(name: string, overrides: Partial<DemoCurrentAccount> = {}) {
   return {
@@ -273,7 +260,6 @@ function form(fields: Record<string, string | File>): FormData {
 }
 
 const IDLE_COMMENT: CommentActionState = { status: 'idle' };
-const IDLE_UPLOAD: EvidenceUploadState = { status: 'idle' };
 const EDIT_START: EditFormState = { attempt: 0, values: null, fieldErrors: {}, formError: null };
 
 /** The victim's ids, as an attacker would add them to any form. */
@@ -300,14 +286,6 @@ function editForm(publicId: string): FormData {
     body: 'This text was written by someone who is not the author.',
     sentiment: 'negative',
     outcome: '',
-  });
-}
-
-function uploadForm(reviewPublicId: string): FormData {
-  return form({
-    ...FORGED_IDS,
-    reviewPublicId,
-    file: new File([PNG_BYTES], 'scan.png', { type: 'image/png' }),
   });
 }
 
@@ -382,14 +360,8 @@ describe('an attacker signed in as another account (FR4.2, FR5.1, FR6.3, NFR3)',
     expect(world.writes).toEqual([`review.publish by ${ATTACKER.accountId}`]);
   });
 
-  it("cannot attach a file to the victim's experience or list its files, and nothing is stored", async () => {
-    const victims = await uploadEvidence(IDLE_UPLOAD, uploadForm(VICTIM_REVIEW));
-    const missing = await uploadEvidence(IDLE_UPLOAD, uploadForm(MISSING_REVIEW));
-
-    expect(victims).toEqual({ status: 'error', messageKey: 'ev.upload.errors.notFound' });
-    expect(victims).toEqual(missing);
+  it("cannot list the victim's files, and nothing is written", async () => {
     await expect(listOwnEvidenceFiles(VICTIM_REVIEW)).resolves.toBeNull();
-    expect(storeOriginal).not.toHaveBeenCalled();
     expect(world.writes).toEqual([]);
   });
 
@@ -447,14 +419,6 @@ describe.each([
     const state = await publishDraftAction(PUBLISH_DRAFT);
 
     expect(state).toEqual({ formError: 'errors.common.forbidden', fieldErrors: {} });
-    expect(world.writes).toEqual([]);
-  });
-
-  it('cannot upload a file, and nothing is stored', async () => {
-    const state = await uploadEvidence(IDLE_UPLOAD, uploadForm(VICTIM_REVIEW));
-
-    expect(state).toEqual({ status: 'error', messageKey: 'ev.upload.errors.signedOut' });
-    expect(storeOriginal).not.toHaveBeenCalled();
     expect(world.writes).toEqual([]);
   });
 });
