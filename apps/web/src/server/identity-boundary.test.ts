@@ -1,7 +1,7 @@
 // @vitest-environment node
-// BR3.6: no server action or route handler reaches an identity operation that takes an account id
-// or returns a persona id. `renameNamedCommand` (the actor's own) and the public projections stay
-// open to them.
+// BR3.6: no page, route, action or other server file reaches an identity operation that takes an
+// account id or returns a persona id. `renameNamedCommand` (the actor's own) and the public
+// projections stay open to them. The composition root, which builds the module, is the one exception.
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,7 +10,9 @@ import { describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..');
-const ROOTS = [join(SRC, 'server', 'actions'), join(SRC, 'app', 'api')];
+// U11 review: widened from `server/actions` and `app/api` to all of `app` and `server`.
+const ROOTS = [join(SRC, 'app'), join(SRC, 'server')];
+const COMPOSITION_ROOT = join(SRC, 'server', 'container.ts');
 
 const FORBIDDEN: readonly { name: string; pattern: RegExp }[] = [
   {
@@ -46,15 +48,18 @@ function violationsIn(source: string): string[] {
   return FORBIDDEN.filter(({ pattern }) => pattern.test(code)).map(({ name }) => name);
 }
 
-describe('the identity boundary of actions and routes (BR3.6)', () => {
-  const files = ROOTS.flatMap(sourceFiles);
+describe('the identity boundary of pages, routes, actions and server files (BR3.6)', () => {
+  const files = ROOTS.flatMap(sourceFiles).filter((file) => file !== COMPOSITION_ROOT);
 
-  it('finds the action and route files it checks', () => {
+  it('finds the page, route, action and server files it checks, without the composition root', () => {
     expect(files.some((file) => file.includes(join('server', 'actions')))).toBe(true);
     expect(files.some((file) => file.includes(join('app', 'api')))).toBe(true);
+    expect(files.some((file) => file.includes(join('app', '[locale]')))).toBe(true);
+    expect(files.some((file) => file.includes(join('server', 'auth')))).toBe(true);
+    expect(files).not.toContain(COMPOSITION_ROOT);
   });
 
-  it('finds no identity internals in any action or route file', () => {
+  it('finds no identity internals in any of them', () => {
     const hits = files.flatMap((file) =>
       violationsIn(readFileSync(file, 'utf8')).map((name) => `${relative(SRC, file)}: ${name}`),
     );

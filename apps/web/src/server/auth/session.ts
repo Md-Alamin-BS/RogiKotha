@@ -1,4 +1,4 @@
-import type { DemoCurrentAccount } from '@rogikotha/contracts';
+import { LOCALES, type DemoCurrentAccount } from '@rogikotha/contracts';
 // The package, not the app's `@/i18n/routing` re-export: server code may not import web-shared
 // (T-010 boundaries). Its navigation cannot load under Vitest (ISS-053), so tests mock this module.
 import { redirect } from '@rogikotha/i18n';
@@ -27,15 +27,27 @@ export const getCurrentAccount = cache(async (): Promise<CurrentAccount | null> 
 });
 
 /**
+ * A same-site `path` with `locale` in front when its first segment is no locale (U9 review, fixed
+ * in U47). Anything else is returned unchanged for the sign-in page's `safeAuthNext` to judge.
+ */
+function withLocalePrefix(path: string, locale: string): string {
+  if (!path.startsWith('/') || path.startsWith('//')) return path;
+  const first = (path.slice(1).split(/[/?#]/, 1)[0] ?? '').toLowerCase();
+  if ((LOCALES as readonly string[]).includes(first)) return path;
+  return path === '/' ? `/${locale}` : `/${locale}${path}`;
+}
+
+/**
  * The signed-in account, or a redirect to the sign-in page in the active locale. `returnTo` is
- * passed on as `?next=`; the sign-in page must accept only a same-site path from it.
+ * passed on as `?next=` with the active locale in front when it has none, because the sign-in
+ * page keeps only a path that `safeAuthNext` accepts, and that needs the locale (U9 review).
  */
 export async function requireAccount(options: { returnTo?: string } = {}): Promise<CurrentAccount> {
   const account = await getCurrentAccount();
   if (account) return account;
   const locale = await getLocale();
   const href = options.returnTo
-    ? { pathname: '/sign-in', query: { next: options.returnTo } }
+    ? { pathname: '/sign-in', query: { next: withLocalePrefix(options.returnTo, locale) } }
     : '/sign-in';
   return redirect({ href, locale });
 }

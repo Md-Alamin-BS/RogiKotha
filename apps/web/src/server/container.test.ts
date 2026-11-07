@@ -9,16 +9,36 @@ import {
   type ReviewModulePorts,
   type ReviewSeams,
 } from '@rogikotha/application';
+import type * as Application from '@rogikotha/application';
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import { createAuthInstance } from './better-auth/instance';
-import { getContainer } from './container';
+import { getContainer, type WebIdentity } from './container';
 import { readWebEnv, type WebEnv } from './env';
 
 // Held here, not imported: only the container itself may import `adapters` (T-010 matrix).
 const ensure = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 const createCrypto = vi.hoisted(() => vi.fn((keys: unknown) => ({ keys })));
 const privatePort = vi.hoisted(() => ({ owns: vi.fn(() => Promise.resolve(true)) }));
+// U11 review: the ownership check is no longer on the container, so it is read where it goes.
+const reviewDeps = vi.hoisted(() => ({ last: undefined as ReviewModulePorts | undefined }));
+
+vi.mock('@rogikotha/application', async (importOriginal) => {
+  const actual = await importOriginal<typeof Application>();
+  return {
+    ...actual,
+    createReviewModule: vi.fn((deps: ReviewModulePorts) => {
+      reviewDeps.last = deps;
+      return actual.createReviewModule(deps);
+    }),
+  };
+});
+
+function reviewOwnership(): IdentityOwnership {
+  getContainer();
+  if (!reviewDeps.last) throw new Error('the review module was not built');
+  return reviewDeps.last.ownership;
+}
 
 vi.mock('@rogikotha/adapters', () => ({
   createArgon2PasswordHasher: vi.fn(() => ({
@@ -153,12 +173,28 @@ function accepts<T>(value: T): T {
 
 describe('the identity wiring (C19)', () => {
   it('gives the private repository to the identity module, whose ownership check reads it', async () => {
-    const { identity } = getContainer();
-
     await expect(
-      identity.ownership.ownsPersona({} as never, { accountId: 'a', personaId: 'p' }),
+      reviewOwnership().ownsPersona({} as never, { accountId: 'a', personaId: 'p' }),
     ).resolves.toBe(true);
     expect(privatePort.owns).toHaveBeenCalledWith({}, 'a', 'p');
+  });
+
+  it('offers pages and actions only the rename and the public reads (BR3.6, U11 review)', () => {
+    const { identity } = getContainer();
+
+    expect(Object.keys(identity).sort()).toEqual([
+      'publicPersonaIdsByUsername',
+      'publicProjection',
+      'publicProjections',
+      'renameNamedCommand',
+    ]);
+    expectTypeOf<keyof WebIdentity>().toEqualTypeOf<
+      'renameNamedCommand' | 'publicProjection' | 'publicProjections' | 'publicPersonaIdsByUsername'
+    >();
+    // @ts-expect-error BR3.5: the ownership check is not on the container.
+    expect(identity.ownership).toBeUndefined();
+    // @ts-expect-error BR3.6: nor is the persona choice, which takes an account id.
+    expect(identity.personaFor).toBeUndefined();
   });
 
   it('keeps the private repository out of the command ports (BR3.2)', () => {
@@ -183,7 +219,7 @@ describe('the identity wiring (C19)', () => {
   });
 
   it('lets no other module ports type take the ownership check (BR3.5)', () => {
-    const ownership = getContainer().identity.ownership;
+    const ownership = reviewOwnership();
 
     expectTypeOf<FieldsAccepting<CommandPorts, IdentityOwnership>>().toBeNever();
     // @ts-expect-error BR3.5: no command port is the identity ownership check.

@@ -50,6 +50,19 @@ import { getDb } from './db';
 import { readWebEnv, type WebEnv } from './env';
 import { createWebLogger } from './logger';
 
+/**
+ * C19: the identity members a page or action may reach, the actor's own rename and the public
+ * reads (BR3.6). `ownership`, `personaFor` and `createDefaultPersonas` stay inside `buildContainer`
+ * for the review and community factories (BR3.5, U11 review).
+ *
+ * ASSUMPTION(U47): no `ownsPersona` either; no page or action calls it, and pages ask the review
+ * seam `isReviewAuthor` instead.
+ */
+export type WebIdentity = Pick<
+  IdentityModule,
+  'renameNamedCommand' | 'publicProjection' | 'publicProjections' | 'publicPersonaIdsByUsername'
+>;
+
 export interface WebContainer {
   env: WebEnv;
   ports: CommandPorts;
@@ -59,11 +72,8 @@ export interface WebContainer {
   directory: DirectoryModule;
   taxonomy: TaxonomyModule;
   reviewReads: ReviewReadModule;
-  /**
-   * C19. Actions may call `renameNamedCommand` only; `ownership` is for the review and community
-   * factories that U47 and U49 build here (BR3.5, BR3.6).
-   */
-  identity: IdentityModule;
+  /** C19: the narrowed identity module; see `WebIdentity`. */
+  identity: WebIdentity;
   /** U47: the review commands and queries, and the four seams other modules call (C9). */
   review: ReviewModule;
   /** U47 (C17): the count the experience page's evidence slot shows; U48 binds Evidence here. */
@@ -187,7 +197,25 @@ function buildContainer(): WebContainer {
   // The same interim binding the review reads use above; U48 replaces both with Evidence's.
   const publicEvidence = createInterimPublicEvidenceCount(db);
 
-  return { env, ports, auth, directory, taxonomy, reviewReads, identity, review, publicEvidence };
+  // Built member by member, so the closed members are not on the object at run time either.
+  const webIdentity: WebIdentity = {
+    renameNamedCommand: identity.renameNamedCommand,
+    publicProjection: (tx, input) => identity.publicProjection(tx, input),
+    publicProjections: (tx, input) => identity.publicProjections(tx, input),
+    publicPersonaIdsByUsername: (tx, input) => identity.publicPersonaIdsByUsername(tx, input),
+  };
+
+  return {
+    env,
+    ports,
+    auth,
+    directory,
+    taxonomy,
+    reviewReads,
+    identity: webIdentity,
+    review,
+    publicEvidence,
+  };
 }
 
 /**

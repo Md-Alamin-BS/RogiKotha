@@ -21,6 +21,7 @@ export function CommentThreadView({
   signedIn: boolean;
 }) {
   const t = useTranslations();
+  const locale = useLocale();
 
   return (
     <section aria-labelledby="discussion-head">
@@ -52,7 +53,11 @@ export function CommentThreadView({
         <p className="note">
           <Link
             className="link-btn"
-            href={{ pathname: '/sign-in', query: { next: `/experiences/${reviewPublicId}` } }}
+            // The locale prefix keeps `next` past `safeAuthNext` on the sign-in page (U9 review).
+            href={{
+              pathname: '/sign-in',
+              query: { next: `/${locale}/experiences/${reviewPublicId}` },
+            }}
           >
             {t('experience.signInToComment')}
           </Link>

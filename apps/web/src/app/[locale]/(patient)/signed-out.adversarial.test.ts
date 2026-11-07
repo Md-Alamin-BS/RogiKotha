@@ -181,7 +181,9 @@ describe.each([
   it('is sent from /me to sign in and back, and no profile is read', async () => {
     await expect(WorkspacePage()).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(nextOfSignInRedirect()).toBe('/me');
+    // U9 review (fixed in U47): the return path carries the locale, so sign-in keeps it.
+    expect(nextOfSignInRedirect()).toBe('/en/me');
+    expect(safeAuthNext(nextOfSignInRedirect())).toBe('/en/me');
     nothingWasRead();
   });
 
@@ -198,7 +200,8 @@ describe.each([
   it('is sent from an edit page to sign in and back to it, and no experience is read', async () => {
     await expect(editPage(VICTIM_REVIEW)).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(nextOfSignInRedirect()).toBe(`/experiences/${VICTIM_REVIEW}/edit`);
+    expect(nextOfSignInRedirect()).toBe(`/en/experiences/${VICTIM_REVIEW}/edit`);
+    expect(safeAuthNext(nextOfSignInRedirect())).toBe(`/en/experiences/${VICTIM_REVIEW}/edit`);
     nothingWasRead();
   });
 });

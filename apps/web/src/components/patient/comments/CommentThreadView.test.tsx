@@ -8,6 +8,7 @@ import {
   testTranslator,
   type TestLocale,
 } from '../experience/experience-test-support';
+import { safeAuthNext } from '@/server/actions/auth-form';
 import { CommentThreadView } from './CommentThreadView';
 
 vi.mock('@/i18n/routing', async () => {
@@ -105,8 +106,13 @@ describe.each(['en', 'bn'] as const)('the comment thread in %s', (locale) => {
     renderThread(locale, [buildThread({ body: 'Visible to everyone' })], false);
     expect(screen.getByRole('link', { name: t('experience.signInToComment') })).toHaveAttribute(
       'href',
-      '/sign-in?next=%2Fexperiences%2Fexp0000001',
+      `/sign-in?next=%2F${locale}%2Fexperiences%2Fexp0000001`,
     );
+    const next = new URL(
+      screen.getByRole('link', { name: t('experience.signInToComment') }).getAttribute('href')!,
+      'http://localhost',
+    ).searchParams.get('next');
+    expect(safeAuthNext(next)).toBe(`/${locale}/experiences/exp0000001`);
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.queryByRole('button', { name: t('experience.reply') })).toBeNull();
     expect(screen.getByText('Visible to everyone')).toBeInTheDocument();
