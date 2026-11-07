@@ -33,6 +33,15 @@ vi.mock('@/server/db', () => ({ getDb: () => ({ $client: { query: probeQuery } }
 vi.mock('@/i18n/routing', () => ({
   routing: { locales: ['en', 'bn'], defaultLocale: 'en' },
 }));
+// The root 404 reads both dictionaries by an explicit locale; the real message files stand in.
+vi.mock('next-intl/server', async () => {
+  const { createTranslator } = await import('next-intl');
+  const { loadMessages } = await import('@/components/patient/doctors/directory-test-support');
+  return {
+    getTranslations: ({ locale }: { locale: 'en' | 'bn' }) =>
+      Promise.resolve(createTranslator({ locale, messages: loadMessages(locale) })),
+  };
+});
 
 // Builder: the request cookies and Accept-Language the root page reads.
 function givenRequest({
@@ -123,13 +132,15 @@ describe('root layout', () => {
 });
 
 describe('not-found page', () => {
-  // U41 (BR1.4): the page is async, because it awaits `connection()` to render per request.
-  it('offers a way home in both languages, outside any locale provider', async () => {
+  async function notFoundDocument() {
     const html = renderToStaticMarkup(await NotFound());
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return new DOMParser().parseFromString(html, 'text/html');
+  }
+
+  it('offers a way home in both languages, outside any locale provider', async () => {
+    const doc = await notFoundDocument();
     const links = Array.from(doc.querySelectorAll('a')).map((a) => a.getAttribute('href'));
-    expect(links).toEqual(['/en', '/bn']);
-    expect(doc.querySelector('[lang="bn"]')).not.toBeNull();
+    expect(links).toEqual(['/en', '/en/emergency', '/bn', '/bn/emergency']);
     expect(doc.documentElement.getAttribute('lang')).toBe('en');
   });
 
@@ -140,6 +151,33 @@ describe('not-found page', () => {
     await NotFound();
 
     expect(connection).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['en', 'The page may have moved, or the address may be mistyped.', 'Go to the home page'],
+    ['bn', 'পাতাটি হয়তো সরানো হয়েছে, অথবা ঠিকানায় ভুল আছে।', 'হোম পাতায় যান'],
+  ])(
+    'reads the %s line from the dictionary and marks it with its lang',
+    async (lang, body, home) => {
+      const doc = await notFoundDocument();
+      const line = doc.querySelector(`main > p[lang="${lang}"]`);
+      expect(line?.textContent).toContain(body);
+      expect(line?.querySelector('a')?.textContent).toBe(home);
+    },
+  );
+
+  it.each([
+    ['en', 'Emergency help', '/en/emergency'],
+    ['bn', 'জরুরি সাহায্য', '/bn/emergency'],
+  ])('links %s emergency help with the dictionary label', async (lang, label, href) => {
+    const doc = await notFoundDocument();
+    const link = doc.querySelector(`main > p[lang="${lang}"] a[href="${href}"]`);
+    expect(link?.textContent).toBe(label);
+  });
+
+  it('carries no inline style', async () => {
+    const doc = await notFoundDocument();
+    expect(doc.querySelectorAll('[style]')).toHaveLength(0);
   });
 });
 

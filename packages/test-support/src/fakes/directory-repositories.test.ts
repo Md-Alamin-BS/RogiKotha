@@ -10,6 +10,7 @@ import {
   FakeTaxonomyModuleRepository,
   makeDirectoryFakes,
 } from './directory-repositories.js';
+import { FakeReviewModuleRepository } from './review-repository.js';
 
 const repositoriesDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -92,5 +93,34 @@ describe('the facility review fake', () => {
 
     expect(await reviews.publishedForBranch(tx, branch.id)).toHaveLength(1);
     expect(await reviews.summariesForBranches(tx, [branch.id])).toHaveLength(1);
+  });
+});
+
+describe('U47 additions', () => {
+  it('FakeReviewModuleRepository covers review-module.ts', () => {
+    const methods = classMethodNames('review-module.ts');
+    const fakeMethods = new Set(Object.getOwnPropertyNames(FakeReviewModuleRepository.prototype));
+
+    expect(methods.length).toBeGreaterThan(5);
+    expect(methods.filter((name) => !fakeMethods.has(name))).toEqual([]);
+  });
+
+  it('the card read filters by author persona and leaves out the excluded review', async () => {
+    const { directory, reviews } = makeDirectoryFakes();
+    const doctor = directory.addDoctor();
+    const mine = reviews.addReview({ doctorId: doctor.id, authorPersonaId: 'p-mine' });
+    const second = reviews.addReview({ doctorId: doctor.id, authorPersonaId: 'p-mine' });
+    reviews.addReview({ doctorId: doctor.id, authorPersonaId: 'p-other' });
+
+    const byPersona = await reviews.listRecentCards(tx, { limit: 10, personaIds: ['p-mine'] });
+    const excluded = await reviews.listRecentCards(tx, {
+      limit: 10,
+      personaIds: ['p-mine'],
+      excludePublicId: mine.publicId,
+    });
+
+    expect(byPersona.map((c) => c.id).sort()).toEqual([mine.id, second.id].sort());
+    expect(excluded.map((c) => c.id)).toEqual([second.id]);
+    expect(await reviews.listRecentCards(tx, { limit: 10, personaIds: [] })).toEqual([]);
   });
 });

@@ -15,7 +15,6 @@ import { describe, expect, it } from 'vitest';
 import {
   FakeAccountRepository,
   FakeAuditRepository,
-  FakeCommunityRepository,
   FakeConfigRepository,
   FakeDataRequestRepository,
   FakeDirectoryRepository,
@@ -28,7 +27,23 @@ import {
   FakeReviewRepository,
   FakeTaxonomyRepository,
 } from './repositories.js';
+import { FakeCommunityModuleRepository } from './community-repository.js';
 import { FakeEmailDeliveryRepository } from './email-delivery-repository.js';
+import { InMemoryEvidenceRepository } from './evidence-repository.js';
+
+// U48: `evidence.ts` holds the release-1 methods `InMemoryEvidenceRepository` fakes and the
+// release-2 stubs `FakeEvidenceRepository` still fakes; together they must cover the file.
+class EvidenceFakes {}
+for (const Fake of [FakeEvidenceRepository, InMemoryEvidenceRepository]) {
+  for (const name of Object.getOwnPropertyNames(Fake.prototype)) {
+    if (name === 'constructor' || Object.hasOwn(EvidenceFakes.prototype, name)) continue;
+    Object.defineProperty(
+      EvidenceFakes.prototype,
+      name,
+      Object.getOwnPropertyDescriptor(Fake.prototype, name)!,
+    );
+  }
+}
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repositoriesDir = path.resolve(here, '../../../database/src/repositories');
@@ -58,11 +73,12 @@ function fakeMethodNames(FakeClass: new () => unknown): string[] {
 const REPOSITORY_PAIRS: { file: string; FakeClass: new () => unknown }[] = [
   { file: 'account.ts', FakeClass: FakeAccountRepository },
   { file: 'audit.ts', FakeClass: FakeAuditRepository },
-  { file: 'community.ts', FakeClass: FakeCommunityRepository },
+  // U49: the release-1 repository is mirrored by its own fake; the old one keeps the T-004 names.
+  { file: 'community.ts', FakeClass: FakeCommunityModuleRepository },
   { file: 'config.ts', FakeClass: FakeConfigRepository },
   { file: 'data-requests.ts', FakeClass: FakeDataRequestRepository },
   { file: 'directory.ts', FakeClass: FakeDirectoryRepository },
-  { file: 'evidence.ts', FakeClass: FakeEvidenceRepository },
+  { file: 'evidence.ts', FakeClass: EvidenceFakes },
   { file: 'identity.ts', FakeClass: FakeIdentityRepository },
   { file: 'moderation.ts', FakeClass: FakeModerationRepository },
   { file: 'notification.ts', FakeClass: FakeNotificationRepository },
@@ -106,6 +122,8 @@ describe('every repository fake is a method-name superset of its Pg*Repository s
       'taxonomy-module.ts',
       'review-reads.ts',
       'public-evidence-count-interim.ts',
+      // U47: paired with `FakeReviewModuleRepository` in the same file.
+      'review-module.ts',
     ])
       unpairedByDesign.add(file);
     // Test helpers (`*-test-support.ts`) sit beside the repositories but are not repositories.

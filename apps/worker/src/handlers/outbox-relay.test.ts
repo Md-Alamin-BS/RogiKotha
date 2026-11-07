@@ -411,3 +411,13 @@ describe('CR-011 relay planning and logging', () => {
     expect(ensuredBeforeBatch).toBe(relayQueueNames().length);
   });
 });
+
+describe('the evidence routes (U48 C15)', () => {
+  it('routes evidence.received to the evidence.process job', () => {
+    expect(RELAY['evidence.received']).toEqual(['evidence.process']);
+  });
+
+  it('leaves evidence.stateChanged without a job in release 1', () => {
+    expect(RELAY['evidence.stateChanged']).toEqual([]);
+  });
+});

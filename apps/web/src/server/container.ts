@@ -2,7 +2,9 @@
 // is built on first use, never at module load, so `next build` needs no `.env` (BR7.2, F27), and
 // it lives on `globalThis` so `next dev` reloads do not open a second pool.
 import {
+  createCommunityModule,
   createDirectoryModule,
+  createReviewModule,
   createReviewReadModule,
   createTaxonomyModule,
   MAIL_SEND_JOB,
@@ -10,24 +12,32 @@ import {
   primeDummyCredential,
   type IdentityModule,
   type CommandPorts,
+  type CommunityModule,
   type ConfigProvider,
   type Crypto,
   type DirectoryModule,
   type IdGenerator,
+  type PublicEvidenceCount,
+  type ReviewModule,
   type ReviewReadModule,
   type TaxonomyModule,
+  createEvidenceModule,
+  type EvidenceFileWriter,
+  type EvidenceModule,
+  type FilenameSeal,
 } from '@rogikotha/application';
 import { DEFAULT_CONFIG_VALUES, newId, newPublicId } from '@rogikotha/contracts';
 import {
   createArgon2PasswordHasher,
   createCrypto,
   createMemoryRateLimiter,
+  createFsEvidenceWriter,
 } from '@rogikotha/adapters';
 import {
-  createInterimPublicEvidenceCount,
   PgAccountRepository,
   PgAuditWriter,
   PgBossQueue,
+  PgCommunityRepository,
   PgEmailDeliveryRepository,
   PgIdentityRepository,
   PgJobQueue,
@@ -35,8 +45,10 @@ import {
   PgPrivateIdentityRepository,
   PgUnitOfWork,
   PgDirectoryModuleRepository,
+  PgReviewModuleRepository,
   PgReviewReadRepository,
   PgTaxonomyModuleRepository,
+  PgEvidenceRepository,
 } from '@rogikotha/database';
 
 import { createAfterResponse } from './after-response';
@@ -45,6 +57,19 @@ import { createAuthInstance, type AuthInstance } from './better-auth/instance';
 import { getDb } from './db';
 import { readWebEnv, type WebEnv } from './env';
 import { createWebLogger } from './logger';
+
+/**
+ * C19: the identity members a page or action may reach, the actor's own rename and the public
+ * reads (BR3.6). `ownership`, `personaFor` and `createDefaultPersonas` stay inside `buildContainer`
+ * for the review and community factories (BR3.5, U11 review).
+ *
+ * ASSUMPTION(U47): no `ownsPersona` either; no page or action calls it, and pages ask the review
+ * seam `isReviewAuthor` instead.
+ */
+export type WebIdentity = Pick<
+  IdentityModule,
+  'renameNamedCommand' | 'publicProjection' | 'publicProjections' | 'publicPersonaIdsByUsername'
+>;
 
 export interface WebContainer {
   env: WebEnv;
@@ -55,11 +80,29 @@ export interface WebContainer {
   directory: DirectoryModule;
   taxonomy: TaxonomyModule;
   reviewReads: ReviewReadModule;
-  /**
-   * C19. Actions may call `renameNamedCommand` only; `ownership` is for the review and community
-   * factories that U47 and U49 build here (BR3.5, BR3.6).
-   */
-  identity: IdentityModule;
+  /** C19: the narrowed identity module; see `WebIdentity`. */
+  identity: WebIdentity;
+  /** U47: the review commands and queries, and the four seams other modules call (C9). */
+  review: ReviewModule;
+  /** U47 (C17): the count the experience page's evidence slot shows; Evidence's own since U48. */
+  publicEvidence: PublicEvidenceCount;
+  /** U48: the evidence commands and the quarantine writer the upload route uses; never a reader (BR3.6). */
+  evidence: WebEvidence;
+  /** U49 (C19): post, delete own, and read the comment thread of a published experience. */
+  community: CommunityModule;
+}
+
+export type WebEvidence = EvidenceModule & { files: EvidenceFileWriter };
+
+/** BR2.6: the cleaned file name is sealed with the field cipher; an unopenable name reads null. */
+function filenameSealOf(crypto: Crypto): FilenameSeal {
+  return {
+    seal: (name) => crypto.encrypt(name),
+    open: (sealed) => {
+      const opened = crypto.decryptText(sealed);
+      return opened.ok ? opened.data || null : null;
+    },
+  };
 }
 
 /** BR7.4: defaults only until T-105 gives the runtime settings. */
@@ -130,11 +173,15 @@ function buildContainer(): WebContainer {
     app: { appUrl: env.appUrl, termsVersion: env.termsVersion },
   };
 
-  // U46 (functional-spec § 6): the interim PublicEvidenceCount keeps today's public meaning until
-  // U48 binds Evidence's implementation here.
+  // U48 (C17): the review reads count through Evidence's module, which is built after the review
+  // module it needs, so the binding forwards at call time.
   const reviewReads = createReviewReadModule({
     reviews: new PgReviewReadRepository(),
-    evidence: createInterimPublicEvidenceCount(db),
+    evidence: {
+      countPublicEvidence: (reviewId) => evidence.publicEvidenceCount.countPublicEvidence(reviewId),
+      countPublicEvidenceByReview: (reviewIds) =>
+        evidence.publicEvidenceCount.countPublicEvidenceByReview(reviewIds),
+    },
     config: ports.config,
   });
   const directory = createDirectoryModule({
@@ -162,7 +209,78 @@ function buildContainer(): WebContainer {
     logger,
   });
 
-  return { env, ports, auth, directory, taxonomy, reviewReads, identity };
+  // U47 (ENT-012): each other module is reached through its seams only, never its repository.
+  const review = createReviewModule({
+    reviews: new PgReviewModuleRepository(),
+    identity: {
+      personaFor: (tx, input) => identity.personaFor(tx, input),
+      publicProjection: (tx, input) => identity.publicProjection(tx, input),
+      publicProjections: (tx, input) => identity.publicProjections(tx, input),
+      publicPersonaIdsByUsername: (tx, input) => identity.publicPersonaIdsByUsername(tx, input),
+    },
+    ownership: identity.ownership,
+    directory: { addMemberDoctor: directory.addMemberDoctor },
+    taxonomy: { ensureProvisionalTerm: taxonomy.ensureProvisionalTerm },
+    cards: reviewReads.listExperienceCards,
+  });
+  const evidenceFiles = createFsEvidenceWriter(env.storageRoot);
+  const evidence: WebEvidence = {
+    ...createEvidenceModule({
+      unitOfWork,
+      evidenceRepository: new PgEvidenceRepository(),
+      files: evidenceFiles,
+      filenameSeal: filenameSealOf(ports.crypto),
+      rateLimiter: ports.rateLimiter,
+      clock,
+      logger,
+      review: {
+        reviewIdForPublicId: (tx, input) => review.reviewIdForPublicId(tx, input),
+        isReviewAuthor: (tx, input) => review.isReviewAuthor(tx, input),
+        isReviewPublished: (tx, input) => review.isReviewPublished(tx, input),
+      },
+    }),
+    files: evidenceFiles,
+  };
+  const publicEvidence = evidence.publicEvidenceCount;
+
+  // U49: Community reaches Review and Identity through their seams only (C19, BR3.1).
+  const community = createCommunityModule({
+    comments: new PgCommunityRepository(),
+    review: {
+      reviewIdForPublicId: (tx, input) => review.reviewIdForPublicId(tx, input),
+      isReviewPublished: (tx, input) => review.isReviewPublished(tx, input),
+      isReviewAuthor: (tx, input) => review.isReviewAuthor(tx, input),
+      authorIdentityModeOf: (tx, input) => review.authorIdentityModeOf(tx, input),
+    },
+    identity: {
+      personaFor: (tx, input) => identity.personaFor(tx, input),
+      publicProjection: (tx, input) => identity.publicProjection(tx, input),
+      publicProjections: (tx, input) => identity.publicProjections(tx, input),
+    },
+    ownership: { ownsPersona: (tx, input) => identity.ownership.ownsPersona(tx, input) },
+  });
+
+  // Built member by member, so the closed members are not on the object at run time either.
+  const webIdentity: WebIdentity = {
+    renameNamedCommand: identity.renameNamedCommand,
+    publicProjection: (tx, input) => identity.publicProjection(tx, input),
+    publicProjections: (tx, input) => identity.publicProjections(tx, input),
+    publicPersonaIdsByUsername: (tx, input) => identity.publicPersonaIdsByUsername(tx, input),
+  };
+
+  return {
+    env,
+    ports,
+    auth,
+    directory,
+    taxonomy,
+    reviewReads,
+    identity: webIdentity,
+    review,
+    publicEvidence,
+    evidence,
+    community,
+  };
 }
 
 /**

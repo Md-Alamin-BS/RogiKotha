@@ -5,20 +5,32 @@
 // lookup and profile read are stubbed.
 // The data layer is an in-memory world that grants a write only to the account id it is handed,
 // so an action that trusted a forged id would change the victim's rows and fail these tests.
-import type { DemoCurrentAccount, DemoReviewEditRow } from '@rogikotha/contracts';
+import { defineCommand } from '@rogikotha/application';
+import {
+  CorrectReviewInput,
+  DeleteCommentInput,
+  GetForAuthorInput,
+  PostCommentInput,
+  PublishReviewInput,
+  err,
+  ok,
+  type OwnEvidenceList,
+  type DemoCurrentAccount,
+  type DemoReviewEditRow,
+} from '@rogikotha/contracts';
 import { redirect as redirectToSignIn } from '@rogikotha/i18n';
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getContainer } from '@/server/container';
-import { accounts, comments, doctors, evidence, reviews, session } from '@/server/data';
-import type * as StorageModule from '@/server/storage';
-import { storeOriginal } from '@/server/storage';
+import { accounts, reviews, session } from '@/server/data';
 import { deleteComment, postComment, type CommentActionState } from './comments';
-import { listOwnEvidenceFiles, uploadEvidence, type EvidenceUploadState } from './evidence';
+import { listOwnEvidenceFiles } from './evidence';
 import { setLang } from './preferences';
 import { updateDisplayNameAction, updateLanguageAction } from './profile';
-import { publishReview, saveReviewEdit, type ComposeFormState, type EditFormState } from './review';
+import { publishDraftAction } from './review';
+import { correctReviewAction, type CorrectFormState } from './review-edit';
 
 vi.mock('next/headers', () => ({ headers: vi.fn() }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
@@ -34,31 +46,16 @@ vi.mock('@/i18n/routing', () => ({
   }),
 }));
 vi.mock('@/server/container', () => ({ getContainer: vi.fn() }));
-vi.mock('@/server/clamav', () => ({ scanBytes: vi.fn(() => Promise.resolve('clean')) }));
 vi.mock('@/server/crypto', () => ({
   encrypt: vi.fn(() => Buffer.from('sealed')),
   decryptToString: vi.fn(() => 'scan.png'),
 }));
-vi.mock('@/server/storage', async (importOriginal) => ({
-  ...(await importOriginal<typeof StorageModule>()),
-  storeOriginal: vi.fn(() =>
-    Promise.resolve({ storageKey: 'key-1', size: 11, sha256: Buffer.alloc(32) }),
-  ),
-  removeOriginal: vi.fn(() => Promise.resolve()),
-}));
 vi.mock('./preferences', () => ({ setLang: vi.fn() }));
 vi.mock('@/server/data', () => ({
-  DEMO_READY_EVIDENCE_STATES: ['preview_ready', 'published'],
   accounts: { updateDisplayName: vi.fn(), updateLocale: vi.fn() },
-  comments: { addComment: vi.fn(), deleteOwnComment: vi.fn() },
-  doctors: { listDoctorOptions: vi.fn() },
-  evidence: { addEvidenceItem: vi.fn(), markScanResult: vi.fn(), listOwnEvidence: vi.fn() },
   reviews: {
-    createQuickReview: vi.fn(),
-    createPseudonymousPersona: vi.fn(),
     getOwnReviewForEdit: vi.fn(),
     getReviewByPublicId: vi.fn(),
-    updateOwnReview: vi.fn(),
   },
   session: { getCurrentAccountByAuthUserId: vi.fn() },
 }));
@@ -69,9 +66,6 @@ const MISSING_REVIEW = 'm1ss1ngrv1';
 const VICTIM_COMMENT = 'v1ct1mcmt1';
 const MISSING_COMMENT = 'm1ss1ngcm1';
 const ORIGINAL_TITLE = 'A calm visit, synthetic';
-const PNG_BYTES = Uint8Array.from([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 1, 2, 3,
-]);
 
 function buildAccount(name: string, overrides: Partial<DemoCurrentAccount> = {}) {
   return {
@@ -100,6 +94,8 @@ interface World {
   comments: Map<string, { ownerAccountId: string; deleted: boolean }>;
   /** Every write the data layer accepted, in order. */
   writes: string[];
+  /** The account each `review.correct` call ran for, accepted or refused. */
+  correctAttempts: string[];
 }
 
 let world: World;
@@ -114,6 +110,7 @@ function freshWorld(): World {
     ]),
     comments: new Map([[VICTIM_COMMENT, { ownerAccountId: VICTIM.accountId, deleted: false }]]),
     writes: [],
+    correctAttempts: [],
   };
 }
 
@@ -143,46 +140,6 @@ function installWorld(): void {
   vi.mocked(reviews.getOwnReviewForEdit).mockImplementation((publicId, accountId) =>
     Promise.resolve(ownedBy(publicId, accountId) ? editRowOf(publicId) : null),
   );
-  vi.mocked(reviews.updateOwnReview).mockImplementation((publicId, accountId, fields) => {
-    const row = world.reviews.get(publicId);
-    if (!row || row.ownerAccountId !== accountId) {
-      return Promise.resolve({ ok: false, reason: 'not_found' } as const);
-    }
-    row.title = fields.title;
-    row.version += 1;
-    world.writes.push(`review.update ${publicId} by ${accountId}`);
-    return Promise.resolve({ ok: true, data: { version: row.version } } as const);
-  });
-  vi.mocked(reviews.createQuickReview).mockImplementation((input) => {
-    world.writes.push(`review.create by ${input.authorAccountId} as ${input.authorPersonaId}`);
-    return Promise.resolve({ reviewId: 'review-row-2', publicId: 'n3wrev1ew1' });
-  });
-  vi.mocked(reviews.createPseudonymousPersona).mockImplementation((input) => {
-    world.writes.push(`persona.create for ${input.accountId}`);
-    return Promise.resolve(`persona-alias-${input.accountId}`);
-  });
-  vi.mocked(doctors.listDoctorOptions).mockResolvedValue([
-    { id: DOCTOR_ID, publicId: 'd0c7015000', name: 'Dr. Synthetic Rahman', specialty: null },
-  ]);
-  vi.mocked(comments.addComment).mockImplementation((input) => {
-    world.writes.push(`comment.add on ${input.reviewId} as ${input.authorPersonaId}`);
-    return Promise.resolve({ ok: true, data: { id: 'comment-row-2', publicId: 'n3wcmt0001' } });
-  });
-  vi.mocked(comments.deleteOwnComment).mockImplementation((publicId, accountId) => {
-    const row = world.comments.get(publicId);
-    if (!row || row.deleted || row.ownerAccountId !== accountId) {
-      return Promise.resolve({ ok: false, reason: 'not_found' } as const);
-    }
-    row.deleted = true;
-    world.writes.push(`comment.delete ${publicId} by ${accountId}`);
-    return Promise.resolve({ ok: true, data: { tombstone: false } } as const);
-  });
-  vi.mocked(evidence.listOwnEvidence).mockResolvedValue([]);
-  vi.mocked(evidence.addEvidenceItem).mockImplementation((input) => {
-    world.writes.push(`evidence.add on ${input.reviewId} by ${input.ownerAccountId}`);
-    return Promise.resolve({ id: 'evidence-row-1', publicId: 'ev1dence01' });
-  });
-  vi.mocked(evidence.markScanResult).mockResolvedValue();
   vi.mocked(accounts.updateDisplayName).mockImplementation((accountId, name) => {
     world.writes.push(`account.rename ${accountId} to ${name}`);
     return Promise.resolve() as never;
@@ -211,6 +168,83 @@ function sessionCookieOf(authUserId: string | null): void {
   );
 }
 
+// The module path (U47): `review.publish` on its own input schema and requirements. The persona
+// comes from the actor's account inside the module, so the stand-in records that account only.
+const modulePublish = defineCommand<PublishReviewInput, { publicId: string }>({
+  name: 'review.publish',
+  input: PublishReviewInput,
+  requires: { authenticated: true, verifiedEmail: true, notRestricted: true },
+  handle: ({ actor }) => {
+    world.writes.push(`review.publish by ${actor.accountId}`);
+    return Promise.resolve(ok({ publicId: 'n3wrev1ew2' }));
+  },
+});
+
+// U48: the list goes through `evidence.getForAuthor`; this stand-in answers the world's author
+// only, so the test still proves the action passes the session's actor and nothing from the form.
+const moduleGetForAuthor = defineCommand<GetForAuthorInput, OwnEvidenceList | null>({
+  name: 'evidence.getForAuthor',
+  input: GetForAuthorInput,
+  requires: { authenticated: true, verifiedEmail: true },
+  handle: ({ input, actor }) => {
+    const review = world.reviews.get(input.reviewPublicId);
+    if (review?.ownerAccountId !== actor.accountId) return Promise.resolve(ok(null));
+    return Promise.resolve(
+      ok({ reviewPublicId: input.reviewPublicId, files: [], maxFiles: 10, maxBytes: 15_728_640 }),
+    );
+  },
+});
+
+// The module path (U22): `review.correct` on its own input schema and requirements. The stand-in
+// answers a review that is not the actor's like one that does not exist (BR1.1).
+const moduleCorrect = defineCommand<CorrectReviewInput, { publicId: string; version: number }>({
+  name: 'review.correct',
+  input: CorrectReviewInput,
+  requires: { authenticated: true, verifiedEmail: true, notRestricted: true },
+  handle: ({ input, actor }) => {
+    world.correctAttempts.push(`${input.publicId} by ${actor.accountId}`);
+    const row = world.reviews.get(input.publicId);
+    if (!row || row.ownerAccountId !== actor.accountId) {
+      return Promise.resolve(err('not_found', { correlationId: actor.correlationId }));
+    }
+    row.title = input.title;
+    row.version += 1;
+    world.writes.push(`review.correct ${input.publicId} by ${actor.accountId}`);
+    return Promise.resolve(ok({ publicId: input.publicId, version: row.version }));
+  },
+});
+
+// The module path (U49): `comment.post` and `comment.delete` on their own input schemas and
+// requirements. The persona and the owner come from the actor's account inside the module, so the
+// stand-ins record that account only; a forged form field has nowhere to land.
+const moduleCommentPost = defineCommand<PostCommentInput, { publicId: string }>({
+  name: 'comment.post',
+  input: PostCommentInput,
+  requires: { authenticated: true, verifiedEmail: true, notRestricted: true },
+  handle: ({ actor, input }) => {
+    if (!world.reviews.has(input.reviewPublicId)) {
+      return Promise.resolve(err('not_found', { correlationId: actor.correlationId }));
+    }
+    world.writes.push(`comment.add on ${input.reviewPublicId} by ${actor.accountId}`);
+    return Promise.resolve(ok({ publicId: 'n3wcmt0001' }));
+  },
+});
+
+const moduleCommentDelete = defineCommand<DeleteCommentInput, { placeholder: boolean }>({
+  name: 'comment.delete',
+  input: DeleteCommentInput,
+  requires: { authenticated: true },
+  handle: ({ actor, input }) => {
+    const row = world.comments.get(input.commentPublicId);
+    if (!row || row.deleted || row.ownerAccountId !== actor.accountId) {
+      return Promise.resolve(err('not_found', { correlationId: actor.correlationId }));
+    }
+    row.deleted = true;
+    world.writes.push(`comment.delete ${input.commentPublicId} by ${actor.accountId}`);
+    return Promise.resolve(ok({ placeholder: false }));
+  },
+});
+
 /** The container `getActor()` reads: the stubbed session and the world's profiles. */
 function installContainer(): void {
   const findProfileByAuthUserId = (_tx: unknown, authUserId: string) => {
@@ -232,11 +266,17 @@ function installContainer(): void {
     env: { appMode: 'demo' },
     ports: {
       authGateway: { getSession, revokeSession: vi.fn(() => Promise.resolve()) },
-      unitOfWork: { read: (work: (tx: unknown) => unknown) => work({}) },
       accounts: { findProfileByAuthUserId },
+      unitOfWork: {
+        read: (work: (tx: unknown) => unknown) => work({}),
+        run: (work: (tx: unknown) => unknown) => work({}),
+      },
       clock: { now: () => NOW },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
     },
+    review: { publish: modulePublish, correct: moduleCorrect },
+    evidence: { getForAuthor: moduleGetForAuthor },
+    community: { postComment: moduleCommentPost, deleteComment: moduleCommentDelete },
   } as unknown as ReturnType<typeof getContainer>);
 }
 
@@ -247,14 +287,7 @@ function form(fields: Record<string, string | File>): FormData {
 }
 
 const IDLE_COMMENT: CommentActionState = { status: 'idle' };
-const IDLE_UPLOAD: EvidenceUploadState = { status: 'idle' };
-const EDIT_START: EditFormState = { attempt: 0, values: null, fieldErrors: {}, formError: null };
-const COMPOSE_START: ComposeFormState = {
-  attempt: 0,
-  values: null,
-  fieldErrors: {},
-  formError: null,
-};
+const EDIT_START: CorrectFormState = { attempt: 0, values: null, fieldErrors: {}, formError: null };
 
 /** The victim's ids, as an attacker would add them to any form. */
 const FORGED_IDS = {
@@ -265,37 +298,23 @@ const FORGED_IDS = {
   authUserId: VICTIM.authUserId,
 };
 
+/** A `publishDraftAction` request for a synthetic draft id. */
+const PUBLISH_DRAFT = {
+  draftId: '0190f5a2-0000-7000-8000-0000000000f1',
+  identityMode: 'named',
+  attestation: true,
+};
+
 function editForm(publicId: string): FormData {
   return form({
     ...FORGED_IDS,
     publicId,
+    expectedVersion: '1',
+    kind: 'quick',
     title: 'Hijacked title',
-    body: 'This text was written by someone who is not the author.',
+    story: 'This text was written by someone who is not the author.',
     sentiment: 'negative',
     outcome: '',
-  });
-}
-
-function composeForm(): FormData {
-  return form({
-    ...FORGED_IDS,
-    doctorId: DOCTOR_ID,
-    relationship: 'self',
-    period: `${new Date().getUTCFullYear() - 1}-03`,
-    title: 'A synthetic visit',
-    body: 'A synthetic account of a visit, long enough to publish.',
-    sentiment: '',
-    outcome: '',
-    identity: 'named',
-    attestation: 'on',
-  });
-}
-
-function uploadForm(reviewPublicId: string): FormData {
-  return form({
-    ...FORGED_IDS,
-    reviewPublicId,
-    file: new File([PNG_BYTES], 'scan.png', { type: 'image/png' }),
   });
 }
 
@@ -314,21 +333,17 @@ describe('an attacker signed in as another account (FR4.2, FR5.1, FR6.3, NFR3)',
   beforeEach(() => sessionCookieOf(ATTACKER.authUserId));
 
   it("cannot correct the victim's experience by sending its public id, even with the victim's ids forged into the form", async () => {
-    const state = await saveReviewEdit(EDIT_START, editForm(VICTIM_REVIEW));
+    const state = await correctReviewAction(EDIT_START, editForm(VICTIM_REVIEW));
 
     expect(state.formError).toBe('errors.common.notFound');
     expect(world.reviews.get(VICTIM_REVIEW)).toMatchObject({ title: ORIGINAL_TITLE, version: 1 });
     expect(world.writes).toEqual([]);
-    expect(reviews.updateOwnReview).toHaveBeenCalledWith(
-      VICTIM_REVIEW,
-      ATTACKER.accountId,
-      expect.anything(),
-    );
+    expect(world.correctAttempts).toEqual([`${VICTIM_REVIEW} by ${ATTACKER.accountId}`]);
   });
 
   it("gets the same answer for the victim's experience as for one that does not exist", async () => {
-    const victims = await saveReviewEdit(EDIT_START, editForm(VICTIM_REVIEW));
-    const missing = await saveReviewEdit(EDIT_START, editForm(MISSING_REVIEW));
+    const victims = await correctReviewAction(EDIT_START, editForm(VICTIM_REVIEW));
+    const missing = await correctReviewAction(EDIT_START, editForm(MISSING_REVIEW));
 
     expect(victims).toEqual(missing);
   });
@@ -349,27 +364,29 @@ describe('an attacker signed in as another account (FR4.2, FR5.1, FR6.3, NFR3)',
     expect(world.writes).toEqual([]);
   });
 
-  it("cannot comment or publish under the victim's persona by forging it into the form", async () => {
+  it("cannot comment under the victim's persona by forging it into the form", async () => {
     await postComment(
       IDLE_COMMENT,
       form({ ...FORGED_IDS, reviewPublicId: VICTIM_REVIEW, body: 'A synthetic reply' }),
     );
-    await expect(publishReview(COMPOSE_START, composeForm())).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(world.writes).toEqual([
-      `comment.add on review-row-1 as ${ATTACKER.currentPersonaId}`,
-      `review.create by ${ATTACKER.accountId} as ${ATTACKER.currentPersonaId}`,
-    ]);
+    expect(world.writes).toEqual([`comment.add on ${VICTIM_REVIEW} by ${ATTACKER.accountId}`]);
   });
 
-  it("cannot attach a file to the victim's experience or list its files, and nothing is stored", async () => {
-    const victims = await uploadEvidence(IDLE_UPLOAD, uploadForm(VICTIM_REVIEW));
-    const missing = await uploadEvidence(IDLE_UPLOAD, uploadForm(MISSING_REVIEW));
+  it("cannot publish under the victim's persona through the review module by forging it into the request", async () => {
+    const forged = await publishDraftAction({
+      ...PUBLISH_DRAFT,
+      ...FORGED_IDS,
+      personaId: VICTIM.currentPersonaId,
+    });
+    await expect(publishDraftAction(PUBLISH_DRAFT)).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(victims).toEqual({ status: 'error', messageKey: 'ev.upload.errors.notFound' });
-    expect(victims).toEqual(missing);
+    expect(forged.formError).toBe('errors.common.validation');
+    expect(world.writes).toEqual([`review.publish by ${ATTACKER.accountId}`]);
+  });
+
+  it("cannot list the victim's files, and nothing is written", async () => {
     await expect(listOwnEvidenceFiles(VICTIM_REVIEW)).resolves.toBeNull();
-    expect(storeOriginal).not.toHaveBeenCalled();
     expect(world.writes).toEqual([]);
   });
 
@@ -385,7 +402,7 @@ describe('an attacker signed in as another account (FR4.2, FR5.1, FR6.3, NFR3)',
   });
 });
 
-const WRITE_ACTIONS = [
+const COMMENT_ACTIONS = [
   [
     'post a comment',
     () => postComment(IDLE_COMMENT, form({ reviewPublicId: VICTIM_REVIEW, body: 'Hello there' })),
@@ -398,8 +415,10 @@ const WRITE_ACTIONS = [
         form({ reviewPublicId: VICTIM_REVIEW, commentPublicId: VICTIM_COMMENT }),
       ),
   ],
-  ['correct an experience', () => saveReviewEdit(EDIT_START, editForm(VICTIM_REVIEW))],
-  ['publish an experience', () => publishReview(COMPOSE_START, composeForm())],
+] as const;
+
+const WRITE_ACTIONS = [
+  ['correct an experience', () => correctReviewAction(EDIT_START, editForm(VICTIM_REVIEW))],
   [
     'rename the account',
     () => updateDisplayNameAction({ status: 'idle' }, form({ displayName: 'New name' })),
@@ -424,23 +443,36 @@ describe.each([
     expect(setLang).not.toHaveBeenCalled();
   });
 
-  it('cannot upload a file, and nothing is stored', async () => {
-    const state = await uploadEvidence(IDLE_UPLOAD, uploadForm(VICTIM_REVIEW));
+  // U49: the comment actions have no sign-in redirect of their own; the module refuses (BR1.1) and
+  // the contribution gate in front of the form is what sends a visitor to sign in.
+  it.each(COMMENT_ACTIONS)('is refused as forbidden and cannot %s', async (_name, act) => {
+    const state = await act();
 
-    expect(state).toEqual({ status: 'error', messageKey: 'ev.upload.errors.signedOut' });
-    expect(storeOriginal).not.toHaveBeenCalled();
+    expect(state).toMatchObject({ status: 'error', messageKey: 'errors.common.forbidden' });
+    expect(world.writes).toEqual([]);
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('cannot publish a draft through the review module, and nothing is written', async () => {
+    const state = await publishDraftAction(PUBLISH_DRAFT);
+
+    expect(state).toEqual({ formError: 'errors.common.forbidden', fieldErrors: {} });
     expect(world.writes).toEqual([]);
   });
 });
 
-describe('the sign-in return path a refused write builds', () => {
-  beforeEach(() => sessionCookieOf(null));
+describe('a review id in the comment form that is forged into an address', () => {
+  it('is refused with nothing written and no page refreshed, signed in or not', async () => {
+    for (const authUserId of [null, ATTACKER.authUserId]) {
+      sessionCookieOf(authUserId);
+      const state = await postComment(
+        IDLE_COMMENT,
+        form({ reviewPublicId: '//evil.example', body: 'Hello there' }),
+      );
 
-  it('carries no next page when the review id in the form is forged into an address', async () => {
-    await expect(
-      postComment(IDLE_COMMENT, form({ reviewPublicId: '//evil.example', body: 'Hello there' })),
-    ).rejects.toThrow('NEXT_REDIRECT');
-
-    expect(redirectToSignIn).toHaveBeenCalledWith({ href: '/sign-in', locale: 'en' });
+      expect(state.status).toBe('error');
+      expect(world.writes).toEqual([]);
+      expect(revalidatePath).not.toHaveBeenCalled();
+    }
   });
 });

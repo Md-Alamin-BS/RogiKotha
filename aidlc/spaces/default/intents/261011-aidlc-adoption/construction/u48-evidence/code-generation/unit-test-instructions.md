@@ -72,6 +72,15 @@ npx impeccable detect apps/web/src --no-advisory
 timeout 300 pnpm contrast
 ```
 
+Step 3 check (2026-11-06, worktree `rk-u48`, `DATABASE_URL_TEST` → `rogikotha_test_w6`, which the reset guard `_test(_b|_w[1-9])?$` accepts): the project names above match the configs (`web-int` and `worker-int` are inline in `vitest.workspace.ts` and take only `*.int.test.ts` and `*.int.smoke.test.ts`; `web` and `worker` exclude them). A filter whose files do not exist yet exits 0, because every project sets `passWithNoTests`. So a green run of a new file's command proves nothing until that file is written: check the reported file count. Files named above that do not exist before U48 starts: everything under `packages/domain/src/evidence/`, `packages/contracts/src/schemas/evidence.test.ts` (Step 13), `packages/database/src/queue/queue-declaration.test.ts` (Step 21 may add it or append to an existing queue test instead), and the new evidence module, adapter, handler, route and smoke files. The existing evidence tests before any change are 111 tests in 10 files, all green:
+
+```bash
+# 8 files, 101 tests:
+timeout 900 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/server/clamav.test.ts apps/web/src/server/storage.test.ts apps/web/src/server/storage.adversarial.test.ts apps/web/src/server/actions/evidence.test.ts apps/web/src/server/actions/evidence.adversarial.test.ts apps/web/src/components/patient/evidence/
+# 2 files, 10 tests (assigned test DB):
+timeout 900 pnpm exec vitest run --config vitest.workspace.ts --project database packages/database/src/demo/evidence.int.test.ts packages/database/src/demo/evidence.adversarial.test.ts
+```
+
 If a `*.int.test.ts` or `*.int.smoke.test.ts` file is not picked up by the named project, check that project's `include` glob in its `vitest.config.ts` (or the inline `web-int`/`worker-int` entries in `vitest.workspace.ts`) and record the right project here; do not change the glob. Never replace a filter with a bare project-wide command when running the Unit's own tests; the gate commands at the end are the only whole-suite runs.
 
 ## What to cover (`functional-spec.md` § 8, `frontend-components.md` § Tests)

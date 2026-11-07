@@ -1,39 +1,51 @@
-// Replaces: `renderCompose`/`renderPreview` (composer wizard), app.js. Maps
-// from RK.doctors (doctor picker), the suggested tag lists (app.js
-// `TAG_GROUPS`, seeded as `taxonomy_terms` in T-007), and RK.user.drafts.
-//
-// TODO(T-306): owner refines every field below against the ported
-// component; `ComposerDraftVM.payload`'s shape is the composer's own state
-// (see `schemas/review.ts` `SaveDraftInput.payload`, same TODO owner).
+// The four-step composer (`renderCompose` / `renderPreview`, app.js) and its draft list
+// (U47 ENT-009, ENT-010).
+import type { ConfigValues } from '../config-values';
 import type { TagGroup } from '../enums';
+import type { DraftPayload, DraftTarget } from '../schemas/review';
 
-export interface ComposerDoctorOptionVM {
+export interface ComposerOptionVM {
   publicId: string;
-  name: string;
-  specialty: string;
-  city: string;
-  area: string;
+  label: string;
 }
 
-export interface ComposerTagOptionVM {
-  group: TagGroup;
-  label: string;
-  termId?: string;
+export interface ComposerSpecialtyVM {
+  id: string;
+  name: string;
+}
+
+export interface ComposerTagSuggestionVM {
+  termPublicId: string;
+  name: string;
 }
 
 export interface ComposerDraftVM {
-  draftId?: string;
-  expiresAt?: string;
-  doctorPublicId?: string;
-  conditionPublicId?: string;
-  title?: string;
-  excerpt?: string;
-  blocked: boolean;
-  payload: unknown;
+  draftId: string;
+  payload: DraftPayload;
+  /** ISO timestamp. */
+  expiresAt: string;
 }
 
 export interface ComposerVM {
-  doctors: ComposerDoctorOptionVM[];
-  tagGroups: Partial<Record<TagGroup, ComposerTagOptionVM[]>>;
+  /** From `directory.listDoctors`, at most 100. */
+  doctors: ComposerOptionVM[];
+  /** Empty while facility feedback is off. */
+  branches: ComposerOptionVM[];
+  specialties: ComposerSpecialtyVM[];
+  suggestedTags: Record<TagGroup, ComposerTagSuggestionVM[]>;
+  /** The author's own names for the identity choice. */
+  names: { named: string | null; pseudonymous: string | null };
   draft?: ComposerDraftVM;
+  emergencyNumbers: ConfigValues['emergency'];
+}
+
+export interface DraftSummaryVM {
+  draftId: string;
+  /** The author's title or the derived one; null shows Untitled draft. */
+  title: string | null;
+  target: DraftTarget;
+  /** ISO timestamp. */
+  updatedAt: string;
+  /** ISO timestamp. */
+  expiresAt: string;
 }

@@ -148,6 +148,23 @@ describe('taxonomy.listSuggested', () => {
   });
 });
 
+describe('taxonomy.listSpecialties', () => {
+  it('returns the published specialties by name in the reader language, and no other term', async () => {
+    const world = makeModuleWorld();
+    const later = world.repos.taxonomy.addTerm({ kind: 'specialty', nameBn: 'হৃদরোগ' });
+    const earlier = world.repos.taxonomy.addTerm({ kind: 'specialty', nameBn: 'চর্মরোগ' });
+    world.repos.taxonomy.addTerm({ kind: 'specialty', published: false });
+    world.repos.taxonomy.addTerm({ kind: 'condition' });
+
+    const result = await world.taxonomy.listSpecialties.execute({}, world.callAs(readerIn('bn')));
+
+    expect(result.ok && result.data).toEqual([
+      { id: earlier.id, name: 'চর্মরোগ' },
+      { id: later.id, name: 'হৃদরোগ' },
+    ]);
+  });
+});
+
 describe('taxonomy.createProvisional', () => {
   const input = { kind: 'condition', text: 'হাইপোথাইরয়েড', lang: 'bn' } as const;
 

@@ -9,11 +9,14 @@ export function FormErrorSummary({
   attempt,
   error,
   fields = [],
+  onField,
 }: {
   attempt: number;
   error: string | null;
   /** i18n label keys of the refused fields, listed so the author knows where to look. */
   fields?: string[];
+  /** When given, each listed field is a button that takes the author to it. */
+  onField?: (label: string) => void;
 }) {
   const t = useTranslations();
   const ref = useRef<HTMLDivElement>(null);
@@ -35,7 +38,15 @@ export function FormErrorSummary({
           <span className="sub">{t('compose.errorFields')}</span>
           <ul data-testid="compose-error-fields">
             {fields.map((label) => (
-              <li key={label}>{t(label)}</li>
+              <li key={label}>
+                {onField ? (
+                  <button type="button" className="btn ghost small" onClick={() => onField(label)}>
+                    {t(label)}
+                  </button>
+                ) : (
+                  t(label)
+                )}
+              </li>
             ))}
           </ul>
         </>

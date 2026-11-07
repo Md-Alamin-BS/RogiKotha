@@ -568,6 +568,17 @@ export class FakeTaxonomyModuleRepository implements TaxonomyRepository, Transac
     );
   }
 
+  listPublished(_tx: Tx, kind: TermKind, locale: Locale): Promise<TermRecord[]> {
+    const compare = byText(locale);
+    const name = (t: FakeTerm) => (locale === 'bn' ? t.nameBn : t.nameEn);
+    return Promise.resolve(
+      [...this.terms.values()]
+        .filter((t) => t.kind === kind && t.published && t.canonicalId === null)
+        .sort((a, b) => compare(name(a), name(b)) || a.publicId.localeCompare(b.publicId))
+        .map((t) => this.record(t)),
+    );
+  }
+
   insertProvisional(_tx: Tx, term: NewProvisionalTerm): Promise<{ termId: string } | null> {
     const taken = [...this.terms.values()].some(
       (t) =>
@@ -616,6 +627,8 @@ export interface FakeReviewTag {
 export interface FakeReview {
   id: string;
   publicId: string;
+  /** U47: set by tests that filter cards by author persona (BR7.2). */
+  authorPersonaId?: string;
   doctorId: string;
   branchId: string | null;
   state: PublicationState;
@@ -975,6 +988,10 @@ export class FakeReviewReadRepository implements ReviewReadRepository {
           const doctor = this.directory.doctors.get(r.doctorId)!;
           if (request.doctorPublicId && doctor.publicId !== request.doctorPublicId) return false;
           if (term && !this.isAbout(r, term)) return false;
+          if (request.personaIds && !request.personaIds.includes(r.authorPersonaId ?? '')) {
+            return false;
+          }
+          if (request.excludePublicId === r.publicId) return false;
           if (!after) return true;
           const at = r.publishedAt!.getTime();
           return (

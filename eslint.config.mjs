@@ -22,10 +22,6 @@ const NO_CONSOLE_EXCEPTIONS = [
   'packages/database/src/reset.ts',
   // ASSUMPTION(U41): the dev-only `pnpm db:seed` tool, like migrate and reset; it prints counts.
   'packages/test-support/src/seed/seed.ts',
-  // ASSUMPTION(U41): U47 is rewriting this file; its console call is routed after U47 merges.
-  'apps/web/src/server/actions/review.ts',
-  // ASSUMPTION(U41): U48 removes this demo upload action; a call left is routed at plan Step 28.
-  'apps/web/src/server/actions/evidence.ts',
 ];
 
 export default tseslint.config(

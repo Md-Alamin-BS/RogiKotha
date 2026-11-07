@@ -24,6 +24,11 @@ const LOG_FIELD_SET: Record<keyof LogFields, true> = {
   count: true,
   durationMs: true,
   retryAfterSec: true,
+  itemId: true,
+  state: true,
+  failReason: true,
+  attempt: true,
+  errorClass: true,
 };
 
 export type LogFieldName = keyof LogFields;

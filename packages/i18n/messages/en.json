@@ -392,7 +392,7 @@
     "fixNow": "Fix it",
     "identity": {
       "anon": "Anonymous",
-      "anonNote": "Anonymous hides your name from readers. It is not absolute anonymity — your account and contact details remain private but known to us, and can be required by law.",
+      "anonNote": "Readers see a name made for this thread only.",
       "label": "How should your name appear?",
       "pseudo": "My username",
       "real": "My real name"
@@ -451,15 +451,47 @@
     "previewEmpty": "Your words will appear here.",
     "edit": {
       "title": "Edit your experience",
-      "intro": "You can change the title, your story and how you describe it. The doctor, the date and your name stay as they were published.",
+      "intro": "You can change the title, your story, how you describe it and your labels. The doctor, the date and your name stay as they were published.",
       "save": "Save changes",
-      "versionNote": "Each change is kept as a new version, and the experience shows “Edited”."
+      "versionNote": "Each change is kept as a new version, and the experience shows “Edited”.",
+      "correctionNote": "Changes to your story, sentiment, outcome or labels are shown as dated corrections, and the earlier wording stays readable under Show original.",
+      "reload": "Reload the latest version"
     },
     "addCancel": "Choose from the list instead",
     "addNote": "The doctor appears straight away, marked “Added by a member — not confirmed”. RogiKotha has not checked that this doctor exists or that these details are right.",
     "addSpecialtyNone": "Not sure",
     "bodyCount": "{count} of at least {min} characters",
-    "errorFields": "Check these fields:"
+    "errorFields": "Check these fields:",
+    "stepName": {
+      "care": "The care",
+      "story": "Your story",
+      "how": "How it went",
+      "check": "Check and publish"
+    },
+    "draftNotSaved": "Not saved yet. Trying again shortly.",
+    "publishNotSaved": "Your latest changes could not be saved, so nothing was published. Fix the fields listed here or check your connection, then publish again.",
+    "draftMissing": "That draft is no longer available, so a new one was started.",
+    "drafts": {
+      "title": "Your drafts",
+      "untitled": "Untitled draft",
+      "saved": "Saved {date}",
+      "expires": "Kept until {date}",
+      "continue": "Continue",
+      "discard": "Discard",
+      "discardConfirm": "Discard this draft? It cannot be brought back."
+    },
+    "exactDate": "Exact date (optional)",
+    "exactDateNote": "Only you see the exact date.",
+    "target": {
+      "doctor": "A doctor",
+      "facility": "A hospital or clinic"
+    },
+    "facilityStoryHint": "Describe the service: waiting, cleanliness, staff and costs. What you write here is kept apart from every doctor’s summaries.",
+    "tagFree": "Not in the list? Type it",
+    "tagAdd": "Add",
+    "tagsMax": "{count} of {max} tags",
+    "addBmdcPrivate": "Not shown publicly.",
+    "anonNewDoctor": "To add a doctor who is not listed, post under your name or your username, or choose a listed doctor."
   },
   "condition": {
     "accounts": "Experiences about this health topic",
@@ -507,7 +539,8 @@
   },
   "disclaimer": {
     "long": "Everything below is written by members of the public about their own or a witnessed experience. RogiKotha does not diagnose, does not verify clinical correctness, and does not decide whether care was negligent. Do not change or delay treatment based on what you read here.",
-    "short": "Patient-reported experiences. Not medical advice."
+    "short": "Patient-reported experiences. Not medical advice.",
+    "comments": "Comments are members' own experiences and views, not medical advice."
   },
   "discover": {
     "browse": "Browse by health topic",
@@ -517,7 +550,10 @@
     "kicker": "Bangladesh · Public beta",
     "latest": "From the latest accounts",
     "browseDoctors": "Browse doctors",
-    "latestEmpty": "No experiences have been published yet."
+    "latestEmpty": "No experiences have been published yet.",
+    "browseAll": "Browse doctors, hospitals and topics",
+    "browseFacilities": "Browse hospitals & clinics",
+    "browseTopics": "Browse health topics"
   },
   "email": {
     "existing": {
@@ -566,7 +602,8 @@
     "healthLine": "National health helpline",
     "intro": "This page lists the national emergency numbers for Bangladesh. Tap to call from a phone, or read them aloud if you need to. These numbers work 24 hours, every day, free from any mobile network.",
     "poison": "Poison information centre",
-    "title": "Emergency help"
+    "title": "Emergency help",
+    "bmdcShort": "BMDC"
   },
   "errors": {
     "auth": {
@@ -599,7 +636,9 @@
     "community": {
       "blocked": "You can't reply to this account.",
       "mentionAnonymous": "Anonymous authors can't be @mentioned.",
-      "replyDepth": "Replies can only go one level deep here."
+      "replyDepth": "Replies can only go one level deep here.",
+      "commentLength": "Comment: write between {min} and {max} characters.",
+      "commentHidden": "Your comment holds hidden or control characters that can't be posted. Remove them, or type the text again, and post it."
     },
     "config": {
       "invariant": "That setting isn't recognised. Nothing was changed.",
@@ -608,10 +647,12 @@
     "evidence": {
       "confirmationRequired": "Confirm this file is safe to attach before publishing.",
       "notPreviewable": "This file could not be prepared for preview.",
+      "rateLimited": "Too many uploads in a short time. Please wait and try again.",
       "tooLarge": "Each file must be 15 MB or smaller.",
-      "tooMany": "You can attach up to 10 files per draft.",
+      "tooMany": "You can attach up to 10 files per experience.",
       "totalTooLarge": "All files together must stay under 100 MB.",
-      "typeRejected": "Only JPG and PNG images are accepted."
+      "typeRejected": "Only JPG and PNG images are accepted.",
+      "uploadFailed": "The file could not be uploaded. Please try again."
     },
     "hold": {
       "active": "This item is on hold and can't be changed."
@@ -628,7 +669,17 @@
       "attestationRequired": "Confirm this experience is genuinely yours before publishing.",
       "minFields": "Add a doctor and at least a short experience first.",
       "notEditable": "This experience can no longer be edited.",
-      "restoreExpired": "The 30-day window to restore this has passed."
+      "restoreExpired": "The 30-day window to restore this has passed.",
+      "anonymousNewDoctor": "To add a doctor who is not listed, post under your name or your username, or choose a listed doctor.",
+      "missingDoctor": "Choose a doctor, or add one who is not listed.",
+      "missingRelationship": "Choose your relationship to the patient.",
+      "missingStory": "Write what happened.",
+      "missingTag": "Add at least one tag, or choose “Not sure”.",
+      "periodInvalid": "Choose a month and year that is not in the future.",
+      "missingBranch": "Choose the branch you visited.",
+      "draftsFull": "You already keep as many drafts as allowed. Continue one or discard one to start a new one.",
+      "correctionsLimit": "You have made many corrections today. Please try again tomorrow.",
+      "editConflict": "This review changed in another tab — reload to see the latest."
     }
   },
   "formErrors": {
@@ -659,8 +710,22 @@
   },
   "ev": {
     "failNote": "Your words stayed published. Only this file was held back.",
+    "guidance": {
+      "photograph": "Take a clear photo of the document and upload it again."
+    },
+    "reason": {
+      "couldNotCheck": "The check could not finish. Remove this file and upload it again later.",
+      "malware": "A security check found a problem with this file.",
+      "notImage": "This is not a JPG or PNG image, or the image is damaged.",
+      "tooLarge": "This file is larger than {maxMb} MB."
+    },
     "remove": "Remove",
+    "removeNamed": "Remove {name}",
     "replace": "Replace",
+    "size": {
+      "kb": "{size} KB",
+      "mb": "{size} MB"
+    },
     "state": {
       "checking": "Checking the file",
       "failed": "Could not be published",
@@ -671,26 +736,23 @@
       "scanning": "Scanning for malware"
     },
     "status": {
-      "ready": "Ready",
-      "pending": "Scan pending",
-      "rejected": "Not accepted"
+      "ready": "Attached",
+      "pending": "Being checked",
+      "rejected": "Not accepted",
+      "failed": "Could not be checked — try again later"
     },
     "note": {
       "count": "Files attached: {count}"
     },
     "upload": {
-      "hint": "JPG or PNG images only, up to {maxMb} MB each and {maxFiles} per experience. Each file is scanned for malware. Readers see only how many files are attached, never the files or their names.",
+      "hint": "JPG or PNG images only, up to {maxMb} MB each and {maxFiles} per experience. Each file is checked for malware after it is uploaded. Readers see only how many files are attached, never the files or their names.",
       "fileLabel": "Choose an image",
       "submit": "Upload",
       "uploading": "Uploading…",
       "listLabel": "Your attached files",
       "limitReached": "You have attached the most files allowed ({maxFiles}).",
-      "pendingNote": "The scan could not run yet. The file stays private and is not counted.",
-      "rejectedNote": "The malware scan flagged this file, so it was not attached.",
       "done": {
-        "ready": "File attached. It passed the malware scan.",
-        "pending": "File received. The scan could not run, so it stays private as Scan pending.",
-        "rejected": "The malware scan flagged this file, so it was not attached."
+        "received": "File received. It stays private and is not counted until the check ends."
       },
       "errors": {
         "signedOut": "Sign in to attach files.",
@@ -698,7 +760,9 @@
         "noFile": "Choose a JPG or PNG image first.",
         "tooLarge": "Each file must be {maxMb} MB or smaller.",
         "tooMany": "You can attach up to {maxFiles} files per experience.",
-        "failed": "The file could not be uploaded. Please try again."
+        "failed": "The file could not be uploaded. Please try again.",
+        "unconfirmed": "Confirm your email address to attach files.",
+        "rateLimited": "You have uploaded many files in a short time. Try again in {minutes} minutes."
       }
     }
   },
@@ -759,6 +823,11 @@
     "replyPost": "Post reply",
     "sentimentLabel": "Overall",
     "signInToComment": "Sign in to comment",
+    "noComments": "No comments yet.",
+    "discussionClosed": "The discussion for this experience is not available.",
+    "threadTruncated": "This discussion is long, so only the first 500 comments are shown.",
+    "deleteConfirm": "Delete this comment? This cannot be undone.",
+    "deleteCancel": "Keep comment",
     "yourExperience": "Your experience"
   },
   "facility": {
@@ -809,6 +878,29 @@
     "cta": "Share your experience",
     "title": "Read what patients actually went through."
   },
+  "history": {
+    "corrected": "Corrected: {fields} — {date}",
+    "field": {
+      "after": "what happened afterwards",
+      "claims": "labels",
+      "diagnosis": "what they were told",
+      "outcome": "outcome",
+      "sentiment": "sentiment",
+      "story": "story",
+      "symptoms": "symptoms",
+      "treatment": "treatment"
+    },
+    "kind": {
+      "corrected": "Corrected",
+      "edited": "Edited",
+      "published": "Published"
+    },
+    "originalHeading": "Wording before this correction",
+    "showOriginal": "Show original",
+    "unavailable": "The edit history could not be loaded right now.",
+    "version": "Version {n}",
+    "yourVersions": "Your versions"
+  },
   "how": {
     "1": {
       "b": "Each experience covers a single course of treatment for a single condition — not a verdict on a doctor.",
@@ -830,7 +922,10 @@
     "emptyTopic": "No one has written about this yet.",
     "experiencesNote": "The most recent patient experiences across every doctor and hospital.",
     "facilitiesNote": "Hospitals, clinics and diagnostic centres people have written about, with their branches.",
-    "topicsNote": "Every health topic in the directory, including those nobody has written about yet."
+    "topicsNote": "Every health topic in the directory, including those nobody has written about yet.",
+    "count": "{n, plural, one {{count} patient experience} other {{count} patient experiences}}",
+    "more": "More experiences",
+    "newest": "Back to the newest"
   },
   "label": {
     "documentsWord": "documents",
@@ -899,6 +994,10 @@
     "results": "Results",
     "viewDoctor": "View doctor",
     "viewFacility": "View hospital"
+  },
+  "notFound": {
+    "body": "The page may have moved, or the address may be mistyped.",
+    "home": "Go to the home page"
   },
   "notif": {
     "draftExpiring": "A draft will be removed in {days} days if you do not finish it.",
@@ -975,7 +1074,8 @@
     "noExperiences": "No one has written about this doctor yet.",
     "writeAbout": "Write about this doctor",
     "showingCount": "Showing {showing} of {total}",
-    "filterRelationship": "Who wrote it"
+    "filterRelationship": "Who wrote it",
+    "noContributions": "No published experiences under this name yet."
   },
   "prov": {
     "admin": "Admin checked",

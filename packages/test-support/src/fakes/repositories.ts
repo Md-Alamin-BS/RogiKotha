@@ -370,7 +370,7 @@ export class FakeEvidenceRepository {
   }
 }
 
-/** Mirrors `PgCommunityRepository`. */
+/** Mirrors the T-004 `PgCommunityRepository` stub; U49 uses `FakeCommunityModuleRepository`. */
 export class FakeCommunityRepository {
   readonly comments = new MapStore<Row>();
   readonly reactions = new MapStore<Row>();

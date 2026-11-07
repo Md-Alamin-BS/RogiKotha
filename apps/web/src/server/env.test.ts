@@ -1,8 +1,16 @@
 // @vitest-environment node
 import { randomBytes } from 'node:crypto';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { optionalEnv, readWebEnv, requireEnv, WebEnvError } from './env';
+import {
+  optionalEnv,
+  readWebEnv,
+  requireEnv,
+  resolveStorageRoot,
+  WebEnvError,
+  workspaceRoot,
+} from './env';
 
 describe('server environment', () => {
   it('returns a variable that is set', () => {
@@ -92,5 +100,42 @@ describe('the web tier settings (BR7.2, FD-095)', () => {
     expect(error?.message).toContain('TERMS_VERSION');
     expect(error?.message).not.toContain(secret);
     expect(error?.message).not.toContain(APP_KEY);
+  });
+});
+
+describe('the evidence storage root (U48, BR3.3)', () => {
+  const root = path.resolve('/synthetic/repo');
+
+  it('takes a relative or missing STORAGE_ROOT from the repo root, not from apps/web', () => {
+    expect(readWebEnv(buildVariables(), root).storageRoot).toBe(
+      path.join(root, '.data', 'storage'),
+    );
+    expect(readWebEnv(buildVariables({ STORAGE_ROOT: './files' }), root).storageRoot).toBe(
+      path.join(root, 'files'),
+    );
+  });
+
+  it('keeps an absolute STORAGE_ROOT as given', () => {
+    const outside = path.resolve('/synthetic/elsewhere/evidence');
+    expect(readWebEnv(buildVariables({ STORAGE_ROOT: outside }), root).storageRoot).toBe(outside);
+  });
+
+  it.each(['./apps/web', './apps/web/public/evidence', './apps/web/../web/.data'])(
+    'refuses to start with the root %s inside apps/web',
+    (value) => {
+      const problems: string[] = [];
+      resolveStorageRoot(value, root, problems);
+      expect(problems).toEqual(['STORAGE_ROOT must be outside apps/web']);
+    },
+  );
+
+  it('accepts a sibling whose name only starts like apps/web', () => {
+    const problems: string[] = [];
+    resolveStorageRoot('./apps/web-files', root, problems);
+    expect(problems).toEqual([]);
+  });
+
+  it('finds the repo root from a folder below it', () => {
+    expect(workspaceRoot(path.join(workspaceRoot(), 'apps', 'web'))).toBe(workspaceRoot());
   });
 });

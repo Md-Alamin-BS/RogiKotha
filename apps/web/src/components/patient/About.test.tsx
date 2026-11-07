@@ -23,24 +23,70 @@ function renderAbout(locale: 'en' | 'bn') {
   );
 }
 
-describe('About', () => {
-  it('renders the head panel (kicker, h1, lead) then five sections in the task order, in English', () => {
-    const { container } = renderAbout('en');
-    const head = container.querySelector('section.panel.about-head');
-    expect(head?.querySelector('.kicker')?.textContent).toBe('About & methodology');
-    expect(head?.querySelector('h1')?.textContent).toBe('About RogiKotha');
-    expect(head?.querySelector('p.lead')?.textContent).toContain('RogiKotha is a place');
-
-    const sectionTitles = Array.from(
-      container.querySelectorAll('.about-sections > .about-section > h2'),
-    ).map((h2) => h2.textContent);
-    expect(sectionTitles).toEqual([
+const EXPECTED = {
+  en: {
+    kicker: 'About & methodology',
+    title: 'About RogiKotha',
+    intro: 'RogiKotha is a place',
+    sections: [
       'How experiences are moderated',
       'What a reviewer label means',
       'Privacy and identity',
       'What this is not',
       'Contact and feedback',
-    ]);
+    ],
+    foot: 'Methodology last reviewed 21 August 2026',
+  },
+  bn: {
+    sections: [
+      'অভিজ্ঞতা কীভাবে মডারেট করা হয়',
+      'রিভিউয়ার লেবেলের অর্থ কী',
+      'গোপনীয়তা ও পরিচয়',
+      'এটি যা নয়',
+      'যোগাযোগ ও মতামত',
+    ],
+  },
+} as const;
+
+// One block per locale, so `-t bn` selects the Bengali set (ISS-151).
+describe.each(['en', 'bn'] as const)('About in %s', (locale) => {
+  const messages = loadMessages(locale) as {
+    nav: Record<string, string>;
+    aboutview: Record<string, string>;
+  };
+
+  it('renders the head panel (kicker, h1, lead) from the locale dictionary', () => {
+    const { container } = renderAbout(locale);
+    const head = container.querySelector('section.panel.about-head');
+    expect(head?.querySelector('.kicker')?.textContent).toBe(messages.nav.about);
+    expect(head?.querySelector('h1')?.textContent).toBe(messages.aboutview.title);
+    expect(head?.querySelector('p.lead')?.textContent).toBe(messages.aboutview.intro);
+  });
+
+  it('renders the five sections in the task order with no English fallback', () => {
+    const { container } = renderAbout(locale);
+    const sectionTitles = Array.from(
+      container.querySelectorAll('.about-sections > .about-section > h2'),
+    ).map((h2) => h2.textContent);
+    expect(sectionTitles).toEqual(EXPECTED[locale].sections);
+  });
+
+  it('renders the about-foot last-reviewed note', () => {
+    const { container } = renderAbout(locale);
+    expect(container.querySelector('p.note.about-foot')?.textContent).toBe(
+      messages.aboutview.lastReviewed,
+    );
+  });
+});
+
+describe('About in en, literal copy', () => {
+  it('renders the English head copy', () => {
+    const { container } = renderAbout('en');
+    const head = container.querySelector('section.panel.about-head');
+    expect(head?.querySelector('.kicker')?.textContent).toBe(EXPECTED.en.kicker);
+    expect(head?.querySelector('h1')?.textContent).toBe(EXPECTED.en.title);
+    expect(head?.querySelector('p.lead')?.textContent).toContain(EXPECTED.en.intro);
+    expect(container.querySelector('p.note.about-foot')?.textContent).toBe(EXPECTED.en.foot);
   });
 
   it('uses the product contact copy, not the prototype-era "not monitored" clause', () => {
@@ -49,26 +95,5 @@ describe('About', () => {
       getByText('Email: hello@rogikotha.example. For real emergencies, do not use this site.'),
     ).toBeInTheDocument();
     expect(queryByText(/not monitored/)).toBeNull();
-  });
-
-  it('renders the about-foot last-reviewed note', () => {
-    const { container } = renderAbout('en');
-    expect(container.querySelector('p.note.about-foot')?.textContent).toBe(
-      'Methodology last reviewed 21 August 2026',
-    );
-  });
-
-  it('renders all five sections in Bengali with no English fallback', () => {
-    const { container } = renderAbout('bn');
-    const sectionTitles = Array.from(
-      container.querySelectorAll('.about-sections > .about-section > h2'),
-    ).map((h2) => h2.textContent);
-    expect(sectionTitles).toEqual([
-      'অভিজ্ঞতা কীভাবে মডারেট করা হয়',
-      'রিভিউয়ার লেবেলের অর্থ কী',
-      'গোপনীয়তা ও পরিচয়',
-      'এটি যা নয়',
-      'যোগাযোগ ও মতামত',
-    ]);
   });
 });

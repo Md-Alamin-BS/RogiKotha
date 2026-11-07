@@ -5000,3 +5000,254 @@ html:lang(bn) .join-steps li::before {
   color: var(--ink-muted);
   font-weight: 600;
 }
+
+/* added: U47 the composer step rail, the draft list and the stacked preview (frontend-components § 4) */
+.c-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+}
+.c-step {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  text-align: start;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.c-step[aria-current="step"] {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  font-weight: 700;
+}
+.c-step-n {
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+}
+.c-step-body h2:focus {
+  outline: none;
+}
+.c-step-body h2:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.draft-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.draft-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.draft-list li .sub {
+  flex: 1 1 100%;
+}
+.preview-details > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* added: U47 the composer column, the step name and the free tag entry (Steps 42-44) */
+.c-main {
+  min-width: 0;
+}
+.c-step-name {
+  display: block;
+}
+.tag-free {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.tag-free .sub {
+  flex: 1 1 100%;
+}
+.tag-free input {
+  flex: 1 1 200px;
+  min-height: 44px;
+}
+
+/* added: U47 the anonymous alias beside the lead byline, plain text and never a link (BR5.3) */
+.byline-alias {
+  margin-inline-start: var(--space-2);
+  color: var(--ink-muted);
+}
+
+/* added: U47 section headings in a detailed story are h2/h3, so the heading margins are reset */
+.chapters h2.k,
+.chapters h3.k {
+  margin: 0 0 6px;
+  font-weight: 600;
+  line-height: var(--lh-label);
+}
+
+/* added: U47 the other experiences by the author, one block link each in the margin */
+.margin-link {
+  display: block;
+  text-align: start;
+  margin-top: var(--space-1);
+  color: var(--ink);
+}
+
+/* added: U47 the notes around the related lists, the disclaimer and the publish confirmation */
+.related-note {
+  margin: 0 0 var(--space-3);
+}
+.experience-disclaimer {
+  margin-top: var(--space-6);
+}
+.published-note {
+  margin-bottom: var(--space-4);
+}
+
+/* added: U47 keyset paging of the experience lists, plain links (BR7.1) */
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+}
+
+/* added: U47 the static index skeleton in experiences/loading.tsx, no animation (BR8.11) */
+.index-skeleton {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--rule);
+}
+.index-skeleton-line {
+  display: block;
+  height: 0.9em;
+  width: 40%;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+.index-skeleton-line.wide {
+  width: 70%;
+}
+
+/* ==========================================================================
+   U20 T-207 Discover home, Emergency and the patient 404. Static only: motion
+   comes from T-011's .reveal hooks and Reveal (BR5.2).
+   ========================================================================== */
+
+/* added: U20 the browse links, chips and browse grid are lists without bullets (BR4.1) */
+.home-browse ul,
+ul.chips,
+ul.browse-grid {
+  list-style: none;
+  margin-inline: 0;
+  padding: 0;
+}
+/* added: U20 the chips list keeps the chip row's top spacing */
+ul.chips {
+  margin-bottom: 0;
+}
+/* added: U20 the browse grid list has no block margin of its own */
+ul.browse-grid {
+  margin-block: 0;
+}
+
+/* added: U20 the three browse links in place of the prototype's search box (FD-046) */
+.home-browse {
+  margin-top: var(--space-5);
+}
+/* added: U20 the browse links wrap as one row of ghost buttons */
+.home-browse ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block: 0;
+}
+
+/* added: U20 the Limited data tag sits beside U46's unchanged mini row (R-02, BR2.3) */
+.teaser-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+/* added: U20 the mini row takes the free width beside the tag */
+.teaser-row .mini-row {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* added: U20 the tag keeps its own width */
+.teaser-row .tag {
+  flex: none;
+}
+
+/* added: U20 replaces the Emergency page's inline note margin (BR5.1) */
+.emerg-note {
+  margin-top: var(--space-4);
+}
+
+/* added: U20 the localized patient 404 (BR4.2) */
+.notfound {
+  max-width: var(--measure);
+  padding-block: var(--space-6);
+}
+/* added: U20 space above the 404's home and emergency links */
+.notfound .p-actions {
+  margin-top: var(--space-5);
+}
+
+/* added: U49 review fix - keep typed line breaks */
+.comment-body {
+  white-space: pre-wrap;
+}
+
+/* added: U22 the edit history sits under the story with the page's rhythm */
+.review-history {
+  margin-top: var(--space-5);
+}
+/* added: U22 one dated correction line per material change, without list markers */
+.review-history .corrections {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+}
+/* added: U22 space between correction lines */
+.review-history .corrections > li + li {
+  margin-top: var(--space-3);
+}
+/* added: U22 the disclosures for the original wording and the author's versions */
+.original-text,
+.version-list {
+  margin-top: var(--space-2);
+}
+/* added: U22 the disclosure summary is a 44px target */
+.original-text > summary,
+.version-list > summary {
+  min-height: var(--target);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+/* added: U22 the earlier title reads as the earlier text, not as a heading */
+.original-text .original-title {
+  font-weight: 600;
+}
+/* added: U22 the version list keeps its numbers and sits inside the page measure */
+.version-list ol {
+  padding-inline-start: var(--space-5);
+  margin: 0;
+}

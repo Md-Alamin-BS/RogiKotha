@@ -4,9 +4,7 @@ import type {
   DemoDoctorChamber,
   DemoDoctorDetail,
   DemoDoctorListRow,
-  DemoDoctorOption,
   DemoReviewCard,
-  DemoSpecialtyOption,
   Locale,
 } from '@rogikotha/contracts';
 import { and, asc, count, desc, eq, inArray, isNotNull, isNull, sql, type SQL } from 'drizzle-orm';
@@ -18,7 +16,7 @@ import { evidenceItems } from '../schema/evidence';
 import { personas } from '../schema/identity';
 import { reviews, reviewVersions, type ReviewSections } from '../schema/review';
 import { taxonomyTerms } from '../schema/taxonomy';
-import { DEMO_READY_EVIDENCE_STATES } from './evidence';
+import { DEMO_READY_EVIDENCE_STATES } from './ready-evidence-states';
 
 /** The prototype's `accountRow()` cuts the body at 190 characters. */
 export const EXCERPT_LENGTH = 190;
@@ -238,36 +236,4 @@ export async function listRecentPublishedReviews(
   if (safeLimit === 0) return [];
   const rows = await selectReviewCards(db, locale, undefined).limit(safeLimit);
   return rows.map((row) => toReviewCard(row, locale));
-}
-
-/** Every published doctor as a write-form choice, ordered by name in `locale`. */
-export async function listDoctorOptions(db: Db, locale: Locale): Promise<DemoDoctorOption[]> {
-  const rows = await db
-    .select({
-      id: doctors.id,
-      publicId: doctors.publicId,
-      name: doctorName(locale),
-      specialtyEn: taxonomyTerms.nameEn,
-      specialtyBn: taxonomyTerms.nameBn,
-    })
-    .from(doctors)
-    .leftJoin(taxonomyTerms, eq(taxonomyTerms.id, doctors.specialtyId))
-    .where(isPublishedDoctor)
-    .orderBy(asc(doctorName(locale)), asc(doctors.id));
-  return rows.map((row) => ({
-    id: row.id,
-    publicId: row.publicId,
-    name: row.name,
-    specialty: pick(locale, row.specialtyEn, row.specialtyBn),
-  }));
-}
-
-/** Every specialty term as a choice in the add-a-doctor panel, ordered by name in `locale`. */
-export async function listSpecialtyOptions(db: Db, locale: Locale): Promise<DemoSpecialtyOption[]> {
-  const name = locale === 'bn' ? taxonomyTerms.nameBn : taxonomyTerms.nameEn;
-  return db
-    .select({ id: taxonomyTerms.id, name })
-    .from(taxonomyTerms)
-    .where(and(eq(taxonomyTerms.kind, 'specialty'), eq(taxonomyTerms.state, 'published')))
-    .orderBy(asc(name), asc(taxonomyTerms.id));
 }

@@ -80,6 +80,51 @@ Rules:
   before code. Proposed for the owner: an `ISS-` row to bump `better-auth` to 1.7.18 (security
   patches), next to the 16.4.5 `next` bump proposed on 2026-11-05.
 
+### 2026-11-06 (U48 u48-evidence — evidence intake and worker pipeline)
+
+- Scope: U48 builds `POST /api/evidence/upload` (a route handler reading `request.formData()` with
+  a 15 MB file, C18), the worker's `evidence.process` job (attempt from pg-boss metadata, a 120 s
+  handler budget, the 300 s expiry kept, R-01) and `evidence.sweep`, and moves the clamd `INSTREAM`
+  client into `scanner-clamd`. The pg-boss entry (2026-10-28) is older than 3 days; the `next`
+  entry (2026-11-05) is reused for versions. No new dependency is added.
+- Checked:
+  - `pg-boss`: installed 12.31.0 (lockfile); npm `latest` 12.38.1 (2026-11-05). Source read in
+    `node_modules`: `JobWithMetadata` has `retryLimit` and `retryCount` (`types.d.ts`), and
+    `work(..., { includeMetadata: true })` delivers them. The fetch query raises `retry_count` only
+    when the job was started before (`plans.js`), so attempt N carries `retryCount = N - 1`, and
+    `fail` retries while `retry_count < retry_limit`: the last attempt is `retryCount >= retryLimit`.
+    `job.signal` comes from one `AbortController` per fetched batch (`manager.js`
+    `#processJobs`). It is aborted only after the `expireInSeconds` timer fires or the handler
+    settles, and on a graceful stop. It is never aborted at a custom budget.
+  - `pg-boss` release notes 12.32.0–12.38.1: no change to `includeMetadata`, `retryCount`/
+    `retryLimit` or `job.signal`. 12.37.1 fixes a singleton/stately fetch that skipped keys. 12.38.0
+    and 12.38.1 make a handler running past `expireInSeconds` hold its worker with a
+    `handler_overrun` warning. ISS-257 already records the 12.37 send-to-deleted-queue change.
+  - `next`: installed 16.3.4 (covered by the 2026-11-05 entry). Source read: the
+    `proxyClientMaxBodySize` cap (`next.config.ts` sets 11 MB) applies only when the proxy runs,
+    because `next-server.js` clones and caps the body only on the proxy path. `apps/web/src/proxy.ts`
+    matches `/((?!api|_next|.*\\..*).*)`, so `/api/evidence/upload` never passes through it. App
+    Router route handlers have no built-in body limit, and `request.formData()` buffers the whole
+    body in memory, so the route's own `Content-Length` cap (`EVIDENCE_UPLOAD_CONTENT_LENGTH_CAP`)
+    is the only limit.
+  - clamd: the compose image reports `ClamAV 1.5.4/28175` today (pinned `clamav/clamav:1.5.4`,
+    still the current 1.5.x patch per the 2026-09-13 entry). `/etc/clamav/clamd.conf` leaves
+    `StreamMaxLength`, `MaxFileSize` and `MaxScanSize` at their defaults (the sample's commented
+    values are 25M, 400M and 1000M), all above a 15 MB file. The protocol in
+    `apps/web/src/server/clamav.ts` (`zINSTREAM\0`, 4-byte big-endian length chunks, a zero-length
+    end chunk, IPv4 for `localhost`) stays as it is in `scanner-clamd`. Above the stream limit
+    clamd answers `INSTREAM size limit exceeded. ERROR`, which the scan treats as an error (fail
+    closed).
+- Findings: the pinned pg-boss supports R-01 as designed. The 120 s budget must be enforced by the
+  handler itself (its own timer combined with `job.signal`), because pg-boss aborts the signal only
+  at the 300 s expiry. The route handler sees the full 15 MB body. Nothing in the newer pg-boss
+  releases is needed by U48.
+- Decision: keep `pg-boss` 12.31.0, `next` 16.3.4 and `clamav/clamav:1.5.4`. U48 changes no
+  version and adds no dependency. No new FD entry is needed: FD-035, FD-036, FD-070, FD-105 and
+  C8, C14–C19 cover U48, with no migration and no data-boundary change. The `serverActions` and
+  `proxyClientMaxBodySize` 11 MB settings in `next.config.ts` serve the demo-slice action upload,
+  which U48 retires. Dropping them is left to the step that deletes that action, not done here.
+
 ### 2026-11-05 (U9 T-102 — patient auth screens)
 
 - Scope: T-102 builds the pending, confirm, reset and security screens as forms on server actions

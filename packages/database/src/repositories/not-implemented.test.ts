@@ -6,7 +6,6 @@ import {
   NotImplemented,
   PgAccountRepository,
   PgAuditRepository,
-  PgCommunityRepository,
   PgConfigRepository,
   PgDataRequestRepository,
   PgDirectoryRepository,
@@ -22,7 +21,6 @@ import {
 const STUB_REPOSITORIES: [string, object][] = [
   ['PgAccountRepository', new PgAccountRepository()],
   ['PgAuditRepository', new PgAuditRepository()],
-  ['PgCommunityRepository', new PgCommunityRepository()],
   ['PgConfigRepository', new PgConfigRepository()],
   ['PgDataRequestRepository', new PgDataRequestRepository()],
   ['PgDirectoryRepository', new PgDirectoryRepository()],
@@ -54,6 +52,23 @@ const IMPLEMENTED: Record<string, readonly string[]> = {
     'findPreferences',
     'savePreferences',
     'insertFeedback',
+  ],
+  // U48 implements the EvidenceRepository port; evidence.int.test.ts proves it on the database.
+  PgEvidenceRepository: [
+    'lockReview',
+    'countCounting',
+    'findByIdempotencyKey',
+    'insertQuarantined',
+    'listForAuthor',
+    'findOwned',
+    'processingFacts',
+    'stuckItems',
+    'latestCustody',
+    'transition',
+    'appendCustody',
+    'markOriginalDeleted',
+    'countPublic',
+    'countPublicByReview',
   ],
 };
 

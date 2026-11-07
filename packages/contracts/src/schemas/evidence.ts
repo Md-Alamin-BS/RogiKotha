@@ -6,6 +6,7 @@
 import { z } from 'zod';
 
 import { EVIDENCE_GROUPS, EVIDENCE_STATES } from '../enums';
+import { PUBLIC_ID_RE } from '../ids';
 
 // Phase 1 accepts images only (FD-036); PDF/HEIC/Office wait for Phase 2.
 const DECLARED_MIME = ['image/jpeg', 'image/png'] as const;
@@ -60,8 +61,6 @@ export const ConfirmPrivacyInput = z
 // internal — called only by review.publish
 export const PublishEvidenceInput = z.object({ reviewId: z.string().min(1) }).strict();
 
-export const RemoveEvidenceInput = z.object({ itemId: z.string().min(1) }).strict();
-
 export const GetEvidenceForAuthorInput = z.object({ draftId: z.string().min(1) }).strict();
 
 export const ListEvidenceForStaffInput = z
@@ -80,6 +79,57 @@ export const ReadOriginalEvidenceInput = z
   })
   .strict();
 
+// U48 release 1 (C8 as amended by U48 functional-spec § 6). These schemas strip unknown fields
+// rather than refuse them, because the upload route builds them from multipart form fields.
+const publicId = z.string().regex(PUBLIC_ID_RE);
+
+/** The text fields of the `POST /api/evidence/upload` multipart form (C14); the file part is separate. */
+export const EvidenceUploadFields = z.object({
+  reviewPublicId: publicId,
+  idempotencyKey: z.uuid(),
+});
+
+/** `evidence.checkUpload`: the read-only pre-check before the file is written (BR2.8). */
+export const CheckUploadInput = z.object({
+  reviewPublicId: publicId,
+  idempotencyKey: z.uuid(),
+  bytes: z.number().int().min(1),
+});
+
+/** `evidence.intake`: the fields the route passes beside the quarantined key and byte facts. */
+export const IntakeInput = z.object({
+  reviewPublicId: publicId,
+  // Type and name are judged by the command, which answers `evidence.type_rejected` (BR2.1).
+  declaredMime: z.string().min(1),
+  declaredName: z.string(),
+  idempotencyKey: z.uuid(),
+});
+
+export const RemoveEvidenceInput = z.object({ itemPublicId: publicId });
+
+export const GetForAuthorInput = z.object({ reviewPublicId: publicId });
+
+/** `evidence.admitUpload` takes nothing; the account comes from the actor (BR2.7). */
+export const AdmitUploadInput = z.object({});
+
+/** What the file writer returned and the route detected; only the route builds it (WF1 steps 5, 7). */
+export const QuarantinedFileFacts = z.object({
+  key: z.string().regex(/^[0-9a-f]{32}$/),
+  bytes: z.number().int().min(0),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  /** `detectImageType` over the first 16 bytes; null when they are neither PNG nor JPEG. */
+  detectedMime: z.enum(DECLARED_MIME).nullable(),
+});
+
+/** `evidence.intake` as the command parses it: the form fields and the quarantined file's facts. */
+export const IntakeCommandInput = IntakeInput.extend({ file: QuarantinedFileFacts });
+
+export type CheckUploadInput = z.output<typeof CheckUploadInput>;
+export type IntakeCommandInput = z.output<typeof IntakeCommandInput>;
+export type RemoveEvidenceInput = z.output<typeof RemoveEvidenceInput>;
+export type GetForAuthorInput = z.output<typeof GetForAuthorInput>;
+export type AdmitUploadInput = z.output<typeof AdmitUploadInput>;
+
 export const evidenceSchemas = {
   IntakeEvidenceInput,
   ProcessEvidenceJobInput,
@@ -91,4 +141,10 @@ export const evidenceSchemas = {
   ListEvidenceForStaffInput,
   GetPublicEvidenceInput,
   ReadOriginalEvidenceInput,
+  EvidenceUploadFields,
+  CheckUploadInput,
+  IntakeInput,
+  GetForAuthorInput,
+  AdmitUploadInput,
+  IntakeCommandInput,
 };

@@ -16,6 +16,20 @@ This decision is binding and overrides the text below where they differ.
 
 - **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `PublishTick`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-306 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Goal, the motion step and the acceptance checks.
 
+## Amendments — release 1 (FD-105, FD-110..FD-113)
+
+These decisions are binding and override the text below where they differ. Release 1 builds this task inside Unit U47 `u47-reviews`, together with T-301 and T-307 (record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u47-reviews/`).
+
+- **FD-105 — what release 1 builds** — the four-step composer at `/write` behind U9's `ContributionGate`, with autosave to the encrypted draft, the preview aside, the draft list (at most 10) and Publish; the image uploader and the redaction canvas belong to the evidence Units, not to U47 (`AuthorEvidence` is mounted in the experience page's `AuthorTools`), so the rows "Upload + polling" and "Redaction coords" are not this Unit's (redaction is deferred).
+- **FD-110** — no "What went well / What could improve" checkboxes; the sentiment toggle stays.
+- **FD-111** — the three `claim.*` toggles are the only Reviewer's labels; there is no custom label field.
+- **FD-112** — a facility visit account is named or pseudonymous; step 4 offers no anonymous option for it, and the exact date, the quick/detailed choice and the tag picker are hidden for it.
+- **FD-113 / BR3.12** — an anonymous identity with a new doctor is refused: the add-doctor button is disabled while the identity is anonymous (`compose.anonNewDoctor`), and the module answers `review.anonymous_new_doctor`.
+- **Gate change** — `/write` no longer redirects a signed-out visitor to sign-in. The page reads `getContributionAccess()` once and, when the access is not `allowed`, renders the heading, `compose.intro` and U9's `ContributionGatePanel` with `next = /{locale}/write[?doctor=]`; it loads no composer data. An unconfirmed account sees the confirm-your-email panel, so the row "Publish gating … unverified actor → disabled with `auth.gate.verifyToPublish`" is met by that gate.
+- **Publish error** — a refusal lists the missing fields in the summary callout; each is a button that opens the step the field is on, and focus lands on that step's heading (not on the doctor select).
+- **Step motion** — a step change runs T-011's slide through `[data-step-dir="forward" | "back"]`, set from the direction of travel and absent on first render (found and fixed at Build and Test, ISS-543).
+- **Acceptance commands as built** — run `pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/components/patient/compose` (`Composer.test.tsx`, `steps.test.tsx`, `DraftList.test.tsx`, `composer-reducer.test.ts`, `use-autosave.test.ts`, `safety.test.ts`) and `.../app/[locale]/(patient)/write` for the gate rows. The gamification search in the last FD-091 row needs word boundaries (`\b(confetti|streak|badge-earn|points)\b`, ISS-545). Rows needing a browser (visual parity, reduced-motion journey) are walked at the phase gate, not by the Unit.
+
 ## Scope change 2026-09-12 — images only (CR-001 / FD-036)
 
 
@@ -112,9 +126,25 @@ Not an M3 task; the security boundaries live in T-301/T-303/T-305. Two UI-level 
 
 ## Hand-off (implementer fills in)
 
+Built in release 1 by Unit U47 `u47-reviews` (branch `bolt/u47-reviews`, 2026-11-07); the full record is `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u47-reviews/code-generation/code-summary.md`.
+
 ### What changed
+- `/write` shows the heading, the intro and U9's gate for a visitor who is not allowed (no composer data is loaded); an allowed author gets `Composer` (four steps, autosave after 1.5 s, preview aside, safety checks, four attestation boxes, Publish, Save and finish later) and `DraftList` (at most 10). Files are under `apps/web/src/components/patient/compose/`; the page is `apps/web/src/app/[locale]/(patient)/write/page.tsx`; the actions are in `server/actions/review.ts`.
+- Every new key is in `en.json` and `bn.json`; the Bengali is drafted and awaits the owner's review at U50 (FD-042). `compose.identity.anonNote` carries the BR8.12 wording.
+- The old `ComposeForm`, `ComposePreview` and the demo `publishReview` are deleted.
+
 ### Not done and why
+- Image upload and redaction: the evidence Units. Visual parity and the reduced-motion journey need a browser and are walked at the phase gate.
+- Motion: the step slide is wired (ISS-543); no other motion was added.
+
 ### Questions for the human
+- Should Publish carry a spoken reason while it is disabled (`compose.publishNeedsConfirm`, proposed for U50, ISS-537)?
+
 ### Follow-ups
+- ISS-537, ISS-538, ISS-525 (doctor picker limited to 100), ISS-536 (unused `compose.*` keys).
+
 ### `pnpm check` output summary
+- Green on the final tree: 288 files, 3146 passed plus 2 expected failures; `pnpm contrast`, `contrast:patient`, `check:motion` and `impeccable detect` clean; `pnpm smoke` 23 files, 44 tests.
+
 ### Hard-rule evidence
+- Compose tests run in `en` and `bn` (`Composer.test.tsx`, `steps.test.tsx`, `DraftList.test.tsx`); no score, no gamification; emergency numbers are matched with digit fences in `safety.test.ts`; acceptance rows: plan Step 60.

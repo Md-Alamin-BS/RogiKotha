@@ -11,3 +11,5 @@ export * from './modules/taxonomy';
 export * from './modules/review';
 export * from './modules/identity';
 export * from './ports/log-policy';
+export * from './modules/evidence';
+export * from './modules/community';

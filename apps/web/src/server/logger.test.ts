@@ -30,6 +30,31 @@ describe('the web logger (BR8.1)', () => {
     expect(line).not.toContain('example.test');
   });
 
+  it('keeps the five evidence fields and still drops the file name (U48 BR7.1)', () => {
+    const fields = {
+      itemId: 'ev-1',
+      state: 'failed',
+      failReason: 'scanner_unavailable',
+      attempt: 4,
+      errorClass: 'ScannerUnavailable',
+      originalFilename: 'synthetic-scan.png',
+    } as unknown as LogFields;
+
+    const line = JSON.parse(formatLogLine('info', 'evidence.process', fields)) as Record<
+      string,
+      unknown
+    >;
+
+    expect(line).toMatchObject({
+      itemId: 'ev-1',
+      state: 'failed',
+      failReason: 'scanner_unavailable',
+      attempt: 4,
+      errorClass: 'ScannerUnavailable',
+    });
+    expect(line).not.toHaveProperty('originalFilename');
+  });
+
   it('sends each level to its own writer', () => {
     const written: [LogLevel, string][] = [];
     const logger = createWebLogger((level, line) =>

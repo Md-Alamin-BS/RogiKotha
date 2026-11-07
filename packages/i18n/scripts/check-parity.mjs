@@ -51,6 +51,22 @@ const FIELD_ERROR_ONLY_KEYS = [
   'errors.auth.displayNameRequired',
   'errors.auth.emailInvalid',
   'errors.auth.passwordTooLong',
+  // ASSUMPTION(U47): the per-field keys of `review.min_fields` (BR3.1) and the `conflict` key of
+  // the ten-draft limit (BR2.4) are message keys of existing codes, not codes of their own.
+  'errors.review.missingDoctor',
+  'errors.review.missingRelationship',
+  'errors.review.missingStory',
+  'errors.review.missingTag',
+  'errors.review.periodInvalid',
+  'errors.review.missingBranch',
+  'errors.review.draftsFull',
+  // ASSUMPTION(U49): the comment body keys are message keys of `validation` (FD-115).
+  'errors.community.commentLength',
+  'errors.community.commentHidden',
+  // ASSUMPTION(U22): the message keys of `rate_limited` (30 corrections a day) and `conflict`
+  // (stale `expectedVersion`) on `review.correct`; the generic keys do not fit (review R-04).
+  'errors.review.correctionsLimit',
+  'errors.review.editConflict',
 ];
 
 function flatten(obj, prefix = '') {

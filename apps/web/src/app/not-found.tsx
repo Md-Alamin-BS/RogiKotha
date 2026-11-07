@@ -1,37 +1,31 @@
 import Link from 'next/link';
 import { connection } from 'next/server';
+import { getTranslations } from 'next-intl/server';
 
-// Root `app/not-found.tsx` handles every URL that matches no route at all
-// (Next.js docs, "not-found.js" — true since v13.3.0), which for this app
-// includes an unrecognised locale segment (`/fr`) after next-intl's proxy
-// redirects it into a `[locale]` slot that still fails to match any page.
-// That means this file renders OUTSIDE the `[locale]` layout tree — no
-// request locale, no NextIntlClientProvider — so it cannot call
-// `useTranslations()`. ASSUMPTION(T-008): the two lines below are the only
-// hard-coded user-facing strings in this app (01-conventions.md §8 asks for
-// none); they mirror `results.none`'s current en/bn copy verbatim so they
-// stay in sync manually rather than drift — see ISS list in the T-008
-// hand-off. Deliberately does not import the ported stylesheets: this
-// boundary must stay self-contained (Next.js docs on composing a 404 for a
-// root layout with a top-level dynamic segment).
+// The last resort for a URL outside any locale (for example `/fr/x` after the proxy): it renders
+// outside the `[locale]` layout, with no request locale and no provider, so it reads both
+// dictionaries by an explicit locale and marks each line with its own `lang` (BR4.2, ISS-120).
+// Emergency help stays one link away even here (BR3.3).
+// Deliberately imports no stylesheet: this boundary stays self-contained.
 export default async function NotFound() {
   // BR1.4 (U41): render per request, so Next.js stamps this response's CSP nonce on its scripts.
   await connection();
+  const [en, bn] = await Promise.all([
+    getTranslations({ locale: 'en' }),
+    getTranslations({ locale: 'bn' }),
+  ]);
+
   return (
     <html lang="en">
       <body>
-        <main
-          style={{
-            padding: '3rem 1.25rem',
-            textAlign: 'center',
-            fontFamily: 'system-ui, sans-serif',
-          }}
-        >
-          <p>
-            Nothing matched yet. <Link href="/en">Go home</Link>
+        <main>
+          <p lang="en">
+            {en('notFound.body')} <Link href="/en">{en('notFound.home')}</Link>{' '}
+            <Link href="/en/emergency">{en('nav.emergency')}</Link>
           </p>
           <p lang="bn">
-            এখনো কিছু মেলেনি। <Link href="/bn">হোমে যান</Link>
+            {bn('notFound.body')} <Link href="/bn">{bn('notFound.home')}</Link>{' '}
+            <Link href="/bn/emergency">{bn('nav.emergency')}</Link>
           </p>
         </main>
       </body>

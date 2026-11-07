@@ -6,7 +6,7 @@
 // `implements` clause here yet.
 // TODO(T-101): implements JobQueue
 import { PgBoss } from 'pg-boss';
-import type { Job } from 'pg-boss';
+import type { JobWithMetadata } from 'pg-boss';
 
 import { queueDeclarationFor } from './queue-declaration';
 import type { DeclaredQueuePolicy } from './queue-declaration';
@@ -42,7 +42,23 @@ export interface WorkOptions {
   pollingIntervalSeconds?: number;
 }
 
-export type JobHandler<T = unknown> = (payload: T) => Promise<void> | void;
+/** pg-boss's own metadata of the attempt being run. The last attempt is `retryCount >= retryLimit`. */
+export interface JobAttempt {
+  jobId: string;
+  /** 0 on the first attempt. */
+  retryCount: number;
+  retryLimit: number;
+  /** Aborted by pg-boss when the job expires or the worker stops. */
+  signal: AbortSignal;
+}
+
+type WorkWithMetadataOptions = {
+  batchSize: number;
+  pollingIntervalSeconds: number;
+  includeMetadata: true;
+};
+
+export type JobHandler<T = unknown> = (payload: T, attempt: JobAttempt) => Promise<void> | void;
 
 export type EnqueueOutcome = 'enqueued' | 'deduplicated';
 
@@ -241,13 +257,22 @@ export class PgBossQueue {
     opts: WorkOptions = {},
   ): Promise<void> {
     await this.ensureQueue(name);
-    await this.boss.work<T>(
+    await this.boss.work<T, void, WorkWithMetadataOptions>(
       name,
-      { batchSize: opts.batchSize ?? 1, pollingIntervalSeconds: opts.pollingIntervalSeconds ?? 2 },
-      async (jobs: Job<T>[]) => {
+      {
+        batchSize: opts.batchSize ?? 1,
+        pollingIntervalSeconds: opts.pollingIntervalSeconds ?? 2,
+        includeMetadata: true,
+      },
+      async (jobs: JobWithMetadata<T>[]) => {
         for (const job of jobs) {
           try {
-            await handler(job.data);
+            await handler(job.data, {
+              jobId: job.id,
+              retryCount: job.retryCount,
+              retryLimit: job.retryLimit,
+              signal: job.signal,
+            });
           } catch (err) {
             this.logger.error('job.failed', {
               job: name,

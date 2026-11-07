@@ -1,13 +1,14 @@
 // Adversarial tests (plan Step 13): reach the signed-in pages without a usable session, and open
 // another author's edit page. The real `server/auth/session.ts` and `getActor()` run; only the
 // container's session lookup and the data layer are stubbed, so a page that skipped the check would read data here.
-import type { DemoCurrentAccount } from '@rogikotha/contracts';
+import { err, type DemoCurrentAccount } from '@rogikotha/contracts';
 import { redirect as redirectToSignIn } from '@rogikotha/i18n';
 import { headers } from 'next/headers';
-import { createElement, type ReactNode } from 'react';
+import { createElement, isValidElement, type ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { safeNextPath } from '@/server/actions/auth-form';
+import { ContributionGatePanel } from '@/components/patient/auth/ContributionGate';
+import { safeAuthNext, safeNextPath } from '@/server/actions/auth-form';
 import { getContainer } from '@/server/container';
 import { accounts, doctors, reviews, session } from '@/server/data';
 import EditExperiencePage from './experiences/[id]/edit/page';
@@ -43,10 +44,11 @@ vi.mock('@/server/actions/profile', () => ({
   updateDisplayNameAction: vi.fn(),
   updateLanguageAction: vi.fn(),
 }));
-vi.mock('@/server/actions/review', () => ({ publishReview: vi.fn(), saveReviewEdit: vi.fn() }));
+vi.mock('@/server/actions/review', () => ({ saveReviewEdit: vi.fn() }));
+vi.mock('@/server/actions/review-edit', () => ({ correctReviewAction: vi.fn() }));
 vi.mock('@/server/data', () => ({
   accounts: { getProfile: vi.fn(), listOwnReviews: vi.fn() },
-  doctors: { getDoctor: vi.fn(), listDoctorOptions: vi.fn() },
+  doctors: { getDoctor: vi.fn() },
   reviews: { getOwnReviewForEdit: vi.fn() },
   session: { getCurrentAccountByAuthUserId: vi.fn() },
 }));
@@ -75,6 +77,8 @@ const ACCOUNTS_BY_AUTH_USER = new Map<string, DemoCurrentAccount>(
 );
 
 const getSession = vi.fn();
+const listDoctorsCommand = { name: 'directory.listDoctors', execute: vi.fn() };
+const getOwnForEditCommand = { name: 'review.getOwnForEdit', execute: vi.fn() };
 const NOW = new Date('2026-11-04T09:00:00Z');
 
 /** The Better Auth user behind the request's session cookie; null means no cookie at all. */
@@ -111,6 +115,8 @@ function installContainer(): void {
   };
   vi.mocked(getContainer).mockReturnValue({
     env: { appMode: 'demo' },
+    directory: { listDoctors: listDoctorsCommand },
+    review: { getOwnForEdit: getOwnForEditCommand },
     ports: {
       authGateway: { getSession, revokeSession: vi.fn(() => Promise.resolve()) },
       unitOfWork: { read: (work: (tx: unknown) => unknown) => work({}) },
@@ -129,6 +135,21 @@ function composerPage(doctor?: string) {
   return ComposerPage({ searchParams: Promise.resolve(doctor ? { doctor } : {}) });
 }
 
+/** The gate the write page rendered, found in its element tree (U47 BR8.1). */
+function gateOf(node: unknown): { access: string; next: string | null } | undefined {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = gateOf(child);
+      if (found) return found;
+    }
+    return undefined;
+  }
+  if (!isValidElement(node)) return undefined;
+  const props = node.props as { access: string; next: string | null; children?: unknown };
+  if (node.type === ContributionGatePanel) return { access: props.access, next: props.next };
+  return gateOf(props.children);
+}
+
 /** The `?next=` the sign-in redirect carried. */
 function nextOfSignInRedirect(): string | undefined {
   const href = vi.mocked(redirectToSignIn).mock.calls[0]?.[0].href;
@@ -139,9 +160,9 @@ function nextOfSignInRedirect(): string | undefined {
 function nothingWasRead(): void {
   expect(accounts.getProfile).not.toHaveBeenCalled();
   expect(accounts.listOwnReviews).not.toHaveBeenCalled();
-  expect(doctors.listDoctorOptions).not.toHaveBeenCalled();
   expect(doctors.getDoctor).not.toHaveBeenCalled();
   expect(reviews.getOwnReviewForEdit).not.toHaveBeenCalled();
+  expect(getOwnForEditCommand.execute).not.toHaveBeenCalled();
 }
 
 beforeEach(() => {
@@ -152,6 +173,7 @@ beforeEach(() => {
     Promise.resolve(ACCOUNTS_BY_AUTH_USER.get(authUserId) ?? null),
   );
   vi.mocked(reviews.getOwnReviewForEdit).mockResolvedValue(null);
+  getOwnForEditCommand.execute.mockResolvedValue(err('not_found'));
 });
 
 describe.each([
@@ -164,21 +186,27 @@ describe.each([
   it('is sent from /me to sign in and back, and no profile is read', async () => {
     await expect(WorkspacePage()).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(nextOfSignInRedirect()).toBe('/me');
+    // U9 review (fixed in U47): the return path carries the locale, so sign-in keeps it.
+    expect(nextOfSignInRedirect()).toBe('/en/me');
+    expect(safeAuthNext(nextOfSignInRedirect())).toBe('/en/me');
     nothingWasRead();
   });
 
-  it('is sent from /write to sign in and back, and no doctor list is read', async () => {
-    await expect(composerPage()).rejects.toThrow('NEXT_REDIRECT');
+  // U47 BR8.1: /write now shows U9's gate instead of redirecting, so the gate's sign-in link
+  // carries the return path; the page still reads nothing before access is `allowed`.
+  it('is shown the gate on /write with a way back, and no doctor list is read', async () => {
+    const page = await composerPage();
 
-    expect(nextOfSignInRedirect()).toBe('/write');
+    expect(gateOf(page)).toEqual({ access: 'signed-out', next: '/en/write' });
+    expect(listDoctorsCommand.execute).not.toHaveBeenCalled();
     nothingWasRead();
   });
 
   it('is sent from an edit page to sign in and back to it, and no experience is read', async () => {
     await expect(editPage(VICTIM_REVIEW)).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(nextOfSignInRedirect()).toBe(`/experiences/${VICTIM_REVIEW}/edit`);
+    expect(nextOfSignInRedirect()).toBe(`/en/experiences/${VICTIM_REVIEW}/edit`);
+    expect(safeAuthNext(nextOfSignInRedirect())).toBe(`/en/experiences/${VICTIM_REVIEW}/edit`);
     nothingWasRead();
   });
 });
@@ -189,9 +217,12 @@ describe('the return path a signed-out visitor carries to sign in (FR1.2)', () =
   it.each(['//evil.example', '/.//evil.example', 'https://evil.example/'])(
     'stays on /write when ?doctor= is %j',
     async (doctor) => {
-      await expect(composerPage(doctor)).rejects.toThrow('NEXT_REDIRECT');
+      const next = gateOf(await composerPage(doctor))?.next ?? null;
 
-      expect(safeNextPath(nextOfSignInRedirect())).toMatch(/^\/write\?doctor=/);
+      expect(next).toMatch(/^\/en\/write\?doctor=/);
+      expect(safeAuthNext(next)).toBe(next);
+      expect(safeNextPath(next)).toBe(next);
+      expect(listDoctorsCommand.execute).not.toHaveBeenCalled();
     },
   );
 
@@ -209,7 +240,13 @@ describe("an attacker opening the victim's edit page (FR4.2)", () => {
   it('gets not found, looked up with their own account, and the editor is never built', async () => {
     await expect(editPage(VICTIM_REVIEW)).rejects.toThrow('NEXT_NOT_FOUND');
 
-    expect(reviews.getOwnReviewForEdit).toHaveBeenCalledWith(VICTIM_REVIEW, ATTACKER.accountId);
+    expect(getOwnForEditCommand.execute).toHaveBeenCalledTimes(1);
+    const [input, context] = getOwnForEditCommand.execute.mock.calls[0] as [
+      unknown,
+      { actor: { kind: string; accountId?: string } },
+    ];
+    expect(input).toEqual({ publicId: VICTIM_REVIEW });
+    expect(context.actor).toMatchObject({ kind: 'account', accountId: ATTACKER.accountId });
     expect(doctors.getDoctor).not.toHaveBeenCalled();
   });
 });

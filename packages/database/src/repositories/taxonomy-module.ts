@@ -158,6 +158,21 @@ export class PgTaxonomyModuleRepository implements TaxonomyRepository {
     return rows.map(toTermRecord);
   }
 
+  async listPublished(tx: Tx, kind: TermKind, locale: Locale): Promise<TermRecord[]> {
+    const rows = await executorOf(tx)
+      .select(termColumns)
+      .from(taxonomyTerms)
+      .where(
+        and(
+          eq(taxonomyTerms.kind, kind),
+          eq(taxonomyTerms.state, 'published'),
+          isNull(taxonomyTerms.canonicalId),
+        ),
+      )
+      .orderBy(byName(termName(locale)), asc(taxonomyTerms.publicId));
+    return rows.map(toTermRecord);
+  }
+
   async insertProvisional(tx: Tx, term: NewProvisionalTerm): Promise<{ termId: string } | null> {
     // A concurrent insert of the same open key waits, then does nothing; the caller's transaction
     // continues and reads the winner through `findOpenProvisional` (BR5.2).

@@ -62,7 +62,7 @@ describe.each(['en', 'bn'] as const)('the comment form in %s', (locale: TestLoca
   it('shows a refusal in the active language and keeps the text', async () => {
     vi.mocked(postComment).mockResolvedValue({
       status: 'error',
-      messageKey: 'experience.commentLength',
+      messageKey: 'errors.community.commentLength',
       values: { min: 1, max: 2000 },
       body: 'kept text',
     });
@@ -75,10 +75,69 @@ describe.each(['en', 'bn'] as const)('the comment form in %s', (locale: TestLoca
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent(max);
     expect(alert).toHaveTextContent(
-      t('experience.commentLength', { min: locale === 'bn' ? '১' : '1', max }),
+      t('errors.community.commentLength', { min: locale === 'bn' ? '১' : '1', max }),
     );
     expect(screen.getByRole('textbox')).toHaveValue('kept text');
     expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', alert.id);
+  });
+
+  it('shows the hidden-character refusal in the active language and keeps the text', async () => {
+    vi.mocked(postComment).mockResolvedValue({
+      status: 'error',
+      messageKey: 'errors.community.commentHidden',
+      body: 'kept text',
+    });
+    renderInLocale(locale, <CommentForm reviewPublicId="exp0000001" />);
+
+    await userEvent.type(screen.getByRole('textbox'), 'kept text');
+    await userEvent.click(screen.getByRole('button', { name: t('experience.commentPost') }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(t('errors.community.commentHidden'));
+    expect(screen.getByRole('textbox')).toHaveValue('kept text');
+  });
+
+  it('shows the minutes to wait, in the digits of the active language, when rate limited', async () => {
+    vi.mocked(postComment).mockResolvedValue({
+      status: 'error',
+      messageKey: 'errors.common.rateLimited',
+      values: { minutes: 12 },
+      body: 'kept text',
+    });
+    renderInLocale(locale, <CommentForm reviewPublicId="exp0000001" />);
+
+    await userEvent.type(screen.getByRole('textbox'), 'kept text');
+    await userEvent.click(screen.getByRole('button', { name: t('experience.commentPost') }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      t('errors.common.rateLimited', { minutes: locale === 'bn' ? '১২' : '12' }),
+    );
+    expect(screen.getByRole('textbox')).toHaveValue('kept text');
+  });
+
+  it('is required, limited to 2000 characters and has no like, report or edit control', () => {
+    renderInLocale(locale, <CommentForm reviewPublicId="exp0000001" />);
+    const box = screen.getByRole('textbox');
+    expect(box).toBeRequired();
+    expect(box).toHaveAttribute('maxLength', '2000');
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
+      t('experience.commentPost'),
+    ]);
+  });
+
+  it('posts a reply with the parent public id and the reply wording', async () => {
+    vi.mocked(postComment).mockResolvedValue({ status: 'idle' });
+    renderInLocale(
+      locale,
+      <CommentForm reviewPublicId="exp0000001" parentPublicId="cmt0000009" onCancel={() => {}} />,
+    );
+
+    await userEvent.type(screen.getByRole('textbox'), 'Replying');
+    await userEvent.click(screen.getByRole('button', { name: t('experience.replyPost') }));
+
+    const sent = lastFormData(postComment);
+    expect(sent.get('parentPublicId')).toBe('cmt0000009');
+    expect(sent.get('body')).toBe('Replying');
   });
 });
 
@@ -124,9 +183,11 @@ describe.each(['en', 'bn'] as const)('the comment actions in %s', (locale: TestL
   it('closes the reply box on cancel without posting', async () => {
     renderActions(false);
     await userEvent.click(screen.getByRole('button', { name: t('experience.reply') }));
+    expect(screen.getByRole('textbox')).toHaveFocus();
     await userEvent.click(screen.getByRole('button', { name: t('experience.replyCancel') }));
 
     expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.getByRole('button', { name: t('experience.reply') })).toHaveFocus();
     expect(postComment).not.toHaveBeenCalled();
   });
 
@@ -137,6 +198,7 @@ describe.each(['en', 'bn'] as const)('the comment actions in %s', (locale: TestL
     });
     renderActions(true);
 
+    await userEvent.click(screen.getByRole('button', { name: t('experience.deleteComment') }));
     await userEvent.click(screen.getByRole('button', { name: t('experience.deleteComment') }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(t('errors.common.notFound'));

@@ -35,6 +35,14 @@ export function scrubWebSecrets(target: NodeJS.ProcessEnv): void {
 config({ path: path.resolve(repoRoot, '.env'), quiet: true });
 scrubWebSecrets(process.env);
 
+/**
+ * ISS-621 (BR3.3): a relative `STORAGE_ROOT` is taken from the repo root, as the web tier does, not
+ * from `apps/worker` where the worker runs; an absolute one is kept as given.
+ */
+export function resolveStorageRoot(value: string, root: string = repoRoot): string {
+  return path.isAbsolute(value) ? value : path.resolve(root, value);
+}
+
 export const MAIL_RECIPIENT_KEY_BYTES = 32;
 // Standard base64 with its padding: 32 bytes are exactly 44 characters ending in one `=`.
 const BASE64_32_BYTES = /^[A-Za-z0-9+/]{43}=$/;
@@ -52,7 +60,10 @@ const EnvSchema = z.object({
   APP_MODE: z.enum(['development', 'demo', 'production']),
   LOG_LEVEL: z.enum(['info', 'warn', 'error']).default('info'),
   MAIL_RECIPIENT_KEY: mailRecipientKey,
-  STORAGE_ROOT: z.string().default('./.data/storage'),
+  STORAGE_ROOT: z
+    .string()
+    .default('./.data/storage')
+    .transform((value) => resolveStorageRoot(value)),
   CLAMD_HOST: z.string().default('localhost'),
   CLAMD_PORT: z.coerce.number().int().positive().default(3310),
   SMTP_HOST: z.string().default('localhost'),

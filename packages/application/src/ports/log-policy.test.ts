@@ -34,6 +34,12 @@ describe('LOG_FIELD_NAMES', () => {
         'retryAfterSec',
         'sessionId',
         'status',
+        // U48 BR7.1: the evidence line's fields.
+        'itemId',
+        'state',
+        'failReason',
+        'attempt',
+        'errorClass',
       ].sort(),
     );
   });

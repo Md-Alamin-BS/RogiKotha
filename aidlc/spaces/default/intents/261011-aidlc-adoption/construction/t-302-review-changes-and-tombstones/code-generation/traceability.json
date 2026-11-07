@@ -1,0 +1,46 @@
+{
+  "stage": "code-generation",
+  "unit": "t-302-review-changes-and-tombstones",
+  "upstream_ids": [
+    "AC6.2.1", "AC6.2.2", "AC6.2.3", "AC6.2.4", "AC6.2.5",
+    "AC6.3.1", "AC6.3.2", "AC6.3.3", "AC6.3.4", "AC6.3.5"
+  ],
+  "coverage": [
+    { "id": "AC6.2.1", "status": "OK", "target": "packages/domain/src/review/versioning.ts; packages/application/src/modules/review/commands/correct.ts; apps/web/src/components/patient/compose/EditForm.tsx (BR2.2, BR5.1; steps 6-7, 13-15, 24-25)" },
+    { "id": "AC6.2.2", "status": "OK", "target": "packages/contracts/src/schemas/review.ts; packages/domain/src/review/versioning.ts (BR1.3, BR3.4; steps 4-7)" },
+    { "id": "AC6.2.3", "status": "OK", "target": "packages/domain/src/review/versioning.ts; apps/web/src/components/patient/compose/EditForm.tsx (BR2.4; sentiment half only, the FR46 checkboxes are deferred by FD-110; steps 6-7, 24-25)" },
+    { "id": "AC6.2.4", "status": "OK", "target": "packages/domain/src/review/versioning.ts; packages/application/src/modules/review/commands/correct.ts; apps/web/src/components/patient/review-history/OriginalText.tsx (BR2.4; steps 6-7, 13-15, 26-27)" },
+    { "id": "AC6.2.5", "status": "Deferred", "target": "Follow-ups by later providers are release 2 (FD-105); ISS-729" },
+    { "id": "AC6.3.1", "status": "OK", "target": "packages/domain/src/review/versioning.ts (classifyChange); apps/web/src/components/patient/review-history/ReviewHistory.tsx; apps/web/src/server/review-correction.int.smoke.test.ts (BR3.1, BR3.2, BR4.1; steps 6-9, 26-29)" },
+    { "id": "AC6.3.2", "status": "OK", "target": "packages/application/src/modules/review/commands/correct.ts; packages/application/src/modules/review/queries/get-history.ts; packages/database/src/repositories/review-module.ts; apps/web/src/components/patient/review-history/OriginalText.tsx (BR1.1, BR3.1, BR3.3, BR3.4, BR4.2, BR4.3; steps 8-17, 26-29)" },
+    { "id": "AC6.3.3", "status": "Deferred", "target": "Follow-ups are release 2 (FD-105); ISS-729" },
+    { "id": "AC6.3.4", "status": "Deferred", "target": "Delete with tombstone is release 2 (FD-105); ISS-735" },
+    { "id": "AC6.3.5", "status": "Deferred", "target": "Restore is release 2 (FD-105); ISS-729" }
+  ],
+  "reverse": [
+    { "id": "BR1.1", "status": "OK", "target": "packages/application/src/modules/review/commands/correct.ts; queries/get-own-for-edit.ts; queries/get-history.ts (step 13, 16)" },
+    { "id": "BR1.2", "status": "OK", "target": "packages/application/src/modules/review/commands/correct.ts (gate: authenticated, verifiedEmail, notRestricted)" },
+    { "id": "BR1.3", "status": "OK", "target": "packages/domain/src/review/versioning.ts (validateCorrectionContent); packages/contracts/src/schemas/review.ts (strict CorrectReviewInput)" },
+    { "id": "BR1.4", "status": "OK", "target": "packages/application/src/modules/review/limits.ts; commands/correct.ts (30 corrections in 24 hours, slot released on a refusal or rollback)" },
+    { "id": "BR2.1", "status": "OK", "target": "packages/domain/src/review/versioning.ts (publish minimum kept on edit)" },
+    { "id": "BR2.2", "status": "OK", "target": "packages/domain/src/review/versioning.ts (sections in order, empty ones dropped)" },
+    { "id": "BR2.3", "status": "OK", "target": "packages/domain/src/review/versioning.ts (title and language rules reused from U47)" },
+    { "id": "BR2.4", "status": "OK", "target": "packages/domain/src/review/versioning.ts (validateClaims)" },
+    { "id": "BR3.1", "status": "OK", "target": "packages/domain/src/review/versioning.ts (classifyChange)" },
+    { "id": "BR3.2", "status": "OK", "target": "packages/application/src/modules/review/commands/correct.ts (a no-op writes nothing and reserves no slot)" },
+    { "id": "BR3.3", "status": "OK", "target": "packages/database/src/repositories/review-module.ts (lockForCorrection, updateContent, listVersions); packages/database/src/repositories/review-correction.int.test.ts" },
+    { "id": "BR3.4", "status": "OK", "target": "packages/domain/src/review/versioning.ts (toVersionSnapshot, no identity field); packages/database/src/schema/review.ts (actor_id comment)" },
+    { "id": "BR3.5", "status": "OK", "target": "packages/application/src/modules/review/commands/correct.ts (conflict on a stale version); apps/web/src/server/review-correction.int.test.ts (parallel corrections)" },
+    { "id": "BR3.6", "status": "OK", "target": "packages/application/src/modules/review/commands/correct.ts (append-only version row, no email)" },
+    { "id": "BR4.1", "status": "OK", "target": "packages/domain/src/review/versioning.ts (toHistory editedAt); apps/web/src/components/patient/review-history/ReviewHistory.tsx" },
+    { "id": "BR4.2", "status": "OK", "target": "packages/domain/src/review/versioning.ts (toHistory corrections and originals)" },
+    { "id": "BR4.3", "status": "OK", "target": "packages/domain/src/review/versioning.ts (toHistory versions for the author only)" },
+    { "id": "BR4.4", "status": "OK", "target": "packages/application/src/modules/review/queries/get-history.ts (no actor, persona, account or reason in any result)" },
+    { "id": "BR4.5", "status": "OK", "target": "apps/web/src/components/patient/review-history/ReviewHistory.tsx (frozen props, nothing on not_found, fallback on a throw); OriginalText.tsx; VersionList.tsx" },
+    { "id": "BR5.1", "status": "OK", "target": "apps/web/src/app/[locale]/(patient)/experiences/[id]/edit/page.tsx; apps/web/src/components/patient/compose/EditForm.tsx" },
+    { "id": "BR5.2", "status": "OK", "target": "apps/web/src/components/patient/experience/ExperiencePage.tsx (edit link for every review kind)" },
+    { "id": "BR5.3", "status": "OK", "target": "packages/i18n/messages/en.json; packages/i18n/messages/bn.json; packages/i18n/src/keys.ts; packages/i18n/scripts/check-parity.mjs" },
+    { "id": "BR5.4", "status": "OK", "target": "apps/web/src/server/actions/review-edit.ts (result mapping; auth.email_unverified added, ISS-724)" },
+    { "id": "BR6.1", "status": "OK", "target": "apps/web/src/server/actions/review.ts; packages/database/src/demo/reviews.ts; packages/contracts/src/view-models/demo.ts (demo edit code retired; the remaining items wait for Step 33, ISS-737)" }
+  ]
+}

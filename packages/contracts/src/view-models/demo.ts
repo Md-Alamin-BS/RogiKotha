@@ -4,7 +4,6 @@
 // one package that both the database data functions and the web components may import (T-010).
 import type {
   AccountStatus,
-  EvidenceState,
   IdentityMode,
   Locale,
   Outcome,
@@ -177,42 +176,6 @@ export interface DemoCreateReviewInput {
   outcome: Outcome | null;
   identityMode: 'named' | 'pseudonymous';
   language: DemoReviewLanguage;
-}
-
-export interface DemoUpdateReviewFields {
-  title: string;
-  body: string;
-  sentiment: Sentiment | null;
-  outcome: Outcome | null;
-}
-
-export type DemoEvidenceMime = 'image/jpeg' | 'image/png';
-
-/** The outcome of the ClamAV scan of one upload. */
-export type DemoScanResult = 'clean' | 'infected' | 'error';
-
-export interface DemoAddEvidenceInput {
-  reviewId: string;
-  ownerAccountId: string;
-  /** Path of the original under `var/evidence/`, outside the web root. */
-  storageKey: string;
-  /** The type detected from the file's magic bytes, not the declared one. */
-  mime: DemoEvidenceMime;
-  size: number;
-  sha256: string;
-  /** AES-256-GCM of the original file name (`apps/web/src/server/crypto.ts`). */
-  originalFilenameEnc: Uint8Array;
-}
-
-/** One of the author's own files. The file name stays encrypted until the server decrypts it. */
-export interface DemoOwnEvidenceRow {
-  id: string;
-  publicId: string;
-  state: EvidenceState;
-  mime: DemoEvidenceMime;
-  size: number;
-  originalFilenameEnc: Uint8Array;
-  createdAt: Date;
 }
 
 export interface DemoComment {

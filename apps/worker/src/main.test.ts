@@ -2,6 +2,7 @@
 // job registry, imports a fresh copy of the module and drives it through the process hooks it
 // registers. No database, queue or signal is real.
 import type * as Database from '@rogikotha/database';
+import type { JobAttempt } from '@rogikotha/database';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { WorkerContainer } from './container.js';
@@ -62,7 +63,10 @@ class FakeWorld {
   closed = 0;
   failEnsureWith: ((queue: string) => { error: unknown }) | undefined;
   failStartWith: Error | undefined;
-  private readonly workHandlers = new Map<string, (payload: unknown) => Promise<void>>();
+  private readonly workHandlers = new Map<
+    string,
+    (payload: unknown, attempt?: JobAttempt) => Promise<void>
+  >();
 
   readonly ctx = {
     db: {},
@@ -87,7 +91,11 @@ class FakeWorld {
         const failure = this.failEnsureWith?.(name);
         return failure === undefined ? Promise.resolve() : rejectWith(failure.error);
       },
-      work: (name: string, handler: (payload: unknown) => Promise<void>, opts?: unknown) => {
+      work: (
+        name: string,
+        handler: (payload: unknown, attempt?: JobAttempt) => Promise<void>,
+        opts?: unknown,
+      ) => {
         this.workHandlers.set(name, handler);
         this.worked.push({ name, opts });
         return Promise.resolve();
@@ -112,12 +120,12 @@ class FakeWorld {
   }
 
   /** What pg-boss does when a job arrives on `name`. */
-  deliver(name: string, payload: unknown): Promise<void> {
+  deliver(name: string, payload: unknown, attempt?: JobAttempt): Promise<void> {
     const handler = this.workHandlers.get(name);
     if (handler === undefined) {
       throw new Error(`no handler registered for ${name}`);
     }
-    return handler(payload);
+    return handler(payload, attempt);
   }
 }
 
@@ -223,7 +231,22 @@ describe('worker entry point', () => {
 
       expect(world.worked).toEqual([{ name: 'search.refresh', opts: { batchSize: 5 } }]);
       expect(world.scheduled).toEqual([]);
-      expect(handler).toHaveBeenCalledWith({ eventId: 'evt-1' }, world.ctx);
+      expect(handler).toHaveBeenCalledWith({ eventId: 'evt-1' }, world.ctx, undefined);
+    });
+
+    it('passes the attempt metadata of the job on to its handler (U48 BR4.9)', async () => {
+      const handler = vi.fn(() => Promise.resolve());
+      const attempt: JobAttempt = {
+        jobId: 'job-1',
+        retryCount: 3,
+        retryLimit: 3,
+        signal: new AbortController().signal,
+      };
+
+      await start({ 'evidence.process': { handler } });
+      await world.deliver('evidence.process', { eventId: 'evt-2' }, attempt);
+
+      expect(handler).toHaveBeenCalledWith({ eventId: 'evt-2' }, world.ctx, attempt);
     });
 
     it('schedules a queue-driven job that carries a cron expression', async () => {

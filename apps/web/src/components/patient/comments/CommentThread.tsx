@@ -1,131 +1,72 @@
-import type { DemoComment, DemoCommentThread } from '@rogikotha/contracts';
-import type { Locale } from '@rogikotha/i18n';
-import { formatDate } from '@rogikotha/i18n/format';
-import { useLocale, useTranslations } from 'next-intl';
+import type { ThreadVM } from '@rogikotha/contracts';
+import { getLocale, getTranslations } from 'next-intl/server';
 
-import { Link } from '@/i18n/routing';
-import { Byline } from '../experience/Byline';
-import { dhakaIsoDate } from '../experience/people';
-import { CommentActions } from './CommentActions';
+import { ContributionGatePanel } from '@/components/patient/auth/ContributionGate';
+import { getContributionAccess } from '@/server/actions/account';
+import { safeAuthNext } from '@/server/actions/auth-form';
+import { loadThread } from '@/server/actions/comment-thread';
+import { logSlotFailure } from '@/server/actions/review-slots';
+import { CommentDisclaimer } from './CommentDisclaimer';
 import { CommentForm } from './CommentForm';
+import { CommentThreadView } from './CommentThreadView';
 
-// Port of the discussion part of concept-04b's renderAccount() and its commentHtml() (app.js):
-// oldest first, one reply level, tombstones that keep a thread readable (FR6.1–FR6.3).
-export function CommentThread({
-  reviewPublicId,
-  threads,
-  signedIn,
-}: {
-  reviewPublicId: string;
-  threads: DemoCommentThread[];
-  signedIn: boolean;
-}) {
-  const t = useTranslations();
+// C16 slot (props frozen): the experience page passes only the public id. The disclaimer comes
+// first in every state; a closed thread or a failed read shows a note and never throws (BR5.5).
+export async function CommentThread({ reviewPublicId }: { reviewPublicId: string }) {
+  const t = await getTranslations();
+  let thread: ThreadVM;
+  try {
+    thread = await loadThread(reviewPublicId);
+  } catch (error: unknown) {
+    logSlotFailure('comments', error);
+    return (
+      <div data-testid="comment-thread-error">
+        <CommentDisclaimer />
+        <section aria-labelledby="discussion-head">
+          <h2 className="section-head" id="discussion-head">
+            {t('experience.discussion')}
+          </h2>
+          <p className="note">{t('errors.common.internal')}</p>
+        </section>
+      </div>
+    );
+  }
+  if (!thread.open) {
+    return (
+      <div data-testid="comment-thread-closed">
+        <CommentDisclaimer />
+        <section aria-labelledby="discussion-head">
+          <h2 className="section-head" id="discussion-head">
+            {t('experience.discussion')}
+          </h2>
+          <p className="note">{t('experience.discussionClosed')}</p>
+        </section>
+      </div>
+    );
+  }
 
+  const access = await getContributionAccess();
+  const locale = await getLocale();
+  const canContribute = access === 'allowed';
   return (
-    <section aria-labelledby="discussion-head">
-      <h2 className="section-head" id="discussion-head">
-        {t('experience.discussion')}
-      </h2>
-      {threads.length > 0 ? (
-        <div>
-          {threads.map((thread) => (
-            <CommentItem
-              key={thread.publicId}
-              comment={thread}
-              replies={thread.replies}
-              reviewPublicId={reviewPublicId}
-              signedIn={signedIn}
-            />
-          ))}
-        </div>
-      ) : (
-        <p className="note">{t('mine.empty')}</p>
-      )}
-      <p className="note">{t('experience.replyLevel')}</p>
-
-      {signedIn ? (
+    <div data-testid="comment-thread">
+      <CommentDisclaimer />
+      <CommentThreadView
+        reviewPublicId={reviewPublicId}
+        thread={thread}
+        canContribute={canContribute}
+      />
+      {canContribute ? (
         <div className="composer-box">
           <CommentForm reviewPublicId={reviewPublicId} />
         </div>
       ) : (
-        <p className="note">
-          <Link
-            className="link-btn"
-            href={{ pathname: '/sign-in', query: { next: `/experiences/${reviewPublicId}` } }}
-          >
-            {t('experience.signInToComment')}
-          </Link>
-        </p>
-      )}
-    </section>
-  );
-}
-
-function CommentItem({
-  comment,
-  replies,
-  reviewPublicId,
-  signedIn,
-}: {
-  comment: DemoComment;
-  /** Null for a reply, which can have none (one reply level). */
-  replies: DemoComment[] | null;
-  reviewPublicId: string;
-  signedIn: boolean;
-}) {
-  const t = useTranslations();
-  const locale = useLocale() as Locale;
-  const replyList =
-    replies && replies.length > 0 ? (
-      <div className="comment-replies">
-        {replies.map((reply) => (
-          <CommentItem
-            key={reply.publicId}
-            comment={reply}
-            replies={null}
-            reviewPublicId={reviewPublicId}
-            signedIn={signedIn}
-          />
-        ))}
-      </div>
-    ) : null;
-
-  if (comment.tombstone) {
-    return (
-      <article className="comment tombstone">
-        <p className="note">
-          <b>{t('experience.commentGone')}</b> {t('experience.commentGoneWhy')}
-        </p>
-        {replyList}
-      </article>
-    );
-  }
-
-  const isoDate = dhakaIsoDate(comment.createdAt);
-  return (
-    <article className="comment">
-      <div className="comment-head">
-        <Byline
-          variant="comment"
-          name={comment.authorDisplayName}
-          identity={comment.authorDisplayName === null ? 'anon' : undefined}
-          when={formatDate(isoDate, locale)}
-          whenDateTime={isoDate}
+        <ContributionGatePanel
+          access={access}
+          purpose="comment"
+          next={safeAuthNext(`/${locale}/experiences/${reviewPublicId}`)}
         />
-        {comment.canDelete ? (
-          <span className="badge plain">{t('experience.ownComment')}</span>
-        ) : null}
-      </div>
-      <p>{comment.body}</p>
-      <CommentActions
-        reviewPublicId={reviewPublicId}
-        commentPublicId={comment.publicId}
-        authorName={comment.authorDisplayName}
-        canReply={signedIn && replies !== null}
-        canDelete={comment.canDelete}
-      />
-      {replyList}
-    </article>
+      )}
+    </div>
   );
 }

@@ -68,9 +68,9 @@ export const evidenceItems = pgTable(
     // Private (02-data-model.md §7).
     originalFilenameEnc: bytea('original_filename_enc').notNull(),
     pageCount: integer('page_count').notNull().default(1),
-    // Private — `rk_worker` is granted SELECT on this one column only
-    // (0006_grants_part2.sql), because notification delivery needs the
-    // author, per 02-data-model.md §16.
+    // Private. `0005_grants_part2.sql` grants `rk_worker` table-wide SELECT on
+    // `evidence_items`, so the database does not hide this column; BR4.8 keeps
+    // it out of the worker's column list (U48, R-06).
     uploadedByAccountId: uuid('uploaded_by_account_id')
       .notNull()
       .references(() => accountProfiles.id),

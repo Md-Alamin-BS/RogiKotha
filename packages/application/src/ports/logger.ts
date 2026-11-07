@@ -21,6 +21,13 @@ export interface LogFields {
   count?: number;
   durationMs?: number;
   retryAfterSec?: number;
+  // U48 BR7.1: an evidence line names the item, its state, the fail-reason code, the attempt and
+  // the error's class, never the file name, bytes, hash, storage key or account.
+  itemId?: string;
+  state?: string;
+  failReason?: string;
+  attempt?: number;
+  errorClass?: string;
 }
 
 export interface Logger {

@@ -69,7 +69,8 @@ export const RELAY: Record<string, JobName[]> = {
   'facility.changed': ['search.refresh'],
   'term.changed': ['search.refresh'],
   'evidence.received': ['evidence.process'],
-  'evidence.stateChanged': ['notification.deliver'],
+  // U48 C15: release 1 has no consumer, so the event is audit only; T-405 adds the route back.
+  'evidence.stateChanged': [],
   'comment.posted': ['notification.deliver'],
   'comment.changed': ['notification.deliver'],
   'report.filed': ['notification.deliver'],
