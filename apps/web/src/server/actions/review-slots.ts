@@ -4,28 +4,13 @@
 // components only and must never become endpoints, since they handle the internal review id.
 // ASSUMPTION(U47): this file is a recorded addition beside `review.ts`; components may reach the
 // server only through `server/actions` (eslint.boundaries.mjs).
-import type { DemoCommentThread } from '@rogikotha/contracts';
-
-import { getActor } from '@/server/auth';
 import { getContainer } from '@/server/container';
-import { comments } from '@/server/data';
 
 async function reviewIdOf(reviewPublicId: string): Promise<string | null> {
   const c = getContainer();
   return c.ports.unitOfWork.read((tx) =>
     c.review.reviewIdForPublicId(tx, { publicId: reviewPublicId }),
   );
-}
-
-/** The demo discussion until U49 (C10) swaps the data source. */
-export async function loadCommentThread(
-  reviewPublicId: string,
-): Promise<{ threads: DemoCommentThread[]; signedIn: boolean } | null> {
-  const reviewId = await reviewIdOf(reviewPublicId);
-  if (reviewId === null) return null;
-  const actor = await getActor();
-  const threads = await comments.listComments(reviewId, actor.accountId ?? null);
-  return { threads, signedIn: actor.kind === 'account' };
 }
 
 /** How many documents the public may count (C17), until U48 binds Evidence's implementation. */

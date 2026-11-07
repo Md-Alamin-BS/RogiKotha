@@ -16,6 +16,17 @@ This decision is binding and overrides the text below where they differ.
 
 - **FD-091 — patient redesign and motion** — Pages are built on the T-011 tokens, classes and motion components (`RouteTransition`, `Reveal`), not on the concept 04b styles. The prototype stays the source of truth for content, data, structure and behaviour (copy, fields, states, flows, hard-rule wording), but not for the look. The project rule of 2026-10-27 (`project.md`, Code Style) overrides the team.md verbatim-CSS rule for patient pages; verbatim port applies only to the staff console. Page-specific styles go in this Unit's own section of `patient.css` (append-only, each rule marked `/* added: T-402 reason */`) and use only T-011 tokens and class names. Tokens, shell styles and motion rules belong to T-011; a Unit that needs a new token asks for it through an ISSUES.md row instead of editing `tokens.css` or `motion.css`. Prototype class names are kept only where T-011 kept them. Changes: Depends on, Read first, Steps intro, the motion step and the acceptance checks.
 
+## Amendments — release 1 (FD-105, built by U49)
+
+These decisions are binding and override the text below where they differ. Release 1 builds this task inside Unit U49 `u49-comments`, together with the comment part of T-401 (record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u49-comments/`).
+
+- **FD-105 — what release 1 builds** — the `<CommentThread reviewPublicId>` slot that U47 mounts on the experience page: the disclaimer, the thread with one reply level and a deleted-comment placeholder, the composer and reply form, and delete with a confirm step. No like, dislike, report, mention or edit control (reactions, T-403 and T-405 are release 2); the report trigger and the `<ReportSheet/>` stub are not built, so the hard-rule row "report route reachable from every comment" is deferred.
+- **Server access** — the slot reads through `apps/web/src/server/actions/comment-thread.ts` (`loadThread`), because components may reach the server only through `server/actions`.
+- **Gate** — signed-out and unconfirmed readers see U9's `ContributionGatePanel` instead of the composer. A forged post or delete from a signed-out or restricted caller gets the `forbidden` state, not a sign-in redirect (ISS-671).
+- **Copy** — six new keys in both locales (`disclaimer.comments`, `experience.noComments`, `experience.discussionClosed`, `experience.threadTruncated`, `experience.deleteConfirm`, `experience.deleteCancel`); the Bengali copy awaits the owner's review at U50 (ISS-676).
+- **Styles** — U49 adds no CSS class; it reuses the existing patient classes.
+- **Walks** — the storyboard step 15 round trip and the reduced-motion journey are left to the owner's phase-gate walk (ISS-677).
+
 ## Goal
 
 Port the prototype's comment thread, reply box, inline editor, delete/tombstone, reactions, bookmark button, persistent advice warning and link warning into React components under the experience page, wired to the T-401 server actions, with the signed-out/unverified gates from the auth spec.
@@ -85,9 +96,23 @@ Component tests listed in step 9; one action test that a thrown command error be
 
 ## Hand-off (implementer fills in)
 
+Built in release 1 by Unit U49 `u49-comments` (branch `bolt/u49-comments`, 2026-11-07); the full record is `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u49-comments/code-generation/code-summary.md`.
+
 ### What changed
+- `apps/web/src/components/patient/comments/`: `CommentThread`, `CommentDisclaimer`, `CommentThreadView` (on `ThreadVM`), `CommentPlaceholder`, `CommentForm`, `CommentActions`, `DeleteCommentButton`; `server/actions/comments.ts` on `runCommand` and the new `server/actions/comment-thread.ts`; the community module in `server/container.ts`; six keys in `en.json` and `bn.json`.
+- `Byline.tsx` (U47) shows the thread alias on the comment variant (ISS-673).
+
 ### Not done and why
+- Like and Dislike, report trigger, mentions, edit, blocks: release 2 (FD-105). The manual server round trip and the reduced-motion journey: the owner's phase-gate walk (ISS-677).
+
 ### Questions for the human
+- Review the Bengali copy of the five new `experience.*` keys (ISS-676).
+
 ### Follow-ups
+- ISS-671 (forbidden state instead of a sign-in redirect), ISS-672, ISS-676 to ISS-678.
+
 ### `pnpm check` output summary
+- Green on the final tree; see `code-summary.md`. `pnpm smoke` green. `impeccable detect` found nothing; `pnpm contrast` and `pnpm check:motion` pass.
+
 ### Hard-rule evidence
+- Disclaimer first and in every state, no reporter identity, thread alias only for anonymous authors, both locales: `CommentThread.test.tsx`, `CommentThreadView.test.tsx`, `CommentForm.test.tsx`, `DeleteCommentButton.test.tsx` (each in `en` and `bn`).

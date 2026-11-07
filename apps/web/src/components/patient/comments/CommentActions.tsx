@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { CommentForm } from './CommentForm';
@@ -25,7 +25,12 @@ export function CommentActions({
   const t = useTranslations();
   const [replying, setReplying] = useState(false);
   const boxId = useId();
-  const close = () => setReplying(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  // Focus goes into the box when it opens (the form's autoFocus) and back to the toggle on close.
+  const close = () => {
+    setReplying(false);
+    toggleRef.current?.focus();
+  };
 
   if (!canReply && !canDelete) return null;
   return (
@@ -35,6 +40,7 @@ export function CommentActions({
           <button
             className="link-btn"
             type="button"
+            ref={toggleRef}
             aria-expanded={replying}
             aria-controls={replying ? boxId : undefined}
             onClick={() => setReplying((open) => !open)}

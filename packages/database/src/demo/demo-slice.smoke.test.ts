@@ -7,13 +7,13 @@ import { describe, expect, it } from 'vitest';
 import { authUsers } from '../schema/auth';
 import { doctors as doctorTable } from '../schema/directory';
 import { reviews } from '../schema/review';
+import { PgCommunityRepository } from '../repositories/community';
 import { PgDirectoryModuleRepository } from '../repositories/directory-module';
 import { PgReviewReadRepository } from '../repositories/review-reads';
 import { PgTaxonomyModuleRepository } from '../repositories/taxonomy-module';
 import { testDb } from '../test-setup';
 import { appTxOf } from '../unit-of-work';
 import { createProfileForAuthUser } from './accounts';
-import { addComment, listComments } from './comments';
 import { getReviewByPublicId } from './reviews';
 import { getCurrentAccountByAuthUserId } from './session';
 
@@ -103,16 +103,19 @@ describe('demo slice smoke', () => {
       readyEvidenceCount: 0,
     });
 
-    const posted = await addComment(testDb, {
+    const communityRepo = new PgCommunityRepository();
+    const posted = await communityRepo.insert(tx, {
+      id: newId(),
+      publicId: newPublicId(),
       reviewId,
-      parentPublicId: null,
+      parentId: null,
       authorPersonaId: account!.currentPersonaId,
       body: 'Thank you for writing this.',
     });
     expect(posted.ok).toBe(true);
-    const threads = await listComments(testDb, reviewId, account!.accountId);
-    expect(threads).toEqual([
-      expect.objectContaining({ body: 'Thank you for writing this.', canDelete: true }),
+    const rows = await communityRepo.threadRows(tx, { reviewId, limit: 501 });
+    expect(rows).toEqual([
+      expect.objectContaining({ body: 'Thank you for writing this.', state: 'published' }),
     ]);
   });
 

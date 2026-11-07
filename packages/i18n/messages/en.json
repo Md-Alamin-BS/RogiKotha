@@ -537,7 +537,8 @@
   },
   "disclaimer": {
     "long": "Everything below is written by members of the public about their own or a witnessed experience. RogiKotha does not diagnose, does not verify clinical correctness, and does not decide whether care was negligent. Do not change or delay treatment based on what you read here.",
-    "short": "Patient-reported experiences. Not medical advice."
+    "short": "Patient-reported experiences. Not medical advice.",
+    "comments": "Comments are members' own experiences and views, not medical advice."
   },
   "discover": {
     "browse": "Browse by health topic",
@@ -801,6 +802,11 @@
     "replyPost": "Post reply",
     "sentimentLabel": "Overall",
     "signInToComment": "Sign in to comment",
+    "noComments": "No comments yet.",
+    "discussionClosed": "The discussion for this experience is not available.",
+    "threadTruncated": "This discussion is long, so only the first 500 comments are shown.",
+    "deleteConfirm": "Delete this comment? This cannot be undone.",
+    "deleteCancel": "Keep comment",
     "yourExperience": "Your experience"
   },
   "facility": {

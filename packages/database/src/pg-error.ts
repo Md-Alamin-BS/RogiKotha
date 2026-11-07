@@ -20,3 +20,22 @@ export function uniqueViolationConstraint(error: unknown): string | null {
   }
   return null;
 }
+
+const RAISE_EXCEPTION = 'P0001';
+
+/** True for a `RAISE EXCEPTION` whose message starts with `prefix`, looking through wrapping errors. */
+export function isRaiseWithPrefix(error: unknown, prefix: string): boolean {
+  let current: unknown = error;
+  for (let depth = 0; depth < 5 && typeof current === 'object' && current !== null; depth++) {
+    const fields = current as PgErrorFields & { message?: unknown };
+    if (
+      fields.code === RAISE_EXCEPTION &&
+      typeof fields.message === 'string' &&
+      fields.message.startsWith(prefix)
+    ) {
+      return true;
+    }
+    current = fields.cause;
+  }
+  return false;
+}

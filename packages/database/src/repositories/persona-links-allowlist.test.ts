@@ -21,7 +21,6 @@ const ALLOWED: Record<string, string> = {
   'packages/database/src/demo/accounts-create.ts': 'demo slice, removed by U47',
   'packages/database/src/demo/reviews.ts': 'demo slice, removed by U47',
   'packages/database/src/demo/session.ts': 'demo slice, removed by U47',
-  'packages/database/src/demo/comments.ts': 'demo slice, removed by U49',
 };
 
 const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', '.next', '.turbo', 'coverage']);

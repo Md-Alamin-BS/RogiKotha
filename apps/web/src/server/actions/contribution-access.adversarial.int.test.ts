@@ -2,8 +2,8 @@
 // confirmed its address signs in with its password and tries to write and comment anyway. The
 // gate must not answer `allowed`, and the publish and comment actions must refuse it on their own,
 // because a page that skips the gate (or a hand-built POST) reaches them directly.
-// The publish path is U47's `publishDraftAction` (the review module); the comment path is still the
-// demo slice's `postComment`, which U49 replaces.
+// The publish path is U47's `publishDraftAction` (the review module); the comment path is U49's
+// `postComment` (the community module).
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { optionalEnv } from '../env';
@@ -99,10 +99,13 @@ describe('an unconfirmed account trying to contribute (BR8.1)', () => {
       ),
     );
 
-    // Refused by the guard, as a signed-out visitor is, before any data is read: a returned
-    // `errors.common.notFound` for the review means the account got past it.
-    expect(stateOf(outcome)).toBeNull();
-    expect(thrownBy(outcome)).toContain('NEXT_REDIRECT');
+    // Refused by the module's requirements before any data is read: a returned
+    // `errors.common.notFound` for the review means the account got past them.
+    expect(stateOf(outcome)).toMatchObject({
+      status: 'error',
+      messageKey: 'errors.auth.emailUnverified',
+    });
+    expect(thrownBy(outcome)).toBeNull();
   }, 60_000);
 
   it('cannot publish a review by calling the publish action directly', async () => {

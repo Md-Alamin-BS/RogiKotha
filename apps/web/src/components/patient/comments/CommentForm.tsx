@@ -67,6 +67,7 @@ export function CommentForm({
         id={fieldId}
         name="body"
         placeholder={t('experience.commentBox')}
+        required
         maxLength={COMMENT_BODY_MAX}
         defaultValue={state.status === 'error' ? (state.body ?? '') : ''}
         aria-invalid={error ? true : undefined}
