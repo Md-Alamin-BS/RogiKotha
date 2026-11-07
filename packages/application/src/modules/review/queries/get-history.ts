@@ -21,21 +21,24 @@ import { isReviewAuthor } from './is-review-author';
 import { isReviewPublished } from './is-review-published';
 import { reviewIdForPublicId } from './review-id-for-public-id';
 
-function isSentiment(value: string | undefined): value is Sentiment {
-  return (SENTIMENTS as readonly (string | undefined)[]).includes(value);
+function isSentiment(value: string | null | undefined): value is Sentiment {
+  return (SENTIMENTS as readonly (string | null | undefined)[]).includes(value);
 }
 
-function isOutcome(value: string | undefined): value is Outcome {
-  return (OUTCOMES as readonly (string | undefined)[]).includes(value);
+function isOutcome(value: string | null | undefined): value is Outcome {
+  return (OUTCOMES as readonly (string | null | undefined)[]).includes(value);
 }
 
-/** Domain keeps sentiment and outcome as text; a value outside the enums is left out, never 0. */
+/**
+ * Domain keeps sentiment and outcome as text; null (Not provided) passes through, and a value
+ * outside the enums is left out, never 0.
+ */
 function toOriginalVM(original: OriginalText): OriginalTextVM {
   const { sentiment, outcome, ...rest } = original;
   return {
     ...rest,
-    ...(isSentiment(sentiment) ? { sentiment } : {}),
-    ...(isOutcome(outcome) ? { outcome } : {}),
+    ...(sentiment === null || isSentiment(sentiment) ? { sentiment } : {}),
+    ...(outcome === null || isOutcome(outcome) ? { outcome } : {}),
   };
 }
 

@@ -134,8 +134,11 @@ export interface OriginalTextVM {
   title: string;
   story?: string;
   sections?: Partial<Record<ReviewSectionKey, string>>;
-  sentiment?: Sentiment;
-  outcome?: Outcome;
+  /** Null renders Not provided: empty before, and named by the correction. */
+  sentiment?: Sentiment | null;
+  /** Null renders Not provided: empty before, and named by the correction. */
+  outcome?: Outcome | null;
+  /** Empty renders Not provided: no label before, and the labels named by the correction. */
   claims?: string[];
 }
 

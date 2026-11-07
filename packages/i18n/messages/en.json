@@ -880,7 +880,7 @@
       "edited": "Edited",
       "published": "Published"
     },
-    "originalHeading": "As first written, before this correction",
+    "originalHeading": "Wording before this correction",
     "showOriginal": "Show original",
     "unavailable": "The edit history could not be loaded right now.",
     "version": "Version {n}",

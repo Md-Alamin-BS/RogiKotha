@@ -369,7 +369,15 @@ export async function seedContent(db: Db, ctx: SeedContext): Promise<number> {
       id: newId(),
       reviewId,
       version: 1,
-      snapshot: { title: r.title.bn, body: r.body.bn, sections },
+      // The same version-1 snapshot as U47's publish: Show original reads it (U22 review R-01).
+      snapshot: {
+        kind: r.detailed ? 'detailed' : 'quick',
+        title: r.title.bn,
+        ...(r.detailed ? { sections } : { body: r.body.bn }),
+        sentiment: r.sentiment,
+        outcome: r.outcome,
+        claims,
+      },
       changeKind: 'publish',
       actorKind: 'author',
       actorId: null,

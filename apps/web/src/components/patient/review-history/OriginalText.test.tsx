@@ -67,6 +67,57 @@ describe.each(['en', 'bn'] as const)('OriginalText in %s', (locale) => {
     expect(screen.getAllByText(t('label.reviewerLabel'))).toHaveLength(2);
   });
 
+  it('shows Not provided for an earlier sentiment, outcome and labels that were empty (review R-02)', () => {
+    renderInLocale(
+      locale,
+      <OriginalText
+        original={{
+          kind: 'quick',
+          title: 'T',
+          story: english,
+          sentiment: null,
+          outcome: null,
+          claims: [],
+        }}
+      />,
+    );
+    const notProvided = t('label.notProvided');
+    expect(screen.getByTestId('original-sentiment')).toHaveTextContent(
+      `${t('experience.sentimentLabel')}: ${notProvided}`,
+    );
+    expect(screen.getByTestId('original-outcome')).toHaveTextContent(
+      `${t('experience.outcomeLabel')}: ${notProvided}`,
+    );
+    expect(screen.getByTestId('original-claims')).toHaveTextContent(
+      `${t('label.reviewerLabel')}: ${notProvided}`,
+    );
+    expect(screen.getByTestId('original-text').textContent).not.toMatch(/[0০]/);
+  });
+
+  it('shows no sentiment, outcome or labels line for keys the snapshot lacks', () => {
+    renderInLocale(
+      locale,
+      <OriginalText original={{ kind: 'quick', title: 'T', story: english }} />,
+    );
+    expect(screen.queryByTestId('original-sentiment')).toBeNull();
+    expect(screen.queryByTestId('original-outcome')).toBeNull();
+    expect(screen.queryByTestId('original-claims')).toBeNull();
+  });
+
+  it('names every contract label code in the active language', () => {
+    renderInLocale(
+      locale,
+      <OriginalText
+        original={{ kind: 'quick', title: 'T', claims: ['wrongDx', 'wrongRx', 'secondOpinion'] }}
+      />,
+    );
+    const claims = screen.getByTestId('original-claims');
+    for (const code of ['wrongDx', 'wrongRx', 'secondOpinion'] as const) {
+      expect(claims).toHaveTextContent(t(`claim.${code}`));
+      expect(claims).not.toHaveTextContent(code);
+    }
+  });
+
   it('marks the text with lang only when its language differs from the page', () => {
     const { unmount } = renderInLocale(
       locale,

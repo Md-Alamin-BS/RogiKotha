@@ -264,8 +264,11 @@ export interface OriginalText {
   title: string;
   story?: string;
   sections?: FilledSections;
-  sentiment?: string;
-  outcome?: string;
+  /** Null: the snapshot held it empty and the correction named it (renders Not provided). */
+  sentiment?: string | null;
+  /** Null: the snapshot held it empty and the correction named it (renders Not provided). */
+  outcome?: string | null;
+  /** Empty only when the snapshot held no label and the correction named the labels. */
   claims?: string[];
 }
 
@@ -306,12 +309,17 @@ function claimLabels(value: unknown): string[] | undefined {
 }
 
 /**
- * The text of a version snapshot for Show original (BR4.2). A key the snapshot lacks, or holds as
- * null, is left out, never filled with Not provided or 0; the kind is read from `body` or
- * `sections` when the snapshot names none (seed rows).
+ * The text of a version snapshot for Show original (BR4.2). A key the snapshot lacks is left out.
+ * A sentiment, outcome or label list the snapshot holds empty is kept as null or `[]` (Not
+ * provided) when `corrected` names it, and left out otherwise (review R-02). With no kind, non-empty
+ * sections mean detailed: legacy seed rows hold the quick summary beside the sections (review R-01).
  */
-export function toOriginalText(snapshot: unknown): OriginalText {
+export function toOriginalText(
+  snapshot: unknown,
+  corrected: readonly CorrectionField[] = [],
+): OriginalText {
   const s = isRecord(snapshot) ? snapshot : {};
+  const named = new Set<CorrectionField>(corrected);
   const rawSections = isRecord(s.sections) ? s.sections : {};
   const sections = filledSections(
     Object.fromEntries(
@@ -323,20 +331,25 @@ export function toOriginalText(snapshot: unknown): OriginalText {
   );
   const hasSections = Object.keys(sections).length > 0;
   const kind: ReviewKind =
-    s.kind === 'quick' || s.kind === 'detailed'
-      ? s.kind
-      : !nonEmptyString(s.body) && hasSections
-        ? 'detailed'
-        : 'quick';
-  const claims = claimLabels(s.claims);
+    s.kind === 'quick' || s.kind === 'detailed' ? s.kind : hasSections ? 'detailed' : 'quick';
+  const judgement = (field: 'sentiment' | 'outcome'): string | null | undefined => {
+    const value = s[field];
+    if (nonEmptyString(value)) return value;
+    return field in s && named.has(field) ? null : undefined;
+  };
+  const sentiment = judgement('sentiment');
+  const outcome = judgement('outcome');
+  const labels = claimLabels(s.claims) ?? (s.claims === null ? [] : undefined);
+  const claims =
+    labels === undefined || (labels.length === 0 && !named.has('claims')) ? undefined : labels;
   return {
     kind,
     // ASSUMPTION(U22): a snapshot without a title (none is written so) gives an empty title.
     title: typeof s.title === 'string' ? s.title : '',
     ...(kind === 'quick' && nonEmptyString(s.body) ? { story: s.body } : {}),
     ...(kind === 'detailed' && hasSections ? { sections } : {}),
-    ...(nonEmptyString(s.sentiment) ? { sentiment: s.sentiment } : {}),
-    ...(nonEmptyString(s.outcome) ? { outcome: s.outcome } : {}),
+    ...(sentiment !== undefined ? { sentiment } : {}),
+    ...(outcome !== undefined ? { outcome } : {}),
     ...(claims !== undefined ? { claims } : {}),
   };
 }
@@ -363,7 +376,7 @@ export function toHistory(rows: readonly VersionHistoryRow[], isAuthor: boolean)
       {
         at: row.createdAt.toISOString(),
         fields,
-        original: toOriginalText(byVersion.get(row.version - 1)?.content),
+        original: toOriginalText(byVersion.get(row.version - 1)?.content, fields),
       },
     ];
   });

@@ -1,11 +1,15 @@
-import type { OriginalTextVM, ReviewSectionKey } from '@rogikotha/contracts';
+import {
+  REVIEWER_LABEL_CODES,
+  type OriginalTextVM,
+  type ReviewSectionKey,
+} from '@rogikotha/contracts';
 import type { Locale } from '@rogikotha/i18n';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { paragraphs } from '@/components/patient/experience/people';
 
 const SECTION_ORDER: readonly ReviewSectionKey[] = ['symptoms', 'diagnosis', 'treatment', 'after'];
-const CLAIM_CODES: readonly string[] = ['wrongDx', 'wrongRx', 'secondOpinion'];
+const CLAIM_CODES: readonly string[] = REVIEWER_LABEL_CODES;
 
 // ASSUMPTION(U22): the version snapshot stores no language, so the script of the original decides:
 // Bengali letters only gives `bn`, Latin letters only gives `en`, a mix gives nothing (the page's).
@@ -21,12 +25,14 @@ function languageOf(original: OriginalTextVM): Locale | undefined {
 }
 
 // The wording before a material correction, public to every reader (BR4.2). A key the snapshot
-// lacks is left out, never shown as "Not provided" or 0.
+// lacks is left out; a null or empty value (empty before, and named by the correction) reads Not
+// provided, as the page's flags do (review R-02).
 export function OriginalText({ original }: { original: OriginalTextVM }) {
   const t = useTranslations();
   const locale = useLocale() as Locale;
   const language = languageOf(original);
   const lang = language !== undefined && language !== locale ? language : undefined;
+  const notProvided = t('label.notProvided');
   const sections = SECTION_ORDER.flatMap((key) => {
     const body = original.sections?.[key];
     return body ? [{ key, body }] : [];
@@ -52,18 +58,27 @@ export function OriginalText({ original }: { original: OriginalTextVM }) {
             ))}
           </ol>
         ) : null}
-        {original.sentiment ? (
-          <p className="note">
-            {`${t('experience.sentimentLabel')}: ${t(`sentiment.${original.sentiment}`)}`}
+        {original.sentiment !== undefined ? (
+          <p className="note" data-testid="original-sentiment">
+            {`${t('experience.sentimentLabel')}: ${
+              original.sentiment === null ? notProvided : t(`sentiment.${original.sentiment}`)
+            }`}
           </p>
         ) : null}
-        {original.outcome ? (
-          <p className="note">
-            {`${t('experience.outcomeLabel')}: ${t(`outcome.${original.outcome}`)}`}
+        {original.outcome !== undefined ? (
+          <p className="note" data-testid="original-outcome">
+            {`${t('experience.outcomeLabel')}: ${
+              original.outcome === null ? notProvided : t(`outcome.${original.outcome}`)
+            }`}
+          </p>
+        ) : null}
+        {original.claims !== undefined && original.claims.length === 0 ? (
+          <p className="note" data-testid="original-claims">
+            {`${t('label.reviewerLabel')}: ${notProvided}`}
           </p>
         ) : null}
         {original.claims !== undefined && original.claims.length > 0 ? (
-          <p>
+          <p data-testid="original-claims">
             {original.claims.map((claim) => (
               <span key={claim} className="reviewer-label">
                 <b>{CLAIM_CODES.includes(claim) ? t(`claim.${claim}`) : claim}</b>
