@@ -145,6 +145,43 @@ No web or application caller logs a free-text field. Every web field Step 4 foun
 - **Step 32:** `apps/web/src/log-scrub.int.test.ts` (`web-int`, 5 tests) registers, confirms and signs in `mitu.logscrub.demo+<run>@example.test`, publishes a review and posts a comment (U49 is on `main`, so no conditional S4 row) with `LOGSCRUB-EN-7Q` and `লগস্ক্রাব-বাংলা`, uploads `logscrub-রিপোর্ট-7Q.png` through the route, then a 413 and a 404, and logs a 40-character token through a cast. The captured console, stdout and stderr hold `security.request_refused` and the cast line, but no address, marker, file-name part, token or password. ASSUMPTION(U41): the file sits in `apps/web/src/`, not `server/`, because `web-server` may not import the upload route in `app/` (the `security-cookies.test.ts` precedent). The run id is in the address, so the test can run again on the same database. Worker `log-scrub.test.ts` gains U48's processor case (6 tests now): the last attempt with a reader that throws the leaky message, a delete whose error class is a path, and a path as the storage key writes `evidence.last_attempt_failed` with `errorClass: Error`, `evidence.original_delete_failed` with `errorClass: [scrubbed]` and `evidence.failed`, and no marker.
 - **Tests run (unit-scoped, all green):** web upload route, `route.security.test.ts`, the evidence components, `lib/security`, proxy, settings, cookies, smoke, logger and `root.test.tsx`: 24 files / 321 tests; worker: 16 files / 128 tests; application `ports/` and `worker-subpath`: 2 files / 43 tests; `web-int` upload tests 3 files / 16 tests and `log-scrub.int.test.ts` 5 tests, after `test-support-seed` reset and seeded `rogikotha_test_w8`. `tsc` is clean for `apps/web` and `apps/worker`; ESLint and Prettier are clean on the changed files.
 
+## Step 33 — gate (2026-11-08, branch at `ca0050f` plus the fix below)
+
+| Command | Result |
+|---|---|
+| `timeout 1400 pnpm check` (typecheck, lint, boundaries fixture, `format:check`, identity, `test:coverage`, i18n parity, both contrast checks, motion check, build) | exit 0. Vitest with coverage: 354 files, 4 209 passed, 2 expected fail, 1 skipped (the existing `validator-probes.int.test.ts` probes; U41 added no skip or `fails`). Lint: 0 errors, 1 warning that is older than U41 (unused disable in `packages/i18n/src/routing.ts`, T-006). i18n parity: 993 keys. |
+| `timeout 600 pnpm smoke` | 30 files / 59 tests passed |
+| `timeout 600 pnpm test:int` (`database`, `web-int`, `worker-int`) | 63 files / 431 passed, 2 expected fail |
+| Browser run, whole e2e suite (built app, own database `rogikotha_e2e_w8`, port 3117) | 21 passed, 4 failed. `security-headers.spec.ts` 8 of 8 and `motion.spec.ts` green; the 4 red cases are `demo.spec.ts` (`register()` expects `/sign-in`, T-101 sends to `/verify-email`; ISS-695) |
+
+- The browser run needed its own Playwright config, because `apps/web/playwright.config.ts` fixes port 3107, which other worktrees use. A local copy outside version control (`apps/web/node_modules/.u41/playwright.u41.config.mjs`) differs only in the port (3117) and the output folder. `rogikotha_e2e_w8` no longer existed. It was created again (owner `rk_app`, with `pg_trgm`, `citext` and `pgcrypto`), then built with `pnpm db:reset && pnpm db:seed`, with `DATABASE_URL` pointing at it.
+- Fixed (ISS-694): the first browser run timed out on "reports no CSP violation on five pages" in both locales. The spec followed `experience-row-title-link`, which `main` renamed to `account-row-title-link` (`components/patient/shared/AccountRow.tsx`). The spec now follows the new id, and both cases pass.
+- Line coverage per package after U41 (from `coverage/coverage-summary.json` of the `pnpm check` run). The before figures were not measured at Step 1 (ASSUMPTION(U41) there), so no before/after delta is claimed:
+
+  | Package | Lines | Floor 80% |
+  |---|---|---|
+  | `apps/web` | 3 005 / 3 124 = 96.19% | met |
+  | `apps/worker` | 190 / 190 = 100% | met |
+  | `packages/application` | 1 766 / 1 917 = 92.12% | met |
+  | `packages/i18n` | 55 / 55 = 100% | met |
+  | all packages | 9 429 / 9 819 = 96.02% | met (no threshold failed) |
+
+- Acceptance curls (design § 8.4) against `next start` on `127.0.0.1:3118`, with `rogikotha_e2e_w8` and `APP_ALLOWED_ORIGINS=http://localhost:3118`, sent to `http://localhost:3118`:
+
+  | Request | Expected | Observed |
+  |---|---|---|
+  | `curl -sI /en` | 200, the six BR2.1 headers, a nonce CSP with `'strict-dynamic'` and no `'unsafe-eval'`, no `X-Powered-By`, no HSTS on http | 200; `nosniff`, `strict-origin-when-cross-origin`, the Permissions-Policy list, `DENY`, COOP and CORP `same-origin`; CSP `script-src 'self' 'nonce-…' 'strict-dynamic'`, `style-src 'self' 'unsafe-inline'`, `frame-ancestors 'none'`; no `X-Powered-By` and no `Strict-Transport-Security` |
+  | `curl -sI /bn` | the same headers | 200, the same headers |
+  | two `curl -sI /en` | two different nonces | two different nonces |
+  | `curl -sI -H "Host: evil.example" /en` | 403 from the proxy, empty body | 403, 0 bytes |
+  | `X-Forwarded-Host: evil.example` on `/en` | 403 | 403 |
+  | cross-origin server-action POST (`Origin: http://evil.example`, `Next-Action`) to `/en` | 403 from the proxy | 403, 0 bytes (control: the same POST from the app's origin with an unknown action id gets Next.js's 404, so the proxy let it through) |
+  | cross-origin upload POST to `/api/evidence/upload` (2 KB, and 16 MB) | 403 `forbidden` AppError | 403 `{"error":{"code":"forbidden","messageKey":"errors.common.forbidden",…}}` for both. The 16 MB body was cut off after 327 680 bytes had been sent |
+  | oversized upload, same origin, 16 777 216 bytes declared | 413 `evidence.too_large` with `errors.evidence.tooLarge`, `Connection: close`, API CSP, body not read | 413 `{"error":{"code":"evidence.too_large","messageKey":"errors.evidence.tooLarge",…}}`, `connection: close`, `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'`; 327 680 bytes sent before the refusal |
+
+  The server log of that run holds six `security.request_refused` lines (`kind` and `status` only), and none contains `evil.example`.
+- `ISS-` rows from this step: ISS-694 (S3, fixed in U41) and ISS-695 (S2, open, owner of `demo.spec.ts`). The open S2 blocks the phase gate, not U41's Build and Test.
+
 ## Deferred
 
 - `apps/web/src/server/actions/review.ts:228` (Step 10): U47 owns that file and is rewriting it now. U41 routes the call after U47 merges and this branch is rebased. Until then, Step 11's `no-console` rule leaves that line alone through a temporary file exception in `eslint.config.mjs`, not an inline disable, because U41 does not edit that file. The exception is removed at the rebase. The demo upload action `actions/evidence.ts:158,225` has the same kind of temporary exception until U48 removes it (Step 28).

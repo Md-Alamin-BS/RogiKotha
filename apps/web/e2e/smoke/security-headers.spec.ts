@@ -67,7 +67,7 @@ async function fivePages(page: Page, locale: Locale): Promise<string[]> {
   await expect(page).toHaveURL(new RegExp(`/${locale}/doctors/[^/]+$`));
   const doctor = new URL(page.url()).pathname;
   await load(page, `/${locale}`);
-  await page.getByTestId('experience-row-title-link').first().click();
+  await page.getByTestId('account-row-title-link').first().click();
   await expect(page).toHaveURL(new RegExp(`/${locale}/experiences/[^/]+$`));
   const experience = new URL(page.url()).pathname;
   return [`/${locale}`, `/${locale}/doctors`, doctor, experience, `/${locale}/sign-in`];
