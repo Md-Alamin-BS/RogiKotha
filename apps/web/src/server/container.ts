@@ -2,6 +2,7 @@
 // is built on first use, never at module load, so `next build` needs no `.env` (BR7.2, F27), and
 // it lives on `globalThis` so `next dev` reloads do not open a second pool.
 import {
+  createCommunityModule,
   createDirectoryModule,
   createReviewModule,
   createReviewReadModule,
@@ -11,6 +12,7 @@ import {
   primeDummyCredential,
   type IdentityModule,
   type CommandPorts,
+  type CommunityModule,
   type ConfigProvider,
   type Crypto,
   type DirectoryModule,
@@ -31,6 +33,7 @@ import {
   PgAccountRepository,
   PgAuditWriter,
   PgBossQueue,
+  PgCommunityRepository,
   PgEmailDeliveryRepository,
   PgIdentityRepository,
   PgJobQueue,
@@ -78,6 +81,8 @@ export interface WebContainer {
   review: ReviewModule;
   /** U47 (C17): the count the experience page's evidence slot shows; U48 binds Evidence here. */
   publicEvidence: PublicEvidenceCount;
+  /** U49 (C19): post, delete own, and read the comment thread of a published experience. */
+  community: CommunityModule;
 }
 
 /** BR7.4: defaults only until T-105 gives the runtime settings. */
@@ -197,6 +202,23 @@ function buildContainer(): WebContainer {
   // The same interim binding the review reads use above; U48 replaces both with Evidence's.
   const publicEvidence = createInterimPublicEvidenceCount(db);
 
+  // U49: Community reaches Review and Identity through their seams only (C19, BR3.1).
+  const community = createCommunityModule({
+    comments: new PgCommunityRepository(),
+    review: {
+      reviewIdForPublicId: (tx, input) => review.reviewIdForPublicId(tx, input),
+      isReviewPublished: (tx, input) => review.isReviewPublished(tx, input),
+      isReviewAuthor: (tx, input) => review.isReviewAuthor(tx, input),
+      authorIdentityModeOf: (tx, input) => review.authorIdentityModeOf(tx, input),
+    },
+    identity: {
+      personaFor: (tx, input) => identity.personaFor(tx, input),
+      publicProjection: (tx, input) => identity.publicProjection(tx, input),
+      publicProjections: (tx, input) => identity.publicProjections(tx, input),
+    },
+    ownership: { ownsPersona: (tx, input) => identity.ownership.ownsPersona(tx, input) },
+  });
+
   // Built member by member, so the closed members are not on the object at run time either.
   const webIdentity: WebIdentity = {
     renameNamedCommand: identity.renameNamedCommand,
@@ -215,6 +237,7 @@ function buildContainer(): WebContainer {
     identity: webIdentity,
     review,
     publicEvidence,
+    community,
   };
 }
 

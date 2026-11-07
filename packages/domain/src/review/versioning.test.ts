@@ -204,6 +204,21 @@ describe('validateCorrectionContent', () => {
       { field: 'diagnosis', reason: 'control_character' },
     ]);
   });
+
+  it('allows the Bengali joiners ZWJ and ZWNJ in the title, story and sections (FD-114)', () => {
+    const cp = (...points: number[]) => String.fromCodePoint(...points);
+    const zwj = cp(0x09b0, 0x200d, 0x09cd, 0x09af, 0x09be, 0x09ac);
+    const zwnj = cp(0x0989, 0x09a6, 0x09cd, 0x200c, 0x09af, 0x09be, 0x09aa, 0x09a8);
+    const quickText = normaliseContent(
+      aQuickInput({ title: zwj, content: { kind: 'quick', story: `${STORY} ${zwj} ${zwnj}` } }),
+      'bn',
+    );
+    expect(quickText.title).toBe(zwj);
+    expect(validateCorrectionContent(quickText, 'quick')).toEqual([]);
+
+    const sections = normaliseContent(aDetailedInput({ diagnosis: `${STORY} ${zwnj}` }), 'bn');
+    expect(validateCorrectionContent(sections, 'detailed')).toEqual([]);
+  });
 });
 
 describe('validateClaims', () => {

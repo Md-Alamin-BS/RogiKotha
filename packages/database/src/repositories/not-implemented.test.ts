@@ -6,7 +6,6 @@ import {
   NotImplemented,
   PgAccountRepository,
   PgAuditRepository,
-  PgCommunityRepository,
   PgConfigRepository,
   PgDataRequestRepository,
   PgDirectoryRepository,
@@ -22,7 +21,6 @@ import {
 const STUB_REPOSITORIES: [string, object][] = [
   ['PgAccountRepository', new PgAccountRepository()],
   ['PgAuditRepository', new PgAuditRepository()],
-  ['PgCommunityRepository', new PgCommunityRepository()],
   ['PgConfigRepository', new PgConfigRepository()],
   ['PgDataRequestRepository', new PgDataRequestRepository()],
   ['PgDirectoryRepository', new PgDirectoryRepository()],

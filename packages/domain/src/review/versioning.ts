@@ -66,7 +66,9 @@ export interface CorrectionProblem {
   reason: CorrectionProblemReason;
 }
 
-const CONTROL_OR_FORMAT = /[\p{Cc}\p{Cf}]/u;
+// ZWNJ and ZWJ pass, as in contracts' `hasControlOrFormatExceptJoiners` (FD-114): Bengali spelling
+// needs them. Repeated here because the domain imports nothing.
+const CONTROL_OR_FORMAT = /(?![\u{200C}\u{200D}])[\p{Cc}\p{Cf}]/u;
 const LINE_BREAKS_AND_TABS = /[\n\r\t]/g;
 
 function filledSections(

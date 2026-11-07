@@ -26,7 +26,7 @@ export function Byline({
   whenDateTime?: string | undefined;
   /** Pseudonymous only: the name becomes `@username`, linking to the author page. */
   username?: string | undefined;
-  /** Anonymous only: the thread alias, shown on the page's lead byline only, never as a link. */
+  /** Anonymous only: the thread alias, shown on the lead and comment bylines, never as a link. */
   alias?: string | null | undefined;
 }) {
   const t = useTranslations();
@@ -42,7 +42,7 @@ export function Byline({
       {anonymous ? (
         <>
           <span className="byline-name">{t('byline.anonSentence')}</span>
-          {alias && variant === 'lead' ? (
+          {alias && variant !== 'row' ? (
             <span className="byline-alias" data-testid="byline-alias">
               {alias}
             </span>

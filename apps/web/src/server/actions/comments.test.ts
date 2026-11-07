@@ -1,37 +1,22 @@
 // @vitest-environment node
-import type { DemoCurrentAccount, DemoReviewDetail } from '@rogikotha/contracts';
+import { err, ok, type ErrorCode, type Result } from '@rogikotha/contracts';
 import { revalidatePath } from 'next/cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { requireAccount, requireContributor } from '@/server/auth/session';
-import { comments, reviews } from '@/server/data';
+import { runCommand } from '@/server/command-call';
 import { deleteComment, postComment, type CommentActionState } from './comments';
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
-vi.mock('@/server/auth/session', () => ({ requireAccount: vi.fn(), requireContributor: vi.fn() }));
-vi.mock('@/server/data', () => ({
-  comments: { addComment: vi.fn(), deleteOwnComment: vi.fn() },
-  reviews: { getReviewByPublicId: vi.fn() },
+vi.mock('@/server/command-call', () => ({ runCommand: vi.fn() }));
+vi.mock('@/server/container', () => ({
+  getContainer: () => ({
+    community: { postComment: 'post-command', deleteComment: 'delete-command' },
+  }),
 }));
 
 const REVIEW_PUBLIC_ID = 'exp0000001';
 const COMMENT_PUBLIC_ID = 'cmt0000001';
 const IDLE: CommentActionState = { status: 'idle' };
-
-function buildAccount(overrides: Partial<DemoCurrentAccount> = {}): DemoCurrentAccount {
-  return {
-    accountId: '0190f5a2-0000-7000-8000-000000000001',
-    authUserId: 'auth-user-1',
-    username: 'karim_reader',
-    displayName: 'Karim Reader',
-    locale: 'en',
-    status: 'active',
-    currentPersonaId: '0190f5a2-0000-7000-8000-0000000000aa',
-    pseudonymousPersonaId: null,
-    pseudonymousDisplayName: null,
-    ...overrides,
-  };
-}
 
 function form(fields: Record<string, string>): FormData {
   const data = new FormData();
@@ -47,100 +32,101 @@ function commentForm(overrides: Record<string, string> = {}): FormData {
   });
 }
 
-const review = { id: '0190f5a2-0000-7000-8000-0000000000r1' } as DemoReviewDetail;
+function answer(result: Result<unknown>): void {
+  vi.mocked(runCommand).mockResolvedValue(result);
+}
 
 describe('posting a comment', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(requireContributor).mockResolvedValue(buildAccount());
-    vi.mocked(reviews.getReviewByPublicId).mockResolvedValue(review);
-    vi.mocked(comments.addComment).mockResolvedValue({
-      ok: true,
-      data: { id: 'c1', publicId: COMMENT_PUBLIC_ID },
-    });
+    answer(ok({ publicId: COMMENT_PUBLIC_ID }));
   });
 
-  it('posts the trimmed text as the signed-in account’s named persona and refreshes the page', async () => {
+  it('hands the trimmed text to the module and refreshes both language pages', async () => {
     const state = await postComment(IDLE, commentForm({ body: '  Thank you  ' }));
 
     expect(state).toMatchObject({ status: 'done', messageKey: 'experience.commentPosted' });
-    expect(comments.addComment).toHaveBeenCalledWith({
-      reviewId: review.id,
-      parentPublicId: null,
-      authorPersonaId: '0190f5a2-0000-7000-8000-0000000000aa',
+    expect(runCommand).toHaveBeenCalledWith('post-command', {
+      reviewPublicId: REVIEW_PUBLIC_ID,
       body: 'Thank you',
     });
     expect(revalidatePath).toHaveBeenCalledWith(`/en/experiences/${REVIEW_PUBLIC_ID}`);
     expect(revalidatePath).toHaveBeenCalledWith(`/bn/experiences/${REVIEW_PUBLIC_ID}`);
   });
 
-  it('posts a reply to the given parent comment', async () => {
-    await postComment(IDLE, commentForm({ parentPublicId: COMMENT_PUBLIC_ID }));
-    expect(vi.mocked(comments.addComment).mock.calls[0]![0].parentPublicId).toBe(COMMENT_PUBLIC_ID);
-  });
+  it('sends the parent public id for a reply and nothing else the form carries', async () => {
+    await postComment(
+      IDLE,
+      commentForm({ parentPublicId: COMMENT_PUBLIC_ID, authorPersonaId: 'forged-persona' }),
+    );
 
-  it('asks a signed-out visitor to sign in and come back, and posts nothing', async () => {
-    vi.mocked(requireContributor).mockRejectedValue(new Error('NEXT_REDIRECT'));
-
-    await expect(postComment(IDLE, commentForm())).rejects.toThrow('NEXT_REDIRECT');
-    expect(requireContributor).toHaveBeenCalledWith({
-      returnTo: `/experiences/${REVIEW_PUBLIC_ID}`,
+    expect(runCommand).toHaveBeenCalledWith('post-command', {
+      reviewPublicId: REVIEW_PUBLIC_ID,
+      parentPublicId: COMMENT_PUBLIC_ID,
+      body: 'Thank you for writing this',
     });
-    expect(comments.addComment).not.toHaveBeenCalled();
   });
 
-  it('never passes a malformed experience id on as the sign-in return path', async () => {
-    vi.mocked(requireContributor).mockRejectedValue(new Error('NEXT_REDIRECT'));
-    await expect(
-      postComment(IDLE, commentForm({ reviewPublicId: '//evil.example' })),
-    ).rejects.toThrow();
-    expect(requireContributor).toHaveBeenCalledWith({});
-  });
+  it('keeps the text and gives the length message with its limits when the body is refused', async () => {
+    answer(err('validation', { fieldErrors: { body: 'experience.commentLength' } }));
 
-  it.each([
-    ['empty', '   '],
-    ['too long', 'x'.repeat(2001)],
-  ])('refuses an %s comment with the length message and keeps the text', async (_case, body) => {
-    const state = await postComment(IDLE, commentForm({ body }));
+    const state = await postComment(IDLE, commentForm({ body: '   ' }));
 
     expect(state).toEqual({
       status: 'error',
       messageKey: 'experience.commentLength',
       values: { min: 1, max: 2000 },
-      body: body.trim(),
+      body: '',
     });
-    expect(comments.addComment).not.toHaveBeenCalled();
-  });
-
-  it('accepts a comment of exactly 2000 characters', async () => {
-    const state = await postComment(IDLE, commentForm({ body: 'x'.repeat(2000) }));
-    expect(state.status).toBe('done');
-  });
-
-  it('refuses a malformed experience or parent id before touching the data', async () => {
-    const badReview = await postComment(IDLE, commentForm({ reviewPublicId: 'not-an-id' }));
-    const badParent = await postComment(IDLE, commentForm({ parentPublicId: "x' or 1=1" }));
-
-    expect(badReview).toMatchObject({ status: 'error', messageKey: 'errors.common.validation' });
-    expect(badParent).toMatchObject({ status: 'error', messageKey: 'errors.common.validation' });
-    expect(reviews.getReviewByPublicId).not.toHaveBeenCalled();
-  });
-
-  it('reports an experience that is not published as not found', async () => {
-    vi.mocked(reviews.getReviewByPublicId).mockResolvedValue(null);
-    const state = await postComment(IDLE, commentForm());
-    expect(state).toMatchObject({ status: 'error', messageKey: 'errors.common.notFound' });
-    expect(comments.addComment).not.toHaveBeenCalled();
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 
   it.each([
-    ['reply_depth', 'errors.community.replyDepth'],
-    ['parent_not_found', 'errors.common.notFound'],
-  ] as const)('maps the %s refusal to its message', async (reason, messageKey) => {
-    vi.mocked(comments.addComment).mockResolvedValue({ ok: false, reason });
-    const state = await postComment(IDLE, commentForm({ parentPublicId: COMMENT_PUBLIC_ID }));
-    expect(state).toMatchObject({ status: 'error', messageKey });
+    ['validation', 'errors.common.validation'],
+    ['community.reply_depth', 'errors.community.replyDepth'],
+    ['not_found', 'errors.common.notFound'],
+    ['forbidden', 'errors.common.forbidden'],
+    ['auth.email_unverified', 'errors.auth.emailUnverified'],
+    ['conflict', 'errors.common.internal'],
+  ] as [ErrorCode, string][])(
+    'maps a %s refusal to %s and keeps the text',
+    async (code, messageKey) => {
+      answer(err(code));
+
+      const state = await postComment(IDLE, commentForm({ body: 'My own words' }));
+
+      expect(state).toEqual({ status: 'error', messageKey, body: 'My own words' });
+      expect(revalidatePath).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    [1, 1],
+    [59, 1],
+    [60, 1],
+    [61, 2],
+    [3600, 60],
+  ])('turns a rate limit of %s seconds into %s minutes', async (retryAfterSec, minutes) => {
+    answer(err('rate_limited', { retryAfterSec }));
+
+    const state = await postComment(IDLE, commentForm());
+
+    expect(state).toEqual({
+      status: 'error',
+      messageKey: 'errors.common.rateLimited',
+      values: { minutes },
+      body: 'Thank you for writing this',
+    });
+  });
+
+  it('does not refresh a page named by a malformed public id', async () => {
+    await postComment(IDLE, commentForm({ reviewPublicId: '//evil.example' }));
     expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('puts no internal id in a done result', async () => {
+    const state = await postComment(IDLE, commentForm());
+    expect(JSON.stringify(state)).not.toContain(COMMENT_PUBLIC_ID);
   });
 });
 
@@ -150,40 +136,30 @@ describe('deleting a comment', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(requireAccount).mockResolvedValue(buildAccount());
-    vi.mocked(comments.deleteOwnComment).mockResolvedValue({
-      ok: true,
-      data: { tombstone: false },
-    });
+    answer(ok({ placeholder: false }));
   });
 
-  it('deletes only as the signed-in account and refreshes the page', async () => {
-    const state = await deleteComment(IDLE, deleteForm());
+  it('asks the module for the one comment and refreshes both language pages', async () => {
+    const state = await deleteComment(IDLE, deleteForm({ accountId: 'forged-account' }));
 
     expect(state).toMatchObject({ status: 'done', messageKey: 'experience.commentDeleted' });
-    expect(comments.deleteOwnComment).toHaveBeenCalledWith(
-      COMMENT_PUBLIC_ID,
-      '0190f5a2-0000-7000-8000-000000000001',
-    );
+    expect(runCommand).toHaveBeenCalledWith('delete-command', {
+      commentPublicId: COMMENT_PUBLIC_ID,
+    });
+    expect(revalidatePath).toHaveBeenCalledWith(`/en/experiences/${REVIEW_PUBLIC_ID}`);
     expect(revalidatePath).toHaveBeenCalledWith(`/bn/experiences/${REVIEW_PUBLIC_ID}`);
   });
 
-  it('reports someone else’s comment as not found', async () => {
-    vi.mocked(comments.deleteOwnComment).mockResolvedValue({ ok: false, reason: 'not_found' });
+  it.each([
+    ['not_found', 'errors.common.notFound'],
+    ['validation', 'errors.common.validation'],
+    ['forbidden', 'errors.common.forbidden'],
+  ] as [ErrorCode, string][])('maps a %s refusal to %s', async (code, messageKey) => {
+    answer(err(code));
+
     const state = await deleteComment(IDLE, deleteForm());
-    expect(state).toEqual({ status: 'error', messageKey: 'errors.common.notFound' });
+
+    expect(state).toEqual({ status: 'error', messageKey });
     expect(revalidatePath).not.toHaveBeenCalled();
-  });
-
-  it('refuses a malformed comment id', async () => {
-    const state = await deleteComment(IDLE, deleteForm({ commentPublicId: '../../etc' }));
-    expect(state).toEqual({ status: 'error', messageKey: 'errors.common.validation' });
-    expect(comments.deleteOwnComment).not.toHaveBeenCalled();
-  });
-
-  it('deletes nothing for a signed-out visitor', async () => {
-    vi.mocked(requireAccount).mockRejectedValue(new Error('NEXT_REDIRECT'));
-    await expect(deleteComment(IDLE, deleteForm())).rejects.toThrow('NEXT_REDIRECT');
-    expect(comments.deleteOwnComment).not.toHaveBeenCalled();
   });
 });

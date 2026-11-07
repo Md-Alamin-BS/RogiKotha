@@ -70,3 +70,27 @@ Final gate run for this Step: see the Step 32 note in the plan.
 Found in U22 (all S4, all in `docs/implementation/ISSUES.md`): ISS-720 (original language guessed from script), ISS-721 (fresh worktree: `next typegen` and heap before lint), ISS-722 (shell heredoc), ISS-723 (snapshot without title, release-2 row kinds), ISS-724 (`auth.email_unverified` not in BR5.4), ISS-725 (field-error-only keys), ISS-726 (claim bounds), ISS-727 (`getOwnForEdit` without a gate), ISS-728 (small history and form choices), ISS-729 (no follow-up row, `not_found` for an unpublished review), ISS-730 (port and command deviations), ISS-731 (Bengali copy awaits the owner, FD-042), ISS-732 (demo correction rows), ISS-733 (tags), ISS-734 (version list without text), ISS-735 (earlier wording stays public), ISS-736 (browser walks not run), ISS-737 (shared demo code until Step 33).
 
 Fixed in U22: none (no earlier row was closed). No `S1`, `S2` or `S3` row was found. Open for Build and Test: ISS-736. Open for merge: ISS-737.
+
+## Merge with main
+
+`main` (`d3e2d66`: U47 review fixes `1924f24` with FD-114, ISS-547 and ISS-548; U49 comments `f065c1b` with ISS-660 to ISS-678) was merged into the Bolt branch. No FD or ISS number clashed, so nothing was renumbered: U22 adds no FD entry and its rows stay ISS-720 to ISS-737.
+
+Conflicts and how they were resolved:
+
+| File | Resolution |
+|---|---|
+| `packages/application/src/ports/outbox.ts` | both payloads kept: U22's `review.changed` and U49's `comment.posted` (the worker relay already routes both) |
+| `apps/web/src/server/actions/review-slots.ts` | U49 removed `loadCommentThread` and U22 removed `loadLastEditedAt`; both stay removed, so only `loadReviewHistory` imports `runCommand` and `ReviewHistoryVM` |
+| `apps/web/src/components/patient/experience/slots.test.tsx` | the comment cases (moved by U49 to `CommentThread.test.tsx`) and the old edited-mark case (replaced by U22's `ReviewHistory.test.tsx`) both stay removed; the evidence cases remain |
+| `apps/web/src/server/actions/review.ts` | U22's version: the old `saveReviewEdit` form, which main had switched to `hasControlOrFormatExceptJoiners`, stays retired; the correction lives in `review-edit.ts` |
+| `apps/web/src/server/actions/ownership.adversarial.test.ts` | U22's `review.correct` stand-in and U49's `comment.post` and `comment.delete` stand-ins are both installed in the container; the demo comment and `updateOwnReview` mocks stay removed; `correctReviewAction` stays in `WRITE_ACTIONS` (sign-in redirect) beside U49's new `COMMENT_ACTIONS` (forbidden state) |
+| `docs/implementation/ISSUES.md` | both blocks kept unchanged, in number order: ISS-660 to ISS-678, then ISS-720 to ISS-737 |
+
+Merge fixes (FD-114 applied to the correction path):
+
+- `CorrectReviewInput.title` in `packages/contracts/src/schemas/review.ts` now uses the joiner-tolerant check (`plainText(..., { joiners: true })`), as the draft title does. The story and sections already used `longText`, which main switched to `hasControlOrFormatExceptJoiners`.
+- `validateCorrectionContent` in `packages/domain/src/review/versioning.ts` checked title, story and sections with a strict `[\p{Cc}\p{Cf}]` pattern, so a Bengali word with ZWJ would have passed the contract and then been refused by the domain. The pattern now skips U+200C and U+200D, the same rule as `hasControlOrFormatExceptJoiners` (repeated, because the domain imports nothing).
+- New tests: `review.test.ts` (contracts) accepts a correction whose title, story and sections hold a Bengali word with ZWJ or ZWNJ and still refuses a bidi override in the title; `versioning.test.ts` (domain) accepts the same words in a quick and a detailed correction.
+- `source-manifest.json` is unchanged: the merged branch changes the same 52 files against `main`.
+
+Gate on the merged tree: `pnpm --filter @rogikotha/i18n keys` regenerated 982 keys with no change; `pnpm format:check` green; `pnpm check` green (`pnpm test:coverage` 314 files, 3529 passed and 2 expected fail; i18n parity 982 keys; build compiled); `pnpm smoke` 26 files, 48 tests green. The one lint warning (an unused disable directive in `packages/i18n/src/routing.ts`) comes from `main` and is outside this branch.

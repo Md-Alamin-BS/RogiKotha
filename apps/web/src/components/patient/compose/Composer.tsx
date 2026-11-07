@@ -38,6 +38,12 @@ const FIELD_LABELS: Record<string, string> = {
   newDoctorSpecialtyId: 'compose.addSpecialty',
   newDoctorChamber: 'compose.addChamber',
   newDoctorBmdc: 'compose.addBmdc',
+  exactDate: 'compose.exactDate',
+  title: 'compose.titleLabel',
+  symptoms: 'compose.symptoms',
+  diagnosis: 'compose.diagnosis',
+  treatment: 'compose.treatment',
+  after: 'compose.after',
 };
 
 /** The step each refusable field is on, so the summary can take the author to it. */
@@ -46,15 +52,52 @@ const FIELD_STEP: Record<string, ComposerStep> = {
   branch: 1,
   relationship: 1,
   period: 1,
+  exactDate: 1,
   newDoctorName: 1,
   newDoctorSpecialtyId: 1,
   newDoctorChamber: 1,
   newDoctorBmdc: 1,
+  title: 2,
   story: 2,
+  symptoms: 2,
+  diagnosis: 2,
+  treatment: 2,
+  after: 2,
   tags: 2,
   identity: 4,
   attestation: 4,
 };
+
+const NEW_DOCTOR_FIELD: Record<string, string> = {
+  name: 'newDoctorName',
+  specialtyId: 'newDoctorSpecialtyId',
+  practiceArea: 'newDoctorChamber',
+  bmdc: 'newDoctorBmdc',
+};
+
+const PAYLOAD_FIELD: Record<string, string> = {
+  doctorPublicId: 'doctor',
+  branchPublicId: 'branch',
+};
+
+/** A refused save names input paths (`payload.tags.0.text`); the composer names its fields. */
+function composerFieldErrors(
+  saveErrors: Record<string, string> | undefined,
+): Record<string, string> {
+  const fieldErrors: Record<string, string> = {};
+  for (const [path, key] of Object.entries(saveErrors ?? {})) {
+    const [root, first, second] = path.split('.');
+    if (root !== 'payload' || first === undefined) continue;
+    const field =
+      first === 'newDoctor'
+        ? NEW_DOCTOR_FIELD[second ?? 'name']
+        : first === 'sections'
+          ? second
+          : (PAYLOAD_FIELD[first] ?? first);
+    if (field !== undefined && FIELD_LABELS[field] !== undefined) fieldErrors[field] ??= key;
+  }
+  return fieldErrors;
+}
 
 const STEP_NAME_KEY: Record<ComposerStep, string> = {
   1: 'compose.stepName.care',
@@ -109,7 +152,11 @@ export function Composer({
       const answer = await saveDraftAction(input);
       return answer.ok
         ? { ok: true, draftId: answer.draftId, expiresAt: answer.expiresAt }
-        : { ok: false, messageKey: answer.messageKey };
+        : {
+            ok: false,
+            messageKey: answer.messageKey,
+            ...(answer.fieldErrors !== undefined ? { fieldErrors: answer.fieldErrors } : {}),
+          };
     },
     [],
   );
@@ -138,7 +185,19 @@ export function Composer({
   // Publish saves the last change first, then hands the draft to the publish action, which
   // redirects on success. A refusal comes back as message keys for the summary (WF4, WF5).
   const publish = useCallback(async () => {
-    const draftId = await flush();
+    const flushed = await flush();
+    // The stored draft is older than the screen: publishing it would publish other words.
+    if (!flushed.saved) {
+      dispatch({
+        type: 'publishRefused',
+        errors: {
+          fieldErrors: composerFieldErrors(flushed.failure?.fieldErrors),
+          formError: 'compose.publishNotSaved',
+        },
+      });
+      return;
+    }
+    const draftId = flushed.draftId;
     if (draftId === undefined) {
       dispatch({
         type: 'publishRefused',
@@ -200,6 +259,13 @@ export function Composer({
       : state.save.status === 'saved'
         ? 'compose.draftSaved'
         : null;
+  // A save the server refused names its fields, so the author knows what to change.
+  const unsavedLabels =
+    savedFlag === 'compose.draftNotSaved'
+      ? Object.keys(composerFieldErrors(state.save.fieldErrors)).map((field) =>
+          t(FIELD_LABELS[field] as string),
+        )
+      : [];
 
   const refusedFields = Object.keys(state.errors.fieldErrors).filter(
     (field) => FIELD_LABELS[field] !== undefined,
@@ -217,6 +283,13 @@ export function Composer({
         <StepRail step={state.step} onStep={(step) => dispatch({ type: 'step', step })} />
         <p id="saved-flag" role="status" className="sub" data-testid="compose-saved-flag">
           {savedFlag ? t(savedFlag) : null}
+          {unsavedLabels.length > 0 ? (
+            <span data-testid="compose-saved-flag-fields">
+              {' '}
+              {t('compose.errorFields')}{' '}
+              {new Intl.ListFormat(locale, { type: 'conjunction' }).format(unsavedLabels)}
+            </span>
+          ) : null}
         </p>
         <FormErrorSummary
           attempt={attempt}

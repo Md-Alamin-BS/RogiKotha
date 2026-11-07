@@ -22,6 +22,8 @@ export type OutboxPayloads = {
   'review.published': { reviewId: string; doctorId: string; branchId: null };
   /** U22 BR3.3: an accepted correction; ids only. */
   'review.changed': { reviewId: string; doctorId: string; branchId: string | null };
+  /** U49 BR1.7: ids only; a deletion appends no event (BR2.4). */
+  'comment.posted': { commentId: string; reviewId: string };
 };
 
 export type OutboxEventName = keyof OutboxPayloads;

@@ -7,6 +7,7 @@ import {
   AUTOSAVE_DEBOUNCE_MS,
   useAutosave,
   type AutosaveAnswer,
+  type FlushResult,
   type UseAutosaveOptions,
 } from './use-autosave';
 
@@ -237,11 +238,11 @@ describe('useAutosave', () => {
   it('flush saves the pending change now and answers the draft id', async () => {
     const { save, calls, rerender, hook } = setup();
     rerender({ payload: payloadWith('story') });
-    let answered: string | undefined;
+    let answered: FlushResult | undefined;
     let done: Promise<void> = Promise.resolve();
     act(() => {
-      done = hook.result.current.flush().then((id) => {
-        answered = id;
+      done = hook.result.current.flush().then((result) => {
+        answered = result;
       });
     });
     expect(save).toHaveBeenCalledTimes(1);
@@ -249,8 +250,63 @@ describe('useAutosave', () => {
     await act(async () => {
       await done;
     });
-    expect(answered).toBe('00000000-0000-4000-8000-000000000001');
+    expect(answered).toEqual({ draftId: '00000000-0000-4000-8000-000000000001', saved: true });
     act(() => void vi.advanceTimersByTime(AUTOSAVE_DEBOUNCE_MS * 2));
     expect(save).toHaveBeenCalledTimes(1);
+  });
+
+  it('flush reports a failed final save as not saved, with the refusal, and keeps the older id', async () => {
+    const stored = '00000000-0000-4000-8000-00000000000b';
+    const { save, calls, rerender, hook, actions } = setup({ draftId: stored });
+    rerender({ payload: payloadWith('story, edited') });
+    let answered: FlushResult | undefined;
+    let done: Promise<void> = Promise.resolve();
+    act(() => {
+      done = hook.result.current.flush().then((result) => {
+        answered = result;
+      });
+    });
+    expect(save).toHaveBeenCalledTimes(1);
+    const refusal = {
+      ok: false as const,
+      messageKey: 'errors.common.validation',
+      fieldErrors: { 'payload.story': 'errors.common.validation' },
+    };
+    await settle(refusal, calls[0]);
+    await act(async () => {
+      await done;
+    });
+    expect(answered).toEqual({
+      draftId: stored,
+      saved: false,
+      failure: {
+        messageKey: 'errors.common.validation',
+        fieldErrors: { 'payload.story': 'errors.common.validation' },
+      },
+    });
+    expect(actions).toContainEqual({
+      type: 'saveFailed',
+      seq: 1,
+      fieldErrors: { 'payload.story': 'errors.common.validation' },
+    });
+  });
+
+  it('flush reports saved again once a later save succeeds', async () => {
+    const { calls, rerender, hook } = setup();
+    rerender({ payload: payloadWith('story') });
+    act(() => void vi.advanceTimersByTime(AUTOSAVE_DEBOUNCE_MS));
+    await settle({ ok: false, messageKey: 'errors.common.internal' }, calls[0]);
+    let answered: FlushResult | undefined;
+    let done: Promise<void> = Promise.resolve();
+    act(() => {
+      done = hook.result.current.flush().then((result) => {
+        answered = result;
+      });
+    });
+    await settle(ok(), calls[1]);
+    await act(async () => {
+      await done;
+    });
+    expect(answered).toEqual({ draftId: '00000000-0000-4000-8000-000000000001', saved: true });
   });
 });

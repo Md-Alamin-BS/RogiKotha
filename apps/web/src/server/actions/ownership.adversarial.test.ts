@@ -8,6 +8,8 @@
 import { defineCommand } from '@rogikotha/application';
 import {
   CorrectReviewInput,
+  DeleteCommentInput,
+  PostCommentInput,
   PublishReviewInput,
   err,
   ok,
@@ -15,11 +17,12 @@ import {
   type DemoReviewEditRow,
 } from '@rogikotha/contracts';
 import { redirect as redirectToSignIn } from '@rogikotha/i18n';
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getContainer } from '@/server/container';
-import { accounts, comments, evidence, reviews, session } from '@/server/data';
+import { accounts, evidence, reviews, session } from '@/server/data';
 import type * as StorageModule from '@/server/storage';
 import { storeOriginal } from '@/server/storage';
 import { deleteComment, postComment, type CommentActionState } from './comments';
@@ -59,7 +62,6 @@ vi.mock('./preferences', () => ({ setLang: vi.fn() }));
 vi.mock('@/server/data', () => ({
   DEMO_READY_EVIDENCE_STATES: ['preview_ready', 'published'],
   accounts: { updateDisplayName: vi.fn(), updateLocale: vi.fn() },
-  comments: { addComment: vi.fn(), deleteOwnComment: vi.fn() },
   evidence: { addEvidenceItem: vi.fn(), markScanResult: vi.fn(), listOwnEvidence: vi.fn() },
   reviews: {
     getOwnReviewForEdit: vi.fn(),
@@ -151,19 +153,6 @@ function installWorld(): void {
   vi.mocked(reviews.getOwnReviewForEdit).mockImplementation((publicId, accountId) =>
     Promise.resolve(ownedBy(publicId, accountId) ? editRowOf(publicId) : null),
   );
-  vi.mocked(comments.addComment).mockImplementation((input) => {
-    world.writes.push(`comment.add on ${input.reviewId} as ${input.authorPersonaId}`);
-    return Promise.resolve({ ok: true, data: { id: 'comment-row-2', publicId: 'n3wcmt0001' } });
-  });
-  vi.mocked(comments.deleteOwnComment).mockImplementation((publicId, accountId) => {
-    const row = world.comments.get(publicId);
-    if (!row || row.deleted || row.ownerAccountId !== accountId) {
-      return Promise.resolve({ ok: false, reason: 'not_found' } as const);
-    }
-    row.deleted = true;
-    world.writes.push(`comment.delete ${publicId} by ${accountId}`);
-    return Promise.resolve({ ok: true, data: { tombstone: false } } as const);
-  });
   vi.mocked(evidence.listOwnEvidence).mockResolvedValue([]);
   vi.mocked(evidence.addEvidenceItem).mockImplementation((input) => {
     world.writes.push(`evidence.add on ${input.reviewId} by ${input.ownerAccountId}`);
@@ -229,6 +218,37 @@ const moduleCorrect = defineCommand<CorrectReviewInput, { publicId: string; vers
   },
 });
 
+// The module path (U49): `comment.post` and `comment.delete` on their own input schemas and
+// requirements. The persona and the owner come from the actor's account inside the module, so the
+// stand-ins record that account only; a forged form field has nowhere to land.
+const moduleCommentPost = defineCommand<PostCommentInput, { publicId: string }>({
+  name: 'comment.post',
+  input: PostCommentInput,
+  requires: { authenticated: true, verifiedEmail: true, notRestricted: true },
+  handle: ({ actor, input }) => {
+    if (!world.reviews.has(input.reviewPublicId)) {
+      return Promise.resolve(err('not_found', { correlationId: actor.correlationId }));
+    }
+    world.writes.push(`comment.add on ${input.reviewPublicId} by ${actor.accountId}`);
+    return Promise.resolve(ok({ publicId: 'n3wcmt0001' }));
+  },
+});
+
+const moduleCommentDelete = defineCommand<DeleteCommentInput, { placeholder: boolean }>({
+  name: 'comment.delete',
+  input: DeleteCommentInput,
+  requires: { authenticated: true },
+  handle: ({ actor, input }) => {
+    const row = world.comments.get(input.commentPublicId);
+    if (!row || row.deleted || row.ownerAccountId !== actor.accountId) {
+      return Promise.resolve(err('not_found', { correlationId: actor.correlationId }));
+    }
+    row.deleted = true;
+    world.writes.push(`comment.delete ${input.commentPublicId} by ${actor.accountId}`);
+    return Promise.resolve(ok({ placeholder: false }));
+  },
+});
+
 /** The container `getActor()` reads: the stubbed session and the world's profiles. */
 function installContainer(): void {
   const findProfileByAuthUserId = (_tx: unknown, authUserId: string) => {
@@ -259,6 +279,7 @@ function installContainer(): void {
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
     },
     review: { publish: modulePublish, correct: moduleCorrect },
+    community: { postComment: moduleCommentPost, deleteComment: moduleCommentDelete },
   } as unknown as ReturnType<typeof getContainer>);
 }
 
@@ -361,7 +382,7 @@ describe('an attacker signed in as another account (FR4.2, FR5.1, FR6.3, NFR3)',
       form({ ...FORGED_IDS, reviewPublicId: VICTIM_REVIEW, body: 'A synthetic reply' }),
     );
 
-    expect(world.writes).toEqual([`comment.add on review-row-1 as ${ATTACKER.currentPersonaId}`]);
+    expect(world.writes).toEqual([`comment.add on ${VICTIM_REVIEW} by ${ATTACKER.accountId}`]);
   });
 
   it("cannot publish under the victim's persona through the review module by forging it into the request", async () => {
@@ -399,7 +420,7 @@ describe('an attacker signed in as another account (FR4.2, FR5.1, FR6.3, NFR3)',
   });
 });
 
-const WRITE_ACTIONS = [
+const COMMENT_ACTIONS = [
   [
     'post a comment',
     () => postComment(IDLE_COMMENT, form({ reviewPublicId: VICTIM_REVIEW, body: 'Hello there' })),
@@ -412,6 +433,9 @@ const WRITE_ACTIONS = [
         form({ reviewPublicId: VICTIM_REVIEW, commentPublicId: VICTIM_COMMENT }),
       ),
   ],
+] as const;
+
+const WRITE_ACTIONS = [
   ['correct an experience', () => correctReviewAction(EDIT_START, editForm(VICTIM_REVIEW))],
   [
     'rename the account',
@@ -437,6 +461,16 @@ describe.each([
     expect(setLang).not.toHaveBeenCalled();
   });
 
+  // U49: the comment actions have no sign-in redirect of their own; the module refuses (BR1.1) and
+  // the contribution gate in front of the form is what sends a visitor to sign in.
+  it.each(COMMENT_ACTIONS)('is refused as forbidden and cannot %s', async (_name, act) => {
+    const state = await act();
+
+    expect(state).toMatchObject({ status: 'error', messageKey: 'errors.common.forbidden' });
+    expect(world.writes).toEqual([]);
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
   it('cannot publish a draft through the review module, and nothing is written', async () => {
     const state = await publishDraftAction(PUBLISH_DRAFT);
 
@@ -453,14 +487,18 @@ describe.each([
   });
 });
 
-describe('the sign-in return path a refused write builds', () => {
-  beforeEach(() => sessionCookieOf(null));
+describe('a review id in the comment form that is forged into an address', () => {
+  it('is refused with nothing written and no page refreshed, signed in or not', async () => {
+    for (const authUserId of [null, ATTACKER.authUserId]) {
+      sessionCookieOf(authUserId);
+      const state = await postComment(
+        IDLE_COMMENT,
+        form({ reviewPublicId: '//evil.example', body: 'Hello there' }),
+      );
 
-  it('carries no next page when the review id in the form is forged into an address', async () => {
-    await expect(
-      postComment(IDLE_COMMENT, form({ reviewPublicId: '//evil.example', body: 'Hello there' })),
-    ).rejects.toThrow('NEXT_REDIRECT');
-
-    expect(redirectToSignIn).toHaveBeenCalledWith({ href: '/sign-in', locale: 'en' });
+      expect(state.status).toBe('error');
+      expect(world.writes).toEqual([]);
+      expect(revalidatePath).not.toHaveBeenCalled();
+    }
   });
 });

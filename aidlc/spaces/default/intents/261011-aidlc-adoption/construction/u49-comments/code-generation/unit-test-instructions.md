@@ -15,7 +15,7 @@ U49 adds no Playwright test: the design asks for none, and U50 walks the discuss
 
 ## Where it runs
 
-The Unit runs in its own git worktree on `bolt/u49-comments`, built in batch 3 after U47 merges. `DATABASE_URL_TEST` points at the test database the orchestrator assigned (named `rogikotha_wN_test`, because the reset guard accepts only names ending in `_test`), never at another worktree's database. There is no CI (FD-102): these commands and the gate run locally only. Run only one database-touching command at a time (`pnpm check`, `pnpm test`, `pnpm test:coverage`, `pnpm test:int`, `pnpm smoke`, and the `database` project commands below).
+The Unit runs in its own git worktree on `bolt/u49-comments`, built in batch 3 after U47 merges. `DATABASE_URL_TEST` points at the test database the orchestrator assigned (`rogikotha_test_w7` for this worktree; the reset guard in `packages/database/src/reset.ts` accepts only names ending in `_test`, `_test_b` or `_test_w1` to `_test_w9`), never at another worktree's database. There is no CI (FD-102): these commands and the gate run locally only. Run only one database-touching command at a time (`pnpm check`, `pnpm test`, `pnpm test:coverage`, `pnpm test:int`, `pnpm smoke`, and the `database` project commands below).
 
 ## Run this Unit's tests
 

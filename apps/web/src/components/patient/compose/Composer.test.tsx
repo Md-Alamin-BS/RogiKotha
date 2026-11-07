@@ -348,6 +348,54 @@ describe.each(['en', 'bn'] as const)('the composer steps 2 to 4 in %s', (locale:
     expect(screen.getByTestId('compose-step-2')).toHaveAttribute('aria-current', 'step');
   });
 
+  it('refuses to publish when the final save fails, names the field and calls no publish action', async () => {
+    const user = userEvent.setup();
+    vi.mocked(saveDraftAction).mockResolvedValue({
+      ok: false,
+      messageKey: 'errors.common.validation',
+      fieldErrors: { 'payload.story': 'errors.common.validation' },
+    });
+    renderInLocale(
+      <Composer vm={someVm({ draft: draftOf({ step: 4 }) })} initialStep={4} now={NOW} />,
+      locale,
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: `${t('compose.identity.real')} (Synthetic Patient)` }),
+    );
+    await ticks(user);
+    await user.click(screen.getByTestId('compose-publish'));
+
+    const summary = await screen.findByTestId('compose-error');
+    expect(summary).toHaveTextContent(t('compose.publishNotSaved'));
+    const links = within(screen.getByTestId('compose-error-fields')).getAllByRole('button');
+    expect(links.map((l) => l.textContent)).toEqual([t('compose.story')]);
+    expect(saveDraftAction).toHaveBeenCalled();
+    expect(publishDraftAction).not.toHaveBeenCalled();
+    expect(publishFacilityVisitAction).not.toHaveBeenCalled();
+    expect(screen.getByTestId('compose-saved-flag')).toHaveTextContent(t('compose.draftNotSaved'));
+    expect(screen.getByTestId('compose-saved-flag-fields')).toHaveTextContent(t('compose.story'));
+    expect(screen.getByTestId('compose-publish')).toBeEnabled();
+  });
+
+  it('refuses to publish when the final save fails on the network, without fields', async () => {
+    const user = userEvent.setup();
+    vi.mocked(saveDraftAction).mockRejectedValue(new Error('network'));
+    renderInLocale(
+      <Composer vm={someVm({ draft: draftOf({ step: 4 }) })} initialStep={4} now={NOW} />,
+      locale,
+    );
+
+    await user.click(screen.getByRole('button', { name: t('compose.identity.anon') }));
+    await ticks(user);
+    await user.click(screen.getByTestId('compose-publish'));
+
+    const summary = await screen.findByTestId('compose-error');
+    expect(summary).toHaveTextContent(t('compose.publishNotSaved'));
+    expect(screen.queryByTestId('compose-error-fields')).toBeNull();
+    expect(publishDraftAction).not.toHaveBeenCalled();
+  });
+
   it('publishes a facility draft through the facility action', async () => {
     const user = userEvent.setup();
     vi.mocked(publishFacilityVisitAction).mockResolvedValue({
