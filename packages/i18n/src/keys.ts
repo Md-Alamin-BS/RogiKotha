@@ -295,6 +295,7 @@ export type MessageKey =
   | 'compare.remove'
   | 'compare.title'
   | 'compose.addBmdc'
+  | 'compose.addBmdcPrivate'
   | 'compose.addCancel'
   | 'compose.addChamber'
   | 'compose.addDoctor'
@@ -306,6 +307,7 @@ export type MessageKey =
   | 'compose.addSubmit'
   | 'compose.after'
   | 'compose.age'
+  | 'compose.anonNewDoctor'
   | 'compose.back'
   | 'compose.bodyCount'
   | 'compose.chooseDoctor'
@@ -319,7 +321,16 @@ export type MessageKey =
   | 'compose.doctor'
   | 'compose.doctorMissing'
   | 'compose.doctorMissingNote'
+  | 'compose.draftMissing'
+  | 'compose.draftNotSaved'
   | 'compose.draftSaved'
+  | 'compose.drafts.continue'
+  | 'compose.drafts.discard'
+  | 'compose.drafts.discardConfirm'
+  | 'compose.drafts.expires'
+  | 'compose.drafts.saved'
+  | 'compose.drafts.title'
+  | 'compose.drafts.untitled'
   | 'compose.edit.intro'
   | 'compose.edit.save'
   | 'compose.edit.title'
@@ -327,6 +338,9 @@ export type MessageKey =
   | 'compose.errorFields'
   | 'compose.evidence'
   | 'compose.evidenceOptional'
+  | 'compose.exactDate'
+  | 'compose.exactDateNote'
+  | 'compose.facilityStoryHint'
   | 'compose.fixNow'
   | 'compose.identity.anon'
   | 'compose.identity.anonNote'
@@ -368,15 +382,24 @@ export type MessageKey =
   | 'compose.saveExit'
   | 'compose.sentiment'
   | 'compose.step'
+  | 'compose.stepName.care'
+  | 'compose.stepName.check'
+  | 'compose.stepName.how'
+  | 'compose.stepName.story'
   | 'compose.story'
   | 'compose.storyHint'
   | 'compose.symptoms'
+  | 'compose.tagAdd'
+  | 'compose.tagFree'
   | 'compose.tagGroup.condition'
   | 'compose.tagGroup.medicine'
   | 'compose.tagGroup.symptom'
   | 'compose.tagGroup.treatment'
   | 'compose.tags'
+  | 'compose.tagsMax'
   | 'compose.tagsRequired'
+  | 'compose.target.doctor'
+  | 'compose.target.facility'
   | 'compose.title'
   | 'compose.titleLabel'
   | 'compose.treatment'
@@ -496,8 +519,15 @@ export type MessageKey =
   | 'errors.retention.previewDrift'
   | 'errors.review.anonymousNewDoctor'
   | 'errors.review.attestationRequired'
+  | 'errors.review.draftsFull'
   | 'errors.review.minFields'
+  | 'errors.review.missingBranch'
+  | 'errors.review.missingDoctor'
+  | 'errors.review.missingRelationship'
+  | 'errors.review.missingStory'
+  | 'errors.review.missingTag'
   | 'errors.review.notEditable'
+  | 'errors.review.periodInvalid'
   | 'errors.review.restoreExpired'
   | 'ev.failNote'
   | 'ev.note.count'
@@ -647,10 +677,13 @@ export type MessageKey =
   | 'how.3.t'
   | 'how.title'
   | 'index.beFirst'
+  | 'index.count'
   | 'index.doctorsNote'
   | 'index.emptyTopic'
   | 'index.experiencesNote'
   | 'index.facilitiesNote'
+  | 'index.more'
+  | 'index.newest'
   | 'index.topicsNote'
   | 'label.documentsWord'
   | 'label.edited'
@@ -763,6 +796,7 @@ export type MessageKey =
   | 'profile.languages'
   | 'profile.list.count'
   | 'profile.list.orderNote'
+  | 'profile.noContributions'
   | 'profile.noExperiences'
   | 'profile.qualifications'
   | 'profile.showing'
@@ -1211,6 +1245,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compare.remove',
   'compare.title',
   'compose.addBmdc',
+  'compose.addBmdcPrivate',
   'compose.addCancel',
   'compose.addChamber',
   'compose.addDoctor',
@@ -1222,6 +1257,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.addSubmit',
   'compose.after',
   'compose.age',
+  'compose.anonNewDoctor',
   'compose.back',
   'compose.bodyCount',
   'compose.chooseDoctor',
@@ -1235,7 +1271,16 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.doctor',
   'compose.doctorMissing',
   'compose.doctorMissingNote',
+  'compose.draftMissing',
+  'compose.draftNotSaved',
   'compose.draftSaved',
+  'compose.drafts.continue',
+  'compose.drafts.discard',
+  'compose.drafts.discardConfirm',
+  'compose.drafts.expires',
+  'compose.drafts.saved',
+  'compose.drafts.title',
+  'compose.drafts.untitled',
   'compose.edit.intro',
   'compose.edit.save',
   'compose.edit.title',
@@ -1243,6 +1288,9 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.errorFields',
   'compose.evidence',
   'compose.evidenceOptional',
+  'compose.exactDate',
+  'compose.exactDateNote',
+  'compose.facilityStoryHint',
   'compose.fixNow',
   'compose.identity.anon',
   'compose.identity.anonNote',
@@ -1284,15 +1332,24 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.saveExit',
   'compose.sentiment',
   'compose.step',
+  'compose.stepName.care',
+  'compose.stepName.check',
+  'compose.stepName.how',
+  'compose.stepName.story',
   'compose.story',
   'compose.storyHint',
   'compose.symptoms',
+  'compose.tagAdd',
+  'compose.tagFree',
   'compose.tagGroup.condition',
   'compose.tagGroup.medicine',
   'compose.tagGroup.symptom',
   'compose.tagGroup.treatment',
   'compose.tags',
+  'compose.tagsMax',
   'compose.tagsRequired',
+  'compose.target.doctor',
+  'compose.target.facility',
   'compose.title',
   'compose.titleLabel',
   'compose.treatment',
@@ -1412,8 +1469,15 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.retention.previewDrift',
   'errors.review.anonymousNewDoctor',
   'errors.review.attestationRequired',
+  'errors.review.draftsFull',
   'errors.review.minFields',
+  'errors.review.missingBranch',
+  'errors.review.missingDoctor',
+  'errors.review.missingRelationship',
+  'errors.review.missingStory',
+  'errors.review.missingTag',
   'errors.review.notEditable',
+  'errors.review.periodInvalid',
   'errors.review.restoreExpired',
   'ev.failNote',
   'ev.note.count',
@@ -1563,10 +1627,13 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'how.3.t',
   'how.title',
   'index.beFirst',
+  'index.count',
   'index.doctorsNote',
   'index.emptyTopic',
   'index.experiencesNote',
   'index.facilitiesNote',
+  'index.more',
+  'index.newest',
   'index.topicsNote',
   'label.documentsWord',
   'label.edited',
@@ -1679,6 +1746,7 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'profile.languages',
   'profile.list.count',
   'profile.list.orderNote',
+  'profile.noContributions',
   'profile.noExperiences',
   'profile.qualifications',
   'profile.showing',
