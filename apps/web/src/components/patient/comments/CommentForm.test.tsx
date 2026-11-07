@@ -62,7 +62,7 @@ describe.each(['en', 'bn'] as const)('the comment form in %s', (locale: TestLoca
   it('shows a refusal in the active language and keeps the text', async () => {
     vi.mocked(postComment).mockResolvedValue({
       status: 'error',
-      messageKey: 'experience.commentLength',
+      messageKey: 'errors.community.commentLength',
       values: { min: 1, max: 2000 },
       body: 'kept text',
     });
@@ -75,11 +75,26 @@ describe.each(['en', 'bn'] as const)('the comment form in %s', (locale: TestLoca
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent(max);
     expect(alert).toHaveTextContent(
-      t('experience.commentLength', { min: locale === 'bn' ? '১' : '1', max }),
+      t('errors.community.commentLength', { min: locale === 'bn' ? '১' : '1', max }),
     );
     expect(screen.getByRole('textbox')).toHaveValue('kept text');
     expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', alert.id);
+  });
+
+  it('shows the hidden-character refusal in the active language and keeps the text', async () => {
+    vi.mocked(postComment).mockResolvedValue({
+      status: 'error',
+      messageKey: 'errors.community.commentHidden',
+      body: 'kept text',
+    });
+    renderInLocale(locale, <CommentForm reviewPublicId="exp0000001" />);
+
+    await userEvent.type(screen.getByRole('textbox'), 'kept text');
+    await userEvent.click(screen.getByRole('button', { name: t('experience.commentPost') }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(t('errors.community.commentHidden'));
+    expect(screen.getByRole('textbox')).toHaveValue('kept text');
   });
 
   it('shows the minutes to wait, in the digits of the active language, when rate limited', async () => {

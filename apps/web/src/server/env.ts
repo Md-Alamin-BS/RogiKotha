@@ -59,6 +59,35 @@ export function readProbeTargets(
   };
 }
 
+/** The directory holding `pnpm-workspace.yaml` above the working directory, else the latter. */
+export function workspaceRoot(start: string = process.cwd()): string {
+  let dir = start;
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (existsSync(path.join(dir, 'pnpm-workspace.yaml'))) return dir;
+    dir = path.dirname(dir);
+  }
+  return start;
+}
+
+export const DEFAULT_STORAGE_ROOT = './.data/storage';
+
+/**
+ * U48 (BR3.3): a relative `STORAGE_ROOT` is taken from the repo root, not from `apps/web` where
+ * `next` runs, and a root inside `apps/web` (so inside its public folder too) is refused.
+ */
+export function resolveStorageRoot(
+  value: string | undefined,
+  root: string,
+  problems: string[],
+): string {
+  const resolved = path.resolve(root, value?.trim() || DEFAULT_STORAGE_ROOT);
+  const relative = path.relative(path.resolve(root, 'apps', 'web'), resolved);
+  if (relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative))) {
+    problems.push('STORAGE_ROOT must be outside apps/web');
+  }
+  return resolved;
+}
+
 const KEY_BYTES = 32;
 const SECRET_MIN_LENGTH = 32;
 
@@ -72,6 +101,8 @@ export interface WebEnv {
   encryptionKey: Uint8Array;
   mailRecipientKey: Uint8Array;
   termsVersion: string;
+  /** U48: the evidence quarantine root, absolute (BR3.1, BR3.3). */
+  storageRoot: string;
 }
 
 /** Names every variable that is wrong, never a value (BR7.2). */
@@ -104,7 +135,10 @@ function absoluteUrl(value: string | undefined, problems: string[]): string {
  * Validates every variable the web tier needs and throws one error naming each problem. `read`
  * is the variable source, so tests can pass their own.
  */
-export function readWebEnv(read: (name: string) => string | undefined = optionalEnv): WebEnv {
+export function readWebEnv(
+  read: (name: string) => string | undefined = optionalEnv,
+  root: string = workspaceRoot(),
+): WebEnv {
   const problems: string[] = [];
   const databaseUrl = read('DATABASE_URL') ?? '';
   if (!databaseUrl) problems.push('DATABASE_URL is not set');
@@ -123,6 +157,7 @@ export function readWebEnv(read: (name: string) => string | undefined = optional
   }
   const termsVersion = (read('TERMS_VERSION') ?? '').trim();
   if (!termsVersion) problems.push('TERMS_VERSION is not set');
+  const storageRoot = resolveStorageRoot(read('STORAGE_ROOT'), root, problems);
   if (problems.length > 0) throw new WebEnvError(problems);
   return {
     databaseUrl,
@@ -132,5 +167,6 @@ export function readWebEnv(read: (name: string) => string | undefined = optional
     encryptionKey,
     mailRecipientKey,
     termsVersion,
+    storageRoot,
   };
 }

@@ -5,6 +5,10 @@
 // target. Reference rows are added with the `add*` helpers; every row is synthetic.
 import type {
   ActiveTermRef,
+  CorrectedContent,
+  CorrectionLockRow,
+  OwnEditRow,
+  VersionHistoryRow,
   PreviewDoctorRecord,
   DraftChange,
   DraftRecord,
@@ -71,6 +75,11 @@ export interface FakeModuleReview extends Omit<NewReviewRecord, 'now'> {
   attestationAt: Date | null;
   deletedAt: Date | null;
   createdAt: Date;
+  /** U22: set by `updateContent`; until then the newest version row (or 1) is the version. */
+  version?: number;
+  /** U22: the review's branch, read by `lockForCorrection`. */
+  branchId?: string | null;
+  updatedAt?: Date;
 }
 
 export interface FakeModuleTag {
@@ -228,13 +237,23 @@ export class FakeReviewModuleRepository implements ReviewModuleRepository, Trans
     return review;
   }
 
-  /** Seeds a correction version (U22 writes these; U47 only reads them, BR6.7). */
-  addCorrection(reviewId: string, at: Date): void {
+  /**
+   * Seeds a correction version (U22 writes these; U47 only reads them, BR6.7). `snapshot` is the
+   * version's content, `corrected` the material parts it changed.
+   */
+  addCorrection(
+    reviewId: string,
+    at: Date,
+    options: { snapshot?: Record<string, unknown>; corrected?: readonly string[] } = {},
+  ): void {
     const version = 1 + this.versions.filter((v) => v.reviewId === reviewId).length;
     this.versions.push({
       reviewId,
       version,
-      snapshot: {},
+      snapshot: {
+        ...options.snapshot,
+        ...(options.corrected ? { corrected: [...options.corrected] } : {}),
+      },
       changeKind: 'correction',
       actorKind: 'author',
       actorId: null,
@@ -257,6 +276,13 @@ export class FakeReviewModuleRepository implements ReviewModuleRepository, Trans
       doctor !== undefined &&
       doctor.state === 'published' &&
       doctor.mergedIntoId === null
+    );
+  }
+
+  private versionOf(review: FakeModuleReview): number {
+    return (
+      review.version ??
+      Math.max(1, ...this.versions.filter((v) => v.reviewId === review.id).map((v) => v.version))
     );
   }
 
@@ -569,6 +595,85 @@ export class FakeReviewModuleRepository implements ReviewModuleRepository, Trans
       this.reviews.some(
         (r) => r.doctorId === doctorId && ids.has(r.authorPersonaId) && this.eligible(r),
       ),
+    );
+  }
+
+  lockForCorrection(_tx: Tx, reviewId: string): Promise<CorrectionLockRow | null> {
+    const review = this.reviews.find((r) => r.id === reviewId);
+    if (!review) return Promise.resolve(null);
+    return Promise.resolve({
+      kind: review.kind,
+      title: review.title,
+      body: review.body,
+      sections: review.sections === null ? null : { ...review.sections },
+      sentiment: review.sentiment,
+      outcome: review.outcome,
+      claims: review.claims.map((c) => ({ ...c })),
+      language: review.language,
+      version: this.versionOf(review),
+      authorPersonaId: review.authorPersonaId,
+      doctorId: review.doctorId,
+      branchId: review.branchId ?? null,
+    });
+  }
+
+  updateContent(
+    _tx: Tx,
+    reviewId: string,
+    content: CorrectedContent,
+    newVersion: number,
+  ): Promise<boolean> {
+    const review = this.reviews.find((r) => r.id === reviewId);
+    if (!review || this.versionOf(review) !== newVersion - 1) return Promise.resolve(false);
+    const { now, ...columns } = content;
+    Object.assign(review, {
+      ...columns,
+      sections: columns.sections === null ? null : { ...columns.sections },
+      claims: columns.claims.map((c) => ({ ...c })),
+      version: newVersion,
+      updatedAt: now,
+    });
+    return Promise.resolve(true);
+  }
+
+  findOwnForEdit(_tx: Tx, reviewId: string, locale: Locale): Promise<OwnEditRow | null> {
+    const review = this.reviews.find((r) => r.id === reviewId);
+    if (!review) return Promise.resolve(null);
+    const doctor = this.doctors.find((d) => d.id === review.doctorId);
+    return Promise.resolve({
+      publicId: review.publicId,
+      kind: review.kind,
+      version: this.versionOf(review),
+      title: review.title,
+      body: review.body,
+      sections: review.sections === null ? null : { ...review.sections },
+      sentiment: review.sentiment,
+      outcome: review.outcome,
+      claims: review.claims.map((c) => ({ ...c })),
+      doctorName: (locale === 'bn' ? doctor?.nameBn : doctor?.nameEn) ?? null,
+    });
+  }
+
+  listVersions(_tx: Tx, reviewId: string): Promise<VersionHistoryRow[]> {
+    const rows = this.versions
+      .filter((v) => v.reviewId === reviewId)
+      .sort((a, b) => a.version - b.version);
+    return Promise.resolve(
+      rows.map((row, i) => {
+        const next = rows[i + 1];
+        const nextCorrected = next?.snapshot['corrected'];
+        const material =
+          next?.changeKind === 'correction' &&
+          Array.isArray(nextCorrected) &&
+          nextCorrected.length > 0;
+        return {
+          version: row.version,
+          changeKind: row.changeKind,
+          createdAt: row.createdAt,
+          corrected: structuredClone(row.snapshot['corrected']),
+          ...(material ? { content: structuredClone(row.snapshot) } : {}),
+        };
+      }),
     );
   }
 }

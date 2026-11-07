@@ -1,5 +1,12 @@
 // @vitest-environment node
-import { err, ok, type ErrorCode, type Result } from '@rogikotha/contracts';
+import {
+  err,
+  ok,
+  parseInput,
+  PostCommentInput,
+  type ErrorCode,
+  type Result,
+} from '@rogikotha/contracts';
 import { revalidatePath } from 'next/cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -68,17 +75,65 @@ describe('posting a comment', () => {
   });
 
   it('keeps the text and gives the length message with its limits when the body is refused', async () => {
-    answer(err('validation', { fieldErrors: { body: 'experience.commentLength' } }));
+    answer(err('validation', { fieldErrors: { body: 'errors.community.commentLength' } }));
 
     const state = await postComment(IDLE, commentForm({ body: '   ' }));
 
     expect(state).toEqual({
       status: 'error',
-      messageKey: 'experience.commentLength',
+      messageKey: 'errors.community.commentLength',
       values: { min: 1, max: 2000 },
       body: '',
     });
     expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
+  describe('with the real input schema (FD-115)', () => {
+    const ch = (...codePoints: number[]) => String.fromCodePoint(...codePoints);
+
+    beforeEach(() => {
+      vi.mocked(runCommand).mockImplementation((_command, raw) =>
+        Promise.resolve(parseInput(PostCommentInput, raw)),
+      );
+    });
+
+    it.each([
+      ['zero-width space only', ch(0x200b)],
+      ['zero-width characters and spaces', ` ${ch(0x200b, 0x2060, 0xfeff)} `],
+    ])('refuses a body of %s with the length message', async (_name, body) => {
+      const state = await postComment(IDLE, commentForm({ body }));
+
+      expect(state).toMatchObject({
+        status: 'error',
+        messageKey: 'errors.community.commentLength',
+        values: { min: 1, max: 2000 },
+      });
+    });
+
+    it.each([
+      ['NUL', 0x0000],
+      ['a right-to-left override', 0x202e],
+      ['a left-to-right isolate', 0x2066],
+      ['a zero-width space in text', 0x200b],
+    ])('refuses %s with the hidden-character message and keeps the text', async (_name, cp) => {
+      const body = `My own${ch(cp)} words`;
+
+      const state = await postComment(IDLE, commentForm({ body }));
+
+      expect(state).toEqual({
+        status: 'error',
+        messageKey: 'errors.community.commentHidden',
+        body,
+      });
+    });
+
+    it('accepts a multi-line Bengali body with ZWJ and ZWNJ', async () => {
+      const body = `প্রথম লাইন: র${ch(0x200d)}্যাব।\nদ্বিতীয় লাইন: উদ্${ch(0x200c)}যাপন।`;
+
+      const state = await postComment(IDLE, commentForm({ body }));
+
+      expect(state).toMatchObject({ status: 'done', messageKey: 'experience.commentPosted' });
+    });
   });
 
   it.each([

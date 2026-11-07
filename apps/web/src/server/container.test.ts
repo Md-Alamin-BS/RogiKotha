@@ -4,12 +4,14 @@
 import {
   MAIL_SEND_JOB,
   type CommandPorts,
+  type EvidenceModuleDeps,
   type IdentityOwnership,
   type PrivateIdentityRepository,
   type ReviewModulePorts,
   type ReviewSeams,
 } from '@rogikotha/application';
 import type * as Application from '@rogikotha/application';
+import { createInterimPublicEvidenceCount } from '@rogikotha/database';
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import { createAuthInstance } from './better-auth/instance';
@@ -22,6 +24,10 @@ const createCrypto = vi.hoisted(() => vi.fn((keys: unknown) => ({ keys })));
 const privatePort = vi.hoisted(() => ({ owns: vi.fn(() => Promise.resolve(true)) }));
 // U11 review: the ownership check is no longer on the container, so it is read where it goes.
 const reviewDeps = vi.hoisted(() => ({ last: undefined as ReviewModulePorts | undefined }));
+// U48: what the evidence module was built with, and the writer the adapter stand-in hands out.
+const evidenceDeps = vi.hoisted(() => ({ last: undefined as EvidenceModuleDeps | undefined }));
+const evidenceWriter = vi.hoisted(() => ({ putQuarantined: vi.fn(), delete: vi.fn() }));
+const createFsEvidenceWriter = vi.hoisted(() => vi.fn(() => evidenceWriter));
 
 vi.mock('@rogikotha/application', async (importOriginal) => {
   const actual = await importOriginal<typeof Application>();
@@ -30,6 +36,10 @@ vi.mock('@rogikotha/application', async (importOriginal) => {
     createReviewModule: vi.fn((deps: ReviewModulePorts) => {
       reviewDeps.last = deps;
       return actual.createReviewModule(deps);
+    }),
+    createEvidenceModule: vi.fn((deps: EvidenceModuleDeps) => {
+      evidenceDeps.last = deps;
+      return actual.createEvidenceModule(deps);
     }),
   };
 });
@@ -47,6 +57,8 @@ vi.mock('@rogikotha/adapters', () => ({
   })),
   createCrypto,
   createMemoryRateLimiter: vi.fn(() => ({})),
+  // U48: the writer only; the stand-in has no reader to hand out (BR3.6).
+  createFsEvidenceWriter,
 }));
 vi.mock('@rogikotha/database', () => {
   const Stub = vi.fn(function Stub() {});
@@ -71,6 +83,8 @@ vi.mock('@rogikotha/database', () => {
     // U47's block.
     PgReviewModuleRepository: Stub,
     createInterimPublicEvidenceCount: vi.fn(() => ({})),
+    // U48's block.
+    PgEvidenceRepository: Stub,
     // U49's block.
     PgCommunityRepository: Stub,
   };
@@ -94,6 +108,7 @@ function buildEnv(): WebEnv {
     encryptionKey: ENCRYPTION_KEY,
     mailRecipientKey: MAIL_KEY,
     termsVersion: '1',
+    storageRoot: '/synthetic/evidence-root',
   };
 }
 
@@ -156,6 +171,25 @@ describe('the web container', () => {
       'authorIdentityModeOf',
     ] as const satisfies readonly (keyof ReviewSeams)[];
     expect(seams.map((seam) => typeof review[seam])).toEqual(seams.map(() => 'function'));
+  });
+
+  it('gives the evidence module the quarantine writer on the storage root and no reader (U48, BR3.6)', () => {
+    const { evidence } = getContainer();
+
+    expect(createFsEvidenceWriter).toHaveBeenCalledWith('/synthetic/evidence-root');
+    expect(evidence.files).toBe(evidenceWriter);
+    expect(evidenceDeps.last?.files).toBe(evidenceWriter);
+    expect('readQuarantined' in evidence.files).toBe(false);
+    expect(Object.keys(evidenceDeps.last ?? {})).not.toContain('scanner');
+    expect(evidence.intake.name).toBe('evidence.intake');
+    expectTypeOf<keyof EvidenceModuleDeps['files']>().toEqualTypeOf<'putQuarantined' | 'delete'>();
+  });
+
+  it("binds the public evidence count to the evidence module's own (U48, C17)", () => {
+    const container = getContainer();
+
+    expect(container.publicEvidence).toBe(container.evidence.publicEvidenceCount);
+    expect(createInterimPublicEvidenceCount).not.toHaveBeenCalled();
   });
 
   it('hands the app settings to the commands without any secret', () => {

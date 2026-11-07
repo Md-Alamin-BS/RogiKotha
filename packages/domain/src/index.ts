@@ -9,3 +9,5 @@ export * from './identity/projection';
 export * from './community';
 export * from './review/review';
 export * from './review/facility-review';
+export * from './evidence/index';
+export * from './review/versioning';

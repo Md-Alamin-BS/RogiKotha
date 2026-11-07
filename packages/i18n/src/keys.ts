@@ -331,7 +331,9 @@ export type MessageKey =
   | 'compose.drafts.saved'
   | 'compose.drafts.title'
   | 'compose.drafts.untitled'
+  | 'compose.edit.correctionNote'
   | 'compose.edit.intro'
+  | 'compose.edit.reload'
   | 'compose.edit.save'
   | 'compose.edit.title'
   | 'compose.edit.versionNote'
@@ -508,16 +510,20 @@ export type MessageKey =
   | 'errors.common.rateLimited'
   | 'errors.common.validation'
   | 'errors.community.blocked'
+  | 'errors.community.commentHidden'
+  | 'errors.community.commentLength'
   | 'errors.community.mentionAnonymous'
   | 'errors.community.replyDepth'
   | 'errors.config.invariant'
   | 'errors.config.outOfRange'
   | 'errors.evidence.confirmationRequired'
   | 'errors.evidence.notPreviewable'
+  | 'errors.evidence.rateLimited'
   | 'errors.evidence.tooLarge'
   | 'errors.evidence.tooMany'
   | 'errors.evidence.totalTooLarge'
   | 'errors.evidence.typeRejected'
+  | 'errors.evidence.uploadFailed'
   | 'errors.hold.active'
   | 'errors.moderation.duplicateReport'
   | 'errors.moderation.narrativeLocked'
@@ -525,7 +531,9 @@ export type MessageKey =
   | 'errors.retention.previewDrift'
   | 'errors.review.anonymousNewDoctor'
   | 'errors.review.attestationRequired'
+  | 'errors.review.correctionsLimit'
   | 'errors.review.draftsFull'
+  | 'errors.review.editConflict'
   | 'errors.review.minFields'
   | 'errors.review.missingBranch'
   | 'errors.review.missingDoctor'
@@ -536,9 +544,17 @@ export type MessageKey =
   | 'errors.review.periodInvalid'
   | 'errors.review.restoreExpired'
   | 'ev.failNote'
+  | 'ev.guidance.photograph'
   | 'ev.note.count'
+  | 'ev.reason.couldNotCheck'
+  | 'ev.reason.malware'
+  | 'ev.reason.notImage'
+  | 'ev.reason.tooLarge'
   | 'ev.remove'
+  | 'ev.removeNamed'
   | 'ev.replace'
+  | 'ev.size.kb'
+  | 'ev.size.mb'
   | 'ev.state.checking'
   | 'ev.state.failed'
   | 'ev.state.processing'
@@ -546,24 +562,23 @@ export type MessageKey =
   | 'ev.state.ready'
   | 'ev.state.redact'
   | 'ev.state.scanning'
+  | 'ev.status.failed'
   | 'ev.status.pending'
   | 'ev.status.ready'
   | 'ev.status.rejected'
-  | 'ev.upload.done.pending'
-  | 'ev.upload.done.ready'
-  | 'ev.upload.done.rejected'
+  | 'ev.upload.done.received'
   | 'ev.upload.errors.failed'
   | 'ev.upload.errors.noFile'
   | 'ev.upload.errors.notFound'
+  | 'ev.upload.errors.rateLimited'
   | 'ev.upload.errors.signedOut'
   | 'ev.upload.errors.tooLarge'
   | 'ev.upload.errors.tooMany'
+  | 'ev.upload.errors.unconfirmed'
   | 'ev.upload.fileLabel'
   | 'ev.upload.hint'
   | 'ev.upload.limitReached'
   | 'ev.upload.listLabel'
-  | 'ev.upload.pendingNote'
-  | 'ev.upload.rejectedNote'
   | 'ev.upload.submit'
   | 'ev.upload.uploading'
   | 'evidence.group.later'
@@ -680,6 +695,23 @@ export type MessageKey =
   | 'hero.browse'
   | 'hero.cta'
   | 'hero.title'
+  | 'history.corrected'
+  | 'history.field.after'
+  | 'history.field.claims'
+  | 'history.field.diagnosis'
+  | 'history.field.outcome'
+  | 'history.field.sentiment'
+  | 'history.field.story'
+  | 'history.field.symptoms'
+  | 'history.field.treatment'
+  | 'history.kind.corrected'
+  | 'history.kind.edited'
+  | 'history.kind.published'
+  | 'history.originalHeading'
+  | 'history.showOriginal'
+  | 'history.unavailable'
+  | 'history.version'
+  | 'history.yourVersions'
   | 'how.1.b'
   | 'how.1.t'
   | 'how.2.b'
@@ -1294,7 +1326,9 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'compose.drafts.saved',
   'compose.drafts.title',
   'compose.drafts.untitled',
+  'compose.edit.correctionNote',
   'compose.edit.intro',
+  'compose.edit.reload',
   'compose.edit.save',
   'compose.edit.title',
   'compose.edit.versionNote',
@@ -1471,16 +1505,20 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.common.rateLimited',
   'errors.common.validation',
   'errors.community.blocked',
+  'errors.community.commentHidden',
+  'errors.community.commentLength',
   'errors.community.mentionAnonymous',
   'errors.community.replyDepth',
   'errors.config.invariant',
   'errors.config.outOfRange',
   'errors.evidence.confirmationRequired',
   'errors.evidence.notPreviewable',
+  'errors.evidence.rateLimited',
   'errors.evidence.tooLarge',
   'errors.evidence.tooMany',
   'errors.evidence.totalTooLarge',
   'errors.evidence.typeRejected',
+  'errors.evidence.uploadFailed',
   'errors.hold.active',
   'errors.moderation.duplicateReport',
   'errors.moderation.narrativeLocked',
@@ -1488,7 +1526,9 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.retention.previewDrift',
   'errors.review.anonymousNewDoctor',
   'errors.review.attestationRequired',
+  'errors.review.correctionsLimit',
   'errors.review.draftsFull',
+  'errors.review.editConflict',
   'errors.review.minFields',
   'errors.review.missingBranch',
   'errors.review.missingDoctor',
@@ -1499,9 +1539,17 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'errors.review.periodInvalid',
   'errors.review.restoreExpired',
   'ev.failNote',
+  'ev.guidance.photograph',
   'ev.note.count',
+  'ev.reason.couldNotCheck',
+  'ev.reason.malware',
+  'ev.reason.notImage',
+  'ev.reason.tooLarge',
   'ev.remove',
+  'ev.removeNamed',
   'ev.replace',
+  'ev.size.kb',
+  'ev.size.mb',
   'ev.state.checking',
   'ev.state.failed',
   'ev.state.processing',
@@ -1509,24 +1557,23 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'ev.state.ready',
   'ev.state.redact',
   'ev.state.scanning',
+  'ev.status.failed',
   'ev.status.pending',
   'ev.status.ready',
   'ev.status.rejected',
-  'ev.upload.done.pending',
-  'ev.upload.done.ready',
-  'ev.upload.done.rejected',
+  'ev.upload.done.received',
   'ev.upload.errors.failed',
   'ev.upload.errors.noFile',
   'ev.upload.errors.notFound',
+  'ev.upload.errors.rateLimited',
   'ev.upload.errors.signedOut',
   'ev.upload.errors.tooLarge',
   'ev.upload.errors.tooMany',
+  'ev.upload.errors.unconfirmed',
   'ev.upload.fileLabel',
   'ev.upload.hint',
   'ev.upload.limitReached',
   'ev.upload.listLabel',
-  'ev.upload.pendingNote',
-  'ev.upload.rejectedNote',
   'ev.upload.submit',
   'ev.upload.uploading',
   'evidence.group.later',
@@ -1643,6 +1690,23 @@ export const MESSAGE_KEYS: readonly MessageKey[] = [
   'hero.browse',
   'hero.cta',
   'hero.title',
+  'history.corrected',
+  'history.field.after',
+  'history.field.claims',
+  'history.field.diagnosis',
+  'history.field.outcome',
+  'history.field.sentiment',
+  'history.field.story',
+  'history.field.symptoms',
+  'history.field.treatment',
+  'history.kind.corrected',
+  'history.kind.edited',
+  'history.kind.published',
+  'history.originalHeading',
+  'history.showOriginal',
+  'history.unavailable',
+  'history.version',
+  'history.yourVersions',
   'how.1.b',
   'how.1.t',
   'how.2.b',

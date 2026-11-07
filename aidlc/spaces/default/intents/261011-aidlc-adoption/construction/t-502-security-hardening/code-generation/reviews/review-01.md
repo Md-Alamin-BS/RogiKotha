@@ -1,0 +1,33 @@
+## Review
+
+**Verdict:** READY
+**Reviewer:** aidlc-architecture-reviewer-agent
+**Date:** 2026-11-07T19:59:19Z
+**Iteration:** 1
+
+### Findings
+
+| ID | Severity | Location | Finding | Required action | Status |
+|---|---|---|---|---|---|
+| R-01 | Major | apps/web/src/proxy.ts > `config.matcher` (the exclusions `favicon.ico$`, `robots.txt$`, `sitemap.xml$`, `manifest.webmanifest$`) | The proxy skips four root files that do not exist: there is no `apps/web/public` folder, and `git ls-files apps/web` finds no favicon, robots, sitemap or manifest file or metadata route. So a request to `/robots.txt` (and the other three) is not served as a file. It goes to the app router as `app/[locale]` with locale `robots.txt`, with no Host check, no Origin rule and no page CSP. The adversarial run in code-summary.md Step 34 (A1, ISS-696) already showed that Next.js runs a server action posted to a path that only reaches not-found: `setTheme` ran for an Origin-less `Next-Action` POST to `/_next/x`. These four paths have the same opening, which ISS-696 rated S2. Because the Host check is skipped as well, a DNS-rebinding page whose Origin equals its own Host also passes Next.js's own action check there, and can run anonymous server actions such as register or password-reset mail. The rationale in local-demo-threat-notes.md section 2, ISS-711 and FD-116 (1) ("they hold public bytes only") does not hold for files that do not exist. I inferred this from the code and from A1's own observation; I did not run it against a live server. | Remove the four names from the matcher until a real file exists; the design rule already says a Unit that adds a public file adds its name in the same commit. Add a matcher case to `proxy.test.ts` and repeat A1's real-server probe: an Origin-less `Next-Action` POST, and a POST with a forged Host, to `/robots.txt`, `/favicon.ico`, `/sitemap.xml`, `/manifest.webmanifest`, `/_next/image` and a missing `/_next/static/x`, each expected to get 403 or no action run. Then correct the threat-notes residual, ISS-711, FD-116 item (1) and the ENT-016 rationale. | New |
+| R-02 | Minor | docs/status/decision-log.md > FD-116 | FD-116, which records this Unit's security-posture decisions (matcher set, `__Secure-` rather than `__Host-`, `style-src 'unsafe-inline'`, the 413 cap, the Origin-less rule), is still marked "awaiting the owner's confirmation", yet the code is squash-merged on `main` as a3d9a56. The ASSUMPTION(U41) choices behind ISS-705 (seed.ts console exception), ISS-706 (i18n request config moved to `server/`), ISS-708 (zod `jitless` in the browser) and ISS-716 (`security-settings.ts` placement) also still wait for the owner, as the sign-off says. | At this gate, confirm or reject FD-116 and the four ASSUMPTION rows, and record the answer in the decision log and in `ISSUES.md`. | New |
+| R-03 | Minor | aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-502-security-hardening/code-generation/code-summary.md > "Inventory, coverage and files outside the owned paths" | The list of files edited outside U41's owned paths (unit-of-work.md U41) leaves several out: `apps/worker/src/env.ts`, `apps/worker/src/main.ts`, `packages/application/src/ports/log-policy.ts` (new), `apps/web/src/security-settings.ts` (only reachable through ISS-716), the worker test files, and the size-cap rewrite in `route.ts`. The owned scope there is "the origin check" only. The design asks for these changes, but the list claims to be complete. | Complete the list so the owner can see every file the Unit changed outside its owned paths. | New |
+| R-04 | Minor | aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-502-security-hardening/code-generation/source-manifest.json > `writes` | The manifest lists 64 paths. The commit also deletes `apps/web/src/i18n/request.ts` and `apps/web/src/i18n/request.test.ts` (`git show --name-status a3d9a56`), and neither appears in the manifest, so the manifest does not show everything the Unit changed. | Record the two deleted paths in the manifest, or note them in code-summary.md beside ISS-706. | New |
+
+### Validation Tool Results
+
+| Tool | Result | Interpretation |
+|---|---|---|
+| `timeout 600 pnpm -s typecheck` | PASS (exit 0) | All packages type-check on `main` at a3d9a56 |
+| `timeout 600 pnpm -s lint` | PASS: 0 errors, 1 warning | The warning is the older unused disable in `packages/i18n/src/routing.ts:17` (T-006), not U41's. `eslint.config.mjs` keeps only the five permanent `no-console` file exceptions; the temporary `review.ts` and `evidence.ts` exceptions are gone |
+| `timeout 300 pnpm -s i18n:check` | PASS: 993 keys, both locales | U41 adds no i18n key, as the design says |
+| vitest `web`: `lib/security`, `proxy.test`, `proxy.adversarial`, `proxy.smoke`, `security-settings`, `security-cookies`, upload `route.security` and `route.adversarial`, `server/logger` | PASS: 17 files, 333 tests | The in-process proxy tests call `proxy()` directly, so they cannot see the matcher gap in the Major finding; the matcher case only checks which paths are skipped |
+| vitest `worker`: `log-scrub.test`, `logger.test` | PASS: 2 files, 15 tests | The worker `message` field is always written as `[scrubbed]` (ISS-697 fix) |
+| vitest `application`: `ports/log-policy.test` | PASS: 1 file, 41 tests | Field allowlist, value shape and event shape hold |
+| Diff scan of a3d9a56 for tool or model identity and for new `eslint-disable`, `ts-ignore`, `.skip` or `.only` | None found | No identity in the diff; the commit author is the human's own identity |
+| Manifest compared with the commit file list | 64 of 66 non-record paths match | The two missing paths are the deletions (Minor finding) |
+| Not run (per brief) | `database`, `web-int`, `worker-int`, e2e | I did not re-run `log-scrub.int.test.ts`, `security.adversarial.int.test.ts` or `security-headers.spec.ts`; I relied on the results recorded in code-summary.md |
+
+### Summary
+
+The release-1 hardening is sound and well tested. The Host and Origin checks parse nothing through `URL` and compare exactly; each request gets a fresh, shape-checked nonce with `'strict-dynamic'` and no `'unsafe-eval'` outside development. The upload's declared length is checked before any read, and a counting stream cancels its source. Both loggers share one allowlist and value-shape policy, and the settings fail closed. The one finding to weigh before approving is the matcher: it excludes four root files that do not exist, so those paths reach the app router with no Host or Origin check and repeat the ISS-696 class of hole. It is cheap to close, and the threat notes, ISS-711 and FD-116 should be corrected with it.

@@ -54,6 +54,104 @@ Rules:
   4.14.0 and `lighthouse` 13.6.0 as exact devDependencies of `apps/web`. Re-check Lighthouse with
   an external Chromium at Step 39, when the flow is first run; a failure there is an ISS row.
 
+### 2026-11-06 (U41 T-502 — security headers, nonce CSP, origin checks, log policy)
+
+- Scope: U41 adds a nonce CSP and HSTS in `proxy.ts`, static headers from `next.config.ts`,
+  Host and Origin checks, `serverActions.allowedOrigins`, an upload body cap, lower body limits
+  and one log policy. The 2026-11-05 entry covers `next` and `next-intl` as versions, but not the
+  proxy, CSP and body-limit behaviour this Unit depends on. The plan asks for a focused re-check.
+  No new dependency is added.
+- Checked:
+  - `next`: installed 16.3.4 (lockfile); npm `latest` 16.4.5 (2026-11-03); `canary` is
+    16.5.0-canary.42. No release after 16.4.5. Its seven advisories are the ones listed on
+    2026-11-05; none concerns proxy, CSP nonces, server-action origin checks or body limits.
+  - Nonce CSP (nextjs.org CSP guide, updated 2026-03-20): the proxy sets the policy on the
+    forwarded request (`NextResponse.next({request: {headers}})`) and on the response. Next.js
+    reads the nonce from the request's `Content-Security-Policy` during SSR and stamps its own
+    scripts. Pages must render dynamically; a prerendered page has no nonce (`await connection()`
+    forces dynamic rendering). That is the BR1.4 risk on the root not-found page. Dev needs
+    `'unsafe-eval'`; production does not.
+  - `proxy.ts` (API reference, updated 2026-09-04): Node.js runtime by default, and setting
+    `runtime` throws. Matchers must be constants, can use negative lookahead and `has`/`missing`.
+    The proxy still runs for `/_next/data/*` even when a matcher excludes it. Order:
+    `next.config` `headers` first, then `redirects`, then the proxy. Server actions are POSTs to
+    the page route, so a matcher that excludes a path also skips the proxy for actions on it.
+  - `experimental.serverActions` (API reference, updated 2026-08-26): `allowedOrigins` holds
+    hosts (hostname plus port, no scheme; `*` and `**` wildcards). Next.js compares the `Origin`
+    host with `x-forwarded-host` or `host`. A request with no `Origin` header is let through
+    with a warning, so the proxy's own Origin check (BR3.3) is the strict one. The docs do not
+    say whether the list is read at build or start time, so Step 27(b) trial stays.
+    `bodySizeLimit` defaults to 1 MB and counts the raw multipart body.
+  - `experimental.proxyClientMaxBodySize` (experimental, default 10 MB): when a body is larger,
+    Next.js buffers only up to the limit, logs a warning and passes the truncated body on. It
+    never refuses the request. This is why the upload route is left out of the matcher (R-01)
+    and why the cap is the route's own counting stream (WF3).
+  - `next-intl`: installed 4.14.4; `latest` 4.14.9. The 4.14.5–4.14.9 notes (2026-11-05 entry)
+    do not change middleware request-header handling. The R-07 fallback stays: the proxy test
+    checks the forwarded headers.
+  - `better-auth`: installed 1.7.14 (lockfile, range `~1.7.14`); npm `latest` 1.7.18
+    (2026-11-05). 1.7.15–1.7.18 are security patches. They fix: revoked sessions rejected
+    through the cookie cache and secondary storage; email verification and change links bound to
+    the issuing account; email OTP guessing under concurrency; wildcard `trustedOrigins` held to
+    scheme, host and path boundaries; and built-in OAuth providers no longer following redirects.
+    No change to the default cookie attributes (`httpOnly`, `sameSite`, `__Secure-` prefix) is
+    listed. This app uses a single exact `trustedOrigins` entry, not a wildcard.
+  - Node: 24.18.0 locally. Its undici `Request` accepts a stream body with `duplex: 'half'`, and
+    `TransformStream` is global. Both are confirmed at Step 16 by `request-limits.test.ts`.
+- Findings: nothing the design relies on has changed, and nothing blocks U41. The no-`Origin`
+  pass-through and the truncating `proxyClientMaxBodySize` confirm R-01 and BR3.3 rather than
+  change them. The Better Auth patches fix flows U8 and U9 own, not anything U41 changes.
+- Decision: keep `next` 16.3.4, `next-intl` 4.14.4 and `better-auth` 1.7.14 for this Unit, since a
+  framework or library bump is its own task. U41 changes no hard rule, data boundary or founder
+  decision beyond the FD-next row the design already plans (design § 9), so no FD entry is needed
+  before code. Proposed for the owner: an `ISS-` row to bump `better-auth` to 1.7.18 (security
+  patches), next to the 16.4.5 `next` bump proposed on 2026-11-05.
+
+### 2026-11-06 (U48 u48-evidence — evidence intake and worker pipeline)
+
+- Scope: U48 builds `POST /api/evidence/upload` (a route handler reading `request.formData()` with
+  a 15 MB file, C18), the worker's `evidence.process` job (attempt from pg-boss metadata, a 120 s
+  handler budget, the 300 s expiry kept, R-01) and `evidence.sweep`, and moves the clamd `INSTREAM`
+  client into `scanner-clamd`. The pg-boss entry (2026-10-28) is older than 3 days; the `next`
+  entry (2026-11-05) is reused for versions. No new dependency is added.
+- Checked:
+  - `pg-boss`: installed 12.31.0 (lockfile); npm `latest` 12.38.1 (2026-11-05). Source read in
+    `node_modules`: `JobWithMetadata` has `retryLimit` and `retryCount` (`types.d.ts`), and
+    `work(..., { includeMetadata: true })` delivers them. The fetch query raises `retry_count` only
+    when the job was started before (`plans.js`), so attempt N carries `retryCount = N - 1`, and
+    `fail` retries while `retry_count < retry_limit`: the last attempt is `retryCount >= retryLimit`.
+    `job.signal` comes from one `AbortController` per fetched batch (`manager.js`
+    `#processJobs`). It is aborted only after the `expireInSeconds` timer fires or the handler
+    settles, and on a graceful stop. It is never aborted at a custom budget.
+  - `pg-boss` release notes 12.32.0–12.38.1: no change to `includeMetadata`, `retryCount`/
+    `retryLimit` or `job.signal`. 12.37.1 fixes a singleton/stately fetch that skipped keys. 12.38.0
+    and 12.38.1 make a handler running past `expireInSeconds` hold its worker with a
+    `handler_overrun` warning. ISS-257 already records the 12.37 send-to-deleted-queue change.
+  - `next`: installed 16.3.4 (covered by the 2026-11-05 entry). Source read: the
+    `proxyClientMaxBodySize` cap (`next.config.ts` sets 11 MB) applies only when the proxy runs,
+    because `next-server.js` clones and caps the body only on the proxy path. `apps/web/src/proxy.ts`
+    matches `/((?!api|_next|.*\\..*).*)`, so `/api/evidence/upload` never passes through it. App
+    Router route handlers have no built-in body limit, and `request.formData()` buffers the whole
+    body in memory, so the route's own `Content-Length` cap (`EVIDENCE_UPLOAD_CONTENT_LENGTH_CAP`)
+    is the only limit.
+  - clamd: the compose image reports `ClamAV 1.5.4/28175` today (pinned `clamav/clamav:1.5.4`,
+    still the current 1.5.x patch per the 2026-09-13 entry). `/etc/clamav/clamd.conf` leaves
+    `StreamMaxLength`, `MaxFileSize` and `MaxScanSize` at their defaults (the sample's commented
+    values are 25M, 400M and 1000M), all above a 15 MB file. The protocol in
+    `apps/web/src/server/clamav.ts` (`zINSTREAM\0`, 4-byte big-endian length chunks, a zero-length
+    end chunk, IPv4 for `localhost`) stays as it is in `scanner-clamd`. Above the stream limit
+    clamd answers `INSTREAM size limit exceeded. ERROR`, which the scan treats as an error (fail
+    closed).
+- Findings: the pinned pg-boss supports R-01 as designed. The 120 s budget must be enforced by the
+  handler itself (its own timer combined with `job.signal`), because pg-boss aborts the signal only
+  at the 300 s expiry. The route handler sees the full 15 MB body. Nothing in the newer pg-boss
+  releases is needed by U48.
+- Decision: keep `pg-boss` 12.31.0, `next` 16.3.4 and `clamav/clamav:1.5.4`. U48 changes no
+  version and adds no dependency. No new FD entry is needed: FD-035, FD-036, FD-070, FD-105 and
+  C8, C14–C19 cover U48, with no migration and no data-boundary change. The `serverActions` and
+  `proxyClientMaxBodySize` 11 MB settings in `next.config.ts` serve the demo-slice action upload,
+  which U48 retires. Dropping them is left to the step that deletes that action, not done here.
+
 ### 2026-11-05 (U9 T-102 — patient auth screens)
 
 - Scope: T-102 builds the pending, confirm, reset and security screens as forms on server actions

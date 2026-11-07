@@ -16,6 +16,24 @@ These decisions are binding and override the text below where they differ; the s
 
 - **FD-072** — T-502 builds **no** FD-058 code. T-101 builds the progressive sign-in delay and the severe-activity email and its outbox event, T-105 registers the settings, and T-405 creates the in-app notice. T-502 adds 3–5 adversarial tests that try to break the delay and the notice — timing bypass, account enumeration through delay differences, and counter reset — and keeps the rest of its scope. Changes Owned paths, Not in scope, new step 11, the acceptance checks, the tests and the threat notes.
 
+## Amendments — release 1 (FD-105)
+
+Unit U41 `t-502-security-hardening` builds the release-1 subset. Where this section differs from the text below, this section wins (2026-11-08). The task's other text stays as history.
+
+- **Deferred to release 2 (FD-105):** step 4 (rate-limiter wiring and the network key, ISS-700), step 8 (`assertAppMode()`, ISS-701), step 11 (the FD-072 adversarial tests, ISS-702) and `worker-src` / `manifest-src` for the PWA (ISS-703). The acceptance rows "Sign-in throttle", "Comment throttle", "APP_MODE", "Demo marker" and the five "FD-072" rows are deferred with them.
+- **Departures from the text below (FD-116, awaiting the owner's confirmation):**
+  - the proxy matches every path, dotted page paths included, except `/api/evidence/upload`, `/_next/static`, `/_next/image` and four named root files; the upload route guards itself;
+  - a state-changing request without `Origin` is refused unless `Sec-Fetch-Site` is `same-origin`, and `Host` and `X-Forwarded-Host` are checked by `proxy.ts` and `guardRouteRequest` (there is no `assertSameOrigin()`);
+  - the session cookie keeps Better Auth's `__Secure-` prefix on https, not `__Host-`;
+  - `style-src` is `'self' 'unsafe-inline'` with no nonce;
+  - CSP and HSTS are set at runtime by the proxy, the other headers by `next.config.ts`;
+  - the locale and admin layouts do not read the nonce; `readNonce()` and a sweep test cover any future script;
+  - no application code writes to the console outside the two loggers (`no-console`); the logger allowlist is the shared `LOG_FIELD_NAMES` plus the worker's own names, and values and event names are also checked.
+- **Changed acceptance rows:**
+  - "Upload overflow aborts": a request over 15 794 176 bytes answers `413 evidence.too_large` before the body is read, or while it is counted if the length is missing or false; a second file part answers U48's `400` `ev.upload.errors.noFile`, in place of "11 parts → 413"; a renamed `.exe` answers U48's `400 evidence.type_rejected` before storage is touched, in place of "415".
+  - "Cookies": the ENT-011 rows only (no staff device, step-up or purge cookie in release 1).
+  - "Headers present": also on a dotted page path such as `/en/experiences/<id>-a.b`.
+
 ## Goal
 
 Close the cross-cutting gaps that individual feature tasks were told not to own: a nonce-based

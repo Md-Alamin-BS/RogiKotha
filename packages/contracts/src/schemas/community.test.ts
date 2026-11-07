@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
+import { parseInput } from '../parse-input';
 import type { CommentVM, ThreadItemVM, ThreadVM } from '../view-models/thread';
 import { DeleteCommentInput, GetThreadInput, PostCommentInput } from './community';
 
@@ -12,6 +13,8 @@ const COMPOSED = 'Caf\u00E9 \u0995\u09CB';
 function post(body: string) {
   return PostCommentInput.safeParse({ reviewPublicId: REVIEW, body });
 }
+
+const ch = (...codePoints: number[]) => String.fromCodePoint(...codePoints);
 
 describe('PostCommentInput', () => {
   it('accepts a top-level comment and a reply with public ids', () => {
@@ -63,6 +66,43 @@ describe('PostCommentInput', () => {
     expect(parsed.data?.body).toBe(body);
   });
 
+  it('accepts a Bengali comment with ZWJ and ZWNJ in a sentence (FD-115)', () => {
+    const ZWJ = String.fromCodePoint(0x200d);
+    const ZWNJ = String.fromCodePoint(0x200c);
+    const body = `আমার র${ZWJ}্যাব পরীক্ষার পরে ডাক্তার উদ্${ZWNJ}যাপনের কথা বলেছিলেন।`;
+    expect(post(body).data?.body).toBe(body);
+  });
+
+  it('accepts a multi-line body and keeps its line breaks and tabs', () => {
+    const body = 'First paragraph.\r\n\r\nSecond paragraph.\n\tIndented line.';
+    expect(post(body).data?.body).toBe(body);
+  });
+
+  it('refuses a body of only zero-width characters as empty', () => {
+    const blanks = [
+      ch(0x200b),
+      ` ${ch(0x200b, 0x200b)} `,
+      ch(0x200d, 0x200c),
+      ch(0xfeff, 0x2060),
+      `${ch(0x200b)}\n`,
+    ];
+    for (const body of blanks) {
+      const parsed = post(body);
+      expect(parsed.success).toBe(false);
+      expect(parsed.error?.issues[0]?.message).toBe('errors.community.commentLength');
+    }
+  });
+
+  it('refuses NUL, bidi overrides and isolates, and zero-width space inside text', () => {
+    for (const cp of [0x0000, 0x202e, 0x202a, 0x2066, 0x2069, 0x200b, 0x000b, 0x00ad]) {
+      const parsed = post(`Before${String.fromCodePoint(cp)}after`);
+      expect(parsed.success).toBe(false);
+      expect(parsed.error?.issues.map((i) => i.message)).toEqual([
+        'errors.community.commentHidden',
+      ]);
+    }
+  });
+
   it('keeps links, at-names and markdown as literal text', () => {
     const body = '**see** https://example.test @someone';
     expect(post(body).data?.body).toBe(body);
@@ -94,8 +134,20 @@ describe('PostCommentInput', () => {
   });
 
   it('names the length message key on a refused body', () => {
-    const parsed = post('');
-    expect(parsed.error?.issues[0]?.message).toBe('experience.commentLength');
+    expect(post('').error?.issues[0]?.message).toBe('errors.community.commentLength');
+    expect(post('a'.repeat(2001)).error?.issues[0]?.message).toBe('errors.community.commentLength');
+  });
+
+  it('keeps both message keys through parseInput as the body field error', () => {
+    expect(parseInput(PostCommentInput, { reviewPublicId: REVIEW, body: ' ' })).toMatchObject({
+      ok: false,
+      error: { code: 'validation', fieldErrors: { body: 'errors.community.commentLength' } },
+    });
+    const bidi = `a${ch(0x202e)}b`;
+    expect(parseInput(PostCommentInput, { reviewPublicId: REVIEW, body: bidi })).toMatchObject({
+      ok: false,
+      error: { code: 'validation', fieldErrors: { body: 'errors.community.commentHidden' } },
+    });
   });
 });
 

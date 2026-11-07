@@ -4,7 +4,16 @@
 // `putDerivative(bytes, meta) -> key` (immutable), `head(key)`, `delete(key,
 // {reason})`). In-memory `Map<key, Buffer>`, task step 5's "round-trips
 // bytes" test target.
+import { createHash } from 'node:crypto';
 import { Readable } from 'node:stream';
+
+import {
+  portErr,
+  portOk,
+  type EvidenceByteStream,
+  type EvidenceFileReader,
+  type EvidenceFileWriter,
+} from '@rogikotha/application';
 
 import { seqId } from '../builders/seq.js';
 
@@ -64,4 +73,96 @@ export class MemoryStorage {
   peek(key: string): Buffer | undefined {
     return this.files.get(key);
   }
+}
+
+// U48 (BR3.6): the evidence writer and reader share one in-memory store but are built separately,
+// so a test holding the writer has no `readQuarantined` and the reader has no `putQuarantined`.
+export type EvidenceStoreFault = 'put' | 'read' | 'delete';
+
+export class MemoryEvidenceStore {
+  readonly files = new Map<string, Uint8Array>();
+  readonly deletedKeys: string[] = [];
+  private faults = new Set<EvidenceStoreFault>();
+  private next = 0;
+
+  /** The next call of `operation` throws, as a full disk or a lost mount would. */
+  failNext(operation: EvidenceStoreFault): void {
+    this.faults.add(operation);
+  }
+
+  /** Drops a stored file without recording a deletion, as if it went missing from disk. */
+  lose(key: string): void {
+    this.files.delete(key);
+  }
+
+  /** Stores bytes directly under a fresh key, for tests that start after intake. */
+  seed(bytes: Uint8Array): string {
+    const key = this.nextKey();
+    this.files.set(key, Uint8Array.from(bytes));
+    return key;
+  }
+
+  nextKey(): string {
+    this.next += 1;
+    return this.next.toString(16).padStart(32, '0');
+  }
+
+  takeFault(operation: EvidenceStoreFault): void {
+    if (this.faults.delete(operation)) {
+      throw new Error(`MemoryEvidenceStore: forced ${operation} fault`);
+    }
+  }
+
+  remove(key: string): void {
+    this.takeFault('delete');
+    this.files.delete(key);
+    this.deletedKeys.push(key);
+  }
+}
+
+// A forced fault rejects the returned promise, as the file-system adapter would, never throwing.
+function settle<T>(work: () => T): Promise<T> {
+  try {
+    return Promise.resolve(work());
+  } catch (error) {
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
+  }
+}
+
+export function memoryEvidenceWriter(store: MemoryEvidenceStore): EvidenceFileWriter {
+  return {
+    async putQuarantined(stream: EvidenceByteStream, opts: { maxBytes: number }) {
+      store.takeFault('put');
+      const chunks: Uint8Array[] = [];
+      let bytes = 0;
+      for await (const chunk of stream) {
+        bytes += chunk.length;
+        if (bytes > opts.maxBytes) return portErr('too_large');
+        chunks.push(chunk);
+      }
+      const body = Buffer.concat(chunks);
+      const key = store.nextKey();
+      store.files.set(key, new Uint8Array(body));
+      return portOk({ key, bytes, sha256: createHash('sha256').update(body).digest('hex') });
+    },
+    delete(key: string) {
+      return settle(() => store.remove(key));
+    },
+  };
+}
+
+export function memoryEvidenceReader(store: MemoryEvidenceStore): EvidenceFileReader {
+  return {
+    readQuarantined(key: string) {
+      return settle(() => {
+        store.takeFault('read');
+        const bytes = store.files.get(key);
+        if (!bytes) return portErr('original_missing');
+        return portOk<EvidenceByteStream>(Readable.from([Buffer.from(bytes)]));
+      });
+    },
+    delete(key: string) {
+      return settle(() => store.remove(key));
+    },
+  };
 }

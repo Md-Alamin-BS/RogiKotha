@@ -115,7 +115,7 @@ function CommentItem({
         />
         {comment.mine ? <span className="badge plain">{t('experience.ownComment')}</span> : null}
       </div>
-      <p>{comment.body}</p>
+      <p className="comment-body">{comment.body}</p>
       <CommentActions
         reviewPublicId={reviewPublicId}
         commentPublicId={comment.publicId}

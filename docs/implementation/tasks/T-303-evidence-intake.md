@@ -10,6 +10,15 @@
 | Depends on | T-005 (evidence tables), T-009 (worker skeleton / JobQueue), T-101 (Actor, verified email) |
 | Parallel-safe with | T-301, T-302, T-206, T-207 (T-303 owns only the `evidence` module and the upload route) |
 
+## Amendments — release 1 (FD-105, U48 `u48-evidence`)
+
+These decisions override the text below where they differ; the design is `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u48-evidence/functional-design/functional-spec.md`.
+
+- **FD-105: what release 1 builds** — upload to quarantine, the author's own list and removal, and the public count. The route is `POST /api/evidence/upload`: one `file` part per request (not busboy), `request.formData()` after a Content-Length cap of 15 MB + 64 KB, then the bytes stream to the writer. The command is `evidence.intake` with `reviewPublicId`; it is attached to a published review of the author, not a draft (`draftId`, `group` and the draft link are gone). The module is `packages/application/src/modules/evidence/`; the table above of owned paths is replaced by U48's owned-paths list in the plan.
+- **FD-105: acceptance rows changed** — Streams: the body is bounded in memory by the Content-Length cap and then streamed to the writer (test: "streams the whole file to the writer"); Idempotent: a repeat answers `200` with the existing item, also for the retry of the upload that made the tenth item; Owner only: a foreign `getForAuthor` answers null and a foreign `remove` answers `not_found` (404), not `forbidden`; Remove states: `remove` ends in `removed` (not `rejected`), allowed from every state except `removed`, and answers `not_found` for an item already removed; Limits: no PDF, `.pdf.exe` and `.docx` are refused by the type checks; Worker grants: **not met at grant level** (ISS-139, ISS-632): `rk_worker` has table-wide SELECT, and BR4.8 keeps `original_filename_enc` and `uploaded_by_account_id` out through the worker repository's column list, pinned by `evidence.int.test.ts`; no migration.
+- **FD-105: extra rules** — a rate limit of 30 uploads per account per hour (`evidence.upload:account:<accountId>`, `429 evidence.rate_limited`, ISS-630); the writer and reader ports are split so the web tier cannot read an original (BR3.6, tested by the web container test); a refused or repeated upload's quarantined key is deleted (BR3.4); a storage root inside `apps/web` refuses start-up (BR3.3).
+- Fixtures, `pnpm fixtures:build`, the `rk_worker` revoke migration (step 8) and the composer polling (step 5) are not built in release 1.
+
 ## Scope change 2026-09-12 — images only (CR-001 / FD-036)
 
 
@@ -117,8 +126,25 @@ artifacts, viewer (T-305, T-308). Retention/holds (T-309). Composer UI (T-306).
 ## Hand-off (implementer fills in)
 
 ### What changed
+
+Built in U48 (release 1, FD-105) together with T-304: domain `evidence/` (limits, states, transitions, file type and structure checks, file-name cleaning), the `evidence` application module (admit, check, intake, remove, get-for-author, count-public), `PgEvidenceRepository`, `createFsEvidenceWriter`, the upload route, the slimmed server actions, the uploader and file row, and the deletion of the demo evidence path. Files and counts are in `construction/u48-evidence/code-generation/code-summary.md`.
+
 ### Not done and why
+
+Fixtures and `pnpm fixtures:build`, the `rk_worker` column revoke, the composer polling and the PDF paths: release 2 or images-only (FD-105, CR-001). `getForAuthor` has no preview pages (T-305).
+
 ### Questions for the human
+
+None open. The Bengali copy awaits the owner's review at U50 (ISS-640).
+
 ### Follow-ups
+
+ISS-621 (worker storage root, S2, open), ISS-624 to ISS-632 and ISS-633 to ISS-641 (S4, see `docs/implementation/ISSUES.md`).
+
 ### `pnpm check` output summary
+
+Green at the Unit's Build and Test gate; the numbers are in the code summary.
+
 ### Hard-rule evidence
+
+Adversarial A1 to A5 (disguised files, size and count limits, foreign accounts, path traversal, scanner outage) held after ISS-620 was fixed; no route reads an original; the file name is sealed and never in a log line or answer.

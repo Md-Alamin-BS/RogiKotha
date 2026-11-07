@@ -23,6 +23,7 @@ export * from './directory-repositories.js';
 export * from './directory-ports.js';
 export { FakeIdentityStore, makeIdentityPorts, type FakePersonaLink } from './identity.js';
 export * from './review-repository.js';
+export * from './evidence-repository.js';
 
 import { ListAuditWriter } from './audit-writer.js';
 import { FakeClock } from './clock.js';

@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { screen, within } from '@testing-library/react';
 
 import {
@@ -23,6 +26,12 @@ vi.mock('@/server/actions/comments', () => ({
   postComment: vi.fn(() => Promise.resolve({ status: 'idle' })),
   deleteComment: vi.fn(() => Promise.resolve({ status: 'idle' })),
 }));
+
+// The break itself is kept by the stylesheet, which jsdom does not apply.
+const PATIENT_CSS = fs.readFileSync(
+  path.join(path.dirname(fileURLToPath(import.meta.url)), '../../../styles/patient.css'),
+  'utf8',
+);
 
 function renderThread(
   locale: TestLocale,
@@ -152,6 +161,16 @@ describe.each(['en', 'bn'] as const)('the comment thread view in %s', (locale) =
     expect(screen.getByText('<b>bold</b> <script>alert(1)</script>')).toBeInTheDocument();
     expect(container.innerHTML).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-/);
     expect(container.innerHTML).not.toMatch(/accountId|personaId|authorId|reviewId/);
+  });
+
+  it('keeps the line break of a two-line body in a pre-wrap paragraph', () => {
+    const body = locale === 'bn' ? 'প্রথম লাইন।\nদ্বিতীয় লাইন।' : 'First line.\nSecond line.';
+    const { container } = renderThread(locale, aThreadVM([aCommentItem({ body })]));
+
+    const paragraph = container.querySelector('article.comment > p.comment-body');
+    expect(paragraph?.textContent).toBe(body);
+    expect(paragraph?.querySelector('br')).toBeNull();
+    expect(PATIENT_CSS).toMatch(/\.comment-body\s*\{[^}]*white-space:\s*pre-wrap;/);
   });
 
   it('shows no like, report, mention or edit control', () => {

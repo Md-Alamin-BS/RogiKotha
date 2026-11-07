@@ -49,14 +49,18 @@ function refusalOf(error: AppError, body?: string): Refusal {
   const kept = body === undefined ? {} : { body };
   switch (error.code) {
     case 'validation':
-      return error.fieldErrors?.body === 'experience.commentLength'
-        ? {
-            status: 'error',
-            messageKey: 'experience.commentLength',
-            values: { min: COMMENT_BODY_MIN, max: COMMENT_BODY_MAX },
-            ...kept,
-          }
-        : { status: 'error', messageKey: 'errors.common.validation', ...kept };
+      if (error.fieldErrors?.body === 'errors.community.commentLength') {
+        return {
+          status: 'error',
+          messageKey: 'errors.community.commentLength',
+          values: { min: COMMENT_BODY_MIN, max: COMMENT_BODY_MAX },
+          ...kept,
+        };
+      }
+      if (error.fieldErrors?.body === 'errors.community.commentHidden') {
+        return { status: 'error', messageKey: 'errors.community.commentHidden', ...kept };
+      }
+      return { status: 'error', messageKey: 'errors.common.validation', ...kept };
     case 'community.reply_depth':
       return { status: 'error', messageKey: 'errors.community.replyDepth', ...kept };
     case 'not_found':

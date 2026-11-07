@@ -10,6 +10,7 @@ import { relayQueueNames } from './handlers/outbox-relay.js';
 import { JOBS } from './registry.js';
 import type { JobDefinition, JobName } from './registry.js';
 import { startHeartbeat } from './health.js';
+import { JsonLogger } from './logger.js';
 
 interface Poller {
   stop(): Promise<void>;
@@ -75,7 +76,7 @@ async function ensureRelayQueuesAtStart(ctx: WorkerContainer): Promise<boolean> 
           queue: err.queue,
           expectedPolicy: err.expectedPolicy,
           actualPolicy: err.actualPolicy,
-          fix: 'pnpm db:reset',
+          fix: 'db.reset_required',
         });
       } else {
         const sqlState = (err as { code?: unknown } | null)?.code;
@@ -112,7 +113,11 @@ async function main(): Promise<void> {
       continue;
     }
     await ctx.queue.ensureQueue(name);
-    await ctx.queue.work(name, (payload: unknown) => def.handler(payload, ctx), def.opts);
+    await ctx.queue.work(
+      name,
+      (payload: unknown, attempt) => def.handler(payload, ctx, attempt),
+      def.opts,
+    );
     if (def.cron !== undefined) {
       await ctx.queue.schedule(name, def.cron);
     }
@@ -151,7 +156,10 @@ async function main(): Promise<void> {
   });
 }
 
+// Built before main(), so a failure before the container exists is still logged (BR6.7).
+const crashLogger = new JsonLogger();
+
 main().catch((err: unknown) => {
-  console.error(err);
+  crashLogger.error('worker.crashed', { errorName: err instanceof Error ? err.name : typeof err });
   process.exitCode = 1;
 });

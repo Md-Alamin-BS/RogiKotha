@@ -3,8 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 
 import { EvidenceSection } from '@/components/patient/evidence/EvidenceSection';
-import { ReviewHistory } from '@/components/patient/review-history/ReviewHistory';
-import { loadLastEditedAt, loadPublicEvidenceCount } from '@/server/actions/review-slots';
+import { loadPublicEvidenceCount } from '@/server/actions/review-slots';
 import { renderInLocale, testTranslator, type TestLocale } from './experience-test-support';
 
 const active = vi.hoisted((): { locale: 'en' | 'bn' } => ({ locale: 'en' }));
@@ -22,7 +21,6 @@ vi.mock('@/i18n/routing', async () => {
 });
 vi.mock('@/server/actions/review-slots', () => ({
   loadPublicEvidenceCount: vi.fn(),
-  loadLastEditedAt: vi.fn(),
   logSlotFailure: vi.fn(),
 }));
 
@@ -48,12 +46,14 @@ describe.each(['en', 'bn'] as const)('the experience page slots in %s', (locale)
     expect(screen.getByTestId('evidence-note')).toHaveTextContent(t('evidence.status'));
     unmount();
 
-    for (const count of [0, null]) {
-      vi.mocked(loadPublicEvidenceCount).mockResolvedValue(count);
-      const shown = show(await EvidenceSection({ reviewPublicId: PUBLIC_ID }), locale);
-      expect(screen.getByTestId('evidence-none')).toHaveTextContent(t('label.noDocuments'));
-      shown.unmount();
-    }
+    vi.mocked(loadPublicEvidenceCount).mockResolvedValue(0);
+    show(await EvidenceSection({ reviewPublicId: PUBLIC_ID }), locale);
+    expect(screen.getByTestId('evidence-none')).toHaveTextContent(t('label.noDocuments'));
+  });
+
+  it('renders no evidence section for an unknown or unpublished review', async () => {
+    vi.mocked(loadPublicEvidenceCount).mockResolvedValue(null);
+    expect(await EvidenceSection({ reviewPublicId: PUBLIC_ID })).toBeNull();
   });
 
   it('says the evidence read failed rather than No documents', async () => {
@@ -61,20 +61,5 @@ describe.each(['en', 'bn'] as const)('the experience page slots in %s', (locale)
     show(await EvidenceSection({ reviewPublicId: PUBLIC_ID }), locale);
     expect(screen.getByTestId('evidence-error')).toHaveTextContent(t('errors.common.internal'));
     expect(screen.queryByText(t('label.noDocuments'))).toBeNull();
-  });
-
-  it('shows edited with the month and year, or nothing', async () => {
-    vi.mocked(loadLastEditedAt).mockResolvedValue('2026-03-10T08:00:00.000Z');
-    show(await ReviewHistory({ reviewPublicId: PUBLIC_ID }), locale);
-    const mark = screen.getByTestId('review-history');
-    expect(mark).toHaveTextContent(t('experience.edited'));
-    if (locale === 'bn') expect(mark.textContent).not.toMatch(/[0-9]/);
-    else expect(mark).toHaveTextContent('March 2026');
-    expect(mark.querySelector('time')).toHaveAttribute('dateTime', '2026-03');
-
-    vi.mocked(loadLastEditedAt).mockResolvedValue(null);
-    expect(await ReviewHistory({ reviewPublicId: PUBLIC_ID })).toBeNull();
-    vi.mocked(loadLastEditedAt).mockRejectedValue(new Error('boom'));
-    expect(await ReviewHistory({ reviewPublicId: PUBLIC_ID })).toBeNull();
   });
 });

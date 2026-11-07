@@ -16,7 +16,9 @@ describe('JsonLogger', () => {
     vi.restoreAllMocks();
   });
 
-  it('redacts email, token, body, filename and password fields', () => {
+  // Step 8 (U41): this case replaced "redacts email, token, body, filename and password fields",
+  // because the shared allowlist (BR6.1) drops those keys instead of writing them as [redacted].
+  it('drops email, token, body, filename and password fields', () => {
     const logger = new JsonLogger();
     logger.info('test.event', {
       email: 'someone@example.com',
@@ -31,16 +33,30 @@ describe('JsonLogger', () => {
 
     expect(lines).toHaveLength(1);
     const parsed = JSON.parse(lines[0]!) as Record<string, unknown>;
-    expect(parsed.email).toBe('[redacted]');
-    expect(parsed.token).toBe('[redacted]');
-    expect(parsed.body).toBe('[redacted]');
-    expect(parsed.filename).toBe('[redacted]');
-    expect(parsed.password).toBe('[redacted]');
-    // A field whose name merely contains "email" is redacted too — the
-    // rule matches by substring, not exact key.
-    expect(parsed.accountEmail).toBe('[redacted]');
+    for (const key of ['email', 'token', 'body', 'filename', 'password', 'accountEmail']) {
+      expect(parsed).not.toHaveProperty(key);
+    }
     expect(parsed.correlationId).toBe('keep-me');
     expect(parsed.count).toBe(3);
+    expect(lines[0]).not.toContain('example.com');
+  });
+
+  it('keeps a worker-only field name such as eventName', () => {
+    new JsonLogger().warn('outbox.unmapped', { eventName: 'doctor.changed', eventId: 'e-1' });
+
+    const parsed = JSON.parse(lines[0]!) as Record<string, unknown>;
+    expect(parsed.eventName).toBe('doctor.changed');
+    expect(parsed.eventId).toBe('e-1');
+  });
+
+  it('writes a message that holds a path or quotes as [scrubbed]', () => {
+    const logger = new JsonLogger();
+    logger.error('job.failed', { job: 'mail.send', message: 'ENOENT: open C:\\tmp\\x.png' });
+    logger.error('job.failed', { job: 'mail.send', message: 'Unexpected "shirin"' });
+
+    const parsed = lines.map((line) => JSON.parse(line) as Record<string, unknown>);
+    expect(parsed.map((line) => line.message)).toEqual(['[scrubbed]', '[scrubbed]']);
+    expect(parsed[0]?.job).toBe('mail.send');
   });
 
   it('writes structured fields with ts, level and event', () => {

@@ -1,0 +1,93 @@
+{
+  "stage": "code-generation",
+  "unit": "t-502-security-hardening",
+  "upstream_ids": [
+    "AC12.3.3",
+    "AC12.4.1",
+    "AC12.4.2",
+    "AC12.4.3",
+    "AC7.1.3",
+    "AC7.1.6",
+    "AC3.1.5",
+    "FR61",
+    "FR99",
+    "NFR8",
+    "NFR10"
+  ],
+  "coverage": [
+    {
+      "id": "AC12.3.3",
+      "status": "OK",
+      "target": "packages/application/src/ports/log-policy.ts; apps/web/src/server/logger.ts; apps/worker/src/logger.ts; the console calls routed in apps/worker/src/main.ts, env.ts and apps/web/src/server/i18n-request.ts; the no-console rule in eslint.config.mjs; tests: log-policy.test.ts, both logger tests, apps/worker/src/log-scrub.test.ts, apps/web/src/log-scrub.int.test.ts, adversarial A4 (ISS-697 fixed, ISS-699 residual); steps 4-11, 23, 32, 34"
+    },
+    {
+      "id": "AC12.4.1",
+      "status": "OK",
+      "target": "apps/web/src/lib/security/csp.ts, headers.ts, nonce.ts; apps/web/src/proxy.ts; apps/web/next.config.ts; tests: csp.test.ts (no host, scheme or wildcard source), proxy.test.ts, proxy.smoke.test.ts, sweep.test.ts, apps/web/e2e/smoke/security-headers.spec.ts (zero violations on five pages per locale, no request off the origin); adversarial A3; steps 13, 14, 17-21, 25-27, 34"
+    },
+    {
+      "id": "AC12.4.2",
+      "status": "OK",
+      "target": "apps/web/src/security-cookies.test.ts (session cookie attributes on http and https, trustedOrigins, get-session closed); security-headers.spec.ts cookie jar check after sign-in; no consent banner; adversarial A5; steps 22, 26, 34"
+    },
+    {
+      "id": "AC12.4.3",
+      "status": "OK",
+      "target": "csp.test.ts (no third-party origin under the CSP); log-policy.test.ts (no sensitive value reaches a log); steps 6, 13, 34"
+    },
+    {
+      "id": "AC7.1.3",
+      "status": "OK",
+      "target": "apps/web/src/lib/security/request-limits.ts; apps/web/src/app/api/evidence/upload/route.ts (guardRouteRequest, checkDeclaredLength, readCappedFormData; cap 15 794 176 bytes); tests: request-limits.test.ts, route.security.test.ts, EvidenceUploader.request-limit.test.tsx (413 text in en and bn), adversarial A2 (route.adversarial.test.ts); C14 release-1 amendment; steps 15, 16, 28-31, 34, 37"
+    },
+    {
+      "id": "AC7.1.6",
+      "status": "OK",
+      "target": "log part: file names never reach either log (log-scrub.int.test.ts with a Bengali and an English synthetic file name, worker log-scrub.test.ts processor case); X-Robots-Tag on private paths (headers.ts, headers.test.ts); the search index and image metadata parts belong to U18 and T-305, release 2; steps 8, 14, 21, 32"
+    },
+    {
+      "id": "AC3.1.5",
+      "status": "Deferred",
+      "target": "FD-105 defers the FD-072 sign-in-delay adversarial test to release 2 (ISS-702); U8 (T-101) already ran adversarial tests on the delay; U41 builds no FD-058 code"
+    },
+    {
+      "id": "FR61",
+      "status": "OK",
+      "target": "request-limits.ts and the upload route refuse an oversized request before expensive processing; U48 owns the per-file, per-review and count limits; steps 16, 29, 30, 34"
+    },
+    {
+      "id": "FR99",
+      "status": "OK",
+      "target": "csp.test.ts (no analytics origin allowed by the CSP); log-policy.ts (no sensitive value in logs); steps 13, 5, 6"
+    },
+    {
+      "id": "NFR8",
+      "status": "OK",
+      "target": "headers.ts X-Robots-Tag noindex, nofollow on user, auth, staff and /api surfaces (headers.test.ts, security-headers.spec.ts); step 14"
+    },
+    {
+      "id": "NFR10",
+      "status": "OK",
+      "target": "log-policy.ts, both loggers, the console calls routed through the loggers and the no-console lint rule; steps 5-11, 23, 32"
+    }
+  ],
+  "steps": [
+    { "steps": "1-3", "rules": [], "criteria": [] },
+    { "steps": "4-8", "rules": ["BR6.1", "BR6.2", "BR6.3", "BR6.4", "BR6.5"], "criteria": ["AC12.3.3", "AC12.4.3", "AC7.1.6"] },
+    { "steps": "9-11", "rules": ["BR6.7", "BR6.8"], "criteria": ["AC12.3.3"] },
+    { "steps": "12", "rules": ["BR3.1", "BR7.1"], "criteria": ["AC12.3.3"] },
+    { "steps": "13", "rules": ["BR1.1", "BR1.2", "BR1.3"], "criteria": ["AC12.4.1", "AC12.4.3"] },
+    { "steps": "14", "rules": ["BR1.6", "BR2.1", "BR2.2", "BR2.4"], "criteria": ["AC7.1.6", "AC12.3.3"] },
+    { "steps": "15-16", "rules": ["BR3.2", "BR3.3", "BR3.6", "BR4.2", "BR4.3"], "criteria": ["AC7.1.3", "AC12.3.3"] },
+    { "steps": "17", "rules": ["BR1.5", "BR7.3"], "criteria": ["AC12.4.1"] },
+    { "steps": "18-20", "rules": ["BR1.1", "BR2.4", "BR3.2", "BR3.3", "BR3.4", "BR3.6", "BR7.1", "BR7.2"], "criteria": ["AC12.3.3", "AC12.4.1"] },
+    { "steps": "21", "rules": ["BR2.1", "BR2.2", "BR2.3", "BR3.5", "BR4.6", "BR7.1"], "criteria": ["AC12.3.3", "AC7.1.6"] },
+    { "steps": "22", "rules": ["BR3.7", "BR5.1"], "criteria": ["AC12.4.2"] },
+    { "steps": "23", "rules": ["BR6.6", "BR6.8"], "criteria": ["AC12.3.3"] },
+    { "steps": "24-27", "rules": ["BR1.4", "BR2.1", "BR3.5", "BR5.2"], "criteria": ["AC12.4.1", "AC12.4.2"] },
+    { "steps": "28-31", "rules": ["BR3.4", "BR4.1", "BR4.2", "BR4.3", "BR4.4", "BR4.5"], "criteria": ["AC7.1.3"] },
+    { "steps": "32", "rules": ["BR6.6"], "criteria": ["AC12.3.3", "AC7.1.6"] },
+    { "steps": "33-35", "rules": ["all"], "criteria": ["AC12.3.3", "AC12.4.1", "AC12.4.2", "AC7.1.3", "AC7.1.6"] },
+    { "steps": "36-38", "rules": ["BR8.1", "BR8.2"], "criteria": [] }
+  ]
+}

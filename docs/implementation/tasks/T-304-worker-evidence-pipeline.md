@@ -16,6 +16,15 @@ These decisions are binding and override the text below where they differ; the s
 
 - **FD-070** — Notifications that start in the worker (evidence ready, evidence failed, scanner unavailable) are **in-app only**: the worker sends no email, queues no `mail.send` job and writes no `email_deliveries` row, so it never needs an account's address (FD-041 stands). The optional evidence email category sends nothing in the demo, and AC10.1.5 applies to the discussion and moderation categories only. Changes the Goal, steps 1 and 6, Owned paths, Not in scope, the acceptance checks and the hard-rule checklist.
 
+## Amendments — release 1 (FD-105, U48 `u48-evidence`)
+
+These decisions override the text below where they differ; the design is `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u48-evidence/functional-design/functional-spec.md`.
+
+- **FD-105: what release 1 builds** — the worker validates, scans and ends the item; there is no sanitiser, no artifact beyond the original and no in-app notification. The pipeline stops at `preview_ready` (the end state of release 1, counted publicly) or ends `rejected` (malformed, type mismatch, too large, malware) or `failed` (`scanner_unavailable`, `unknown`, `processing_timeout`). `sanitising`, `privacy_confirmed` and `published` are release 2 (T-305, ISS-626, ISS-633). Validation is a full structure walk of PNG chunks (CRCs, IHDR first, IEND last, nothing after) and JPEG markers (SOF before SOS, EOI last), not a decode (ISS-627, ISS-628).
+- **FD-105: acceptance rows changed** — Stage order: `quarantined → validating → scanning → preview_ready`; Resume: a retry finding `validating` or `scanning` carries on; Fail closed: retries use pg-boss `retryLimit 3` with backoff (not the `startAfter` ladder), the item stays `scanning`, and the last attempt ends it `failed`/`scanner_unavailable`; a new job `evidence.sweep` (cron `*/5 * * * *`) ends any item still in processing an hour after upload (`processing_timeout`, or `scanner_unavailable` when the latest custody event is `scan_unavailable`); Malware: the original is deleted and the item is `rejected`/`malware` (not retained); Type mismatch: `rejected`/`type_mismatch` before any scan; Encrypted PDF, PDF pages, Metadata stripped, Pixel bomb, Artifact rows: not applicable or release 2 (images only, no re-encode); Timeout: a 120 s attempt budget from the handler's own timer, under the 300 s queue expiry; Real clamd: met by the live block in `evidence-process.int.test.ts` (skipped with its reason when clamd is down); Worker boundary: met by `eslint.boundaries.mjs`; FD-070 rows: the only output is the `evidence.stateChanged` outbox row `{itemId, reviewId, state}`, which routes to no job in release 1 (`RELAY['evidence.stateChanged'] = []`); no email, no `notif.evidence.*` keys.
+- **FD-105: extra rules** — every item reaches a final state with a reason, and the author sees Remove for `rejected` and `failed` (BR4.9 to BR4.11); the web logger and the worker log only the BR7.1 fields (ISS-642); the worker must resolve a relative `STORAGE_ROOT` against the repo root (ISS-621, open).
+- The image-sharp and pdf-pdfjs adapters, the `ImageSanitiser` port and the T-304 fixtures are not built in release 1.
+
 ## Scope change 2026-09-12 — images only (CR-001 / FD-036)
 
 
@@ -140,8 +149,25 @@ Redaction, privacy confirmation, public artifacts, derivative PDF (T-305). Reten
 ## Hand-off (implementer fills in)
 
 ### What changed
+
+Built in U48 (release 1, FD-105) together with T-303: `createClamdScanner` (INSTREAM client, fail closed), `createFsEvidenceReader`, `createProcessEvidence` and `createSweepEvidence` in the application `/worker` subpath, the worker handlers `evidence-process.ts` and `evidence-sweep.ts`, the `attempt` metadata passed from `pg-boss-queue.ts` to handlers, the `evidence.sweep` queue entry, and `PgEvidenceRepository` worker methods. Files and counts are in `construction/u48-evidence/code-generation/code-summary.md`.
+
 ### Not done and why
+
+Sanitise and re-encode, preview artifacts, the sharp and pdfjs adapters and in-app notifications: release 2 (FD-105, T-305). The `startAfter` backoff ladder is replaced by pg-boss retries.
+
 ### Questions for the human
+
+None open.
+
 ### Follow-ups
+
+ISS-621 (worker resolves a relative storage root from its own folder, S2, open), ISS-623 (fixed), ISS-631 (a crash on the last attempt reads Being checked for up to an hour and five minutes), ISS-632 (column-level grant proposal); the rest are in `docs/implementation/ISSUES.md`.
+
 ### `pnpm check` output summary
+
+Green at the Unit's Build and Test gate; the numbers are in the code summary.
+
 ### Hard-rule evidence
+
+Fail closed: three retries stay `scanning`, the fourth ends `failed`/`scanner_unavailable`, never counted (adversarial A5). A worker killed in the last attempt is ended by the sweep. The worker reads no email column and calls no mailer. The worker container wires the reader and the scanner only; it holds no writer and no `filenameSeal`.
