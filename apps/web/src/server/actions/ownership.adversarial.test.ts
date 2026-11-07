@@ -19,7 +19,7 @@ import { headers } from 'next/headers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getContainer } from '@/server/container';
-import { accounts, comments, evidence, reviews, session } from '@/server/data';
+import { accounts, comments, reviews, session } from '@/server/data';
 import { deleteComment, postComment, type CommentActionState } from './comments';
 import { listOwnEvidenceFiles } from './evidence';
 import { setLang } from './preferences';
@@ -46,10 +46,8 @@ vi.mock('@/server/crypto', () => ({
 }));
 vi.mock('./preferences', () => ({ setLang: vi.fn() }));
 vi.mock('@/server/data', () => ({
-  DEMO_READY_EVIDENCE_STATES: ['preview_ready', 'published'],
   accounts: { updateDisplayName: vi.fn(), updateLocale: vi.fn() },
   comments: { addComment: vi.fn(), deleteOwnComment: vi.fn() },
-  evidence: { addEvidenceItem: vi.fn(), markScanResult: vi.fn(), listOwnEvidence: vi.fn() },
   reviews: {
     getOwnReviewForEdit: vi.fn(),
     getReviewByPublicId: vi.fn(),
@@ -158,12 +156,6 @@ function installWorld(): void {
     world.writes.push(`comment.delete ${publicId} by ${accountId}`);
     return Promise.resolve({ ok: true, data: { tombstone: false } } as const);
   });
-  vi.mocked(evidence.listOwnEvidence).mockResolvedValue([]);
-  vi.mocked(evidence.addEvidenceItem).mockImplementation((input) => {
-    world.writes.push(`evidence.add on ${input.reviewId} by ${input.ownerAccountId}`);
-    return Promise.resolve({ id: 'evidence-row-1', publicId: 'ev1dence01' });
-  });
-  vi.mocked(evidence.markScanResult).mockResolvedValue();
   vi.mocked(accounts.updateDisplayName).mockImplementation((accountId, name) => {
     world.writes.push(`account.rename ${accountId} to ${name}`);
     return Promise.resolve() as never;

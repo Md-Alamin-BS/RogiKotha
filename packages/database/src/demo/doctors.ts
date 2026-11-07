@@ -16,7 +16,7 @@ import { evidenceItems } from '../schema/evidence';
 import { personas } from '../schema/identity';
 import { reviews, reviewVersions, type ReviewSections } from '../schema/review';
 import { taxonomyTerms } from '../schema/taxonomy';
-import { DEMO_READY_EVIDENCE_STATES } from './evidence';
+import { DEMO_READY_EVIDENCE_STATES } from './ready-evidence-states';
 
 /** The prototype's `accountRow()` cuts the body at 190 characters. */
 export const EXCERPT_LENGTH = 190;

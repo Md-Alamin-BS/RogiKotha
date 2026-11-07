@@ -18,7 +18,7 @@ import { evidenceItems } from '../schema/evidence';
 import { personaLinks, personas } from '../schema/identity';
 import { reviews, reviewVersions } from '../schema/review';
 import { taxonomyTerms } from '../schema/taxonomy';
-import { DEMO_READY_EVIDENCE_STATES } from './evidence';
+import { DEMO_READY_EVIDENCE_STATES } from './ready-evidence-states';
 
 /** The fields a `review_versions.snapshot` keeps for a quick review. */
 function snapshotOf(fields: DemoUpdateReviewFields) {

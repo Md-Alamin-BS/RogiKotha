@@ -3,7 +3,6 @@
 export * as accounts from './accounts';
 export * as comments from './comments';
 export * as doctors from './doctors';
-export * as evidence from './evidence';
 export * as reviews from './reviews';
 export * as session from './session';
 export { NotBuiltYet } from './not-built';
