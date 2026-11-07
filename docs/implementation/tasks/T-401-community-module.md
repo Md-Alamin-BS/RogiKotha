@@ -32,6 +32,18 @@ These decisions are binding and override the text below where they differ.
 - **FD-077 / C10 — `community.deletionStep`** — Internal, input `{accountId}`. Web tier entry: delete the account's reactions. Worker entry: tombstone the account's comments, skipping held ones. T-401 builds both commands (the hold lookup arrives with T-309, and until then no row is held); T-410 wires them in `modules/community/deletion-participant.ts`. Changes: Owned paths and a new acceptance row.
 - **FD-079 / C3 — held comments** — The hold check T-309 adds must leave `comment.delete` of a held comment looking exactly like an unheld delete for its author; this task adds no hold logic.
 
+## Amendments — release 1 (FD-105, built by U49)
+
+These decisions are binding and override the text below where they differ. Release 1 builds this task's comment part inside Unit U49 `u49-comments`, together with T-402 (record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u49-comments/`).
+
+- **FD-105 — what release 1 builds** — `comment.post` (text, one reply level), `comment.delete` by the author and `community.thread`, in `modules/community` (`createCommunityModule`). Deferred to release 2: Like and Dislike on comments (FD-062), mentions, `comment.edit`, blocks and `account.blocksBetween`, `comment.setState`, `ModerationSignals`, `DiscussionPresence`, the `RevealTarget` for comments, `community.deletionStep`, the discussion email and the recipient fields of `comment.posted`. Their acceptance rows are deferred.
+- **Public ids** — the inputs are `PostCommentInput {reviewPublicId, parentPublicId?, body}`, `DeleteCommentInput {commentPublicId}` and `GetThreadInput {reviewPublicId}`; the outputs carry no account, persona or internal review id.
+- **Limits** — body 1 to 2000 code points (not 4000); 30 posts per account per rolling hour (C18 constants in `domain/community/limits.ts`, ISS-664); the thread keeps at most 500 listed rows.
+- **Errors as built** — `ErrorCode` has no `unauthenticated`: signed out and restricted give `forbidden`, an unconfirmed email gives `auth.email_unverified` (ISS-669).
+- **FD-046 as built** — no content check and no banner; the row is covered by inspection only (ISS-675).
+- **Outbox** — `comment.posted {commentId, reviewId}` only; deleting a comment writes an audit row (persona actor, no body text) and no outbox row.
+- **Acceptance commands as built** — run the unit-scoped commands of `construction/u49-comments/code-generation/unit-test-instructions.md`.
+
 ## Goal
 
 Implement the `community` module: comments with exactly one reply level, `@username` mentions, an external-link warning flag, edit/delete with tombstones (FR-EDIT-005, FD-046), idempotent like/dislike reactions on reviews, facility reviews and comments alike (FD-062) that never expose an anonymous author, and user blocks — all as application commands with authorization, audit and outbox events, plus the `community.thread` query the discussion UI (T-402) renders from.
@@ -127,9 +139,23 @@ The emergency-language banner FR-COM-003 (retired for the demo; the static `/eme
 
 ## Hand-off (implementer fills in)
 
+Built in release 1 by Unit U49 `u49-comments` (branch `bolt/u49-comments`, 2026-11-07); the full record is `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u49-comments/code-generation/code-summary.md`.
+
 ### What changed
+- Domain `packages/domain/src/community/{limits,comment,deletion,thread}.ts` (`buildThread`, `capRows`, `tombstoneOnDelete`); contracts `PostCommentInput`, `DeleteCommentInput`, `GetThreadInput` and `ThreadVM`; `CommunityModuleRepository` and `PgCommunityRepository` (no migration); `createCommunityModule` with `postComment`, `deleteComment` and `getThread`; the fakes and builders in `test-support`.
+- The demo comment source (`demo/comments.ts` and its test) is deleted; `comment.posted {commentId, reviewId}` is appended to `OutboxPayloads`.
+
 ### Not done and why
+- Reactions, mentions, edit, blocks, `comment.setState`, `ModerationSignals`, `DiscussionPresence`, `RevealTarget`, `community.deletionStep` and the discussion email: release 2 (FD-105).
+
 ### Questions for the human
+- Confirm that `buildThread` drops a moderation-hidden top-level comment together with its replies, with no placeholder (ISS-665).
+
 ### Follow-ups
+- ISS-660 to ISS-678; U50 (ISS-676, ISS-678); T-105 (ISS-663, ISS-664).
+
 ### `pnpm check` output summary
+- Green on the final tree; see `code-summary.md` for the file, test and coverage counts. `pnpm smoke` green.
+
 ### Hard-rule evidence
+- No number stands for quality, no account or persona id in output: `get-thread.test.ts`, `CommentThreadView.test.tsx`. One reply level: `post-comment.test.ts`, `community.int.test.ts`. Deleted text never public: `delete-comment.test.ts`, `comments.smoke.test.ts`. Acceptance rows expected against observed: plan Step 29.

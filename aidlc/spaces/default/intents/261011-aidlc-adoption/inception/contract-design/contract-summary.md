@@ -793,20 +793,23 @@ Release-1 amendments (FD-105, Q24):
 contract: C10 Community, release 1
 operations:
   - name: comment.post
-    input: "PostCommentInput {reviewPublicId, parentId?, body}; supersedes the reviewId field of the block above for release 1"
-    changes: "resolves reviewPublicId once through Review.reviewIdForPublicId (C9), then works with reviewId only; plain text; one reply level; the review must be published, checked with Review.isReviewPublished(reviewId) (C9), else not_found (also for an unknown publicId); persona from identity.personaFor (C4) with the review's reviewId; no mentions, no blocks, no discussion email; limit from the C18 constant on T-101's RateLimiter; outbox comment.posted {commentId, reviewId} only, the recipient fields return additively in release 2 with T-405"
-    errors: [community.reply_depth, rate_limited, not_found]
-    requires: verified (confirmed email) + account status active
+    input: "PostCommentInput {reviewPublicId, parentPublicId?, body}; public ids only, body trimmed, NFC-normalised, 1 to 2000 code points; supersedes the reviewId and parentId fields of the block above for release 1"
+    result: "{publicId}"
+    changes: "resolves reviewPublicId once through Review.reviewIdForPublicId (C9), then works with reviewId only; plain text; one reply level; the review must be published, checked with Review.isReviewPublished(reviewId) (C9), else not_found (also for an unknown publicId); persona from identity.personaFor (C4) with the review's reviewId; no mentions, no blocks, no discussion email; limit from the C18 constant on T-101's RateLimiter, 30 posts per account per rolling hour, refused calls not counted; outbox comment.posted {commentId, reviewId} only, the recipient fields return additively in release 2 with T-405"
+    errors: [validation, community.reply_depth, rate_limited {retryAfterSec}, not_found, forbidden, auth.email_unverified]
+    requires: verified (confirmed email) + account status active; ErrorCode has no unauthenticated, so a signed-out or restricted caller gets forbidden (ISS-669)
     built_by: U49
   - name: comment.delete
     kind: command (author only)
-    behaviour: "a comment with replies becomes a Comment deleted placeholder; one without replies is removed (FR72)"
+    input: "DeleteCommentInput {commentPublicId}"
+    result: "{placeholder: boolean}"
+    behaviour: "a comment with replies becomes a Comment deleted placeholder; one without replies is removed (FR72); an unknown, foreign or already deleted comment returns the same not_found; a restricted account may delete its own; audit only (persona actor, no body text), no outbox"
     built_by: U49
   - name: community.thread
     kind: query
     input: "{reviewPublicId}, resolved once through Review.reviewIdForPublicId (C9); an unknown or unpublished review gives an empty thread with no form"
-    result: "ThreadVM: comments with persona projections only, never an account id or an internal reviewId"
-    caller: "<CommentThread> slot (C16)"
+    result: "ThreadVM {open, items: [{kind: comment | placeholder, comment?, placeholderPublicId?, replies}], truncated}: persona projections only, never an account id, persona id or internal reviewId; a placeholder has no author, date or actions; `mine` is true only for a signed-in viewer's own live comment; at most 500 listed rows (truncated flag); persona projections read in batches of at most 200; no like, count or rank field"
+    caller: "<CommentThread> slot (C16), through apps/web/src/server/actions/comment-thread.ts"
     built_by: U49
 ```
 
