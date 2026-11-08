@@ -1,9 +1,25 @@
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { DONE_LINE, emptyDir, reset, stopFromPidFile } from '../demo-reset.mjs';
+import {
+  confirmationQuestion,
+  DONE_LINE,
+  emptyDir,
+  folderRefusal,
+  realPathOf,
+  reset,
+  stopFromPidFile,
+} from '../demo-reset.mjs';
 
 const workDir = mkdtempSync(path.join(tmpdir(), 'rk-demo-reset-'));
 afterAll(() => rmSync(workDir, { recursive: true, force: true }));
@@ -115,6 +131,132 @@ describe('pnpm demo:reset', () => {
     expect(calls).toContain('fail pnpm db:seed failed: exited with code 1');
     expect(calls.some((call) => call.startsWith('empty') || call.startsWith('mail'))).toBe(false);
     expect(calls).not.toContain(`log ${DONE_LINE}`);
+  });
+});
+
+describe('pnpm demo:reset storage folder', () => {
+  const repo = path.join(workDir, 'confine-repo');
+  const outside = path.join(workDir, 'outside');
+  const keep = path.join(outside, 'keep.txt');
+  mkdirSync(repo, { recursive: true });
+  mkdirSync(outside, { recursive: true });
+
+  /** A reset on `repo` with the real emptyDir; every other effect is recorded in `calls`. */
+  const realReset = (calls, options) =>
+    reset({ yes: true, ...fakes(calls), root: repo, empty: emptyDir, ...options });
+
+  const expectRefused = (calls, code, folder) => {
+    expect(code).toBe(1);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatch(
+      /^fail Refused: demo:reset empties only a folder inside the repository/,
+    );
+    expect(calls[0]).toContain(folder);
+    expect(existsSync(keep)).toBe(true);
+  };
+
+  it('refuses an absolute STORAGE_ROOT outside the repository, even with --yes, and deletes nothing', async () => {
+    writeFileSync(keep, 'user data');
+    const calls = [];
+
+    const code = await realReset(calls, { fileEnv: { STORAGE_ROOT: outside } });
+
+    expectRefused(calls, code, outside);
+    expect(calls[0]).toContain('is outside it');
+  });
+
+  it('refuses a relative STORAGE_ROOT that climbs out of the repository', async () => {
+    writeFileSync(keep, 'user data');
+    const calls = [];
+
+    const code = await realReset(calls, { fileEnv: { STORAGE_ROOT: '../outside' } });
+
+    expectRefused(calls, code, outside);
+  });
+
+  it('refuses a STORAGE_ROOT from the shell environment outside the repository', async () => {
+    writeFileSync(keep, 'user data');
+    const calls = [];
+
+    const code = await realReset(calls, {
+      yes: false,
+      fileEnv: { STORAGE_ROOT: './.data/storage' },
+      processEnv: { STORAGE_ROOT: outside },
+    });
+
+    expectRefused(calls, code, outside);
+    expect(calls).not.toContain('confirm');
+  });
+
+  it('refuses the repository root itself', async () => {
+    writeFileSync(path.join(repo, 'pnpm-workspace.yaml'), 'packages: []\n');
+    const calls = [];
+
+    const code = await realReset(calls, { fileEnv: { STORAGE_ROOT: '.' } });
+
+    expect(code).toBe(1);
+    expect(calls).toEqual([expect.stringContaining('is the repository root')]);
+    expect(existsSync(path.join(repo, 'pnpm-workspace.yaml'))).toBe(true);
+  });
+
+  it('refuses a folder inside .git', async () => {
+    const calls = [];
+
+    const code = await realReset(calls, { fileEnv: { STORAGE_ROOT: './.git/objects' } });
+
+    expect(code).toBe(1);
+    expect(calls).toEqual([expect.stringContaining('is inside .git')]);
+  });
+
+  it('refuses a link inside the repository that points outside it', async () => {
+    writeFileSync(keep, 'user data');
+    const link = path.join(repo, 'linked-storage');
+    rmSync(link, { recursive: true, force: true });
+    symlinkSync(outside, link, 'junction');
+    const calls = [];
+
+    const code = await realReset(calls, { fileEnv: { STORAGE_ROOT: './linked-storage' } });
+
+    expectRefused(calls, code, link);
+    expect(calls[0]).toContain('it resolves to');
+  });
+
+  it('refuses a broken link, whose target is unknown', () => {
+    const link = path.join(repo, 'broken-link');
+    rmSync(link, { recursive: true, force: true });
+    symlinkSync(path.join(workDir, 'gone'), link, 'junction');
+
+    expect(realPathOf(link)).toBeNull();
+    expect(folderRefusal(repo, link)).toContain('is a broken link');
+  });
+
+  it('empties .data/storage inside the repository and names it in the question', async () => {
+    const storage = path.join(repo, '.data', 'storage');
+    mkdirSync(path.join(storage, 'u1'), { recursive: true });
+    writeFileSync(path.join(storage, 'u1', 'file.bin'), 'x');
+    const calls = [];
+    let asked;
+
+    const code = await realReset(calls, {
+      yes: false,
+      fileEnv: { STORAGE_ROOT: './.data/storage' },
+      confirm: async (folders) => {
+        asked = confirmationQuestion(folders);
+        return true;
+      },
+    });
+
+    expect(code).toBe(0);
+    expect(readdirSync(storage)).toEqual([]);
+    expect(asked).toContain(storage);
+    expect(asked).toContain(path.join(repo, 'var', 'evidence'));
+    expect(calls).toContain(
+      `log Empty the storage folders ${storage} and ${path.join(repo, 'var', 'evidence')} ...`,
+    );
+  });
+
+  it('allows a folder that does not exist yet inside the repository', () => {
+    expect(folderRefusal(repo, path.join(repo, 'not', 'there', 'yet'))).toBeNull();
   });
 });
 

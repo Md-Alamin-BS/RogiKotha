@@ -18,15 +18,19 @@ Every account uses the password `demo-pass-2026!`. Sign in with the email.
 
 | Task | Command |
 |---|---|
-| Start again without rebuilding | `pnpm demo:serve` |
+| Start again without rebuilding (also after `pnpm demo:down`; starts the containers, keeps the data, uses the last build) | `pnpm demo --no-build` |
+| Restart only the web app and the worker (only while the containers still run: after Ctrl+C without `pnpm demo:down`) | `pnpm demo:serve` |
 | Back to the seeded state (stops the running demo first) | `pnpm demo:reset --yes` |
 | Stop | Ctrl+C, then `pnpm demo:down` (stops the containers, keeps the data) |
 | Container logs | `pnpm demo:logs` |
+
+`pnpm demo:down` and `pnpm demo:logs` use the same compose project as `pnpm demo`, including `RK_COMPOSE_PROJECT` when it is set in `.env` or the shell.
 
 ## If something fails
 
 - **Docker is not running**: start Docker Desktop and run `pnpm demo` again.
 - **A port is taken**: the message names it and how to find its holder. 3000 is the web app; 5433 is often a local PostgreSQL service; 1025 and 8025 are Mailpit; 3310 is ClamAV.
 - **ClamAV is late**: on first start it downloads its signatures (several minutes). The demo starts anyway; uploads stay "scanning" until it is ready.
+- **`pnpm demo:reset` refuses the storage folder**: it empties only a folder inside the repository, so a `STORAGE_ROOT` outside it (in `.env` or the shell), the repository root itself or a link that leads outside is refused before anything changes. Set `STORAGE_ROOT=./.data/storage`.
 - **Long paths on Windows**: run `git config core.longpaths true` before cloning.
 - **Disk space after several resets**: Docker's disk file does not shrink by itself. Run `docker image prune` and `docker builder prune` (never `--volumes`, which deletes the demo data), then compact Docker Desktop's disk file.

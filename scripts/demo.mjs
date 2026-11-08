@@ -1,6 +1,7 @@
 // `pnpm demo` and `pnpm demo:serve` (U50, WF6, BR8.1-BR8.6): preflight, compose services, migrate
 // and seed-if-empty, build, then the web app and the worker as children with the presenter
-// banner. Output is presenter-facing operator text in English, like every repository script.
+// banner. `pnpm demo:down` and `pnpm demo:logs` run here too, on the same compose project. Output
+// is presenter-facing operator text in English, like every repository script.
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -134,9 +135,27 @@ export function refuseProduction(fileEnv, processEnv = process.env) {
     : null;
 }
 
+/** The parsed `<root>/.env`, or `{}` when there is none; never creates it. */
+export function readEnvFile(root) {
+  const file = path.join(root, '.env');
+  return existsSync(file) ? parseEnv(readFileSync(file, 'utf8')) : {};
+}
+
 /** `docker compose -f <file> [-p <project>]`, the prefix every compose call uses. */
 export function composeArgs(project) {
   return ['compose', '-f', COMPOSE_FILE, ...(project ? ['-p', project] : [])];
+}
+
+/** `pnpm demo:down` and `pnpm demo:logs`. `down` never takes `-v`: the volumes hold the data. */
+export const COMPOSE_TASKS = { down: ['down'], logs: ['logs', '-f'] };
+
+/** The docker arguments of a compose task, on the project `pnpm demo` uses. */
+export function composeTaskArgs(task, fileEnv, processEnv = process.env) {
+  if (!Object.hasOwn(COMPOSE_TASKS, task)) throw new Error(`Unknown compose task: ${task}`);
+  return [
+    ...composeArgs(effective(fileEnv, 'RK_COMPOSE_PROJECT', processEnv)),
+    ...COMPOSE_TASKS[task],
+  ];
 }
 
 /** The database name in a PostgreSQL URL. */
@@ -332,6 +351,7 @@ export function parseArgs(argv) {
   return {
     serve: argv.includes('serve') || argv.includes('--serve'),
     build: !argv.includes('--no-build'),
+    compose: Object.hasOwn(COMPOSE_TASKS, argv[0] ?? '') ? argv[0] : null,
   };
 }
 
@@ -586,6 +606,17 @@ function serve(root, env) {
 export async function main(argv = process.argv.slice(2)) {
   const options = parseArgs(argv);
   const root = findRepoRoot();
+  if (options.compose) {
+    try {
+      await runCommand('docker', composeTaskArgs(options.compose, readEnvFile(root)), {
+        cwd: root,
+      });
+      return 0;
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      return 1;
+    }
+  }
   try {
     const env = await step('Preflight', () => preflight(root));
     if (!options.serve) {

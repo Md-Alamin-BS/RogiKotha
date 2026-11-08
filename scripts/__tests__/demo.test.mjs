@@ -13,6 +13,7 @@ import {
   childEnv,
   commandFor,
   composeArgs,
+  composeTaskArgs,
   databaseName,
   DEMO_PORTS,
   downProbes,
@@ -25,6 +26,7 @@ import {
   parseEnv,
   portConflictMessage,
   portConflicts,
+  readEnvFile,
   refuseProduction,
   RELEASE1_ACCOUNTS,
   seedIfEmpty,
@@ -221,10 +223,63 @@ describe('services and data', () => {
   });
 
   it('parses --no-build and the serve form', () => {
-    expect(parseArgs([])).toEqual({ serve: false, build: true });
-    expect(parseArgs(['--no-build'])).toEqual({ serve: false, build: false });
+    expect(parseArgs([])).toEqual({ serve: false, build: true, compose: null });
+    expect(parseArgs(['--no-build'])).toEqual({ serve: false, build: false, compose: null });
     expect(parseArgs(['serve'])).toMatchObject({ serve: true });
     expect(parseArgs(['--serve'])).toMatchObject({ serve: true });
+  });
+
+  it('parses the down and logs tasks, and nothing else, as compose tasks', () => {
+    expect(parseArgs(['down'])).toMatchObject({ compose: 'down' });
+    expect(parseArgs(['logs'])).toMatchObject({ compose: 'logs' });
+    expect(parseArgs(['--no-build', 'down'])).toMatchObject({ compose: null });
+    expect(parseArgs(['toString'])).toMatchObject({ compose: null });
+  });
+
+  it('runs demo:down and demo:logs on the default compose project when none is set', () => {
+    const prefix = ['compose', '-f', 'infra/compose/docker-compose.yml'];
+
+    expect(composeTaskArgs('down', {}, {})).toEqual([...prefix, 'down']);
+    expect(composeTaskArgs('logs', {}, {})).toEqual([...prefix, 'logs', '-f']);
+  });
+
+  it('runs demo:down and demo:logs on RK_COMPOSE_PROJECT, the shell winning over .env', () => {
+    const prefix = ['compose', '-f', 'infra/compose/docker-compose.yml', '-p'];
+
+    expect(composeTaskArgs('down', { RK_COMPOSE_PROJECT: 'rk_file' }, {})).toEqual([
+      ...prefix,
+      'rk_file',
+      'down',
+    ]);
+    expect(
+      composeTaskArgs(
+        'logs',
+        { RK_COMPOSE_PROJECT: 'rk_file' },
+        { RK_COMPOSE_PROJECT: 'rk_shell' },
+      ),
+    ).toEqual([...prefix, 'rk_shell', 'logs', '-f']);
+  });
+
+  it('never removes volumes on demo:down and refuses an unknown task', () => {
+    expect(composeTaskArgs('down', {}, {})).not.toContain('-v');
+    expect(() => composeTaskArgs('rm', {}, {})).toThrow(/Unknown compose task: rm/);
+  });
+
+  it('routes demo:down and demo:logs in package.json through demo.mjs', () => {
+    const { scripts } = JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
+
+    expect(scripts['demo:down']).toBe('node scripts/demo.mjs down');
+    expect(scripts['demo:logs']).toBe('node scripts/demo.mjs logs');
+  });
+
+  it('reads .env without creating it', () => {
+    const root = path.join(workDir, 'env-read');
+    mkdirSync(root, { recursive: true });
+
+    expect(readEnvFile(root)).toEqual({});
+    expect(existsSync(path.join(root, '.env'))).toBe(false);
+    writeFileSync(path.join(root, '.env'), 'RK_COMPOSE_PROJECT=rk_x\n');
+    expect(readEnvFile(root)).toEqual({ RK_COMPOSE_PROJECT: 'rk_x' });
   });
 });
 
