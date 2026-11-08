@@ -25,12 +25,18 @@ a small `bolt/<unit>-review-fixes` branch and squash-merged.
 | U22 T-302 corrections | `16fd56b` | `995e3c6` | |
 | U48 evidence (high risk) | `a9a2ffe` | `1110c4c` | owner sign-off queued |
 | U41 T-502 security (high risk) | `a3d9a56` | `729aaa2` (proxy checks every path; live probe) | owner sign-off and FD-116 queued |
-| **U50 release check** | in progress on `bolt/u50-release-check` | | engine holds its run-stage |
+| U50 release check | `039b326` | `957d46e` | two clean full browser runs, 231 of 231 |
+| ISS-778 password-change session | `c6153fa` | | found by the U50 suite |
 
-U50 has written all its specs and documents (plan steps 1–33, 35–40, 46–50). The final run (Steps 34,
-41–45, 51, 52: rebase, browser suite, fixes, two clean full runs, demo-code deletions, gate, records)
-was started on lelin-pc on 2026-11-08. After it: merge `main` into U50 once more (it predates
-`729aaa2`), squash, gate on `main`, review U50, close it in the engine, then the Build and Test stage.
+**Update, later on 2026-11-08:** all ten Units are merged, reviewed READY and closed, and the Code
+Generation stage gate is approved under the owner's delegation. Build and Test ran (records on `main`
+as `caa8a12`, under `construction/build-and-test/`): build, `pnpm check`, `test:int`, smoke, `e2e`
+231/231, `e2e:perf` 9/9, the security specs, the rollback drill and the outage probes are green, and
+traceability has 0 uncovered IDs. The matrix is 42 Met, 0 Not Met, 5 Unverified: the U50 owner checks
+M3–M6 and the clean-clone rehearsal (ISS-813), which need the live demo on port 3000 stopped. When they
+are walked, update the matrix and report the stage with
+`aidlc engine orchestrate report --stage build-and-test --result <outcome>`; the engine then holds
+the Build and Test approval gate.
 
 ## Waiting for the owner
 

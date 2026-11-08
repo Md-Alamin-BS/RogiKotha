@@ -18584,3 +18584,566 @@
 **Stage**: code-generation
 
 ---
+
+## Guard Stood Aside
+**Timestamp**: 2026-11-08T02:16:26Z
+**Event**: GUARD_STOOD_ASIDE
+**Guard**: state-transition
+**Authority**: instruction
+**Grant**: none
+**Actor**: subagent
+**Tool**: Bash
+**Details**: dynamic eval shell command beyond guard inspection
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T02:32:21Z
+**Event**: SENSOR_FIRED
+**Fire id**: eade8271
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/src/app/[locale]/(patient)/page.tsx
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T02:32:21Z
+**Event**: SENSOR_PASSED
+**Fire id**: eade8271
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/src/app/[locale]/(patient)/page.tsx
+**Duration ms**: 372
+**Note**: tool-unavailable
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-11-08T02:42:47Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: general-purpose
+**Agent ID**: a3471bb49995d7b84
+
+---
+
+## Human Turn
+**Timestamp**: 2026-11-08T02:42:52Z
+**Event**: HUMAN_TURN
+**Session**: baacf754-08a5-4f7c-b97e-60575ec45db9
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T02:44:02Z
+**Event**: SENSOR_FIRED
+**Fire id**: aea21b86
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T02:44:02Z
+**Event**: SENSOR_PASSED
+**Fire id**: aea21b86
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 373
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T02:44:12Z
+**Event**: SENSOR_FIRED
+**Fire id**: 277b7cad
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T02:44:12Z
+**Event**: SENSOR_PASSED
+**Fire id**: 277b7cad
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 363
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T02:46:10Z
+**Event**: SENSOR_FIRED
+**Fire id**: 6fea3bb1
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T02:46:11Z
+**Event**: SENSOR_PASSED
+**Fire id**: 6fea3bb1
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 363
+**Note**: tool-unavailable
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-11-08T03:05:59Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: general-purpose
+**Agent ID**: a3471bb49995d7b84
+
+---
+
+## Human Turn
+**Timestamp**: 2026-11-08T03:05:59Z
+**Event**: HUMAN_TURN
+**Session**: baacf754-08a5-4f7c-b97e-60575ec45db9
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:07:15Z
+**Event**: SENSOR_FIRED
+**Fire id**: 6daeb611
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:07:16Z
+**Event**: SENSOR_PASSED
+**Fire id**: 6daeb611
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 356
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:07:20Z
+**Event**: SENSOR_FIRED
+**Fire id**: b38994dc
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:07:21Z
+**Event**: SENSOR_PASSED
+**Fire id**: b38994dc
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 362
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:07:23Z
+**Event**: SENSOR_FIRED
+**Fire id**: 9772f6f0
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:07:23Z
+**Event**: SENSOR_PASSED
+**Fire id**: 9772f6f0
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 373
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:07:25Z
+**Event**: SENSOR_FIRED
+**Fire id**: 56cd53fb
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:07:25Z
+**Event**: SENSOR_PASSED
+**Fire id**: 56cd53fb
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 453
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:07:28Z
+**Event**: SENSOR_FIRED
+**Fire id**: 0e841674
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:07:28Z
+**Event**: SENSOR_PASSED
+**Fire id**: 0e841674
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 361
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:10:23Z
+**Event**: SENSOR_FIRED
+**Fire id**: 2762c450
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:10:23Z
+**Event**: SENSOR_PASSED
+**Fire id**: 2762c450
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 389
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:10:25Z
+**Event**: SENSOR_FIRED
+**Fire id**: 156f0697
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:10:26Z
+**Event**: SENSOR_PASSED
+**Fire id**: 156f0697
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 382
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:10:28Z
+**Event**: SENSOR_FIRED
+**Fire id**: cc82e2c2
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:10:29Z
+**Event**: SENSOR_PASSED
+**Fire id**: cc82e2c2
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 364
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:10:40Z
+**Event**: SENSOR_FIRED
+**Fire id**: 7a2f5bfc
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:10:40Z
+**Event**: SENSOR_PASSED
+**Fire id**: 7a2f5bfc
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 367
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:10:42Z
+**Event**: SENSOR_FIRED
+**Fire id**: e75538f8
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:10:42Z
+**Event**: SENSOR_PASSED
+**Fire id**: e75538f8
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 382
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:10:44Z
+**Event**: SENSOR_FIRED
+**Fire id**: 4cbedcbc
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:10:45Z
+**Event**: SENSOR_PASSED
+**Fire id**: 4cbedcbc
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 384
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:10:47Z
+**Event**: SENSOR_FIRED
+**Fire id**: a60b5342
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:10:47Z
+**Event**: SENSOR_PASSED
+**Fire id**: a60b5342
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 360
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:10:49Z
+**Event**: SENSOR_FIRED
+**Fire id**: 52dd5a4c
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:10:49Z
+**Event**: SENSOR_PASSED
+**Fire id**: 52dd5a4c
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/lighthouse-flow.ts
+**Duration ms**: 373
+**Note**: tool-unavailable
+
+---
+
+## Decision Recorded
+**Timestamp**: 2026-11-08T03:10:56Z
+**Event**: DECISION_RECORDED
+**Stage**: build-and-test
+**Decision**: Asked the owner (2026-11-08): may the live demo on localhost:3000 be stopped for about 20 minutes so U50 manual checks M3-M6 and the clean-clone rehearsal (BR10.4, ISS-813) can run, or should they wait until the owner has finished showing the demo? Waiting for the answer. ISS-815 (perf harness no-LCP runs) is being fixed meanwhile.
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:11:20Z
+**Event**: SENSOR_FIRED
+**Fire id**: f1badf85
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/nfr13.spec.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:11:21Z
+**Event**: SENSOR_PASSED
+**Fire id**: f1badf85
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/nfr13.spec.ts
+**Duration ms**: 366
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:11:24Z
+**Event**: SENSOR_FIRED
+**Fire id**: c27cd809
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/nfr13.spec.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:11:24Z
+**Event**: SENSOR_PASSED
+**Fire id**: c27cd809
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/nfr13.spec.ts
+**Duration ms**: 465
+**Note**: tool-unavailable
+
+---
+
+## Human Turn
+**Timestamp**: 2026-11-08T03:11:26Z
+**Event**: HUMAN_TURN
+**Session**: baacf754-08a5-4f7c-b97e-60575ec45db9
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:11:35Z
+**Event**: SENSOR_FIRED
+**Fire id**: 6549cce5
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/nfr13.spec.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:11:35Z
+**Event**: SENSOR_PASSED
+**Fire id**: 6549cce5
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/nfr13.spec.ts
+**Duration ms**: 368
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:11:37Z
+**Event**: SENSOR_FIRED
+**Fire id**: 4437a76a
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/nfr13.spec.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:11:37Z
+**Event**: SENSOR_PASSED
+**Fire id**: 4437a76a
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/nfr13.spec.ts
+**Duration ms**: 360
+**Note**: tool-unavailable
+
+---
+
+## Sensor Fired
+**Timestamp**: 2026-11-08T03:11:48Z
+**Event**: SENSOR_FIRED
+**Fire id**: 7ad78969
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/nfr13.spec.ts
+
+---
+
+## Sensor Passed
+**Timestamp**: 2026-11-08T03:11:49Z
+**Event**: SENSOR_PASSED
+**Fire id**: 7ad78969
+**Sensor ID**: type-check
+**Stage slug**: build-and-test
+**Output path**: D:/git_repos/rk-bt/apps/web/e2e/perf/nfr13.spec.ts
+**Duration ms**: 364
+**Note**: tool-unavailable
+
+---
+
+## Human Turn
+**Timestamp**: 2026-11-08T03:23:01Z
+**Event**: HUMAN_TURN
+**Session**: baacf754-08a5-4f7c-b97e-60575ec45db9
+
+---
+
+## Subagent Completed
+**Timestamp**: 2026-11-08T03:23:18Z
+**Event**: SUBAGENT_COMPLETED
+**Agent Type**: general-purpose
+**Agent ID**: a3471bb49995d7b84
+
+---
+
+## Human Turn
+**Timestamp**: 2026-11-08T03:23:29Z
+**Event**: HUMAN_TURN
+**Session**: baacf754-08a5-4f7c-b97e-60575ec45db9
+
+---
