@@ -2,9 +2,9 @@
 
 Status: ready for the owner's walk once the Unit is built. The agent never ticks a box, never fills
 an observed result for the owner and never closes an item; only the owner does (BR12.1). The list
-is complete for what is merged today; items for Units that merge later (U41 and any rebase fixes)
-are added at Build and Test, and the lists in OR4, OR6 and OR7 are regenerated from the repository
-then. Each item is a few minutes (about 1 hour 50 minutes in all) and can be done in any order, at
+is complete for what is merged on `main` at `c6153fa` (all nine release-1 dependencies, U41
+included); the lists in OR4, OR6 and OR7 are checked again against the final `main` at Build and
+Test. Each item is a few minutes (about 1 hour 50 minutes in all) and can be done in any order, at
 any time; none blocks the build.
 
 How to walk: start the demo with `pnpm demo` (see [DEMO.md](../../DEMO.md)); it prints the banner
@@ -122,7 +122,7 @@ confirm or ask for more tests.
 | U8 T-101 (authentication) | `docs/implementation/handoffs/T-101.md` | [ ] |
 | U9 T-102 (auth screens) | `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-102-patient-auth-screens/` | [ ] |
 | U11 T-104 (identity) | `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-104-identity-module/code-generation/code-summary.md`, "Delegated sign-off" | [ ] |
-| U41 T-502 (security hardening) | `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-502-security-hardening/` (added when it merges) | [ ] |
+| U41 T-502 (security hardening) | `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/t-502-security-hardening/code-generation/code-generation-plan.md`, "Delegated sign-off" (merged on `main`, review-01 fixes at `729aaa2`) | [ ] |
 | U48 evidence | `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u48-evidence/` | [ ] |
 | U49 comments | `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/u49-comments/` | [ ] |
 
@@ -149,11 +149,19 @@ becomes an ISS row.
 | FD-112 | Facility visit accounts are named or pseudonymous only in release 1 | [ ] |
 | FD-113 | The author persona is the actor of a review publish | [ ] |
 | FD-114 | The author's own words may hold the Bengali joiners U+200C and U+200D | [ ] |
+| FD-115 | A comment body follows the FD-114 rule for the author's own words (U49) | [ ] |
+| FD-116 | The T-502 release-1 security posture (U41) | [ ] |
 | FD-120 | The NFR13 measurement method and pass rule | [ ] |
 | FD-121 | The release-1 verdict rule | [ ] |
 | FD-122 | `/api/health` readiness | [ ] |
 
-At Build and Test the FD rows added by the other Units' merges (U22, U41, U48, U49) are added here.
+FD-115 and FD-116 were added at Code Generation Step 51, after U49 and U41 merged; the decision log
+holds no other FD row from U22, U48 or U49 that awaits confirmation. At Build and Test the list is
+checked again against the final `main`.
+
+The automated runs behind OR4 (each storyboard step and locale) are in
+[U50-walkthrough.md](U50-walkthrough.md), Observed and Evidence columns; they do not replace the
+owner's walk.
 
 ## Findings
 
