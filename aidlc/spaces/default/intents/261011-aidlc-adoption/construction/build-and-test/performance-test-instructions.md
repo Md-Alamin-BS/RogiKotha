@@ -23,8 +23,15 @@ demo is a single local composition with no throughput or concurrency target (NFR
   up) and 4x CPU slowdown.
 - The flow per gated page: a navigation step (LCP, CLS) and a timespan step with an interaction
   (INP), five runs, median taken; the LCP element is probed for an entry animation. Lighthouse
-  13.6.0 names that element in the `lcp-breakdown-insight` audit (ISS-812). A run in which
-  Lighthouse reports no LCP aborts the page (ISS-815).
+  13.6.0 names that element in the `lcp-breakdown-insight` audit (ISS-812).
+- Each run opens the origin (`/api/health`) in its fresh tab before the flow, because the first
+  navigation away from a new tab's `about:blank` lost its `navigationStart` and Lighthouse then gave
+  no LCP (`NO_NAVSTART`, ISS-815). A run that still has no LCP is kept as
+  `apps/web/test-results/nfr13/no-lcp/<time>.json` (the LCP audit, its error and the trace's paint
+  and navigation events) and redone, at most 2 times per page; every retry is listed in the page's
+  `noLcpRetries` and in a test annotation, is never counted, and the page fails once the retries
+  are used up. Opening the origin first may let the simulated load reuse that connection, so the
+  figures can be lower than a cold first visit; the thresholds are unchanged.
 - The suite's production build, the `rogikotha_e2e_test` database and port 3107, as in
   `integration-test-instructions.md`. The spec runs serially in one worker.
 

@@ -12,6 +12,7 @@ import {
   measureNavigation,
   median,
   MOBILE_THROTTLING,
+  NoLcpError,
   type FlowRun,
   type PageKind,
 } from './lighthouse-flow';
@@ -31,6 +32,34 @@ const PAGE_TIMEOUT_MS = 600_000;
 
 // One worker runs the whole file in order: parallel flows would load the machine and the figures.
 test.describe.configure({ mode: 'serial' });
+
+/** ISS-815: a run Lighthouse lost (no LCP) is redone at most this often per page, never counted. */
+const MAX_NO_LCP_RETRIES = 2;
+
+interface NoLcpRetry {
+  run: number;
+  reason: string;
+  report: string;
+}
+
+async function withNoLcpRetries<T>(
+  retries: NoLcpRetry[],
+  run: number,
+  measure: () => Promise<T>,
+): Promise<T> {
+  for (;;) {
+    try {
+      return await measure();
+    } catch (error) {
+      if (!(error instanceof NoLcpError) || retries.length >= MAX_NO_LCP_RETRIES) throw error;
+      retries.push({ run, reason: error.reason, report: error.report });
+      test.info().annotations.push({
+        type: 'nfr13-no-lcp-retry',
+        description: `run ${run + 1}: ${error.reason} (${error.report})`,
+      });
+    }
+  }
+}
 
 let r1Id = '';
 let doctorId = '';
@@ -134,9 +163,10 @@ for (const gated of GATED) {
     const url = `${E2E_ORIGIN}${gated.path()}`;
 
     const runs: FlowRun[] = [];
+    const noLcpRetries: NoLcpRetry[] = [];
     for (let run = 0; run < RUNS; run += 1) {
       // Sequential on purpose: one flow at a time on the machine.
-      runs.push(await measureFlow(url, gated.kind));
+      runs.push(await withNoLcpRetries(noLcpRetries, run, () => measureFlow(url, gated.kind)));
     }
 
     const medians = {
@@ -159,6 +189,7 @@ for (const gated of GATED) {
       throttling: MOBILE_THROTTLING,
       thresholds: THRESHOLDS,
       runs,
+      noLcpRetries,
       medians,
       lcpElementProbes: probes,
       measuredAt: new Date().toISOString(),
@@ -202,13 +233,15 @@ for (const entry of RECORD_ONLY) {
   test(`NFR13 record ${entry.name}`, async () => {
     test.setTimeout(PAGE_TIMEOUT_MS);
     const url = `${E2E_ORIGIN}${entry.path()}`;
-    const run = await measureNavigation(url);
+    const noLcpRetries: NoLcpRetry[] = [];
+    const run = await withNoLcpRetries(noLcpRetries, 0, () => measureNavigation(url));
     writeRecord(`record-${entry.name.replaceAll(' ', '-')}`, {
       page: entry.path(),
       url,
       throttling: MOBILE_THROTTLING,
       referenceMs: REFERENCE_MS,
       run,
+      noLcpRetries,
       overReference: run.lcpMs > REFERENCE_MS,
       measuredAt: new Date().toISOString(),
     });

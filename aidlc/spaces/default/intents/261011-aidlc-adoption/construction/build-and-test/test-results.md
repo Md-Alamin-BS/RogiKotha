@@ -11,15 +11,15 @@ kept outside the repository.
 
 ## Result
 
-**FAILED** under the stage's failure predicate, after the rung-1 fixes below, with no product
-defect found:
+**FAILED** under the stage's failure predicate only because five manual targets are Unverified,
+after the rung-1 fixes below, with no product defect found:
 
-- every build, gate, integration, smoke, browser and security command passes, and every
-  unit-scoped command passes as the corrected instructions now state it (ISS-809, ISS-810 fixed);
-- `pnpm e2e:perf` is still red. The LCP-element probe now works (ISS-812 fixed): on `/en` and `/bn`
-  home and `/en` r1 the LCP element is found and is never animated in, and every median is within
-  its threshold. But Lighthouse intermittently reports no LCP at all for a run, which aborts the
-  page (ISS-815); the `/bn` r1 probe never completed, so NFR13-LCP-ANIM stays Unverified;
+- every build, gate, integration, smoke, browser, security and performance command passes, and
+  every unit-scoped command passes as the corrected instructions now state it (ISS-809, ISS-810
+  fixed);
+- `pnpm e2e:perf` is **green**: 9 of 9, 0 no-LCP retries. The LCP-element probe works (ISS-812
+  fixed) and the lost-navigation runs are fixed at their cause (ISS-815 fixed); on all four gated
+  pages the LCP element is never animated in and every median is within its threshold;
 - four U50 manual checks and the clean-clone rehearsal, which need the demo's own port and
   containers, stay Unverified (ISS-813);
 - the cross-unit gate passes after the ISS-811 records decision (eight keys named as deferred to
@@ -40,6 +40,7 @@ changed and no target loosened.
 | ISS-810 | U46's `unit-test-instructions.md`: the coverage line is now the package-level command the floor is defined on (no path filters) | 1 | `pnpm exec vitest run --config vitest.workspace.ts --project application --coverage --coverage.include='packages/application/src/**'`: exit 0, 51 files, 552 passed, lines 88.70% (1704/1921) |
 | ISS-809 | CR-009, T-102 and T-502 `unit-test-instructions.md`: the stale paths replaced by the real ones (the corrected commands below, all green) | 1 | fixed |
 | ISS-811 | `cross-unit-traceability.md`: FR22, FR43, FR53, FR54, FR55, FR56, FR57 and FR65 named "deferred to release 2 under FD-105 (every citing AC deferred)", with their citing ACs; no `OK` row added to any Unit's `traceability.json` | 1 | Step 10 gate passes |
+| ISS-815 | A second orchestrator decision gave this new failure of the same executable target check its own budget of two attempts, test code only. Attempt 1 (diagnosis): `lighthouse-flow.ts` keeps every run that has no LCP as `apps/web/test-results/nfr13/no-lcp/<time>.json` (the LCP audit with its error, the run warnings and the trace's paint and navigation events). Attempt 2 (cause, then a bounded retry): each run opens the origin (`/api/health`) in its fresh tab before the flow starts; a run that still has no LCP throws `NoLcpError`, and `nfr13.spec.ts` redoes it at most 2 times per page, records every retry in the page JSON (`noLcpRetries`) and in a test annotation, never counts it, and fails the page when the retries run out | 2 | fixed: `pnpm e2e:perf` 9 of 9, 0 retries |
 
 Before these fixes the first run had: No. 069 exit 1, the perf probe failing on every page, and
 the traceability gate failing on 8 keys.
@@ -311,10 +312,11 @@ CLS 0; `/bn` home 1227, 34, 0; `/en` r1 1232, 36, 0; `/bn` r1 1236, 33, 0.019 (I
 
 For one check against the change, `en r1` ran once with the original harness: all five runs
 reported LCP (it then failed on the missing selector, as before). The fix only changes how the
-selector is read after the LCP value is read, so it cannot drop the LCP value; the link is
-unexplained (ISS-815).
+selector is read after the LCP value is read, so it cannot drop the LCP value; the link stayed
+unexplained. The cause was then found in the trace (Lighthouse's `NO_NAVSTART`, ISS-815, below)
+and fixed; the final, green run is "Final run (green)".
 
-Gated pages, latest completed measurement of each:
+Gated pages at this point, latest completed measurement of each (superseded by the final run):
 
 | Page | Source run | LCP median (<= 2500 ms) | INP median (<= 200 ms) | CLS median (<= 0.1) | LCP element and probe |
 |---|---|---|---|---|---|
@@ -328,27 +330,58 @@ over the reference, the same in both runs: `/bn/doctors/<id>` 1226 ms, `/bn/faci
 ms, `/bn/topics` 1226 ms, `/bn/register` 1226 ms (CLS 0.002), `/en/doctors` 1227 ms; CLS 0
 elsewhere. No S3 row is needed.
 
-### Failure — `NFR13 <page>`: Lighthouse reports no LCP for a run (ISS-815)
+### Lighthouse reports no LCP for a run (ISS-815): diagnosis and fix
 
-- Test: `apps/web/e2e/perf/nfr13.spec.ts:132` (seen on `en home`, `bn home`, `en r1`, `bn r1`).
-- Error: `Lighthouse reported no LCP for http://127.0.0.1:3107/<page>`, thrown by
-  `readNavigation` (`lighthouse-flow.ts:129`) when the `largest-contentful-paint` audit has no
-  numeric value; it aborts the page after 15 to 17 s, at its first or second flow.
-- Rate: none in 25 navigations before the fix; after it, 8 of the 12 page attempts ended this way,
-  and `/bn` r1 never completed. One `en r1` pass also had an outlier run (LCP 3775 ms, CLS 0.174)
-  inside a passing median.
-- Not confirmed: the cause. The fix runs after the LCP read; the experience pages fail most often.
-- Suspected Unit: U50 (perf harness); a product cause (an LCP paint that Chrome does not report,
-  for example during a route or reveal effect) is possible and not shown.
-- Impact: `pnpm e2e:perf` is red and NFR13-LCP-ANIM is Unverified for `/bn` r1; every measured
-  median is within its threshold, and no animated LCP element was found.
-- Candidate fix, impact-estimated: on a null LCP, keep that run's Lighthouse report (the
-  `largest-contentful-paint` audit's `errorMessage`, such as `NO_LCP`, and its trace) to find the
-  cause first (about 1 hour, test code only). If it is Lighthouse's own `NO_LCP` on a page that
-  reports LCP in other runs, retry that one flow a bounded number of times and record every retry
-  in the page's JSON, so a retry can never hide a real failure (about 1 hour more, low risk). If
-  the cause is in the page, it is a product finding for U47 (experience page) or T-207 (home). Not
-  applied: the orchestrator's two attempts for ISS-812 are used.
+- **Symptom** (`nfr13.spec.ts`, every gated page at some point): `Lighthouse reported no LCP for
+  <url>`, aborting the page after 15 to 17 s and, the file being serial, every later page; 8 of
+  12 page attempts after the ISS-812 fix.
+- **Diagnosis** (fix attempt 1, two kept reports from `/bn` r1,
+  `apps/web/test-results/nfr13/no-lcp/*.json`): the `largest-contentful-paint` audit has
+  `scoreDisplayMode: "error"` and `errorMessage` "Something went wrong with recording the trace
+  over your page load. Please run Lighthouse again. (NO_NAVSTART)"; no run warnings. The trace
+  holds one `navigationStart`, for the tab's initial `about:blank` (empty `documentLoaderURL`,
+  navigation id `D93F...`), while `firstContentfulPaint` and two
+  `NavStartToLargestContentfulPaint::Candidate` events (text, 27 938 px², `isAnimated: false`, in
+  the main frame) belong to the page's own navigation (id `B1CB...`), whose `navigationStart` is
+  missing. So the page painted its LCP candidate normally; the trace lost the start of the
+  measured navigation. This is Lighthouse's own `NO_NAVSTART` case, not the page. The likely
+  mechanism is the first navigation away from a fresh tab's initial `about:blank`, which Chromium
+  can commit in a new renderer whose `navigationStart` the trace does not catch; that part is a
+  reading of the trace, not proven.
+- **Fix** (attempt 2): every flow opens the origin (`GET /api/health`) in its fresh tab before
+  `startFlow`, so the measured navigation is a same-site one; then the bounded retry described in
+  "Rung-1 fixes" as a safety net (at most 2 per page, recorded, never counted, the page fails when
+  they run out). Checked first on the page that failed most: `--grep "NFR13 bn r1"` twice, both
+  passed with 0 retries.
+- **Effect on the figures**: with the origin opened first, the connection to 127.0.0.1:3107 is
+  already open when Lighthouse's navigation starts, which Lighthouse's simulated throttling may
+  treat as a reused connection, so the measured load can leave out the first connection's setup.
+  The home-page medians fell from about 1225 ms to about 900 ms, the experience pages from about
+  1235 ms to about 1206 ms. The thresholds are unchanged, and the medians measured before this
+  fix (1224 to 1236 ms) are within them as well, so no verdict depends on the change; a later
+  harness change could open the origin on a separate connection to remove the doubt.
+
+### Final run (green)
+
+| Command | Exit | Result |
+|---|---|---|
+| `timeout 3600 pnpm e2e:perf` | **0** | 9 passed, 3.4 min; **0 no-LCP retries** on every page; no `no-lcp` report written |
+
+| Page | LCP median (<= 2500 ms) | INP median (<= 200 ms) | CLS median (<= 0.1) | Retries | LCP element (probe: found at first frame, 0 animations, no `[data-reveal]` ancestor, opacity 1) |
+|---|---|---|---|---|---|
+| `/en` home | 913 ms | 34 ms | 0 | 0 | `section.opener > div.opener-grid > div > p.lede` — not animated in |
+| `/bn` home | 891 ms | 33 ms | 0 | 0 | `div.page-frame > section#view-discover > section.opener > h1.display`, and in some runs `p.lede` — both not animated in |
+| `/en/experiences/<r1>` | 1206 ms | 33 ms | 0 | 0 | `section#view-account > article.experience > section.a-head > h1#experience-title` — not animated in |
+| `/bn/experiences/<r1>` | 1206 ms | 32 ms | 0.019 | 0 | `section#view-account > article.experience > section.a-head > h1#experience-title` — **not animated in** |
+
+The first `/en` r1 run of the file is slow (LCP 3771 ms, CLS 0.174, as in the earlier passing set:
+3775 ms and 0.174); it is the first experience-page load after the suite's server starts, and the
+other four runs are 1206 to 1208 ms with CLS 0. The median is the gate (BR5.4), so this does not
+fail it; it is recorded here and in ISS-815.
+
+Record-only pages, final run, against the ~3 s reference, none over it, 0 retries: `/bn/doctors/<id>`
+931 ms, `/bn/facilities/<id>` 897 ms, `/bn/topics` 807 ms, `/bn/register` 1206 ms (CLS 0.002),
+`/en/doctors` 873 ms; CLS 0 elsewhere.
 
 ## Stopped scanner and stopped mail (AC12.3.2, U50 M1 and M2), Host probe
 
@@ -428,8 +461,8 @@ machine, as the walkthrough says.
 | ISS-809 | S4 | Stale test paths in three Units' `unit-test-instructions.md` (CR-009 `database.smoke.test.ts`; T-102 `auth-screens.adversarial.test.ts`; T-502 four paths under `apps/web/src/server/`); the corrected commands are green | fixed at Build and Test (rung 1): paths corrected in the three files |
 | ISS-810 | S4 | U46's subset coverage command exits 1 by construction (package glob threshold on a three-module run) | fixed at Build and Test (rung 1): package-level command, exit 0, 88.70% |
 | ISS-811 | S4 | 8 release-1 requirement keys (FR22, FR43, FR53, FR54, FR55, FR56, FR57, FR65) have no `OK` traceability entry and no covered AC | resolved by records decision: deferred to release 2 under FD-105 (every citing AC deferred) |
-| ISS-812 | S1 | `pnpm e2e:perf` red: Lighthouse 13.6.0 has no `largest-contentful-paint-element` audit, so the LCP-element probe never runs; the measured figures meet every threshold | fixed at Build and Test (rung 1, 2 attempts): the probe reads `lcp-breakdown-insight`; the LCP element is found and not animated in on three pages |
-| ISS-815 | S1 | `pnpm e2e:perf` still red: Lighthouse intermittently returns a run with no LCP value, which aborts the page; `/bn` r1 never completed with the fixed probe | open, U50 harness (cause not confirmed) |
+| ISS-812 | S1 | `pnpm e2e:perf` red: Lighthouse 13.6.0 has no `largest-contentful-paint-element` audit, so the LCP-element probe never runs; the measured figures meet every threshold | fixed at Build and Test (rung 1, 2 attempts): the probe reads `lcp-breakdown-insight`; the LCP element is found and not animated in on all four gated pages |
+| ISS-815 | S1 | `pnpm e2e:perf` still red: Lighthouse intermittently returns a run with no LCP value, which aborts the page; `/bn` r1 never completed with the fixed probe | fixed at Build and Test (rung 1, 2 attempts): cause Lighthouse's `NO_NAVSTART` (the trace lost the measured navigation's start); each run opens the origin first, plus a recorded retry of at most 2 per page; `pnpm e2e:perf` 9 of 9, 0 retries |
 | ISS-813 | S4 | U50 manual checks M3 to M6 and the clean-clone rehearsal not run at Build and Test (the live demo holds port 3000 and the containers) | open, owner |
 | ISS-814 | S4 | The BR10.7 walkthrough method (`document.fonts.check`) is true for every listed font and cannot tell the font in use | open (records) |
 
