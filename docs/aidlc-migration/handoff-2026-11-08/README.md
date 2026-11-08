@@ -38,6 +38,22 @@ are walked, update the matrix and report the stage with
 `aidlc engine orchestrate report --stage build-and-test --result <outcome>`; the engine then holds
 the Build and Test approval gate.
 
+## How another device or session continues
+
+1. `git pull` on `main` (no open Bolt branches remain; every Unit is squash-merged).
+2. If the `.env` predates T-101, add `MAIL_RECIPIENT_KEY=` (32 random bytes, base64, same command as
+   `APP_ENCRYPTION_KEY`) and `TERMS_VERSION=1` from `infra/compose/.env.example`.
+3. `pnpm install`, `pnpm infra:up`.
+4. The intent cursor is per machine: if `/aidlc` resumes `demo-slice`, run
+   `! aidlc engine intent switch aidlc-adoption` (the hooks stop an agent from switching it).
+5. The workflow is **parked at Build and Test**. Run `/aidlc --resume`. What is left: stop any running
+   demo, walk U50 M3–M6 and the clean-clone rehearsal (`docs/validation/U50-walkthrough.md`,
+   ISS-813), update the Target Verification Matrix in
+   `construction/build-and-test/build-and-test-summary.md` and `test-results.md`, then report the
+   stage and take its approval gate under the owner's delegation.
+6. To show the demo: `pnpm demo` from a terminal of your own (not an agent background shell; an idle
+   session's low-memory cleanup can stop it). Accounts and password are in `DEMO.md`.
+
 ## Waiting for the owner
 
 `docs/aidlc-migration/OWNER-REVIEW-QUEUE.md`, "Owner reviews waiting": the owner's own written sign-off
