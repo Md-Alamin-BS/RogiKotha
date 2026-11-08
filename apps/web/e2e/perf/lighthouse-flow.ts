@@ -103,6 +103,13 @@ export function firstNodeSelector(details: unknown): string | null {
   }
   if (details && typeof details === 'object') {
     const record = details as Record<string, unknown>;
+    // Lighthouse 13 insights list the node item itself, not under a `node` key (ISS-812).
+    if (
+      record['type'] === 'node' &&
+      typeof record['selector'] === 'string' &&
+      record['selector'] !== ''
+    )
+      return record['selector'];
     const node = record['node'];
     if (node && typeof node === 'object') {
       const selector = (node as Record<string, unknown>)['selector'];
@@ -124,7 +131,10 @@ function readNavigation(step: StepResult, url: string): NavigationRun {
   return {
     lcpMs,
     cls,
-    lcpSelector: firstNodeSelector(step.lhr.audits['largest-contentful-paint-element']?.details),
+    // Lighthouse 13 moved the LCP node to `lcp-breakdown-insight` (ISS-812).
+    lcpSelector:
+      firstNodeSelector(step.lhr.audits['lcp-breakdown-insight']?.details) ??
+      firstNodeSelector(step.lhr.audits['largest-contentful-paint-element']?.details),
     benchmarkIndex: step.lhr.environment?.benchmarkIndex ?? null,
   };
 }

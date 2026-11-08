@@ -5,10 +5,10 @@
 Vitest 4 (4.1.11) through `vitest.workspace.ts`, which lists the workspace projects. U41 uses these:
 
 - `application` (`packages/application/vitest.config.ts`, node): `ports/log-policy.test.ts` and the unchanged `worker-subpath.test.ts`.
-- `web` (`apps/web/vitest.config.ts`, jsdom): `lib/security/__tests__/`, `proxy.test.ts`, `proxy.smoke.test.ts`, `server/logger.test.ts`, `server/security-settings.test.ts`, `server/security-cookies.test.ts`, the i18n reporter test, the upload `route.security.test.ts` and the 413 consumer tests. Files that use Web streams or `Request` bodies start with `// @vitest-environment node` (`request-limits.test.ts`, `proxy*.test.ts`, `route.security.test.ts`).
+- `web` (`apps/web/vitest.config.ts`, jsdom): `lib/security/__tests__/`, `proxy.test.ts`, `proxy.smoke.test.ts`, `server/logger.test.ts`, `security-settings.test.ts`, `security-cookies.test.ts`, the i18n reporter test, the upload `route.security.test.ts` and the 413 consumer tests. Files that use Web streams or `Request` bodies start with `// @vitest-environment node` (`request-limits.test.ts`, `proxy*.test.ts`, `route.security.test.ts`).
 - `worker` (`apps/worker/vitest.config.ts`, node): `logger.test.ts`, `logger.levels.test.ts`, `env.load.test.ts`, `main.test.ts`, `log-scrub.test.ts`.
 - `i18n` (`packages/i18n/vitest.config.ts`): `request.test.ts` for the `onIntlError` reporter.
-- `web-int` (node, serial, group 3): `server/log-scrub.int.test.ts` and `server/security.adversarial.int.test.ts`, against `DATABASE_URL_TEST`.
+- `web-int` (node, serial, group 3): `log-scrub.int.test.ts` and `security.adversarial.int.test.ts` (both in `apps/web/src/`), against `DATABASE_URL_TEST`.
 
 Playwright only where the design asks: `apps/web/e2e/smoke/security-headers.spec.ts` (design § 8.4), run against a production build. Coverage uses `@vitest/coverage-v8`.
 
@@ -40,7 +40,7 @@ timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps
 timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/lib/security/
 
 # Settings reader, proxy, cookie and trustedOrigins pins:
-timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/server/security-settings.test.ts apps/web/src/proxy.test.ts apps/web/src/server/security-cookies.test.ts
+timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/security-settings.test.ts apps/web/src/proxy.test.ts apps/web/src/security-cookies.test.ts
 
 # Upload route (Phase F, after U48 is merged): U48's route tests with the updated helper, then U41's security test:
 timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/app/api/evidence/upload/
@@ -49,7 +49,7 @@ timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps
 timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/components/patient/evidence/
 
 # Web log-scrub integration against the assigned test database:
-timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project web-int apps/web/src/server/log-scrub.int.test.ts
+timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project web-int apps/web/src/log-scrub.int.test.ts
 
 # The Unit's smoke file, then the whole cumulative smoke suite:
 timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/proxy.smoke.test.ts
@@ -61,7 +61,7 @@ timeout 900 pnpm --filter @rogikotha/web exec playwright test e2e/smoke/security
 
 # Adversarial tests (Step 34, written by a separate agent):
 timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/lib/security/__tests__/security.adversarial.test.ts apps/web/src/app/api/evidence/upload/route.adversarial.test.ts
-timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project web-int apps/web/src/server/security.adversarial.int.test.ts
+timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project web-int apps/web/src/security.adversarial.int.test.ts
 
 # Lint (no-console, boundaries) and the gate:
 timeout 600 pnpm lint

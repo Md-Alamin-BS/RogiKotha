@@ -11,21 +11,38 @@ kept outside the repository.
 
 ## Result
 
-**FAILED** under the stage's failure predicate, with no product defect found:
+**FAILED** under the stage's failure predicate, after the rung-1 fixes below, with no product
+defect found:
 
-- every build, gate, integration, smoke, browser and security command passed, except one
-  unit-scoped coverage command from U46's instructions that cannot pass by construction (ISS-810);
-- `pnpm e2e:perf` is red: the four NFR13 gated pages meet every figure (LCP about 1.23 s, INP
-  about 35 ms, CLS at most 0.019), but the "LCP element never animated in" probe cannot run on
-  Lighthouse 13.6.0, so NFR13 is Unverified (ISS-812, a test-harness defect in U50's perf files);
+- every build, gate, integration, smoke, browser and security command passes, and every
+  unit-scoped command passes as the corrected instructions now state it (ISS-809, ISS-810 fixed);
+- `pnpm e2e:perf` is still red. The LCP-element probe now works (ISS-812 fixed): on `/en` and `/bn`
+  home and `/en` r1 the LCP element is found and is never animated in, and every median is within
+  its threshold. But Lighthouse intermittently reports no LCP at all for a run, which aborts the
+  page (ISS-815); the `/bn` r1 probe never completed, so NFR13-LCP-ANIM stays Unverified;
 - four U50 manual checks and the clean-clone rehearsal, which need the demo's own port and
-  containers, stayed Unverified (ISS-813);
-- the cross-unit gate found 8 release-1 requirement keys with no `OK` traceability (ISS-811).
+  containers, stay Unverified (ISS-813);
+- the cross-unit gate passes after the ISS-811 records decision (eight keys named as deferred to
+  release 2 under FD-105).
 
-No product code was changed. In-stage (rung 1) actions: five unit-scoped commands whose paths were
-stale were rerun with the real file paths (all green, ISS-809), and U46's subset coverage command was
-rerun once with its include scoped to its own modules (still below the package glob threshold,
-ISS-810). No second attempt was useful on either.
+## Rung-1 fixes
+
+After the first run, the orchestrator decided, under the owner's delegation of 2026-11-04, that
+four items were inside this stage's rung-1 remit: the NFR13 probe is "an executable target check",
+which the stage's failure ladder names as in remit (ISS-812); U46's coverage command and the stale
+paths are test configuration in the Units' instructions (ISS-810, ISS-809); and ISS-811 is a
+records decision, not a product change. Each was limited to two attempts, with no product code
+changed and no target loosened.
+
+| ISS | Change | Attempts | Outcome |
+|---|---|---|---|
+| ISS-812 | `apps/web/e2e/perf/lighthouse-flow.ts`: read the LCP node from `lcp-breakdown-insight` (old audit id kept as a fallback), and accept a node item listed directly (Lighthouse 13 insights put `{type: 'node', selector}` in the list, not under a `node` key). The check's meaning is unchanged: the element must exist at the first frame, have no animation, sit under no `[data-reveal]` and be fully opaque. There is no unit test of this file to adjust | 2 (the first read the new audit but missed the item shape, still "names no element") | fixed: the selector is found in every completed run |
+| ISS-810 | U46's `unit-test-instructions.md`: the coverage line is now the package-level command the floor is defined on (no path filters) | 1 | `pnpm exec vitest run --config vitest.workspace.ts --project application --coverage --coverage.include='packages/application/src/**'`: exit 0, 51 files, 552 passed, lines 88.70% (1704/1921) |
+| ISS-809 | CR-009, T-102 and T-502 `unit-test-instructions.md`: the stale paths replaced by the real ones (the corrected commands below, all green) | 1 | fixed |
+| ISS-811 | `cross-unit-traceability.md`: FR22, FR43, FR53, FR54, FR55, FR56, FR57 and FR65 named "deferred to release 2 under FD-105 (every citing AC deferred)", with their citing ACs; no `OK` row added to any Unit's `traceability.json` | 1 | Step 10 gate passes |
+
+Before these fixes the first run had: No. 069 exit 1, the perf probe failing on every page, and
+the traceability gate failing on 8 keys.
 
 ## Build
 
@@ -81,7 +98,8 @@ were deduplicated (the outer `timeout` stripped for comparison) and each distinc
 ...`), `npx impeccable detect`, `pnpm e2e` (U50 lists it twice), `pnpm e2e:perf`, and U50's
 per-spec Playwright commands and `pnpm e2e:smoke`, which run the same specs in the same projects as
 the full `pnpm e2e` (that run had 0 retries used, so its first attempts are the `--retries=0`
-results). `pnpm e2e:perf --grep "<page>"` is a manual rerun for a failing page and was not needed.
+results). `pnpm e2e:perf --grep "<page>"` is the manual rerun of a failing page; its runs are in
+"Performance".
 
 Totals over the 116: 115 exit 0, 1 exit 1 (No. 069); 736 test files and 11 047 tests passed, 0
 failed, 8 expected failures (the ISS-139 tripwires, counted once per command that includes them);
@@ -98,7 +116,10 @@ passed; the corrected commands:
 | No. 056 (T-502) | `pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/security-settings.test.ts apps/web/src/proxy.test.ts apps/web/src/security-cookies.test.ts` | 0 | 3 files, 48 passed |
 | No. 059 (T-502) | `pnpm exec vitest run --config vitest.workspace.ts --project web-int apps/web/src/log-scrub.int.test.ts` | 0 | 1 file, 5 passed |
 | No. 062 (T-502) | `pnpm exec vitest run --config vitest.workspace.ts --project web-int apps/web/src/security.adversarial.int.test.ts` | 0 | 1 file, 6 passed |
-| No. 069 (U46), rung-1 attempt | the same with `--coverage.include` for `modules/{directory,taxonomy,review}/**` | 1 | 177 passed; 76.29% lines of those modules, below the package glob threshold |
+| No. 069 (U46), first rung-1 try (before the orchestrator's decision) | the same with `--coverage.include` for `modules/{directory,taxonomy,review}/**` | 1 | 177 passed; 76.29% lines of those modules, below the package glob threshold |
+| No. 069 (U46), as the instructions now state it (ISS-810) | `pnpm exec vitest run --config vitest.workspace.ts --project application --coverage --coverage.include='packages/application/src/**'` | 0 | 51 files, 552 passed; lines 88.70% (1704/1921), above the 80% package floor |
+
+With the corrected instructions every one of the 116 unit-scoped commands exits 0.
 
 | # | Unit | Command (outer `timeout` as listed in the instructions) | Exit | Files | Tests | Note |
 |---|---|---|---|---|---|---|
@@ -221,7 +242,10 @@ passed; the corrected commands:
 
 ## Failure details
 
-### No. 069 (U46) — subset coverage run held to the package floor
+### No. 069 (U46) — subset coverage run held to the package floor (resolved, ISS-810)
+
+Resolved by the rung-1 fixes: U46's instructions now give the package-level command, which exits 0
+at 88.70%. The first run's details:
 
 - Command: `pnpm exec vitest run --config vitest.workspace.ts --project application --coverage
   --coverage.include='packages/application/src/**' --coverage.thresholds.lines=0
@@ -255,51 +279,76 @@ service up, AC12.3.1); no sentinel or run email in `web.log` or `worker.log`, ev
 
 ## Performance (`pnpm e2e:perf`, NFR13 and NFR1)
 
+Throttling: 562.5 ms latency, 1.47 Mbps down, 675 Kbps up, 4x CPU (Lighthouse 13.6.0, headless
+Chromium). Gated pages: median of 5 flows. Each `NFR13 <page>` test aborts on the first run
+Lighthouse returns without an LCP value, and the file is serial, so a failure stops the rest.
+
+### First run (before the rung-1 fix)
+
 | Command | Exit | Result |
 |---|---|---|
-| `timeout 3600 pnpm e2e:perf` | **1** | build green; `NFR13 en home` **failed**, the other 8 did not run (the file is serial); 65 s |
-| `timeout 1500 pnpm --filter @rogikotha/web exec playwright test --project=nfr13 --grep "NFR13 bn home"` (the documented per-page rerun, BR5.5, without the rebuild) | 1 | failed on the same assertion |
-| the same with `--grep "NFR13 en r1"` | 1 | failed on the same assertion |
-| the same with `--grep "NFR13 bn r1"` | 1 | failed on the same assertion |
-| the same with `--grep "NFR13 record"` | 0 | 5 passed |
+| `timeout 3600 pnpm e2e:perf` | 1 | `NFR13 en home` failed, 8 did not run, 65 s |
+| per-page reruns `--grep "NFR13 bn home"`, `"NFR13 en r1"`, `"NFR13 bn r1"` | 1 each | the same assertion |
+| `--grep "NFR13 record"` | 0 | 5 passed |
 
-Measured values (`apps/web/test-results/nfr13/*.json`; throttling 562.5 ms latency, 1.47 Mbps
-down, 675 Kbps up, 4x CPU; median of 5 Lighthouse 13.6.0 flows per gated page):
+All four pages failed `nfr13.spec.ts:170`, "Lighthouse names the LCP element in at least one run"
+(received 0): `lighthouse-flow.ts` read `largest-contentful-paint-element`, which Lighthouse 13.6.0
+replaced with `lcp-breakdown-insight` (`core/audits/insights/lcp-breakdown-insight.js:28`,
+`replacesAudits`). Every one of those 20 flows reported LCP; medians: `/en` home 1225 ms, INP 35,
+CLS 0; `/bn` home 1227, 34, 0; `/en` r1 1232, 36, 0; `/bn` r1 1236, 33, 0.019 (ISS-812).
 
-| Page | LCP median (<= 2500 ms) | INP median (<= 200 ms) | CLS median (<= 0.1) | LCP element probe |
-|---|---|---|---|---|
-| `/en` home | 1225 ms | 35 ms | 0 | not run: Lighthouse named no element in 5 of 5 runs |
-| `/bn` home | 1227 ms | 34 ms | 0 | not run, same |
-| `/en/experiences/<r1>` | 1232 ms | 36 ms | 0 | not run, same |
-| `/bn/experiences/<r1>` | 1236 ms | 33 ms | 0.019 | not run, same |
+### After the rung-1 fix (ISS-812)
+
+| Command | Exit | Result |
+|---|---|---|
+| `timeout 3600 pnpm e2e:perf`, fix attempt 1 | 1 | `NFR13 en home` still "names no element": the insight lists the node item directly |
+| `timeout 3600 pnpm e2e:perf`, fix attempt 2 | 1 | `NFR13 en home`: "Lighthouse reported no LCP" in one run (16.6 s), 8 did not run |
+| `pnpm --filter @rogikotha/web exec playwright test --project nfr13` (no rebuild) | 1 | `en home` and `bn home` **passed**; `en r1`: no LCP in one run; 6 did not run |
+| per-page `--grep "NFR13 en r1"` (3 runs) | 1, 0, 1 | one pass (all five runs and every probe clause); two runs ended "no LCP" |
+| per-page `--grep "NFR13 bn r1"` (3 runs) | 1, 1, 1 | "no LCP" each time; never completed |
+| `--grep "NFR13 record"` | 0 | 5 passed |
+| `timeout 3600 pnpm e2e:perf`, final | **1** | `en home` passed; `bn home`: "no LCP" in one run; 7 did not run |
+
+For one check against the change, `en r1` ran once with the original harness: all five runs
+reported LCP (it then failed on the missing selector, as before). The fix only changes how the
+selector is read after the LCP value is read, so it cannot drop the LCP value; the link is
+unexplained (ISS-815).
+
+Gated pages, latest completed measurement of each:
+
+| Page | Source run | LCP median (<= 2500 ms) | INP median (<= 200 ms) | CLS median (<= 0.1) | LCP element and probe |
+|---|---|---|---|---|---|
+| `/en` home | final `pnpm e2e:perf` | 1224 ms | 33 ms | 0 | `section.opener > div.opener-grid > div > p.lede`: found at the first frame, 0 animations, no `[data-reveal]` ancestor, opacity 1 — **not animated in** |
+| `/bn` home | the `--project nfr13` rerun | 1228 ms | 34 ms | 0 | `div.page-frame > section#view-discover > section.opener > h1.display`: same four checks pass — **not animated in** |
+| `/en/experiences/<r1>` | the passing per-page rerun | 1233 ms (runs 1208 to 3775) | 35 ms | 0 (one run 0.174) | `section#view-account > article.experience > section.a-head > h1#experience-title` in all five runs; the test passed, so every probe clause held — **not animated in** |
+| `/bn/experiences/<r1>` | first run (before the fix) | 1236 ms | 33 ms | 0.019 | **not measured**: no run with the fix completed |
 
 Record-only pages against the ~3 s reference (NFR1, AC2.3.6, AC12.3.5), one navigation each, none
-over the reference: `/bn/doctors/<id>` 1226 ms, `/bn/facilities/<id>` 1231 ms, `/bn/topics` 1226 ms,
-`/bn/register` 1226 ms (CLS 0.002), `/en/doctors` 1227 ms; CLS 0 elsewhere. No S3 row is needed.
+over the reference, the same in both runs: `/bn/doctors/<id>` 1226 ms, `/bn/facilities/<id>` 1231
+ms, `/bn/topics` 1226 ms, `/bn/register` 1226 ms (CLS 0.002), `/en/doctors` 1227 ms; CLS 0
+elsewhere. No S3 row is needed.
 
-### Failure — `NFR13 <page>`: the LCP element is never named (ISS-812)
+### Failure — `NFR13 <page>`: Lighthouse reports no LCP for a run (ISS-815)
 
-- Test: `apps/web/e2e/perf/nfr13.spec.ts:132` (`NFR13 en home`; the same for `bn home`, `en r1`,
-  `bn r1`).
-- Assertion: `expect(selectors.length, 'Lighthouse names the LCP element in at least one run')
-  .toBeGreaterThan(0)` at line 170 — Received: 0. The figures themselves are within every
-  threshold; the record is written before the assertion.
-- Evidence: every run's `lcpSelector` is `null`. `apps/web/e2e/perf/lighthouse-flow.ts:127` reads
-  `step.lhr.audits['largest-contentful-paint-element']`, but Lighthouse 13.6.0 (the pinned version
-  in `apps/web/package.json`) no longer has that audit: its
-  `core/audits/insights/lcp-breakdown-insight.js:28` declares `replacesAudits:
-  ['largest-contentful-paint-element']`, and the element is the node item of
-  `lcp-breakdown-insight`. ISS-756 recorded that these files were written without a browser run.
-- Suspected Unit: U50 (`u50-release-check`), test harness only; no product code is involved.
-- Impact: the gate's "LCP element never animated in" clause (AC2.4.6, BR5.4) cannot run, so NFR13
-  stays Unverified and `pnpm e2e:perf` is red.
-- Candidate fix, impact-estimated: in `lighthouse-flow.ts:127`, read
-  `step.lhr.audits['lcp-breakdown-insight']?.details` (keeping the old audit id as a fallback);
-  `firstNodeSelector` already walks nested details. Effort: one line plus a unit test row for the
-  insight's details shape; then rerun `pnpm e2e:perf` (about 3 minutes). Cost: none. Risk: low; the
-  probe may then find a real animation on an LCP element, which would be a product finding for U47
-  (experience page) or T-207 (home). Outside this stage's remit (test code, not test configuration),
-  so not applied.
+- Test: `apps/web/e2e/perf/nfr13.spec.ts:132` (seen on `en home`, `bn home`, `en r1`, `bn r1`).
+- Error: `Lighthouse reported no LCP for http://127.0.0.1:3107/<page>`, thrown by
+  `readNavigation` (`lighthouse-flow.ts:129`) when the `largest-contentful-paint` audit has no
+  numeric value; it aborts the page after 15 to 17 s, at its first or second flow.
+- Rate: none in 25 navigations before the fix; after it, 8 of the 12 page attempts ended this way,
+  and `/bn` r1 never completed. One `en r1` pass also had an outlier run (LCP 3775 ms, CLS 0.174)
+  inside a passing median.
+- Not confirmed: the cause. The fix runs after the LCP read; the experience pages fail most often.
+- Suspected Unit: U50 (perf harness); a product cause (an LCP paint that Chrome does not report,
+  for example during a route or reveal effect) is possible and not shown.
+- Impact: `pnpm e2e:perf` is red and NFR13-LCP-ANIM is Unverified for `/bn` r1; every measured
+  median is within its threshold, and no animated LCP element was found.
+- Candidate fix, impact-estimated: on a null LCP, keep that run's Lighthouse report (the
+  `largest-contentful-paint` audit's `errorMessage`, such as `NO_LCP`, and its trace) to find the
+  cause first (about 1 hour, test code only). If it is Lighthouse's own `NO_LCP` on a page that
+  reports LCP in other runs, retry that one flow a bounded number of times and record every retry
+  in the page's JSON, so a retry can never hide a real failure (about 1 hour more, low risk). If
+  the cause is in the page, it is a product finding for U47 (experience page) or T-207 (home). Not
+  applied: the orchestrator's two attempts for ISS-812 are used.
 
 ## Stopped scanner and stopped mail (AC12.3.2, U50 M1 and M2), Host probe
 
@@ -376,15 +425,16 @@ machine, as the walkthrough says.
 
 | ID | Sev | Summary | Status |
 |---|---|---|---|
-| ISS-809 | S4 | Stale test paths in three Units' `unit-test-instructions.md` (CR-009 `database.smoke.test.ts`; T-102 `auth-screens.adversarial.test.ts`; T-502 four paths under `apps/web/src/server/`); the corrected commands are green | open (records) |
-| ISS-810 | S4 | U46's subset coverage command exits 1 by construction (package glob threshold on a three-module run) | open (records) |
-| ISS-811 | S4 | 8 release-1 requirement keys (FR22, FR43, FR53, FR54, FR55, FR56, FR57, FR65) have no `OK` traceability entry and no covered AC | open (records) |
-| ISS-812 | S1 | `pnpm e2e:perf` red: Lighthouse 13.6.0 has no `largest-contentful-paint-element` audit, so the LCP-element probe never runs; the measured figures meet every threshold | open, U50 harness |
+| ISS-809 | S4 | Stale test paths in three Units' `unit-test-instructions.md` (CR-009 `database.smoke.test.ts`; T-102 `auth-screens.adversarial.test.ts`; T-502 four paths under `apps/web/src/server/`); the corrected commands are green | fixed at Build and Test (rung 1): paths corrected in the three files |
+| ISS-810 | S4 | U46's subset coverage command exits 1 by construction (package glob threshold on a three-module run) | fixed at Build and Test (rung 1): package-level command, exit 0, 88.70% |
+| ISS-811 | S4 | 8 release-1 requirement keys (FR22, FR43, FR53, FR54, FR55, FR56, FR57, FR65) have no `OK` traceability entry and no covered AC | resolved by records decision: deferred to release 2 under FD-105 (every citing AC deferred) |
+| ISS-812 | S1 | `pnpm e2e:perf` red: Lighthouse 13.6.0 has no `largest-contentful-paint-element` audit, so the LCP-element probe never runs; the measured figures meet every threshold | fixed at Build and Test (rung 1, 2 attempts): the probe reads `lcp-breakdown-insight`; the LCP element is found and not animated in on three pages |
+| ISS-815 | S1 | `pnpm e2e:perf` still red: Lighthouse intermittently returns a run with no LCP value, which aborts the page; `/bn` r1 never completed with the fixed probe | open, U50 harness (cause not confirmed) |
 | ISS-813 | S4 | U50 manual checks M3 to M6 and the clean-clone rehearsal not run at Build and Test (the live demo holds port 3000 and the containers) | open, owner |
 | ISS-814 | S4 | The BR10.7 walkthrough method (`document.fonts.check`) is true for every listed font and cannot tell the font in use | open (records) |
 
 Older rows this stage confirms: ISS-752 to ISS-755 (clean browser run, 0 flaky); ISS-756 (the perf
-assumptions: (2) and (3) held, the LCP probe did not, see ISS-812); ISS-805 (the six Deferred to
+assumptions: (2) and (3) held, the LCP probe did not, see ISS-812 and ISS-815); ISS-805 (the six Deferred to
 Build and Test rows now have their run).
 
 ## Loop-back log

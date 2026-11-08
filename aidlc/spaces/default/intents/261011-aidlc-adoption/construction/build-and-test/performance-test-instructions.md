@@ -22,7 +22,9 @@ demo is a single local composition with no throughput or concurrency target (NFR
   down; the DevTools-throttled interaction step uses 562.5 ms latency, 1.47 Mbps down, 675 Kbps
   up) and 4x CPU slowdown.
 - The flow per gated page: a navigation step (LCP, CLS) and a timespan step with an interaction
-  (INP), five runs, median taken; the LCP element is probed for an entry animation.
+  (INP), five runs, median taken; the LCP element is probed for an entry animation. Lighthouse
+  13.6.0 names that element in the `lcp-breakdown-insight` audit (ISS-812). A run in which
+  Lighthouse reports no LCP aborts the page (ISS-815).
 - The suite's production build, the `rogikotha_e2e_test` database and port 3107, as in
   `integration-test-instructions.md`. The spec runs serially in one worker.
 

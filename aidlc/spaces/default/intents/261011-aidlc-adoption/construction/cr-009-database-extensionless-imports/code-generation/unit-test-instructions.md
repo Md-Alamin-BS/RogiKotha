@@ -7,12 +7,12 @@ No new tests: CR-009 changes import specifiers only and must not change behaviou
 ## Run this Unit's checks
 
 ```bash
-pnpm --filter @rogikotha/database exec vitest run src/database.smoke.test.ts
+pnpm --filter @rogikotha/database exec vitest run src/grants.smoke.test.ts
 pnpm --filter @rogikotha/worker typecheck
 pnpm --filter @rogikotha/web build
 ```
 
-The first runs the database package's existing smoke test as the unit-scoped test (if that file name differs, use the package's existing `*.smoke.test.ts` path, recorded in `code-summary.md`). The build runs once with the throwaway probe page (must compile), once with one `.js` suffix put back (must fail with `Module not found`), then the probe is removed.
+The first runs the database package's existing smoke test as the unit-scoped test (the package has no `database.smoke.test.ts`; `grants.smoke.test.ts` is its smoke test, as `code-summary.md` records; path corrected at Build and Test, ISS-809). The build runs once with the throwaway probe page (must compile), once with one `.js` suffix put back (must fail with `Module not found`), then the probe is removed.
 
 Then the project gates with identical counts: `pnpm check`, `pnpm smoke`, `pnpm test:int`.
 

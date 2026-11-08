@@ -20,22 +20,31 @@ of each story from `inception/units-generation/traceability.json`.
   stage ran its check; the verdict is the result of that run (`test-results.md`).
 - **UNCOVERED**: in release 1 by the story map, but no `OK` entry and no covered AC. Each is a
   finding for the approval gate.
+- **Deferred to release 2 (FD-105, every citing AC deferred)**: a requirement the story map lists
+  as in release 1 whose only citing ACs are all deferred to release 2 under FD-105. This is the
+  records decision of the Build and Test rung-1 fixes (the orchestrator, under the owner's
+  delegation of 2026-11-04; ISS-811). No `OK` row was added to any Unit's `traceability.json`.
 
 ## Verdict
 
-**FAIL** — 8 requirement keys that the story map puts in release 1 have no `OK` traceability entry
-and no covered acceptance criterion (ISS-811). Every other ID is covered, verified here, retired,
-N/A or deferred to release 2 by name.
+**PASS** — no ID is uncovered. 151 IDs are covered `OK`, 4 are verified by this stage's own runs,
+148 are deferred to release 2 by name (8 of them by the ISS-811 records decision below), 1 is
+retired and 2 are N/A. The first run of this gate found the 8 keys below uncovered (FAIL); the
+verdict changed only through that records decision, not through new coverage.
 
 | Set | Total | Covered (OK) | Verified at Build and Test | Deferred to release 2 (named) | Retired | N/A | UNCOVERED |
 |---|---|---|---|---|---|---|---|
-| Requirements (FR1 to FR103, NFR1 to NFR13) | 116 | 62 | 1 (NFR12) | 45 (43 by FD-105; FR96 by FD-048, FR97 by FD-019) | 0 | 0 | 8 |
+| Requirements (FR1 to FR103, NFR1 to NFR13) | 116 | 62 | 1 (NFR12) | 53 (43 by FD-105; 8 by FD-105 with every citing AC deferred, ISS-811; FR96 by FD-048, FR97 by FD-019) | 0 | 0 | 0 |
 | Acceptance criteria (AC1.1.1 to AC12.4.3) | 190 | 89 | 3 (AC12.3.2, AC12.3.4, AC12.3.5) | 95 (FD-105) | 1 (AC2.2.1) | 2 (AC3.2.5, AC6.1.6) | 0 |
-| **All** | **306** | **151** | **4** | **140** | **1** | **2** | **8** |
+| **All** | **306** | **151** | **4** | **148** | **1** | **2** | **0** |
 
-## Uncovered elements (findings)
+## Records decision: eight keys deferred to release 2 (ISS-811)
 
-| ID | Story map (release 1) | Why it is uncovered | Evidence of the built release-1 part |
+Each of these is cited only by acceptance criteria that FD-105 defers to release 2, so each is
+named "deferred to release 2 under FD-105 (every citing AC deferred)". The story map still lists
+them as in release 1; that wording is not changed here.
+
+| ID | Story map (release 1) | Citing ACs, all deferred to release 2 (FD-105) | Release-1 part seen in code (informational) |
 |---|---|---|---|
 | FR22 | U49: comments are the same for every account (claims deferred) | its only AC, AC8.1.5 (provider label), is release 2 in U49 | not confirmed by this stage; provider claims do not exist in release 1 (FD-105), so no account has a privileged channel |
 | FR43 | U47 | its only AC, AC6.1.4 (repeat-episode flag), is release 2 (T-403) in U47 | not confirmed by this stage; no Unit's traceability names the distinct-condition or distinct-episode rule |
@@ -46,10 +55,8 @@ N/A or deferred to release 2 by name.
 | FR57 | U47, narrowed | AC7.2.5 is in US7.2, deferred | `apps/web/src/components/patient/experience/ReviewerLabels.tsx` (tested in `experience.test.tsx`, green in `pnpm check`) |
 | FR65 | U48, narrowed: originals are never served | AC7.2.6 and AC7.3.8 are in US7.2 and US7.3, deferred | the only evidence route is `POST /api/evidence/upload` (`apps/web/src/app/api/evidence/upload/route.ts`); no route serves an original |
 
-The candidate fix (records only, no code): add explicit `FRn` rows with status `OK` to U47, U48 and
-U49's `traceability.json` naming the built narrowed part, or mark the eight rows in the story map as
-deferred with their AC. Estimated impact: one records edit per Unit, no code change, no risk to
-the build.
+A later records pass may align the story map's "Requirements" rows with this decision; that is
+outside this stage.
 
 ## Deferred to release 2 (named, not covered)
 
@@ -57,6 +64,8 @@ the build.
   FR59, FR63, FR64, FR67, FR70, FR71, FR73, FR77, FR79 to FR87, FR89, FR90,
   FR93, FR94, FR100 to FR103 — deferred to release 2 by FD-105; FR96 (FD-048) and FR97 (FD-019)
   were deferred earlier.
+- **Requirements by the ISS-811 records decision (8)**: FR22, FR43, FR53, FR54, FR55, FR56, FR57,
+  FR65 — deferred to release 2 under FD-105 (every citing AC deferred), see the table above.
 - **Acceptance criteria (95)**: AC3.3.4, AC3.3.5, AC4.1.5, AC4.2.1 to AC4.2.5, AC5.1.1 to AC5.1.6,
   AC5.2.1 to AC5.2.6, AC5.3.3 to AC5.3.5, AC6.1.4, AC6.2.5, AC6.3.3 to AC6.3.5, AC7.2.1 to AC7.2.6,
   AC7.3.1 to AC7.3.9, AC8.1.3, AC8.1.5, AC8.2.1 to AC8.2.6, AC9.1.1 to AC9.1.6, AC9.2.1 to
@@ -104,7 +113,7 @@ the build.
 | AC2.4.3 | Covered (OK) | t-011-patient-design-and-motion-system, t-102-patient-auth-screens, t-207-discover-emergency-about, u46-directory, u47-reviews, u50-release-check | `apps/web/src/components/patient/motion/Reveal.tsx` | — |
 | AC2.4.4 | Covered (OK) | t-011-patient-design-and-motion-system, t-102-patient-auth-screens, t-207-discover-emergency-about, u46-directory, u47-reviews, u50-release-check | `apps/web/src/components/patient/motion/PublishTick.tsx` | — |
 | AC2.4.5 | Covered (OK) | t-011-patient-design-and-motion-system, t-102-patient-auth-screens, u47-reviews, u50-release-check | `apps/web/src/styles/motion.css` | — |
-| AC2.4.6 | Covered (OK) | t-011-patient-design-and-motion-system, t-207-discover-emergency-about | `apps/web/e2e/smoke/motion.spec.ts` | covered (T-011 CSS check, T-207); the Lighthouse gate ran here: thresholds met on 4 pages, but the 'LCP element never animated in' clause could not run (ISS-812); search page release 2 |
+| AC2.4.6 | Covered (OK) | t-011-patient-design-and-motion-system, t-207-discover-emergency-about | `apps/web/e2e/smoke/motion.spec.ts` | covered (T-011 CSS check, T-207); the Lighthouse gate ran here: medians within every threshold on all 4 pages; the LCP element is never animated in on en and bn home and en r1, the bn r1 probe never completed (ISS-815); search page release 2 |
 | AC3.1.1 | Covered (OK) | t-101-better-auth-adapter, t-102-patient-auth-screens | `apps/web/src/server/auth.ts` | — |
 | AC3.1.2 | Covered (OK) | t-101-better-auth-adapter, t-102-patient-auth-screens | `packages/application/src/modules/account/commands/register.ts` | — |
 | AC3.1.3 | Covered (OK) | t-101-better-auth-adapter, t-102-patient-auth-screens | `packages/application/src/modules/account/commands/register.test.ts` | — |
@@ -292,7 +301,7 @@ the build.
 | FR19 | Deferred | - | — | deferred to release 2 (FD-105): photo suggestion, claim, field changes and merge, T-204 and T-407 |
 | FR20 | Deferred | - | — | deferred to release 2 (FD-105): photo suggestion, claim, field changes and merge, T-204 and T-407 |
 | FR21 | Deferred | - | — | deferred to release 2 (FD-105): photo suggestion, claim, field changes and merge, T-204 and T-407 |
-| FR22 | UNCOVERED | - | — | in release 1: comments are the same for every account (claims are deferred) |
+| FR22 | Deferred to release 2 (FD-105, every citing AC deferred) | — | — | records decision at Build and Test (orchestrator, ISS-811): cited only by AC8.1.5, all deferred to release 2 under FD-105; the story map lists it as in release 1 |
 | FR23 | Deferred | - | — | deferred to release 2 (FD-105): photo suggestion, claim, field changes and merge, T-204 and T-407 |
 | FR24 | Covered (OK) | u46-directory, t-207-discover-emergency-about | `apps/web/src/components/patient/facilities/FacilityProfile.tsx` | via AC4.3.1, AC4.3.5 |
 | FR25 | Covered (OK) | u46-directory | `apps/web/src/components/patient/shared/NotVerified.tsx` | via AC4.3.2 |
@@ -313,7 +322,7 @@ the build.
 | FR40 | Covered (OK) | u47-reviews | `packages/domain/src/review/review.ts` | via AC6.1.1, AC6.1.3 |
 | FR41 | Covered (OK) | t-302-review-changes-and-tombstones, u47-reviews | `packages/domain/src/review/versioning.ts` | via AC6.2.1 |
 | FR42 | Covered (OK) | t-302-review-changes-and-tombstones, u47-reviews | `packages/contracts/src/schemas/review.ts` | via AC6.2.2 |
-| FR43 | UNCOVERED | - | — | in release 1 |
+| FR43 | Deferred to release 2 (FD-105, every citing AC deferred) | — | — | records decision at Build and Test (orchestrator, ISS-811): cited only by AC6.1.4, all deferred to release 2 under FD-105; the story map lists it as in release 1 |
 | FR44 | Covered (OK) | u47-reviews | `packages/application/src/modules/review/commands/publish.ts` | via AC6.1.5 |
 | FR45 | Covered (OK) | t-302-review-changes-and-tombstones, u47-reviews | `packages/domain/src/review/versioning.ts` | via AC6.2.3 |
 | FR46 | Covered (OK) | t-302-review-changes-and-tombstones, u47-reviews | `packages/domain/src/review/versioning.ts` | via AC6.2.3 |
@@ -323,11 +332,11 @@ the build.
 | FR50 | Covered (OK) | u46-directory | `packages/database/src/repositories/review-reads.ts` | via AC6.4.4 |
 | FR51 | Covered (OK) | u46-directory | `packages/domain/src/review/policies.ts` | via AC6.4.2 |
 | FR52 | Covered (OK) | u46-directory | `packages/database/src/repositories/directory-module.ts` | via AC6.4.5 |
-| FR53 | UNCOVERED | - | — | in release 1, narrowed: each item keeps its section for its author; the public sections are deferred with T-308 |
-| FR54 | UNCOVERED | - | — | in release 1, narrowed: later-treatment text and unlinked names as written; evidence-purpose labels and the profile-submission offer deferred with T-204 and T-305 |
-| FR55 | UNCOVERED | - | — | in release 1, narrowed: later-treatment text and unlinked names as written; evidence-purpose labels and the profile-submission offer deferred with T-204 and T-305 |
-| FR56 | UNCOVERED | - | — | in release 1: the public note "Documents attached — not medically validated" |
-| FR57 | UNCOVERED | - | — | in release 1, narrowed: later-treatment text and unlinked names as written; evidence-purpose labels and the profile-submission offer deferred with T-204 and T-305 |
+| FR53 | Deferred to release 2 (FD-105, every citing AC deferred) | — | — | records decision at Build and Test (orchestrator, ISS-811): cited only by AC7.2.4, all deferred to release 2 under FD-105; the story map lists it as in release 1 |
+| FR54 | Deferred to release 2 (FD-105, every citing AC deferred) | — | — | records decision at Build and Test (orchestrator, ISS-811): cited only by AC7.2.4, all deferred to release 2 under FD-105; the story map lists it as in release 1 |
+| FR55 | Deferred to release 2 (FD-105, every citing AC deferred) | — | — | records decision at Build and Test (orchestrator, ISS-811): cited only by AC6.2.5, all deferred to release 2 under FD-105; the story map lists it as in release 1 |
+| FR56 | Deferred to release 2 (FD-105, every citing AC deferred) | — | — | records decision at Build and Test (orchestrator, ISS-811): cited only by AC7.2.5, all deferred to release 2 under FD-105; the story map lists it as in release 1 |
+| FR57 | Deferred to release 2 (FD-105, every citing AC deferred) | — | — | records decision at Build and Test (orchestrator, ISS-811): cited only by AC7.2.5, all deferred to release 2 under FD-105; the story map lists it as in release 1 |
 | FR58 | Deferred | - | — | deferred to release 2 (FD-105): search, T-205 and T-206 |
 | FR59 | Deferred | - | — | deferred to release 2 (FD-105): timeline comparison, privacy preview and redaction, T-305 and T-308 |
 | FR60 | Covered (OK) | u48-evidence | `packages/domain/src/evidence/file-type.ts` | via AC7.1.1, AC7.1.2 |
@@ -335,7 +344,7 @@ the build.
 | FR62 | Covered (OK) | u48-evidence, t-502-security-hardening | `packages/domain/src/evidence/file-type.ts` | via AC7.1.1, AC7.1.2, AC7.1.4, AC7.1.6 |
 | FR63 | Deferred | - | — | deferred to release 2 (FD-105): timeline comparison, privacy preview and redaction, T-305 and T-308 |
 | FR64 | Deferred | - | — | deferred to release 2 (FD-105): timeline comparison, privacy preview and redaction, T-305 and T-308 |
-| FR65 | UNCOVERED | - | — | in release 1, narrowed: originals are never served; the viewer is deferred with T-308 |
+| FR65 | Deferred to release 2 (FD-105, every citing AC deferred) | — | — | records decision at Build and Test (orchestrator, ISS-811): cited only by AC7.2.6, AC7.3.8, all deferred to release 2 under FD-105; the story map lists it as in release 1 |
 | FR66 | Covered (OK) | u48-evidence | `packages/application/src/modules/evidence/jobs/process-evidence.ts` | via AC7.1.4 |
 | FR67 | Deferred | - | — | deferred to release 2 (FD-105): retention and legal holds, T-309 |
 | FR68 | Covered (OK) | t-502-security-hardening, u48-evidence | `apps/web/src/log-scrub.int.test.ts` | via AC7.1.6 |
@@ -386,4 +395,4 @@ the build.
 | NFR10 | Covered (OK) | cr-011-queue-dedup-reset-and-quiet-env, t-502-security-hardening | `apps/worker/src/handlers/outbox-relay.test.ts` | — |
 | NFR11 | Covered (OK) | cr-006-worker-auth-users-grant, cr-007-int-test-reset-determinism, cr-009-database-extensionless-imports, cr-011-queue-dedup-reset-and-quiet-env, t-010-boundary-lint-and-ci | `packages/database/src/migrations/0007_revoke_worker_auth_users.sql` | — |
 | NFR12 | Verified at Build and Test | u50-release-check (drill run here) | `docs/validation/U50-walkthrough.md` | via AC12.3.4, run here |
-| NFR13 | Covered (OK) | t-011-patient-design-and-motion-system, t-102-patient-auth-screens, t-207-discover-emergency-about, u46-directory, u47-reviews, u50-release-check | `apps/web/src/components/patient/motion/RouteTransition.tsx` | via AC2.4.1 to AC2.4.6; the e2e:perf gate is red at Build and Test because of ISS-812 (harness), figures within thresholds |
+| NFR13 | Covered (OK) | t-011-patient-design-and-motion-system, t-102-patient-auth-screens, t-207-discover-emergency-about, u46-directory, u47-reviews, u50-release-check | `apps/web/src/components/patient/motion/RouteTransition.tsx` | via AC2.4.1 to AC2.4.6; e2e:perf still red at Build and Test because Lighthouse intermittently reports no LCP (ISS-815); figures within thresholds |

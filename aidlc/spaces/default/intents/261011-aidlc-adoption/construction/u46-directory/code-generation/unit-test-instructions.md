@@ -46,8 +46,9 @@ timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project test-sup
 # Web: page tests, the filter helper, the shared pages test, components and the component smoke:
 timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project web 'apps/web/src/app/[locale]/(patient)/doctors/' 'apps/web/src/app/[locale]/(patient)/facilities/' 'apps/web/src/app/[locale]/(patient)/topics/' apps/web/src/app/pages.test apps/web/src/lib/doctor-filters apps/web/src/components/patient/shared apps/web/src/components/patient/doctors apps/web/src/components/patient/facilities apps/web/src/components/patient/topics apps/web/src/components/patient/directory.smoke
 
-# Coverage for one package, for example application (repeat with domain, contracts, database, test-support, web):
-timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project application --coverage --coverage.include='packages/application/src/**' --coverage.thresholds.lines=0 packages/application/src/modules/directory packages/application/src/modules/taxonomy packages/application/src/modules/review
+# Coverage for one package, for example application (repeat with domain, contracts, database, test-support, web).
+# The 80% floor is per package (D10), so the run covers the whole project, never a path subset (ISS-810):
+timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project application --coverage --coverage.include='packages/application/src/**'
 ```
 
 If Step 2 shows that a bracketed route filter does not match, use the unbracketed segment instead (for example `'(patient)/doctors/'`) and record the working form here.

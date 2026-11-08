@@ -40,7 +40,7 @@ timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps
 timeout 600 pnpm smoke
 
 # Adversarial tests (Step 14, written by a separate agent):
-timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps/web/src/server/actions/auth-screens.adversarial.test.ts
+timeout 600 pnpm exec vitest run --config vitest.workspace.ts --project web-int apps/web/src/server/actions/auth-screens.adversarial.int.test.ts
 
 # i18n parity and the gate:
 timeout 300 pnpm i18n:check
