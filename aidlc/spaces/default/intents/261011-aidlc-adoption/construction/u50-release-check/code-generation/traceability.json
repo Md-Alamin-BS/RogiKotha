@@ -12,7 +12,7 @@
     "AC12.3.1", "AC12.3.2", "AC12.3.3", "AC12.3.4", "AC12.3.5"
   ],
   "coverage": [
-    { "id": "NFR13", "status": "OK", "target": "BR5.1-BR5.5, BR4.1-BR4.6: apps/web/e2e/perf/{lighthouse-flow.ts,nfr13.spec.ts} (run on the final build at Build and Test) and scripts/check-motion; steps 39, 40, 51" },
+    { "id": "NFR13", "status": "Deferred", "target": "Deferred to Build and Test, waiting for its first run: apps/web/e2e/perf/{lighthouse-flow.ts,nfr13.spec.ts} are written but pnpm e2e:perf has not run yet (ISS-756, review-01 R-02); the motion part (BR4.1-BR4.6, scripts/check-motion inside pnpm check) passes; steps 39, 40, 51" },
     { "id": "AC1.1.1", "status": "OK", "target": "BR10.4, BR11.2: pnpm check green on the Bolt branch (step 51, 366 files, 4489 tests) and again on main after the squash merge; docs/validation/RELEASE-1-GATES.md; steps 34, 51, 52" },
     { "id": "AC1.1.2", "status": "OK", "target": "BR10.4, BR8.8, BR1.3: scripts/demo.mjs preflight, migrate and seed (scripts/__tests__/demo.test.mjs); apps/web/e2e/journeys/reading.spec.ts P1.0 and P1.1 in en and bn; steps 10-14, 29-31" },
     { "id": "AC1.1.3", "status": "OK", "target": "BR11.2: the 80% line-coverage floor in pnpm test:coverage, never lowered; apps/web 96.22%, all packages 96.03%, none below 80%; step 51" },
@@ -30,13 +30,13 @@
     { "id": "AC2.3.3", "status": "OK", "target": "BR3.1, BR3.2, BR3.3: apps/web/e2e/a11y/keyboard.spec.ts, apps/web/e2e/helpers/{keyboard,axe}.ts; steps 35, 36, 41" },
     { "id": "AC2.3.4", "status": "OK", "target": "BR3.4: apps/web/e2e/journeys/contributor.spec.ts P2.8c (an invalid register form shows a linked, announced error in the active language and creates nothing); apps/web/e2e/a11y/keyboard.spec.ts; step 32" },
     { "id": "AC2.3.5", "status": "Deferred", "target": "Firefox, WebKit and the real Safari/iOS smoke are deferred to release 2 (FD-105, ISS-787, ISS-788); the Chromium part passes under BR1.1 and BR1.6" },
-    { "id": "AC2.3.6", "status": "OK", "target": "BR5.6: recorded against the ~3 s reference in apps/web/e2e/perf/nfr13.spec.ts, no gate; steps 39, 40" },
+    { "id": "AC2.3.6", "status": "Deferred", "target": "Deferred to Build and Test, waiting for the first pnpm e2e:perf run: recorded against the ~3 s reference in apps/web/e2e/perf/nfr13.spec.ts, no gate (ISS-756); steps 39, 40" },
     { "id": "AC2.4.1", "status": "OK", "target": "BR11.3, BR12.1: no Tailwind, CSS-in-JS or animation library in any package.json (RELEASE-1-GATES.md part B); the owner's look review OR3 in docs/validation/U50-owner-review.md; steps 48, 49, 51" },
     { "id": "AC2.4.2", "status": "OK", "target": "BR4.4, BR14.7: pnpm check:motion inside pnpm check; apps/web/e2e/smoke/motion.spec.ts kept under the new config; steps 43-45, 51" },
     { "id": "AC2.4.3", "status": "OK", "target": "BR4.1, BR4.2: chromium-reduced-motion project and apps/web/e2e/a11y/motion-switch.spec.ts (ISS-323, ISS-784 fixed); steps 35, 36, 42" },
     { "id": "AC2.4.4", "status": "OK", "target": "BR4.3, BR4.6: apps/web/e2e/helpers/motion.ts and the P3.11 composer poll; steps 35, 36, 41" },
     { "id": "AC2.4.5", "status": "OK", "target": "BR4.5: apps/web/e2e/journeys/writing.spec.ts P3.11 (the publish confirmation is one tick and a plain note, no reward or nudge); step 33" },
-    { "id": "AC2.4.6", "status": "OK", "target": "BR5.1-BR5.5, BR4.4: apps/web/e2e/perf/nfr13.spec.ts on the home and experience pages; the search page is deferred with T-206 (FD-105); steps 39, 40" },
+    { "id": "AC2.4.6", "status": "Deferred", "target": "Deferred to Build and Test, waiting for the first pnpm e2e:perf run: BR5.1-BR5.5, BR4.4 in apps/web/e2e/perf/nfr13.spec.ts on the home and experience pages (ISS-756); the search page is deferred with T-206 (FD-105); steps 39, 40" },
     { "id": "AC12.1.1", "status": "OK", "target": "BR3.5: apps/web/e2e/journeys/reading.spec.ts P1.0 (a bn-BD browser lands on /bn with lang=bn and the switch visible); steps 29-31" },
     { "id": "AC12.1.2", "status": "OK", "target": "BR3.5: reading.spec.ts P1.0 (a stored English choice wins over browser detection); steps 29-31" },
     { "id": "AC12.1.3", "status": "OK", "target": "BR2.3, BR7.1: writing.spec.ts P3.11 about WRITE_TARGET_DOCTOR (mixed Bengali, English and Banglish shown as written); step 33" },
@@ -44,9 +44,9 @@
     { "id": "AC12.1.5", "status": "OK", "target": "BR2.1: reading.spec.ts P1.1b /emergency signed out in both locales (ISS-763 fixed); steps 29-31" },
     { "id": "AC12.1.6", "status": "OK", "target": "BR2.1, BR3.1, BR3.3, BR3.5: reading.spec.ts P1.1c terms, privacy, about and emergency (lang, landmarks, headings, focus, axe); steps 29-31" },
     { "id": "AC12.3.1", "status": "OK", "target": "BR9.1, BR9.2, BR2.9: apps/web/src/server/health.ts, route.ts and health.test.ts (database, queue, mail and scanner probes, FD-122, ISS-790); apps/web/e2e/security/health.spec.ts; steps 17, 18, 37, 38" },
-    { "id": "AC12.3.2", "status": "OK", "target": "BR9.1, BR9.3, BR10.3: probe unit tests with fake sockets in health.test.ts and the health smoke; stopped ClamAV and stopped Mailpit walked by hand at Build and Test; steps 17, 18, 38" },
+    { "id": "AC12.3.2", "status": "Deferred", "target": "Deferred to Build and Test, waiting for its first run: the stopped-ClamAV and stopped-Mailpit cases are walked by hand at Build and Test and have not run yet (review-01 R-02); the probe unit tests with fake sockets in health.test.ts and the health smoke (BR9.1, BR9.3, BR10.3) pass; steps 17, 18, 38" },
     { "id": "AC12.3.3", "status": "OK", "target": "BR2.8: log-scan.spec.ts sentinels for review text, file names, comments and run emails absent from both logs; step 37" },
-    { "id": "AC12.3.4", "status": "OK", "target": "BR10.5: the rollback drill section of docs/validation/U50-walkthrough.md, run in a scratch worktree at Build and Test; step 47" },
-    { "id": "AC12.3.5", "status": "OK", "target": "BR5.6: apps/web/e2e/perf/nfr13.spec.ts records the measured values; steps 39, 40" }
+    { "id": "AC12.3.4", "status": "Deferred", "target": "Deferred to Build and Test, waiting for its first run: BR10.5, the rollback drill section of docs/validation/U50-walkthrough.md, run in a scratch worktree at Build and Test (review-01 R-02); step 47" },
+    { "id": "AC12.3.5", "status": "Deferred", "target": "Deferred to Build and Test, waiting for the first pnpm e2e:perf run: BR5.6, apps/web/e2e/perf/nfr13.spec.ts records the measured values (ISS-756); steps 39, 40" }
   ]
 }

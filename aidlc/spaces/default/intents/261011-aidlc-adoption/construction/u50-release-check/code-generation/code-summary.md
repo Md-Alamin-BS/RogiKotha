@@ -9,7 +9,7 @@ Branch `bolt/u50-release-check`, built 2026-11-07 and 2026-11-08. `main` was mer
 - **Health** `apps/web/src/server/health.ts` and `app/api/health/route.ts`: real database, queue, mail and scanner probes; `ok` needs the first three (FD-122, ISS-790). Tests `health.test.ts` and `health.smoke.test.ts`; `env.ts` reads the probe targets.
 - **Suite tests** `apps/web/src/e2e-config.test.ts`, `e2e-helpers.test.mjs` and `copy-no-rating.test.ts`.
 - **Documents** `docs/validation/{U50,U50-walkthrough,U50-owner-review,RELEASE-1-GATES,RELEASE-1-REVIEW-CHECKLIST}.md`, release-1 amendments in T-503, T-504 and T-505, the storyboard correction (ISS-261), FD-120 to FD-122 in the decision log, the dependency-check entry for Playwright, axe and Lighthouse.
-- **Removed** `NotBuiltYet` (`demo/not-built.ts`, ISS-376), `isUsernameTaken` and `removeAuthUserWithoutProfile` with their integration-test rows, the orphan `topics.int.test.ts`, and `smoke/demo.spec.ts` (BR14.7). Everything else in `demo/` stays for release 2 (ISS-780, ISS-798).
+- **Removed** `NotBuiltYet` (`demo/not-built.ts`, ISS-376), `isUsernameTaken` and `removeAuthUserWithoutProfile` with their integration-test rows, and `smoke/demo.spec.ts` (BR14.7). Everything else in `demo/` stays for release 2 (ISS-780, ISS-798).
 
 ## Product fixes made because the first browser run failed (`fix: U50`)
 
@@ -76,3 +76,27 @@ No path in the diff contains `[`, `]` or `*`, so `source-manifest.json` lists ev
 ## Left for Build and Test (WF9)
 
 The final-`main` rerun of the gate commands and a second `pnpm check`, `pnpm e2e:perf`, the hand walk and manual checks M1 to M6, the clean-clone rehearsal, the rollback drill, the Bengali body-font check, every verdict cell and the owner's OR1 to OR7 boxes (the agent ticks none), and the close-out documents (`U50.md` summary, `current-status.md`, `validation-log.md`, `risk-register.md`, coverage matrix, `README.md` section 5, `00-master-plan.md` section 5, `OWNER-REVIEW-QUEUE.md`). ISS numbers above are provisional until the merge: take the next free numbers if `main` has used any of ISS-786 to ISS-803.
+
+## Review fixes (review-01)
+
+Branch `bolt/u50-review-fixes`, cut from `main` at `6a1a4ce`. The owner delegated the choices to the agent (2026-11-04).
+
+| Finding | Fix | ISS |
+|---|---|---|
+| R-01 (Major) `demo:reset` empties any folder `STORAGE_ROOT` names | `scripts/demo-reset.mjs`: `realPathOf` resolves links and junctions (a missing tail is appended to its nearest existing parent; a broken link is `null`) and `folderRefusal` refuses a folder outside the repository, the repository root, a folder in `.git` or a broken link. Both folders (storage and `var/evidence`) are checked before the question and before any step, so `--yes` cannot pass the refusal; exit 1 with a message naming the folder (and the real path when a link leads elsewhere). The question and the step line name both folders | ISS-804 |
+| R-02 (Minor) traceability marks unrun checks OK | `traceability.json`: NFR13, AC12.3.2 (stopped scanner and mail) and AC12.3.4 (rollback drill) read Deferred to Build and Test, waiting for their first run; AC2.3.6, AC2.4.6 and AC12.3.5, which rest on the same unrun `nfr13.spec.ts`, too | ISS-805 |
+| R-03 (Minor) `topics.int.test.ts` claimed as a U50 removal | Removed from "What was built"; U46 deleted it (`153a65c`) | ISS-806 |
+| R-04 (Minor) `DEMO.md` restart row points to `demo:serve` | The row points to `pnpm demo --no-build` (already parsed and tested in `demo.mjs`); a second row says `pnpm demo:serve` works only while the containers still run; a troubleshooting line explains the reset refusal | ISS-807 |
+| R-05 (Minor) `demo:down` and `demo:logs` ignore `RK_COMPOSE_PROJECT` | Root `package.json` runs `node scripts/demo.mjs down` and `logs`; `composeTaskArgs` builds them on the same `composeArgs(project)` as `pnpm demo` (the shell winning over `.env`), `down` never takes `-v`, an unknown task throws; `readEnvFile` reads `.env` without creating it. The functional-design logic line in `rules.md` ("demo:down = docker compose ... down") keeps its effect; only the call path changed | ISS-808 |
+
+Tests added: 9 in `scripts/__tests__/demo-reset.test.mjs` (absolute path outside, `../` path outside, shell `STORAGE_ROOT` outside over a valid `.env`, the repository root, `.git`, a junction leading outside, a broken link, `.data/storage` emptied and named in the question, a not-yet-existing folder inside) and 6 in `scripts/__tests__/demo.test.mjs` (task parsing, default and named compose project, no `-v`, unknown task, the `package.json` routing, `readEnvFile`). The refusal tests use the real `emptyDir` on real folders and check that the file outside survives. Tooling project: 3 files, 61 tests (46 before).
+
+Gate on the final tree of the fix branch:
+
+| Command | Result |
+|---|---|
+| `pnpm format:check` | clean |
+| `pnpm check` | exit 0: 366 files, 4504 passed, 2 expected failures, 1 skipped; boundaries fixture 18 expected violations; `i18n:check` 993 keys; contrast and `check:motion` green; web build green; total line coverage 96.1% (9512/9897); 1 lint warning, from `main` (`packages/i18n/src/routing.ts`) |
+| `pnpm smoke` | 31 files, 60 tests |
+
+A fresh worktree needed `pnpm exec next typegen` in `apps/web` and `NODE_OPTIONS=--max-old-space-size=6144` before `eslint .` was clean (ISS-721, not a code defect). No browser run, no demo command and no compose command was used: a live demo was running from the main checkout.
