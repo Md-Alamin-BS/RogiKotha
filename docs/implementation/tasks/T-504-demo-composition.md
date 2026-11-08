@@ -119,6 +119,23 @@ Not an M3 task. One note: the generated `.env` secrets are for local use only; `
 - [ ] Both languages walked for Parts 1–3; numerals follow language.
 - [ ] No agent/tool attribution in `DEMO.md`, scripts, or commits.
 
+## Release 1 amendment (FD-105, U50)
+
+Built by Unit U50 `u50-release-check` for the 7 November date. Where this amendment and the text above differ, the amendment wins for release 1. Source: U50 functional design § 14.
+
+| Acceptance row | Where it is met in release 1 |
+|---|---|
+| Clean clone to running demo | `pnpm demo` preflight, services, migrate, seed-if-empty, build, run, banner; rehearsed on a clean clone at Build and Test |
+| Health | `/api/health` reports database, queue, mail and scanner from real probes; `ok` needs database, queue and mail (FD-122) |
+| Seed idempotence, Reset | `pnpm demo` seeds only when `account_profiles` is empty; `pnpm demo:reset` rebuilds the data, empties storage and Mailpit |
+| Clock | deferred to release 2 (FD-105): `demo:clock` is not built and no release-1 code reads the demo clock |
+| ClamAV optional | `pnpm demo` warns and continues when ClamAV is late; evidence still fails closed (FD-035) |
+| Port conflict message, Ctrl+C | a busy port is named in the preflight; both children stop together |
+| Storyboard complete | the walk-through lists all 28 steps in both languages, release-2 parts marked "release 2 (FD-105, <Unit>)" |
+| Presenter doc | `DEMO.md`, at most ten lines of prose |
+
+Port correction: the preflight and `DEMO.md` use host port 5433 for PostgreSQL, not 5432 (the compose service is published on 5433, ISS-084). T-504's `profiles: ["scan"]` on ClamAV is not applied, because `pnpm infra:up` must keep starting ClamAV for every Unit.
+
 ## Hand-off (implementer fills in)
 
 ### What changed

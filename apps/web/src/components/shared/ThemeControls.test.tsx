@@ -215,11 +215,11 @@ describe('ThemeControls', () => {
   });
 
   it.each([
-    { locale: 'en', target: 'bn', href: '/bn/doctors', pressed: 'false', glyph: 'অ' },
-    { locale: 'bn', target: 'en', href: '/en/doctors', pressed: 'true', glyph: 'A' },
+    { locale: 'en', target: 'bn', href: '/bn/doctors', glyph: 'অ' },
+    { locale: 'bn', target: 'en', href: '/en/doctors', glyph: 'A' },
   ] as const)(
     'language toggle on /$locale leaves a note for $target, stays silent and keeps its link',
-    async ({ locale, target, href, pressed, glyph }) => {
+    async ({ locale, target, href, glyph }) => {
       routing.pathname = '/doctors';
       renderControls({ locale });
       const toggle = document.getElementById('lang') as HTMLElement;
@@ -239,7 +239,7 @@ describe('ThemeControls', () => {
       expect(liveRegionText()).toBe('');
       expect(setLangMock).toHaveBeenCalledWith(target);
       expect(toggle).toHaveAttribute('href', href);
-      expect(toggle).toHaveAttribute('aria-pressed', pressed);
+      expect(toggle).not.toHaveAttribute('aria-pressed');
       expect(toggle).toHaveTextContent(glyph);
     },
   );

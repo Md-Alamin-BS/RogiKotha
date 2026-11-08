@@ -96,8 +96,8 @@ export function RegisterForm({ next }: { next: string | null }) {
                 className="opt"
                 type="button"
                 role="radio"
+                // fix: U50 (ISS-760): a radio states its choice with aria-checked only.
                 aria-checked={locale === choice}
-                aria-pressed={locale === choice}
                 data-testid={`register-form-locale-${choice}`}
                 onClick={() => setLocale(choice)}
               >

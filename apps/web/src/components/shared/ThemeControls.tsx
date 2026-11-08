@@ -8,7 +8,7 @@ import { Link, usePathname } from '@/i18n/routing';
 import { setLang, setTheme, setMotion } from '@/server/actions/preferences';
 import type { Theme, Motion } from '@/lib/cookies';
 import { useAnnounce } from '@/lib/announce';
-import { LANGUAGE_SWITCH_TRANSITION } from '../patient/motion/RouteTransition';
+import { LANGUAGE_SWITCH_TRANSITION, markLanguageSwitch } from '../patient/motion/RouteTransition';
 
 // The language toggle navigates to a page in the other locale, so it cannot
 // speak the change itself: it leaves this per-tab note and the arriving
@@ -132,9 +132,13 @@ export function ThemeControls({
         transitionTypes={[LANGUAGE_SWITCH_TRANSITION]}
         className="ctl"
         title={t('a11y.lang')}
-        aria-pressed={locale === 'bn'}
-        onClick={() => {
+        // fix: U50 (ISS-760): a link cannot carry aria-pressed (axe aria-allowed-attr); the glyph names the target.
+        onClick={(event) => {
           writeNote(otherLocale, pathname);
+          // A modified click opens another tab, so this page does not switch (fix: U50, ISS-784).
+          if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+            markLanguageSwitch(otherLocale);
+          }
           startTransition(() => {
             void setLang(otherLocale);
           });

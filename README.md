@@ -20,6 +20,10 @@ RogiKotha captures the full lifecycle of the product from idea to delivery. The 
 3. Review the Business Requirements Document for business context and goals.
 4. Browse the docs folder for design notes and supporting material.
 
+## Run the demo
+
+The local demo (synthetic data only) starts with `pnpm demo` from the repository root. It needs Docker Desktop, Node 24 and pnpm 11. [DEMO.md](DEMO.md) has the steps, the demo accounts and what to do if something fails. For the plan and the records, start at `docs/implementation/README.md` (the build), `docs/implementation/05-demo-storyboard.md` (what the demo shows) and `docs/validation/` (the release checks).
+
 ## Documentation
 
 * Scope of Work. One-page entry point for stakeholders and partners — see `docs/scope-of-work.md`.

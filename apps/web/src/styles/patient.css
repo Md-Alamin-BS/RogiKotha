@@ -5251,3 +5251,45 @@ ul.browse-grid {
   padding-inline-start: var(--space-5);
   margin: 0;
 }
+/* fix: U50 ISS-769 the account button's initials are drawn here, so its only text is its label */
+.account-initials::before {
+  content: attr(data-initials);
+}
+/* fix: U50 ISS-770 each error-summary link is at least a 24 px target (WCAG 2.5.8) */
+[id^="auth-error-summary-"] li a {
+  display: inline-block;
+  min-height: 24px;
+  padding-block: 2px;
+}
+/* fix: U50 ISS-765 a one-column profile or experience grid shrinks to the phone width; the breakdown table scrolls inside its own .table-scroll */
+@media (max-width: 1040px) {
+  .p-grid,
+  .a-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* fix: U50 ISS-773 a long unbroken word or link in member-written text breaks instead of widening the page */
+.name-link,
+.a-title,
+.chapters,
+.story,
+.comment,
+.original-text,
+.corrections,
+.review-history,
+.tag,
+.reviewer-label,
+.preview,
+/* fix: U50 ISS-782 the account row's excerpt is member-written text too */
+.excerpt,
+/* fix: U50 ISS-785 the address a member typed on the check-your-email panel */
+.verify-body {
+  overflow-wrap: anywhere;
+}
+/* fix: U50 ISS-765 a long badge (the Bengali evidence wording, a network name) wraps at 360 px instead of widening the page */
+@media (max-width: 720px) {
+  :is(.row-flags, .doc-flags, .p-flags, .a-flags) .badge {
+    white-space: normal;
+    max-width: 100%;
+  }
+}

@@ -34,17 +34,19 @@ timeout 300 pnpm exec vitest run --config vitest.workspace.ts --project web apps
 timeout 300 pnpm --filter @rogikotha/web exec playwright test --list
 
 # From Step 34 on (all nine dependencies merged, rebased), one spec at a time.
-# First build once; the e2e:fast form then skips the build.
+# First build once; these forms then skip the build. `pnpm e2e:fast` pins all four projects, and
+# `--project` takes every following word as a project name, so one project is named with `=`
+# through playwright directly (ISS-750). `--retries=0` records the first attempt.
 timeout 1200 pnpm --filter @rogikotha/web --filter @rogikotha/worker build
-timeout 1200 pnpm e2e:fast --project chromium-desktop journeys/reading.spec.ts
-timeout 1200 pnpm e2e:fast --project chromium-desktop journeys/contributor.spec.ts
-timeout 1800 pnpm e2e:fast --project chromium-desktop journeys/writing.spec.ts
-timeout 1200 pnpm e2e:fast --project chromium-desktop journeys/discussion.spec.ts
-timeout 1200 pnpm e2e:fast --project chromium-360 journeys/
-timeout 1200 pnpm e2e:fast --project chromium-desktop a11y/keyboard.spec.ts a11y/live-region.spec.ts a11y/zoom-and-spacing.spec.ts
-timeout 1200 pnpm e2e:fast --project chromium-reduced-motion
-timeout 1200 pnpm e2e:fast --project chromium-desktop security/security.spec.ts smoke/motion.spec.ts
-timeout 1200 pnpm e2e:fast --project log-scan
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop --retries=0 journeys/reading.spec.ts
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop --retries=0 journeys/contributor.spec.ts
+timeout 1500 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop --retries=0 journeys/writing.spec.ts
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop --retries=0 journeys/discussion.spec.ts
+timeout 1500 pnpm --filter @rogikotha/web exec playwright test --project=chromium-360 --retries=0 journeys/
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop a11y/keyboard.spec.ts a11y/live-region.spec.ts a11y/zoom-and-spacing.spec.ts
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-reduced-motion
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=chromium-desktop security/security.spec.ts smoke/motion.spec.ts
+timeout 1200 pnpm --filter @rogikotha/web exec playwright test --project=log-scan
 
 # Browser smoke (desktop project) and the cumulative Vitest smoke suite:
 timeout 1200 pnpm e2e:smoke
@@ -65,6 +67,14 @@ timeout 300 pnpm contrast
 ```
 
 If a filter path does not match, pass it in quotes or as the path relative to `apps/web/e2e`, which is the Playwright `testDir`. Never replace a filter with a bare project-wide command when running the Unit's own tests; the gate commands at the end are the only whole-suite runs.
+
+## Runner check and counts before any change (plan Step 5, 2026-11-07)
+
+Every command above was checked on `bolt/u50-release-check` at `d3e2d66` and works as written:
+
+- `--project web apps/web/src/server/health.test.ts apps/web/src/server/env.test.ts`: 2 files, 16 tests passed. `health.smoke.test.ts` does not exist yet (Step 18).
+- `--project tooling scripts`: 6 files, 121 tests passed. The existing script tests sit directly in `scripts/*.test.mjs`; the tooling glob `**/*.test.mjs` also picks up the new `scripts/__tests__/` files, so no config change is needed.
+- `pnpm --filter @rogikotha/web exec playwright test --list`: 17 tests in 2 files (`smoke/motion.spec.ts`, `smoke/demo.spec.ts`) on the old single `chromium` project, with Playwright 1.64.1 and the Chromium builds already installed.
 
 ## What to cover (`functional-spec.md` § 10, `rules.md`)
 

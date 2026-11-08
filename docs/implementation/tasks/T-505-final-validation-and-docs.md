@@ -119,6 +119,23 @@ Applied page by page in `DEMO-REVIEW-CHECKLIST.md`; the summary here must be con
 - [ ] Synthetic marker cannot be disabled in demo mode; no real person in a negative account.
 - [ ] No agent/tool attribution anywhere (grep evidence above).
 
+## Release 1 amendment (FD-105, U50)
+
+Built by Unit U50 `u50-release-check` for the 7 November date. Where this amendment and the text above differ, the amendment wins for release 1. Source: U50 functional design § 14.
+
+| Acceptance row | Where it is met in release 1 |
+|---|---|
+| Branch green | `pnpm check`, `pnpm smoke`, `pnpm test:int` and two clean `pnpm e2e` runs, re-executed on the final `main` |
+| Gate matrix complete | `docs/validation/RELEASE-1-GATES.md`: every acceptance row and `FD-0nn:` row of every release-1 Unit, observed values re-executed, never copied |
+| Coverage regenerated, Proofs resolve | deferred to release 2 (FD-105): `tools/coverage.mjs` and `tools/proof-check.mjs` are not extended; the matrix statuses are updated by hand |
+| Page review filled | `docs/validation/RELEASE-1-REVIEW-CHECKLIST.md`: every release-1 URL in `en` and `bn` plus the four negative probes |
+| Validation log, status coherent, links | one entry per release-1 Unit gate plus the matrix |
+| README rewritten | partly: the "Run the demo" section only; the full rewrite and the `PRODUCT.md`, `DESIGN.md` and `docs/scope-of-work.md` edits: deferred to release 2 (FD-105) |
+| No attribution | the grep in the acceptance table finds no hit anywhere in the repository |
+| Verdict | PASS, PASS WITH FOLLOW-UP or FAIL by the rule of FD-121; the owner's own reviews may stay open and are never ticked by the agent |
+
+Model ids: the earlier allowance for model ids inside validation records is removed. `project.md` forbids tool, model or agent identity in any document, so no validation record names a model or tool. The only model names in AI-DLC are the cost lines the framework writes itself in the Unit audit logs.
+
 ## Hand-off (implementer fills in)
 
 ### What changed

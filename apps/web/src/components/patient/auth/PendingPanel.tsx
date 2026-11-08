@@ -30,7 +30,10 @@ export function PendingPanel({
           {t('auth.verify.expired')}
         </p>
       ) : null}
-      <p>{address ? t('auth.verify.body', { email: address }) : t('auth.verify.bodyNoEmail')}</p>
+      {/* fix: U50 (ISS-785): the class lets a long address wrap at 360 px. */}
+      <p className="verify-body">
+        {address ? t('auth.verify.body', { email: address }) : t('auth.verify.bodyNoEmail')}
+      </p>
       <p className="sub">{t('auth.verify.expires')}</p>
       {signedIn ? <ResendOwnButton /> : <ResendLinkForm defaultEmail={address ?? ''} />}
       {signedIn ? null : (

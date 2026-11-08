@@ -142,6 +142,26 @@ Not an M3 task.
 - [ ] Synthetic marker visible (screenshots spec asserts `.demo`).
 - [ ] No agent/tool attribution in any file or commit (including screenshot README).
 
+## Release 1 amendment (FD-105, U50)
+
+Built by Unit U50 `u50-release-check` for the 7 November date. Where this amendment and the text above differ, the amendment wins for release 1. Source: U50 functional design § 14.
+
+| Acceptance row | Where it is met in release 1 |
+|---|---|
+| Suite green, all engines | Chromium projects only (`chromium-360`, `chromium-desktop`, `chromium-reduced-motion`, `log-scan`, `nfr13`), two consecutive full `pnpm e2e` runs with 0 failed, 0 flaky, 0 skipped; Firefox and WebKit: deferred to release 2 (FD-105) |
+| CI green under budget | deferred: there is no CI and no `e2e.yml` (FD-102) |
+| Both locales per journey | every journey runs in `bn` then `en` (`forEachLocale`) |
+| No serious or critical axe | `expectNoSeriousViolations`, empty exclusion list |
+| Viewport matrix | 360 px and 1280 px; the 390, 768 and 1440 px viewports: deferred to release 2 (FD-105) |
+| Reduced motion | `chromium-reduced-motion` runs Part 1, the P3.11 composer and `motion-switch.spec.ts` only; the other journeys: deferred to release 2 |
+| Keyboard-only | register, confirm, sign-in, write and publish; the report sheet: deferred to release 2 |
+| 200 % zoom and text spacing, Bengali overflow, live region | `zoom-and-spacing.spec.ts`, the `checkPage` overflow check at 360 px, `live-region.spec.ts` |
+| Screenshots committed | deferred to release 2 (FD-105) |
+| FD-091 rows (NFR13, reduced motion, animated properties, never-animated) | NFR13 Lighthouse flow, motion-switch spec, the motion CSS check, `checkPage` |
+| Quality gates | `pnpm check`, `pnpm smoke` and `pnpm test:int` green on the Bolt branch and on `main` |
+
+Deferred to release 2 (FD-105): Firefox and WebKit, the real Safari smoke and screen-reader output checks (manual), the staff and workspace journeys, the search page and its NFR13 gate, the PWA checks, the committed screenshot set. The browser smoke runs inside `pnpm e2e` (`pnpm e2e:smoke`); `pnpm smoke` stays Vitest-only.
+
 ## Hand-off (implementer fills in)
 
 ### What changed

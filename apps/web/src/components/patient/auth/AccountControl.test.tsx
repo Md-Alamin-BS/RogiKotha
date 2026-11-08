@@ -17,13 +17,23 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
-function renderIn(locale: TestLocale, ui: ReactNode) {
-  render(
+let rerender: ReturnType<typeof render>['rerender'] = () => undefined;
+
+function withMessages(locale: TestLocale, ui: ReactNode) {
+  return (
     <NextIntlClientProvider locale={locale} messages={loadMessages(locale)}>
       {ui}
-    </NextIntlClientProvider>,
+    </NextIntlClientProvider>
   );
+}
+
+function renderIn(locale: TestLocale, ui: ReactNode) {
+  rerender = render(withMessages(locale, ui)).rerender;
   return translatorFor(locale);
+}
+
+function rerenderIn(locale: TestLocale, ui: ReactNode) {
+  rerender(withMessages(locale, ui));
 }
 
 describe.each(LOCALES)('the masthead account control in %s', (locale) => {
@@ -41,7 +51,8 @@ describe.each(LOCALES)('the masthead account control in %s', (locale) => {
     const control = screen.getByRole('button', {
       name: t('auth.accountMenu', { name: 'Nadia Islam' }),
     });
-    expect(control).toHaveTextContent('NI');
+    expect(control.querySelector('.account-initials')).toHaveAttribute('data-initials', 'NI');
+    expect(control.textContent, 'no text node beside the label').toBe('');
     expect(screen.queryByRole('link', { name: t('auth.signIn.title') })).toBeNull();
 
     await user.click(control);
@@ -73,7 +84,7 @@ describe.each(LOCALES)('the masthead account control in %s', (locale) => {
       name: t('auth.accountMenuUnconfirmed', { name }),
     });
     expect(control).toHaveAttribute('data-verified', 'false');
-    expect(control).toHaveTextContent('নাই');
+    expect(control.querySelector('.account-initials')).toHaveAttribute('data-initials', 'নাই');
 
     await user.click(control);
 
@@ -85,6 +96,22 @@ describe.each(LOCALES)('the masthead account control in %s', (locale) => {
       'href',
       '/me/security',
     );
+  });
+
+  it('does not reopen the sheet at the next sign-in after signing out from it', async () => {
+    const user = userEvent.setup();
+    const reader = { displayName: 'Nadia Islam' };
+    const t = renderIn(locale, <AccountControl account={reader} />);
+    const name = { name: t('auth.accountMenu', { name: reader.displayName }) };
+    await user.click(screen.getByRole('button', name));
+    expect(screen.getByRole('dialog')).toBeVisible();
+
+    // The same control instance, as the masthead keeps it across sign-out and sign-in.
+    rerenderIn(locale, <AccountControl account={null} />);
+    rerenderIn(locale, <AccountControl account={reader} />);
+
+    expect(screen.getByRole('button', name)).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });
 

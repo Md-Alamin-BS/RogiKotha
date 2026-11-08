@@ -27,6 +27,33 @@ Rules:
 
 ## Entries
 
+### 2026-11-07 (U50 T-503/T-504/T-505 — release-1 browser suite, demo composition, NFR13)
+
+- Scope: the Playwright journeys with axe checks and the NFR13 Lighthouse flow. The 2026-10-29
+  `@playwright/test` entry is older than 3 days. `@axe-core/playwright` and `lighthouse` are
+  first-time installs in this repository.
+- Checked (npm registry and GitHub release notes, 2026-11-07):
+  - `@playwright/test`: installed 1.64.1 (2026-10-14); npm `latest` 1.65.0 (2026-11-05, two days
+    old). 1.65.0 adds a Bun runner, a `failures` reporter and an `onlyFailures` reporter option; no
+    breaking change for a Node run. 1.64.1 fixes an Electron first-window loss and a Chromium 155+
+    preflighted cross-origin redirect abort when any route is registered (net::ERR_ABORTED).
+  - `@axe-core/playwright`: `latest` 4.14.0 (2026-10-15), depends on `axe-core ~4.14.0`, peer
+    `playwright-core >= 1.0.0`. `axe-core` 4.14.0 (2026-10-05). Only canary builds follow it.
+  - `lighthouse`: `latest` 13.6.0 (2026-10-27), 13.5.0 (2026-09-18); `engines.node >=22.19`
+    (local Node 24.19); depends on `puppeteer-core ^25.16.0` and `axe-core 4.14.0`. 13.6.0 adds
+    CLI bulk URL auditing and Lantern simulation improvements (`trace_engine` 0.0.66 and 0.0.67);
+    the user-flow API (`startFlow`) is unchanged.
+- Findings: no breaking change or open regression found that touches the way U50 uses these
+  packages (Chromium only, Node runner, `startFlow` navigation and timespan steps). Lighthouse
+  brings its own `puppeteer-core`, so a second copy of it next to the root one is expected and
+  must be imported from Lighthouse's own dependency tree (design BR5.2). 1.65.0 is two days old
+  and has no soak time, and 1.64.1 is the version already installed and used by
+  `smoke/motion.spec.ts`. The release notes were read through the GitHub API; the web research
+  servers were out of credits, so no issue-tracker search beyond the release notes was done.
+- Decision: keep `@playwright/test` 1.64.1 (a bump is its own change); add `@axe-core/playwright`
+  4.14.0 and `lighthouse` 13.6.0 as exact devDependencies of `apps/web`. Re-check Lighthouse with
+  an external Chromium at Step 39, when the flow is first run; a failure there is an ISS row.
+
 ### 2026-11-06 (U41 T-502 — security headers, nonce CSP, origin checks, log policy)
 
 - Scope: U41 adds a nonce CSP and HSTS in `proxy.ts`, static headers from `next.config.ts`,

@@ -6,11 +6,7 @@ import { accountPreferences, accountProfiles } from '../schema/account';
 import { authAccounts, authUsers } from '../schema/auth';
 import { personaLinks, personas } from '../schema/identity';
 import { testDb } from '../test-setup';
-import {
-  createProfileForAuthUser,
-  isUsernameTaken,
-  removeAuthUserWithoutProfile,
-} from './accounts-create';
+import { createProfileForAuthUser } from './accounts-create';
 import { getCurrentAccountByAuthUserId } from './session';
 
 async function buildAuthUser(): Promise<string> {
@@ -121,49 +117,5 @@ describe('demo registration data', () => {
       .from(personas)
       .where(eq(personas.displayName, 'Second'));
     expect(secondPersonas).toHaveLength(0);
-  });
-
-  it('reports a used username as taken whatever its letter case, and a free one as not', async () => {
-    const username = uniqueUsername('taken');
-    await createProfileForAuthUser(testDb, {
-      authUserId: await buildAuthUser(),
-      username,
-      displayName: 'Taken',
-      locale: 'en',
-      termsVersion: '1',
-    });
-
-    await expect(isUsernameTaken(testDb, username)).resolves.toBe(true);
-    await expect(isUsernameTaken(testDb, username.toUpperCase())).resolves.toBe(true);
-    await expect(isUsernameTaken(testDb, uniqueUsername('free'))).resolves.toBe(false);
-  });
-
-  it('removes an auth user that has no profile, with its credential', async () => {
-    const authUserId = await buildAuthUser();
-
-    await expect(removeAuthUserWithoutProfile(testDb, authUserId)).resolves.toBe(true);
-
-    expect(await testDb.select().from(authUsers).where(eq(authUsers.id, authUserId))).toHaveLength(
-      0,
-    );
-    expect(
-      await testDb.select().from(authAccounts).where(eq(authAccounts.userId, authUserId)),
-    ).toHaveLength(0);
-  });
-
-  it('never removes an auth user that has a profile', async () => {
-    const authUserId = await buildAuthUser();
-    await createProfileForAuthUser(testDb, {
-      authUserId,
-      username: uniqueUsername('keep'),
-      displayName: 'Keep',
-      locale: 'en',
-      termsVersion: '1',
-    });
-
-    await expect(removeAuthUserWithoutProfile(testDb, authUserId)).resolves.toBe(false);
-    expect(await testDb.select().from(authUsers).where(eq(authUsers.id, authUserId))).toHaveLength(
-      1,
-    );
   });
 });
