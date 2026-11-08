@@ -1,9 +1,9 @@
 import { createElement, type ComponentProps } from 'react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import { useTranslations } from 'next-intl';
 import type * as React from 'react';
-import { LANGUAGE_SWITCH_TRANSITION, RouteTransition } from './RouteTransition';
+import { LANGUAGE_SWITCH_TRANSITION, markLanguageSwitch, RouteTransition } from './RouteTransition';
 import { LOCALES, copy, renderInLocale, resetMotionEnvironment } from './motion-test-support';
 
 // The locale-free path the routing module reports, as next-intl's `usePathname` does.
@@ -95,6 +95,22 @@ describe.each(LOCALES)('RouteTransition in %s', (locale) => {
     const props = boundary.props.at(-1) as Record<string, Record<string, string>>;
     for (const moment of ['enter', 'exit', 'share'] as const) {
       expect(props[moment]?.[LANGUAGE_SWITCH_TRANSITION]).toBe('none');
+    }
+  });
+
+  it('holds both frames still from the toggle click until the page in the other language arrives', () => {
+    const page = renderInLocale(locale, framedPage());
+    const other = locale === 'en' ? 'bn' : 'en';
+    act(() => {
+      markLanguageSwitch(other);
+    });
+    const marked = boundary.props.at(-1) as Record<string, unknown>;
+    for (const moment of ['enter', 'exit', 'share'] as const) expect(marked[moment]).toBe('none');
+
+    page.rerenderInLocale(other, framedPage());
+    const arrived = boundary.props.at(-1) as Record<string, Record<string, string>>;
+    for (const moment of ['enter', 'exit', 'share'] as const) {
+      expect(arrived[moment]?.default).toBe('rk-page');
     }
   });
 
