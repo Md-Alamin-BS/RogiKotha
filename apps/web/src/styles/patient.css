@@ -5281,7 +5281,9 @@ ul.browse-grid {
 .reviewer-label,
 .preview,
 /* fix: U50 ISS-782 the account row's excerpt is member-written text too */
-.excerpt {
+.excerpt,
+/* fix: U50 ISS-785 the address a member typed on the check-your-email panel */
+.verify-body {
   overflow-wrap: anywhere;
 }
 /* fix: U50 ISS-765 a long badge (the Bengali evidence wording, a network name) wraps at 360 px instead of widening the page */
