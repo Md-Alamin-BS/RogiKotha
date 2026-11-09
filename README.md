@@ -237,9 +237,9 @@ Run from the repository root. Tests that touch the database need the compose Pos
 ## How it was built with AWS AI-DLC
 
 Release 1 was built under AWS AI-DLC 2.11.0 (AI-Driven Development Life Cycle, version pinned in
-`.aidlc-version`). One human owner directed the work and approved the early gates in person (for
-example the team practices on 2026-10-15). From 2026-11-04 the owner delegated approvals and open
-decisions to the agents, and Construction ran in autonomous mode, so later gates were approved
+`.aidlc-version`). One human owner directed the work and approved the early gates in person
+(for example the practices on 2026-10-15 and the batch 1 Code Generation plans on 2026-11-05). From 2026-11-04 the owner delegated approvals and open
+decisions to the agents, and Construction ran in autonomous mode, so most later gates were approved
 under that delegation. AI agents did the analysis, design, building, reviewing and testing. The intent `261011-aidlc-adoption` used the
 `classic` scope with a tailored plan of 14 stages: Initialization, eight Inception stages, and
 Functional Design, Code Generation and Build and Test in Construction. Ideation and Operation

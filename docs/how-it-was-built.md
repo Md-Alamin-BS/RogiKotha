@@ -4,9 +4,9 @@
 
 RogiKotha release 1 was built under AWS AI-DLC 2.11.0 (AI-Driven Development Life Cycle). The
 version is pinned in `.aidlc-version`. One human, the owner, directed the work and approved the early
-gates in person (for example the practices on 2026-10-15). From 2026-11-04 the owner delegated
-approvals and open decisions to the agents, and Construction ran in autonomous mode, so later
-gates were approved under that delegation. AI agents did the analysis, design, building,
+gates in person (for example the practices on 2026-10-15 and the batch 1 Code Generation plans on
+2026-11-05). From 2026-11-04 the owner delegated approvals and open decisions to the agents,
+and Construction ran in autonomous mode, so most later gates were approved under that delegation. AI agents did the analysis, design, building,
 reviewing and testing.
 Agent sessions start without memory of earlier ones, so every rule and decision they needed was
 written down: in the team rules under `aidlc/spaces/default/memory/`, in the decision log, and
@@ -130,8 +130,9 @@ engine's state field still reads `serial`.
    and frontend components for the Unit (`functional-design/`). A separate reviewer agent read
    it (`functional-design/reviews/review-01.md`); fixes were applied before the stage completed.
 2. **Code Generation plan.** The plan lists every step, the owned paths and the Testing Contract
-   (`code-generation/code-generation-plan.md`). The plans were approved by the agents under the owner's delegation of
-   2026-11-04, in the `autonomous` Construction mode.
+   (`code-generation/code-generation-plan.md`). The owner approved the batch 1 plans (U9, U11, U46) in person on
+   2026-11-05. Plan approval was then switched off, and the later plans went ahead under the owner's
+   delegation of 2026-11-04, in the `autonomous` Construction mode.
 3. **Build.** On a Bolt branch from `main`, inside the Unit's owned paths, with tests written
    with each layer (test-after, per `team.md`) and at least one new smoke assertion. The Unit
    ends with `pnpm check` and `pnpm smoke` green.
@@ -160,7 +161,9 @@ break the Unit. A delegated sign-off was recorded for each (see Delegation below
 | U48 evidence | 25 tests in five angles (forged files, races, ownership, paths, scanner down) | one break: two uploads with the same idempotency key at once (ISS-620), fixed by taking the review lock first |
 | U41 security | five angles, A1 to A5 | two breaks, both fixed and kept as tests: a server action on internal paths without `Origin` (ISS-696) and a code-shaped error text in a worker log (ISS-697) |
 
-The earlier high-risk Units U5 and U8 followed the same rule.
+The earlier high-risk Units U5 and U8 also had adversarial tests written by a separate agent (U5: five
+tests in `code-generation/adversarial-tests.md`; U8: three separate testers); their records hold no
+written sign-off.
 
 **Delegation.** On 2026-11-04 the owner delegated the high-risk sign-offs and the open decisions
 to the agents. The written sign-offs for the high-risk Units, including U48 (evidence) and U41

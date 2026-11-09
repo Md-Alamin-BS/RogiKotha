@@ -24,7 +24,7 @@ delivered to Mailpit (`http://localhost:8025`).
 
 Seeded content mirrors the prototype exactly (10 doctors, 10 branches of 7 facilities, 10 conditions with
 aliases, 24 accounts, 19 facility accounts, 49 comments incl. `k8/k9/k10`, 12 evidence items with
-real synthetic PNG/PDF derivatives (T-007 generates them directly with sharp + PDF assembly and marks the seed `// TODO(T-304): re-seed through the pipeline`; after T-304 lands the seed runs the real pipeline), 10 moderation
+real synthetic PNG derivatives (the seed generates them directly with sharp, not through the evidence pipeline; `packages/test-support/src/seed/derivatives.ts` keeps the `TODO(T-304)` marker), 10 moderation
 cases `MOD-2011…2047`, 24 audit events, staff notifications, config version 1).
 
 ## The walkthrough

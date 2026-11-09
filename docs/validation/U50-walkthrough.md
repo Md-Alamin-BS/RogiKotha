@@ -3,7 +3,8 @@
 Status: Observed and Evidence are filled from the automated runs of Code Generation Step 51 (the
 two clean `pnpm e2e` runs on the Bolt branch, the same tree as the Step 42 pair); they say what the
 journey test checked, not what a person saw. The hand walk, the manual checks, the clean clone, the
-rollback drill, the font check and every Verdict cell are done at Build and Test (BR10.2). Rows already marked
+rollback drill and the font check are done at Build and Test (BR10.2); the hand walk of the
+storyboard steps and their Verdict cells were not done (see docs/known-limitations.md). Rows already marked
 "release 2" were decided in the design (FD-105) and are not walked. The storyboard is
 [05-demo-storyboard.md](../implementation/05-demo-storyboard.md); a finding becomes an `ISS-` row in
 the defect register `docs/implementation/ISSUES.md` (on branch `archive/full-project-2026-11-09`) with Found in `U50`.
@@ -13,7 +14,7 @@ the defect register `docs/implementation/ISSUES.md` (on branch `archive/full-pro
 | Field | Value |
 |---|---|
 | Date | automated runs 2026-11-08; manual checks, clean clone and font check 2026-11-09 (office computer, Windows 11 Enterprise 10.0.26300) |
-| `main` commit | not on `main` yet: Bolt branch `bolt/u50-release-check` at `40adadd` (holds `main` at `c6153fa`); the hand walk records the final `main` commit |
+| `main` commit | automated runs: Bolt branch `bolt/u50-release-check` at `40adadd` (holds `main` at `c6153fa`); manual checks and clean clone: `main` at `4ae320e` and `29a2567` |
 | OS | Windows 11 Pro for Workstations 10.0.26300 |
 | Docker | 29.9.2 (client and server) |
 | Node | 24.19.0 |
@@ -88,7 +89,7 @@ screenshot path.
 | 26 | en | n/a | n/a | Workspace tabs, preferences, data export, account deletion. | not walked |  | release 2 (FD-105, T-409, T-410) | |
 | 27 | bn | n/a | n/a | PWA install and offline. | not walked |  | release 2 (FD-105, T-501) | |
 | 27 | en | n/a | n/a | PWA install and offline. | not walked |  | release 2 (FD-105, T-501) | |
-| 28 | n/a | light | 1280 px | pnpm demo:reset --yes restores the seed (manual check M6; the clock is release 2). | not run yet (manual, Build and Test) | manual check M6 |  | |
+| 28 | n/a | light | 1280 px | pnpm demo:reset --yes restores the seed (manual check M6; the clock is release 2). | covered by manual check M6 on 2026-11-09: after the ISS-818 fix the reset regenerated 20 files, Mailpit was empty and `shirin_88` signed in | manual check M6 | pass (M6, after the ISS-818 fix) | ISS-818 |
 
 ## Release-1 pages and flows beyond the 28 steps
 
