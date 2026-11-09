@@ -95,10 +95,10 @@ describe('pnpm demo:reset', () => {
     expect(calls.filter((call) => !call.startsWith('log '))).toEqual([
       'confirm',
       'stop',
-      'pnpm db:reset',
-      'pnpm db:seed',
       `empty ${path.join('.data', 'storage')}`,
       `empty ${path.join('var', 'evidence')}`,
+      'pnpm db:reset',
+      'pnpm db:seed',
       'mail http://localhost:8025',
     ]);
     expect(calls.at(-1)).toBe(`log ${DONE_LINE}`);
@@ -129,7 +129,7 @@ describe('pnpm demo:reset', () => {
 
     expect(code).toBe(1);
     expect(calls).toContain('fail pnpm db:seed failed: exited with code 1');
-    expect(calls.some((call) => call.startsWith('empty') || call.startsWith('mail'))).toBe(false);
+    expect(calls.some((call) => call.startsWith('mail'))).toBe(false);
     expect(calls).not.toContain(`log ${DONE_LINE}`);
   });
 });

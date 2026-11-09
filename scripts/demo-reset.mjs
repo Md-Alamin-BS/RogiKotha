@@ -154,14 +154,15 @@ export async function reset({
   const mailpitUrl = effective(fileEnv, 'MAILPIT_URL', processEnv) || DEFAULT_MAILPIT_URL;
   const steps = [
     ['Stop the running demo', () => stopProcesses()],
-    ['pnpm db:reset', () => run(['db:reset'])],
-    ['pnpm db:seed', () => run(['db:seed'])],
+    // Emptied before the seed, which writes the seeded evidence files into the same folders (ISS-818).
     [
       `Empty the storage folders ${folders.join(' and ')}`,
       () => {
         for (const folder of folders) empty(folder);
       },
     ],
+    ['pnpm db:reset', () => run(['db:reset'])],
+    ['pnpm db:seed', () => run(['db:seed'])],
     ['Clear Mailpit', () => clearMail(mailpitUrl)],
   ];
   for (const [name, action] of steps) {

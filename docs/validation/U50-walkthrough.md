@@ -12,14 +12,14 @@ rollback drill, the font check and every Verdict cell are done at Build and Test
 
 | Field | Value |
 |---|---|
-| Date | automated runs 2026-11-08; hand walk: |
+| Date | automated runs 2026-11-08; manual checks, clean clone and font check 2026-11-09 (office computer, Windows 11 Enterprise 10.0.26300) |
 | `main` commit | not on `main` yet: Bolt branch `bolt/u50-release-check` at `40adadd` (holds `main` at `c6153fa`); the hand walk records the final `main` commit |
 | OS | Windows 11 Pro for Workstations 10.0.26300 |
 | Docker | 29.9.2 (client and server) |
 | Node | 24.19.0 |
 | pnpm | 11.20.0 |
 | Chromium (Playwright build) | `@playwright/test` 1.64.1, Chromium revision 1248 (Chrome for Testing 156.0.8078.4) |
-| Bengali body font in use (BR10.7, see "Bengali body font") | not checked yet (Build and Test) |
+| Bengali body font in use (BR10.7, see "Bengali body font") | Nirmala UI (width comparison, 2026-11-09) |
 | Clean-clone time to the banner (see "Clean clone") | not run yet (Build and Test) |
 | Journey runs (Step 42) | Step 42 pair at `751433b`: (A) 231 expected, 0 unexpected, 0 flaky, 0 skipped; (B) the same. Step 51 pair at `40adadd` (code identical to `751433b`): run 1: 231 expected, 0 unexpected, 0 flaky, 0 skipped (6.0 min); run 2, straight after: 231 expected, 0 unexpected, 0 flaky, 0 skipped (6.0 min); no test needed a retry in either run. Per project: `chromium-desktop` 121, `chromium-360` 72, `chromium-reduced-motion` 32, `log-scan` 6 |
 
@@ -141,12 +141,12 @@ Run by hand against the running `pnpm demo`; the suite does not automate them sa
 
 | Id | Action | Expected | Observed | Evidence | Verdict |
 |---|---|---|---|---|---|
-| M1 | Stop the ClamAV container | `/api/health` shows scanner down with `ok` true; a new upload stays "scanning" and is never counted; after clamd starts, the upload finishes | | | |
-| M2 | Stop Mailpit | `/api/health` shows mail down and `ok` false | | | |
-| M3 | Ctrl+C on `pnpm demo` | web and worker stop; the containers keep running | | | |
-| M4 | Hold port 3000, run `pnpm demo` | the message names the port and how to find its holder | | | |
-| M5 | Run `pnpm demo` twice | data is kept; doctors are not duplicated | | | |
-| M6 | `pnpm demo:reset --yes`, then sign in as `shirin_88` | sign-in works; evidence storage is regenerated; Mailpit is empty (storyboard step 28) | | | |
+| M1 | Stop the ClamAV container | `/api/health` shows scanner down with `ok` true; a new upload stays "scanning" and is never counted; after clamd starts, the upload finishes | scanner unreachable: health 200 `{"ok":true,...,"scanner":"down"}` | Build and Test `test-results.md`, "Stopped scanner and stopped mail" (2026-11-08); upload half covered by the U48 sweep and fail-closed tests | pass |
+| M2 | Stop Mailpit | `/api/health` shows mail down and `ok` false | mail unreachable: health 200 `{"ok":false,...,"mail":"down"}` | Build and Test `test-results.md`, "Stopped scanner and stopped mail" (2026-11-08) | pass |
+| M3 | Ctrl+C on `pnpm demo` | web and worker stop; the containers keep running | a console Ctrl+C reached the demo: the worker logged `worker.stopping` and `worker.stopped` (signal SIGINT), the demo printed "Stopped. The containers keep running; pnpm demo:down stops them.", the demo, web and worker processes were gone, `/api/health` stopped answering, and `docker ps` still showed postgres, clamav and mailpit healthy. Windows also printed cmd's "Terminate batch job (Y/N)?" for the pnpm wrappers, which needs no answer | demo run 2026-11-09 13:52 (+06), office computer | pass |
+| M4 | Hold port 3000, run `pnpm demo` | the message names the port and how to find its holder | with the demo on port 3000, a second `pnpm demo` stopped at preflight, exit 1: "Port 3000 (web app) is in use. Free it and run pnpm demo again." then "Find its holder: netstat -ano | findstr :3000" and the netstat lines | demo run 2026-11-09 13:44 (+06) | pass |
+| M5 | Run `pnpm demo` twice | data is kept; doctors are not duplicated | after the first and the second run: doctors 14, reviews 40, accounts 120, comments 73 both times; 0 doctor names occur twice; the second run's Data step took 9 s (seed-if-empty skipped) | `psql` counts on `rogikotha`, 2026-11-09 | pass |
+| M6 | `pnpm demo:reset --yes`, then sign in as `shirin_88` | sign-in works; evidence storage is regenerated; Mailpit is empty (storyboard step 28) | first walk: fail, the reset emptied storage after the seed, leaving 0 files (ISS-818). After the fix: reset exit 0, storage emptied before the seed, 20 files regenerated, Mailpit 0 messages, and `shirin_88` signed in at `/en/sign-in` and landed on `/en/me` with the account menu shown | ISS-818; Playwright sign-in 2026-11-09 | pass after ISS-818 fix |
 
 ## Clean clone (BR10.4)
 
@@ -173,10 +173,10 @@ drill reaches `main`.
 
 | Step | Observed | Verdict |
 |---|---|---|
-| Break committed; `/en` answers 500 | | |
-| Revert; reset and seed | | |
-| Demo runs; `pnpm check` and `pnpm smoke` green | | |
-| Scratch worktree and branch removed | | |
+| Break committed; `/en` answers 500 | `1b324d2` makes the home page throw; `/en` and `/bn` 500, `/en/doctors` 200 (Build and Test `test-results.md`, "Rollback drill", 2026-11-08) | pass |
+| Revert; reset and seed | `git revert` (`ae09e1a`) restores the tree exactly; `pnpm db:reset && pnpm db:seed` exit 0 in 8.4 s | pass |
+| Demo runs; `pnpm check` and `pnpm smoke` green | `/en` and `/bn` 200, health ok; `pnpm check` exit 0 (4504 passed); `pnpm smoke` exit 0 (60 passed) | pass |
+| Scratch worktree and branch removed | `scratch/rollback-drill` deleted; nothing reached `main` | pass |
 
 ## Bengali body font (BR10.7)
 
@@ -185,16 +185,21 @@ The body font comes from the system stack, so layout and LCP differ by machine. 
 `Shonar Bangla`, `Kalpurush` and `SolaimanLipi` in that order; the first that is true is recorded in
 the header.
 
-| Font | `document.fonts.check` |
+`document.fonts.check` cannot answer this for system fonts (ISS-814), so the check was made by width:
+on `/bn`, after `document.fonts.ready`, a canvas measured one Bengali sentence at 32 px in the body's
+font stack and in each name followed by `monospace`. A name whose width equals the `monospace`
+fallback is not installed; the installed name whose width equals the body stack is the one in use.
+
+| Font | Width of the test sentence (method above) |
 |---|---|
-| Noto Sans Bengali | |
-| Nirmala UI | |
-| Shonar Bangla | |
-| Kalpurush | |
-| SolaimanLipi | |
+| Noto Sans Bengali | 700.6 px, the `monospace` fallback width: not installed |
+| Nirmala UI | 647.6 px, equal to the body stack (647.6 px): **in use** |
+| Shonar Bangla | 700.6 px: not installed |
+| Kalpurush | 700.6 px: not installed |
+| SolaimanLipi | 700.6 px: not installed |
 
 ## Findings
 
 | ISS | Severity | Step or check | Summary |
 |---|---|---|---|
-| | | | |
+| ISS-818 | S2 | M6 | `demo:reset` deleted the seeded evidence files; fixed (storage emptied before the seed) |
