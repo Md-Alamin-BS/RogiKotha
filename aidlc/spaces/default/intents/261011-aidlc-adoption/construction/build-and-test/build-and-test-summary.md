@@ -2,7 +2,8 @@
 
 Intent `261011-aidlc-adoption`, scope `classic`, Test Strategy **Minimal**, Construction Autonomy
 Mode `autonomous`. Run on `main` at `e09b558` (all ten release-1 Units merged and reviewed) in the
-worktree `bolt/build-and-test` on 2026-11-08. Evidence: `test-results.md`; requirement coverage:
+worktree `bolt/build-and-test` on 2026-11-08, then completed on `main` on 2026-11-09 (manual checks, the
+clean-clone rehearsal, the fixes FD-123 and ISS-818, and a fresh `pnpm check` and `pnpm smoke` on `29a2567`). Evidence: `test-results.md`; requirement coverage:
 `cross-unit-traceability.md`.
 
 ## Overall status
@@ -10,13 +11,14 @@ worktree `bolt/build-and-test` on 2026-11-08. Evidence: `test-results.md`; requi
 | Item | Status |
 |---|---|
 | Build | **green**: `pnpm build`, the web and worker builds, strict typecheck |
-| Project gate | **green**: `pnpm check` exit 0 (4504 tests passed, every package at or above 80% lines) |
-| Integration and smoke | **green**: `pnpm test:int` 437 passed; `pnpm smoke` 31 files, 60 tests |
+| Project gate | **green**: `pnpm check` exit 0 (2026-11-08: 4504 tests passed; re-run on `main` at `29a2567` on 2026-11-09: 366 files, 4513 passed, 1 skipped, 0 expected failures, lines 96.13%; every package at or above 80% lines) |
+| Integration and smoke | **green**: `pnpm test:int` 437 passed (446 after FD-123, on the fix branch); `pnpm smoke` 31 files, 60 tests (re-run 2026-11-09 on `main`: 60 passed) |
 | Browser suite | **green**: `pnpm e2e` 231 of 231, 0 flaky, 0 skipped; security specs 15 of 15 |
 | Performance | **green**: `pnpm e2e:perf` 9 of 9 with 0 no-LCP retries, after the rung-1 fixes of the probe (ISS-812) and of the lost-navigation runs (ISS-815); on all four gated pages the LCP element is never animated in and every median is within its threshold |
 | Unit-scoped commands | **green**: 116 of 116 as the corrected instructions state them (ISS-809, ISS-810 fixed); the first run had No. 069 red |
 | Cross-unit traceability | **pass**: no ID uncovered after the ISS-811 records decision; all release-2 cuts named under FD-105 |
-| Stage result | **failed** under the failure predicate only because 5 manual targets are Unverified (they need the live demo stopped, ISS-813); every command is green and no product defect was found |
+| Manual checks and clean clone | **green** (2026-11-09): M3 to M6 walked; M6 found ISS-818 (`demo:reset` deleted the seeded evidence files), fixed and re-walked; clean clone to the banner in 2 min 26 s (target under 6) |
+| Stage result | **success**: 47 Met, 0 Not Met, 0 Unverified |
 
 Prerequisites: Node 24, pnpm 11, Docker Desktop with the compose PostgreSQL 18, Mailpit and ClamAV
 (`build-instructions.md`).
@@ -95,16 +97,17 @@ skips Operation), so Build and Test owns every row.
 | SEC-HEADERS-ORIGIN | RQ Constraints (PRD §9); FD-116 | nonce CSP, headers, foreign Origin refused, upload cap before the body | security specs 15 of 15 | test-results.md "Browser suite" | Build and Test | Met |
 | SEC-HOST | TN §1 (curl at Build and Test) | a foreign `Host` or `X-Forwarded-Host` is refused | both 403; the right Host 200 | test-results.md "Host probe" | Build and Test | Met |
 | SEC-ANALYTICS-COOKIES | AC12.4.1 to AC12.4.3 (FR99) | no third-party or analytics request; only essential cookies | `csp.test.ts` no third-party origin; `holds only the ENT-011 cookies` passed | `pnpm check`, security specs | Build and Test | Met |
-| U50-M3 | U50 M3 | Ctrl+C on `pnpm demo` stops web and worker, containers keep running | not run: needs `pnpm demo` on port 3000 | ISS-813 | Build and Test (owner's walk) | Unverified |
-| U50-M4 | U50 M4 | port 3000 held: the message names the port and its holder | not run: port 3000 belongs to the live demo | ISS-813 | Build and Test (owner's walk) | Unverified |
-| U50-M5 | U50 M5 | `pnpm demo` twice keeps data, no duplicates | not run by hand; seed determinism green in `seed.int.test.ts` | ISS-813 | Build and Test (owner's walk) | Unverified |
-| U50-M6 | U50 M6 | `pnpm demo:reset --yes`, then sign in as `shirin_88` | not run: would reset the live demo | ISS-813 | Build and Test (owner's walk) | Unverified |
-| U50-BR10.4 | U50 clean-clone rehearsal | clean clone to the banner in under 6 minutes with cached images | not run: needs `pnpm demo` with its own compose project and the main demo stopped | ISS-813 | Build and Test (owner's walk) | Unverified |
+| U50-M3 | U50 M3 | Ctrl+C on `pnpm demo` stops web and worker, containers keep running | a console Ctrl+C: the worker logged `worker.stopped` (SIGINT), the demo printed "Stopped. The containers keep running", web and worker exited, the three containers stayed healthy | `docs/validation/U50-walkthrough.md`; test-results.md "Manual checks, 2026-11-09" | Build and Test (2026-11-09) | Met |
+| U50-M4 | U50 M4 | port 3000 held: the message names the port and its holder | a second `pnpm demo` stopped at preflight, exit 1, with "Port 3000 (web app) is in use" and the `netstat` command to find its holder | `docs/validation/U50-walkthrough.md`; test-results.md "Manual checks, 2026-11-09" | Build and Test (2026-11-09) | Met |
+| U50-M5 | U50 M5 | `pnpm demo` twice keeps data, no duplicates | two runs: doctors 14, reviews 40, accounts 120, comments 73 both times; 0 duplicate doctor names | `docs/validation/U50-walkthrough.md`; test-results.md "Manual checks, 2026-11-09" | Build and Test (2026-11-09) | Met |
+| U50-M6 | U50 M6 | `pnpm demo:reset --yes`, then sign in as `shirin_88` | first walk failed (ISS-818: storage emptied after the seed, 0 files); after the fix: 20 files regenerated, Mailpit 0 messages, `shirin_88` signs in and lands on `/en/me` | `docs/validation/U50-walkthrough.md`; test-results.md "Manual checks, 2026-11-09"; ISS-818 | Build and Test (2026-11-09) | Met |
+| U50-BR10.4 | U50 clean-clone rehearsal | clean clone to the banner in under 6 minutes with cached images | clone of `main` at `29a2567` to the banner in 146 s with cached images; `/bn`, `/en`, Mailpit 200; rehearsal volumes removed | `docs/validation/U50-walkthrough.md`; test-results.md "Manual checks, 2026-11-09" | Build and Test (2026-11-09) | Met |
 | U50-BR10.7 | U50 Bengali body font | the Bengali body font in use on `/bn` is recorded | Nirmala UI (glyph-width probe; `document.fonts.check` is true for all five, ISS-814) | test-results.md "Bengali body font" | Build and Test | Met |
 | TR-STEP10 | stage Step 10 | every FR, NFR and AC covered `OK`, or named as deferred | 0 uncovered: 151 covered, 4 verified here, 148 deferred to release 2 by name (8 by the ISS-811 records decision: every citing AC deferred under FD-105), 1 retired, 2 N/A | `cross-unit-traceability.md`, ISS-811 | Build and Test | Met |
 
-Verdict counts: **42 Met, 0 Not Met, 5 Unverified (U50-M3, U50-M4, U50-M5, U50-M6,
-U50-BR10.4)**; no row is Pending. Before the rung-1 fixes: 39 Met, 2 Not Met (TC-UNIT,
+Verdict counts: **47 Met, 0 Not Met, 0 Unverified**; no row is Pending. On 2026-11-08 the count was
+42 Met, 0 Not Met, 5 Unverified (U50-M3, U50-M4, U50-M5, U50-M6, U50-BR10.4); those five were walked on
+2026-11-09. Before the rung-1 fixes: 39 Met, 2 Not Met (TC-UNIT,
 TR-STEP10), 6 Unverified; after the first fixes, before ISS-815: 41 Met, 0 Not Met, 6 Unverified.
 
 ## Readiness assessment
@@ -113,7 +116,7 @@ TR-STEP10), 6 Unverified; after the first fixes, before ISS-815: 41 Met, 0 Not M
 |---|---|
 | Build-ready | **Yes.** The build, the strict typecheck and `pnpm check` are green on `main`. |
 | Test-ready | **Yes.** Every functional, integration, browser, accessibility, security and performance suite is green, coverage meets the floor in every package, every unit-scoped command passes as corrected, and the rollback drill passed. |
-| Deployment-ready (local demo) | **Not yet signed off.** The demo runs from this code (shown on a separate server and by the drill), but the owner's manual checks M3 to M6 and the clean-clone rehearsal are still to be walked (ISS-813). Release 1 is not for unrestricted public launch (moderation is release 2, FD-105). |
+| Deployment-ready (local demo) | **Yes.** The demo runs from a clean clone in 2 min 26 s, the manual checks M1 to M6 pass, and reset, restart and Ctrl+C behave as specified (ISS-813 closed). Release 1 is not for unrestricted public launch (moderation is release 2, FD-105). |
 
 ## Known limitations and outstanding items
 
@@ -127,10 +130,16 @@ TR-STEP10), 6 Unverified; after the first fixes, before ISS-815: 41 Met, 0 Not M
 - The first experience-page run after the suite's server starts is slow (LCP about 3.8 s, CLS 0.174
   on `/en` r1); the median gate is not affected (ISS-815). The story map's
   "Requirements" rows for FR22, FR43, FR53 to FR57 and FR65 still say release 1.
-- ISS-814 (S4): change the BR10.7 walkthrough method to a width comparison.
-- ISS-813 (S4): the owner walks M3 to M6 and the clean-clone rehearsal with the live demo stopped.
+- Fixed on 2026-11-09: ISS-139, ISS-141, ISS-148, ISS-239, ISS-632 (FD-123: the audit escape hatch
+  needs the `rk_maintenance` retention path; the worker loses the encrypted original filename and the
+  uploader columns), ISS-704 (better-auth 1.7.18), ISS-817 (`packages/application` declares
+  `@types/node`), ISS-818 (`demo:reset` order, found at M6). ISS-813 (manual checks) and ISS-814 (the
+  font method is now a width comparison) are closed.
+- Open, recorded: ISS-816 (S4): `rk_app` owns the append-only tables, so it could disable their
+  triggers; a separate migration-owner role closes it before any deployment.
 - Not built in release 1 and named in the traceability file: Firefox, WebKit, Safari/iOS; the 390,
   768 and 1440 px viewports; the search page and its NFR13 gate; everything else FD-105 defers.
-- U50's close-out documents (the `RELEASE-1-GATES.md` verdict cells, `U50-walkthrough.md` rows,
-  `current-status.md`, `validation-log.md` and the owner's OR1 to OR7) were not edited by this stage;
-  their evidence is in `test-results.md`.
+- `docs/validation/U50-walkthrough.md` now holds the manual checks, the clean clone, the rollback
+  drill and the font check (2026-11-09). The other U50 close-out documents (`RELEASE-1-GATES.md`,
+  `current-status.md`, `validation-log.md`, the owner's OR1 to OR7) were not edited; their evidence
+  is in `test-results.md`.
