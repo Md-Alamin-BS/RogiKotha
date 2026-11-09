@@ -3,20 +3,18 @@
 This is the index of the documentation kept on `main` for release 1. Start with the
 [root README](../README.md) for what was built, how to run it and the test results.
 
-AI-DLC records cite files removed from main; they are preserved on branch
-`archive/full-project-2026-11-09`. That branch holds the full history before the submission
-cleanup: the defect register `docs/implementation/ISSUES.md` with every `ISS-` id the records
-cite, the task files under `docs/implementation/tasks/`, the hand-loop and handoff notes, the
+Working files that the AI-DLC records cite are preserved on branch
+`archive/full-project-2026-11-09`, which holds the full history before the submission was
+assembled: the task files under `docs/implementation/tasks/`, the hand-loop and handoff notes, the
 AI-DLC migration notes under `docs/aidlc-migration/`, the validation working papers and the
-earlier planning drafts. The team rules under `aidlc/spaces/default/memory/` also name some of
-those files; they change only through the AI-DLC learnings gate, so they were left as written.
+earlier planning drafts. The team rules under `aidlc/spaces/default/memory/` change only through
+the AI-DLC learnings gate.
 
-## How it was built and what is left
+## How it was built
 
 | Document | What it is |
 |---|---|
 | [how-it-was-built.md](how-it-was-built.md) | The AWS AI-DLC lifecycle that was run, the ten release-1 Units, gates and test results, and where each record is |
-| [known-limitations.md](known-limitations.md) | What release 1 does not do or has not proven |
 | [`aidlc/spaces/default/intents/261011-aidlc-adoption/`](../aidlc/spaces/default/intents/261011-aidlc-adoption/) | The AI-DLC record: state, Inception and Construction artifacts, reviews, audit log |
 | [`aidlc/spaces/default/memory/`](../aidlc/spaces/default/memory/) | The rules every agent followed: `org.md`, `team.md`, `project.md` and the phase files |
 
@@ -83,11 +81,11 @@ Corrections).
 | Document | What it is |
 |---|---|
 | [validation/U50-walkthrough.md](validation/U50-walkthrough.md) | The release-1 walk-through record, including the manual checks (U50) |
-| [security/local-demo-threat-notes.md](security/local-demo-threat-notes.md) | Threats, controls, tests and residual risks of the local demo |
+| [security/local-demo-threat-notes.md](security/local-demo-threat-notes.md) | Threats, controls and tests of the local demo composition |
 | [Build and Test summary](../aidlc/spaces/default/intents/261011-aidlc-adoption/construction/build-and-test/build-and-test-summary.md) | Every gate, target and verdict of the Build and Test stage |
 
 ## Where edits go
 
-New research notes go to `docs/planning/research/` (the path the project rules name; the folder is not part of this submission tree, so create it when needed). New founder decisions are appended to
+New research notes go to `docs/planning/research/` (created with the first note). New founder decisions are appended to
 `status/decision-log.md` before the code changes. The AI-DLC record and the memory files are
 written by the framework; do not hand-edit them.

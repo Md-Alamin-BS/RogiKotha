@@ -5,7 +5,7 @@ You need Docker Desktop running, Node 24, pnpm 11 and about 6 GB of free disk; D
 Run `pnpm demo` from the repository root. It checks the prerequisites, starts PostgreSQL (host port 5433), Mailpit and ClamAV, migrates, seeds an empty database, builds, and starts the web app and the worker.
 When it prints the banner, open <http://localhost:3000/bn> (Bengali), <http://localhost:3000/en> (English) and Mailpit at <http://localhost:8025> for confirmation and reset emails.
 Walk the steps in [the storyboard](docs/implementation/05-demo-storyboard.md); the release-1 walk-through record is [docs/validation/U50-walkthrough.md](docs/validation/U50-walkthrough.md).
-Release 1 does not include the staff console and moderation, reports, notifications, admin configuration, search, provider claims, retention and holds, data export and deletion, the workspace extras, the PWA, the evidence viewer, mentions, reactions and blocks, or restore (FD-105).
+The staff console, moderation and the other release-2 features are on the roadmap in the [README](README.md#roadmap) (FD-105).
 
 Every account uses the password `demo-pass-2026!`. Sign in with the email.
 

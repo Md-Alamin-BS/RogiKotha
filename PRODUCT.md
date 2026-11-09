@@ -95,8 +95,8 @@ All of them, and the console, honour `prefers-reduced-motion` and
 - No number ever stands for quality. Distributions always carry exact counts
   and denominators. (FD binding.)
 - Missing values read **Not provided** / **No documents**, never `0`.
-- "Limited data" appears when the sample is sparse. Threshold is a deferred
-  product decision; demo uses a placeholder value.
+- "Limited data" appears when the sample is sparse. The threshold is set in
+  configuration (`limitedDataThreshold`, 5 in the demo); the production value is a product decision.
 - Registration is not verified in Phase 1. Every doctor carries
   **Registration not verified** until BMDC verification exists.
 - Evidence reads **Documents attached — not medically validated**. Never
@@ -120,7 +120,7 @@ All of them, and the console, honour `prefers-reduced-motion` and
 - Release 1 is built: a Next.js web app and a pg-boss worker on PostgreSQL 18,
   run locally on synthetic data with `pnpm demo`. See `README.md` for the
   architecture and `DEMO.md` for the demo. The staff console, moderation,
-  search and the other FD-105 items are release 2.
+  search and the other FD-105 items are the release 2 roadmap.
 - The static prototype at `ui-design-prototype/index.html` stays as the design
   reference: the 04b patient prototype and the staff console. It is
   dependency-free (no build step, no webfonts, no network); serve the folder

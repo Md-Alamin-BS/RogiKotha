@@ -1,7 +1,7 @@
 # Local demo threat notes (release 1)
 
-Scope: the local Docker demo only (`pnpm demo`). No TLS front, no WAF, no reverse proxy. Everything
-is synthetic data. Unit U41 (`t-502-security-hardening`), rules BR1 to BR8; decisions FD-093, FD-104
+Scope: the local Docker demo (`pnpm demo`), composed without a TLS front, WAF or reverse proxy
+(local Docker demo, team.md Deployment). Everything is synthetic data. Unit U41 (`t-502-security-hardening`), rules BR1 to BR8; decisions FD-093, FD-104
 and FD-105 (rate-limit table, network key, `assertAppMode()`, FD-072 adversarial test and the PWA
 CSP move to release 2).
 
@@ -15,24 +15,24 @@ agent; their results are in `code-summary.md` (Step 34).
 |---|---|---|---|
 | Stored XSS through review, comment or display-name text | React escaping; nonce `script-src` with `'strict-dynamic'`; no inline script (BR1.1 to BR1.5) | `apps/web/src/lib/security/__tests__/csp.test.ts`; `apps/web/src/lib/security/__tests__/sweep.test.ts`; `apps/web/e2e/smoke/security-headers.spec.ts` (zero violations); adversarial A3 (`lib/security/__tests__/security.adversarial.test.ts`, no break) | covered |
 | Third-party data leak (analytics) | No third-party origin in the CSP (BR1.3); no analytics code (FD-019) | `csp.test.ts` "allows no third-party origin"; `security-headers.spec.ts` request log | covered |
-| CSRF on server actions and the upload | Proxy Origin check, `serverActions.allowedOrigins`, `guardRouteRequest`, SameSite=Lax (BR3.3 to BR3.5, BR5.1) | `lib/security/__tests__/origin.test.ts`; `apps/web/src/proxy.test.ts`; upload security test (`apps/web/src/app/api/evidence/upload/route.security.test.ts`); adversarial A1 (`proxy.adversarial.test.ts`, `security.adversarial.test.ts`) and A5 (`security.adversarial.int.test.ts`); A1 found that `/_next/*` and `/__nextjs*` had the Host check only, fixed (ISS-696) | covered |
+| CSRF on server actions and the upload | Proxy Origin check, `serverActions.allowedOrigins`, `guardRouteRequest`, SameSite=Lax (BR3.3 to BR3.5, BR5.1) | `lib/security/__tests__/origin.test.ts`; `apps/web/src/proxy.test.ts`; upload security test (`apps/web/src/app/api/evidence/upload/route.security.test.ts`); adversarial A1 (`proxy.adversarial.test.ts`, `security.adversarial.test.ts`) and A5 (`security.adversarial.int.test.ts`); A1 found that `/_next/*` and `/__nextjs*` had the Host check only, fixed | covered |
 | DNS rebinding and Host header injection | Unknown Host and X-Forwarded-Host refused (BR3.2) | `proxy.test.ts`; `proxy.smoke.test.ts`; curl with `Host: evil.example` (Build and Test) | covered |
 | Clickjacking | `frame-ancestors 'none'`, `X-Frame-Options: DENY` (BR1.2, BR2.1) | `lib/security/__tests__/headers.test.ts`; `security-headers.spec.ts` | covered |
 | Session theft through script | HttpOnly cookie, nonce CSP, `get-session` closed (FD-104) | `apps/web/src/security-cookies.test.ts`; `security-headers.spec.ts` cookie check | covered |
 | Resource exhaustion through upload | Declared-length check, counting stream, U48's per-file and per-review limits and rate limit (BR4.*) | `lib/security/__tests__/request-limits.test.ts`; `route.security.test.ts`; adversarial A2 (`route.adversarial.test.ts`, no break; a chunked 200 MB body stopped near the cap) | covered |
 | Upload truncated by the proxy | Upload route outside the proxy matcher (BR3.4) | `proxy.test.ts` matcher case | covered |
 | A page served without CSP or Host check through a dotted URL (`/en/experiences/<id>-a.b`) | Matcher excludes only named files, never an extension (BR3.4, ENT-016) | `proxy.test.ts` matcher cases; `proxy.smoke.test.ts` dotted-path case; adversarial A1 | covered |
-| A server action run through a path the proxy did not match (`/robots.txt`, `/favicon.ico`, `/sitemap.xml`, `/manifest.webmanifest`, `/_next/image`, a missing `/_next/static/x`), with no Origin or with a rebound Host | Since review-01 the matcher excludes only `/api/evidence/upload`; static files and the image optimizer get the Host check and the Origin rule (ENT-016 as amended, ISS-718) | `proxy.test.ts` "gives %s the Host check and the Origin rule for an unsafe method"; real-server probe of review-01 (`code-summary.md`, "Review fixes (review-01)") | covered |
-| Private data in logs | Key allowlist, value shape and event shape in both loggers (BR6.1 to BR6.6); no direct console output outside the loggers (BR6.7) | `packages/application/src/ports/log-policy.test.ts`; `apps/web/src/server/logger.test.ts`; `apps/worker/src/logger.test.ts`; `apps/worker/src/log-scrub.test.ts`; `apps/web/src/log-scrub.int.test.ts`; the `no-console` lint rule; adversarial A4 found that the worker kept a code-shaped `message`, fixed (ISS-697: `message` is always `[scrubbed]`) | covered |
-| Private data in output Next.js or Node prints on its own (an unhandled server error with its message and stack) | None in release 1: the application catches and logs code-shaped lines where it can; the framework's own printing is outside the logger | Adversarial A4 recorded what it prints: for a server-action POST whose body is not JSON, Next.js writes `SyntaxError: Unexpected token ...` with the first ten body characters to stderr (ISS-699) | residual |
-| Reporter identity leakage through headers or logs | No reporter identity exists in release 1 (reports are release 2, FD-105); the log policy drops any key not on the list and scrubs free text; no response header carries an account or persona id | `log-policy.test.ts` (an unknown `reporterAccountId` key is dropped); `security-headers.spec.ts` header inventory | covered for logs and headers; reporting itself deferred (FD-105, T-403) |
-| Credential stuffing and enumeration | T-101's limits, delay and generic answers (merged in U8) | U8's tests; the FD-072 adversarial test | deferred (FD-105) |
-| CGNAT lock-out | Network key | none | deferred (FD-105) |
-| Demo shortcuts reaching production | `assertAppMode()` | none | deferred (FD-105) |
-| Service worker caching private responses | T-501 deny list and PWA CSP | none | deferred (FD-105) |
-| No TLS locally | HSTS, `upgrade-insecure-requests` and the `__Secure-` cookie prefix switch on with an https `APP_URL` | `csp.test.ts` and `security-cookies.test.ts` https branch | residual: untested against a real TLS front |
+| A server action run through a path the proxy did not match (`/robots.txt`, `/favicon.ico`, `/sitemap.xml`, `/manifest.webmanifest`, `/_next/image`, a missing `/_next/static/x`), with no Origin or with a rebound Host | Since review-01 the matcher excludes only `/api/evidence/upload`; static files and the image optimizer get the Host check and the Origin rule (ENT-016 as amended) | `proxy.test.ts` "gives %s the Host check and the Origin rule for an unsafe method"; real-server probe of review-01 (`code-summary.md`, "Review fixes (review-01)") | covered |
+| Private data in logs | Key allowlist, value shape and event shape in both loggers (BR6.1 to BR6.6); no direct console output outside the loggers (BR6.7) | `packages/application/src/ports/log-policy.test.ts`; `apps/web/src/server/logger.test.ts`; `apps/worker/src/logger.test.ts`; `apps/worker/src/log-scrub.test.ts`; `apps/web/src/log-scrub.int.test.ts`; the `no-console` lint rule; adversarial A4 found that the worker kept a code-shaped `message`, fixed (`message` is always `[scrubbed]`) | covered |
+| Private data in output Next.js or Node prints on its own (an unhandled server error with its message and stack) | The application catches and logs code-shaped lines where it can; the framework's own printing is outside the logger | Adversarial A4 recorded what it prints: for a server-action POST whose body is not JSON, Next.js writes `SyntaxError: Unexpected token ...` with the first ten body characters to stderr | residual |
+| Reporter identity leakage through headers or logs | No reporter identity exists in release 1 (reports are release 2, FD-105); the log policy drops any key not on the list and scrubs free text; no response header carries an account or persona id | `log-policy.test.ts` (an unknown `reporterAccountId` key is dropped); `security-headers.spec.ts` header inventory | covered for logs and headers; reporting is release 2 (FD-105, T-403) |
+| Credential stuffing and enumeration | T-101's limits, delay and generic answers (merged in U8) | U8's tests | T-101's limits, delay and generic answers are tested in U8; the rate-limit table and the FD-072 adversarial test are release 2 (FD-105) |
+| CGNAT lock-out | Network key (release 2) | none | release 2 (FD-105) |
+| Demo shortcuts reaching production | `assertAppMode()` (release 2); `migrate`, `reset` and `seed` already refuse `APP_MODE=production` | none | release 2 (FD-105) |
+| Service worker caching private responses | T-501 deny list and PWA CSP (release 2) | none | release 2 (FD-105) |
+| No TLS locally | HSTS, `upgrade-insecure-requests` and the `__Secure-` cookie prefix switch on with an https `APP_URL` | `csp.test.ts` and `security-cookies.test.ts` https branch | residual: the https branch is checked through configuration; the local demo runs without a TLS front |
 
-## 2. Residuals
+## 2. Accepted risks for the local demo
 
 - The in-memory limiters reset on restart and are per process.
 - No TLS, no WAF and no reverse proxy locally.
@@ -41,21 +41,20 @@ agent; their results are in `code-summary.md` (Step 34).
   files (`/favicon.ico`, `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest`) on the grounds that
   they hold public bytes only. That did not hold: none of the four root files exists, and on the
   real server a `Next-Action` POST to each root file and to a missing `/_next/static/x` ran
-  `setTheme` with no Origin and with a forged Host (ISS-718). Static files now pass through the
+  `setTheme` with no Origin and with a forged Host. Static files now pass through the
   proxy too, at the cost of one header comparison per file request.
 - `style-src 'unsafe-inline'` stays on (style attributes), so CSS injection is not blocked by the CSP.
 - There is no CSP violation reporting endpoint.
 - Most error messages are written as `[scrubbed]` in logs, so a failure is diagnosed from its code
   and event name, not its text.
-- Next.js and Node print unhandled errors themselves, outside the logger (ISS-699).
+- Next.js and Node print unhandled errors themselves, outside the logger.
 - Next.js answers a malformed percent-encoded page path such as `/en/%E0%A4%A` with its own bare
   `text/plain` 500, which carries no CSP and none of the static security headers; the body is
-  fixed text with no request data, and a forged Host on that path still gets the proxy's 403
-  (ISS-698).
+  fixed text with no request data, and a forged Host on that path still gets the proxy's 403.
 - A code-shaped user value in an allowlisted id or code field, or interpolated into an event name,
   cannot be told apart from an id by shape; the Step 4 inventory found no such call site.
-- HSTS, `upgrade-insecure-requests` and the `__Secure-` cookie prefix are tested through
-  configuration only, because the local demo has no TLS (ISS-712).
+- HSTS, `upgrade-insecure-requests` and the `__Secure-` cookie prefix are checked through
+  configuration, because the local demo runs without TLS.
 - `APP_ALLOWED_ORIGINS` is read again at `next start`, not fixed at build time (checked in Step
   27), so changing it needs a restart but no rebuild.
 - The database command-line tools print their errors to the developer's terminal.

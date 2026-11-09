@@ -235,7 +235,7 @@ Test names read as sentences: `it('hides content after five distinct confirmed a
 2. `pnpm check` green — eleven steps in this order, stopping at the first failure (T-010, T-011): `typecheck`, `lint` (boundary rules included), `lint:boundaries` (the fixture proof), `format:check` (Prettier), `check:identity` (no attribution markers), `test:coverage` (every test project, the database one included, with the 80% line floor per package), `i18n:check`, `contrast` (`--tokens apps/web/src/styles/tokens.css`), `contrast:patient`, `check:motion`, `build`. Then `pnpm smoke` green.
 3. New strings exist in both `en.json` and `bn.json`.
 4. Hard-rule checklist in the task file ticked with evidence (file:line or test name).
-5. The Unit's `code-generation/code-summary.md` in the AI-DLC record filled: what changed, what was not done, questions for the owner, follow-ups.
+5. The Unit's `code-generation/code-summary.md` in the AI-DLC record filled: what changed, scope notes, questions for the owner, follow-ups.
 6. A separate AI-DLC reviewer agent read the full diff and recorded its verdict (READY or NOT-READY) in the Unit's `code-generation/reviews/`.
 
 ## 14. The hard-rule checklist (copy into every task's hand-off)

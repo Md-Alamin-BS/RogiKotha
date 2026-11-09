@@ -25,7 +25,7 @@ them to run again.
 
 | Service | URL / address | Notes |
 |---|---|---|
-| PostgreSQL | `localhost:5433` (container's internal port is still 5432 — remapped per `ISS-084`, a native Windows PostgreSQL service occupies host port 5432 on some machines) | databases `rogikotha` (owned by `rk_app`) and `rogikotha_test` |
+| PostgreSQL | `localhost:5433` (the container's internal port is still 5432; the host port is remapped because a native Windows PostgreSQL service occupies host port 5432 on some machines) | databases `rogikotha` (owned by `rk_app`) and `rogikotha_test` |
 | Mailpit SMTP | `localhost:1025` | any auth accepted (`MP_SMTP_AUTH_ACCEPT_ANY`), insecure allowed for local dev |
 | Mailpit web UI | http://localhost:8025 | read every email the app sends; `GET /api/v1/info` returns JSON when it's up |
 | ClamAV (clamd) | `localhost:3310` | INSTREAM protocol; see `MalwareScanner` port in `03-routes-and-contracts.md` §3 |
@@ -63,7 +63,7 @@ containing the ASCII bytes `ROGIKOTHA-MALWARE-TEST-MARKER` (ndb format
 **read-write** into the container's signature directory (`/var/lib/clamav/rogikotha-test.ndb`) —
 not read-only as the scope-change text originally asked, because the image's entrypoint runs
 `chown -R clamav:clamav /var/lib/clamav` on every start and fails on a read-only mount
-(`ISS-041`; the compose file carries the same note next to the mount). Nothing in the app writes
+(the compose file carries the same note next to the mount). Nothing in the app writes
 to it. It loads alongside the official signatures on every start — it does not wait for the
 freshclamd download.
 This lets the demo show a "malware detected" outcome with a harmless synthetic file instead of a
@@ -95,8 +95,7 @@ Restart it with `docker compose -f infra/compose/docker-compose.yml start clamav
   2026-09-13.
 - `axllent/mailpit:v1.31.1` — **never `latest`**. The task's original inline compose snippet said
   `axllent/mailpit:latest`; this was overridden per the dependency check dated 2026-09-13
-  (`docs/status/dependency-check-log.md`), which found the master plan's placeholder had moved to
-  a real current stable tag, `v1.31.1` (2026-09-05). See `ISS-039`.
+  (`docs/status/dependency-check-log.md`), which found a current stable tag, `v1.31.1` (2026-09-05).
 
 ## Storage and disk notes
 
@@ -105,14 +104,12 @@ avoid Windows file-sharing performance and permission problems. The two files th
 bind-mounted (`postgres-init/*.sql`, `clamav/rogikotha-test.ndb`) must stay LF-only —
 `infra/compose/.gitattributes` (`* text eol=lf`) enforces this regardless of a checkout's
 `core.autocrlf`, because a CRLF-converted `.ndb` file fails to parse correctly inside the
-container (`ISS-044`). Docker Desktop's backing vhdx grows with every image pull and named volume
-and never shrinks on its own; this is a known, recurring disk-space issue on this workstation (see
-the owner's local disk-maintenance notes, outside this repo) — run the owner's disk-cleanup
-routine (`disk-report.ps1` / `disk-cleanup.ps1 -Execute -Compact`) periodically rather than
-treating vhdx growth from this stack as a defect.
+container. Docker Desktop's backing vhdx grows with every image pull and named volume and never
+shrinks on its own, so compact it periodically.
 
-## What this task does not do
+## Boundaries
 
-No production topology, reverse proxy, Garage, or backups (that's `STORY-OPS-001`). No application
+The local composition has no production topology, reverse proxy, Garage or backups (`STORY-OPS-001`
+covers those). It holds no application
 code — the clamd client adapter is T-304, the SMTP adapter is T-101, the database schema and
 migration-applied grants are T-004.

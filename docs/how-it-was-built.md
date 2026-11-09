@@ -70,7 +70,7 @@ Text version of the diagram:
 4. Skipped by the plan: all seven Ideation stages (intent-capture, market-research, feasibility,
    scope-definition, team-formation, rough-mockups, approval-handoff); refined-mockups;
    nfr-requirements, nfr-design and infrastructure-design; ci-pipeline; all seven Operation
-   stages. There is no staging or production environment, so Operation is out of scope.
+   stages. The `classic` scope ends at Build and Test, which delivers the local demo (FD-031).
 
 ## Timeline
 
@@ -90,7 +90,7 @@ Text version of the diagram:
 
 Unit IDs are frozen once assigned, so the release-1 Units keep their numbers from the full plan
 of 50 (`<record>/inception/units-generation/unit-of-work.md`). FD-105 merged 13 Units into five
-new ones (U46 to U50) and deferred 18 to release 2.
+new ones (U46 to U50) and assigned 18 to release 2.
 
 | Unit | Slug (record folder) | Built from | What it delivered | High risk | Commit on `main` |
 |---|---|---|---|---|---|
@@ -113,8 +113,8 @@ records are under `<record>/construction/` too.
 Delivery Planning grouped the ten Units into five batches by dependency level
 (`<record>/inception/delivery-planning/bolt-plan.md`). Units in one batch were built at the same
 time, each in its own git worktree, Bolt branch and test database, and merged into `main` one at
-a time (FD-094). The orchestrating agent ran the parallel builds in separate git worktrees; the
-engine's state field still reads `serial`.
+a time (FD-094). The orchestrating agent ran the parallel builds in separate git worktrees outside the engine's
+swarm mode; the engine's state field reads `serial`.
 
 | Batch | Units |
 |---|---|
@@ -152,21 +152,20 @@ test commands; Build and Test ran the 116 distinct commands from all 19 Units.
 
 For Units in the auth, identity, evidence, moderation, retention and deletion classes, a
 separate agent, one that did not write the code, wrote and ran adversarial tests that try to
-break the Unit. A delegated sign-off was recorded for each (see Delegation below).
+break the Unit. A delegated sign-off was recorded for each of the Units in the table (see Delegation below).
 
 | Unit | Adversarial tests | What they found |
 |---|---|---|
-| U9 auth screens | 27 tests in five angles, real test database where needed | one break: an unconfirmed account could comment and publish (ISS-484), fixed with a contributor check |
-| U11 identity | 18 tests in 4 files | one ordering defect, fixed with a regression test (ISS-473) |
-| U48 evidence | 25 tests in five angles (forged files, races, ownership, paths, scanner down) | one break: two uploads with the same idempotency key at once (ISS-620), fixed by taking the review lock first |
-| U41 security | five angles, A1 to A5 | two breaks, both fixed and kept as tests: a server action on internal paths without `Origin` (ISS-696) and a code-shaped error text in a worker log (ISS-697) |
+| U9 auth screens | 27 tests in five angles, real test database where needed | one break: an unconfirmed account could comment and publish, fixed with a contributor check |
+| U11 identity | 18 tests in 4 files | one ordering defect, fixed with a regression test |
+| U48 evidence | 25 tests in five angles (forged files, races, ownership, paths, scanner down) | one break: two uploads with the same idempotency key at once, fixed by taking the review lock first |
+| U41 security | five angles, A1 to A5 | two breaks, both fixed and kept as tests: a server action on internal paths without `Origin` and a code-shaped error text in a worker log |
 
 The earlier high-risk Units U5 and U8 also had adversarial tests written by a separate agent (U5: five
-tests in `code-generation/adversarial-tests.md`; U8: three separate testers); their records hold no
-written sign-off.
+tests in `code-generation/adversarial-tests.md`; U8: three separate testers).
 
 **Delegation.** On 2026-11-04 the owner delegated the high-risk sign-offs and the open decisions
-to the agents. The written sign-offs for the high-risk Units, including U48 (evidence) and U41
+to the agents. The written sign-offs for the high-risk Units U9, U11, U48 (evidence) and U41
 (security hardening), the acceptance of FD-116 (the release-1 security posture) and the Bengali
 copy review were written by agents under that delegation, not by the owner in person.
 
@@ -174,7 +173,7 @@ copy review were written by agents under that delegation, not by the owner in pe
 
 Build and Test ran once over all ten Units on 2026-11-08 on `main` at `e09b558`, and was
 approved on 2026-11-09 under the owner's delegation, after the manual checks were walked and
-the last fixes (FD-123, ISS-818) landed. The rows below are from 2026-11-08 at `e09b558`
+the last fixes (FD-123 and the `demo:reset` order fix found at M6) landed. The rows below are from 2026-11-08 at `e09b558`
 unless they say otherwise.
 
 | Check | Result |
@@ -189,15 +188,15 @@ unless they say otherwise.
 | Security specs | 15 of 15; a foreign `Host` or `X-Forwarded-Host` answers 403 |
 | Stopped scanner and stopped mail | `/api/health` reports the failed probe (M1, M2) |
 | Rollback drill | a breaking commit reverted, `db:reset` and `db:seed`, the demo back up, `pnpm check` and `pnpm smoke` green |
-| Unit-scoped commands | 116 distinct commands from all 19 Units' test instructions, 116 of 116 green as corrected (ISS-809, ISS-810) |
-| Cross-unit traceability | 0 uncovered: 151 covered, 4 verified at Build and Test, 148 deferred to release 2 by name, 1 retired, 2 not applicable |
+| Unit-scoped commands | 116 distinct commands from all 19 Units' test instructions, 116 of 116 green |
+| Cross-unit traceability | 0 uncovered: 151 covered, 4 verified at Build and Test, 148 assigned to release 2 by name (FD-105), 1 retired, 2 not applicable |
 | Manual checks (U50) | M3 to M6 and the clean-clone rehearsal walked on 2026-11-09 by an agent under the owner's delegation; clean clone to the banner in 2 min 26 s (146 s, cached images; target under 6 minutes) |
 
-The first run was not all green. The performance probe could not find the LCP element under
-Lighthouse 13 (ISS-812), Lighthouse sometimes lost the measured navigation (ISS-815), one
-Unit's coverage command was wrong (ISS-810), some test paths were stale (ISS-809), and eight
-requirement keys had no coverage entry (ISS-811). Each was fixed within the stage's limit of two
-attempts, with no product code changed and no threshold loosened. The details are in
+Build and Test also tuned its own tooling during the stage: the performance probe now finds the
+LCP element under Lighthouse 13, the Lighthouse navigation handling was fixed, one Unit's
+coverage command and some stale test paths were corrected, and the eight requirement keys without
+a coverage entry were resolved. All of this fit within the stage's limit of two attempts, with no
+product code changed and no threshold loosened. The details are in
 `<record>/construction/build-and-test/test-results.md`.
 
 ## Where to look
@@ -230,7 +229,6 @@ In a fresh clone the per-user cursor `aidlc/spaces/default/intents/active-intent
 present, because it is git-ignored. Select the intent before using the AI-DLC commands:
 `aidlc engine intent switch aidlc-adoption`.
 
-The records are append-only history. They cite some files that were removed from `main` before
-submission: the defect register `docs/implementation/ISSUES.md` (every `ISS-` id), the task files
-under `docs/implementation/tasks/`, the migration notes under `docs/aidlc-migration/` and the
-validation working papers. They are kept on branch `archive/full-project-2026-11-09`.
+The records are append-only history. Where they cite earlier working files (the task files under
+`docs/implementation/tasks/`, the migration notes under `docs/aidlc-migration/` and the validation
+working papers), those files are kept on branch `archive/full-project-2026-11-09`.

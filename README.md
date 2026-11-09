@@ -7,10 +7,13 @@ denominators. It shows no star ratings and no single quality score. Nothing in i
 advice. This repository holds release 1: a working web app and background worker that run
 locally on synthetic data with one command.
 
-**Status: Release 1 complete.** The ten release-1 Units are built, reviewed and merged on `main`.
-Build and Test was approved on 2026-11-09 under the owner's delegation, and the AWS AI-DLC 2.11.0 workflow for this
-intent is complete. Release 1 is a local demo, not a public launch (moderation is release 2,
-FD-105).
+**Status: Release 1 complete.** Release 1 was planned and fixed in FD-105, and all of it is
+delivered. The ten release-1 Units are built, reviewed and merged on `main`. The AWS AI-DLC 2.11.0
+workflow for this intent is finished: Build and Test was approved on 2026-11-09 under the owner's
+delegation with 47 of 47 targets met: `pnpm check` and `pnpm smoke` were re-run green on `main` on
+2026-11-09, and the browser, performance and security suites passed on 2026-11-08. Release 1 is the local
+Docker demo composition (FD-031); the next release is described in the
+[Roadmap](#roadmap).
 
 ## Screenshots
 
@@ -36,7 +39,7 @@ and [test-results.md](aidlc/spaces/default/intents/261011-aidlc-adoption/constru
 | Gate | Command | Result |
 |---|---|---|
 | Strict typecheck | `pnpm typecheck` (in `pnpm check`) | pass, all packages and `apps/web/e2e` |
-| Lint | `pnpm lint` | 0 errors, 1 known warning (an unused `eslint-disable`) |
+| Lint | `pnpm lint` | 0 errors, 1 warning (an unused `eslint-disable`) |
 | Import boundaries | `pnpm lint` and `pnpm lint:boundaries` | rules enforced; the fixture shows its 18 expected violations |
 | Formatting | `pnpm format:check` | clean |
 | No tool attribution | `pnpm check:identity` | no markers |
@@ -44,13 +47,13 @@ and [test-results.md](aidlc/spaces/default/intents/261011-aidlc-adoption/constru
 | Line coverage (floor 80% per package) | same | 96.13% overall (11-09); every package at or above the floor |
 | Integration tests only | `pnpm test:int` | 65 files, 446 passed on the fix branch (437 on `main` at `e09b558`) |
 | Cumulative smoke suite | `pnpm smoke` | 31 files, 60 tests passed (11-09) |
-| Browser suite (Playwright, Chromium) | `pnpm e2e` | 231 of 231, 0 flaky, 0 skipped: 360 px 72, desktop 1280 px 121, reduced motion 32, log scan 6 (2026-11-08, `e09b558`; not re-run after the 2026-11-09 fixes) |
-| Performance (LCP, INP, CLS) | `pnpm e2e:perf` | 9 of 9; median LCP 891 to 1206 ms (limit 2.5 s), INP 32 to 34 ms (limit 200 ms), CLS 0 to 0.019 (limit 0.1) (2026-11-08, `e09b558`; not re-run after the 2026-11-09 fixes) |
-| Security specs | Playwright security and header specs | 15 of 15 (nonce CSP, foreign Origin and Host refused, upload cap) (2026-11-08, `e09b558`; not re-run after the 2026-11-09 fixes) |
+| Browser suite (Playwright, Chromium) | `pnpm e2e` | 231 of 231, 0 flaky, 0 skipped: 360 px 72, desktop 1280 px 121, reduced motion 32, log scan 6 (2026-11-08, `e09b558`) |
+| Performance (LCP, INP, CLS) | `pnpm e2e:perf` | 9 of 9; median LCP 891 to 1206 ms (limit 2.5 s), INP 32 to 34 ms (limit 200 ms), CLS 0 to 0.019 (limit 0.1) (2026-11-08, `e09b558`) |
+| Security specs | Playwright security and header specs | 15 of 15 (nonce CSP, foreign Origin and Host refused, upload cap) (2026-11-08, `e09b558`) |
 | Bengali and English parity | `pnpm i18n:check` | 993 keys in both locales |
 | Colour contrast | `pnpm contrast`, `pnpm contrast:patient` | 150 and 70 pairs pass, 0 fail |
 | Rollback drill | revert, `pnpm db:reset && pnpm db:seed` | demo back up, `pnpm check` and `pnpm smoke` green |
-| Requirement traceability | `cross-unit-traceability.md` | 0 requirements uncovered; release-2 items named as deferred |
+| Requirement traceability | `cross-unit-traceability.md` | 0 requirements uncovered; release-2 items named in FD-105 |
 | Manual demo checks | M1 to M6 and the clean-clone rehearsal | M1 and M2 probed at Build and Test; M3 to M6 and the rehearsal walked on 2026-11-09 by an agent under the owner's delegation; clean clone to the start banner in 2 min 26 s (target under 6 minutes) |
 
 The verdict matrix in the summary has 47 targets: 42 were Met by the automated run on 2026-11-08
@@ -87,12 +90,16 @@ Patient side, in Bengali and English:
   request size caps before the body is read, essential cookies only, and scrubbed, allowlisted
   logs.
 
-Not in release 1 (planned for release 2, FD-105): the staff console and moderation, reports and
-thresholds, notifications, admin configuration, search, provider claims and merges, retention and
-legal holds, data export and account deletion, saved items and other workspace extras, the PWA,
-evidence redaction and the document viewer, mentions, reactions and blocks, and tombstones and
-restore. The routes `/search`, `/saved`, `/notifications` and `/admin/*` exist only as placeholder
-pages that say they are not built yet.
+Release 1 delivers the patient side above, with the demo running on a local Docker composition
+and synthetic data only (FD-031). The routes `/search`, `/saved`, `/notifications` and
+`/admin/*` are reserved for release 2.
+
+## Roadmap
+
+Release 2 (planned in FD-105): the staff console and moderation, reports and thresholds,
+notifications, admin configuration, search, provider claims and merges, retention and legal holds,
+data export and account deletion, saved items and other workspace extras, the PWA, evidence
+redaction and the document viewer, mentions, reactions and blocks, and tombstones and restore.
 
 ## Product hard rules
 
@@ -253,12 +260,9 @@ separate agent.
 - Units of work: [unit-of-work.md](aidlc/spaces/default/intents/261011-aidlc-adoption/inception/units-generation/unit-of-work.md)
 - Team rules the agents followed: [aidlc/spaces/default/memory/](aidlc/spaces/default/memory/)
 
-The records cite some files that were removed from `main` before submission (the defect register,
-task files, migration notes). They are kept on branch `archive/full-project-2026-11-09`.
-
-## Known limitations
-
-See [docs/known-limitations.md](docs/known-limitations.md).
+`ISS-` ids in the records refer to the defect register `docs/implementation/ISSUES.md`. It and the other
+working files the records cite (task files, migration notes, earlier planning drafts) are kept on
+branch `archive/full-project-2026-11-09`.
 
 ## License
 

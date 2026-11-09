@@ -12,7 +12,7 @@ hand-edit.
 | `broken.jpg` | A truncated JPEG — triggers `failed(malformed)`. |
 | `flagged.jpg` | A valid JPEG whose COM segment holds `ROGIKOTHA-MALWARE-TEST-MARKER`, matched by the custom ClamAV signature `infra/compose/clamav/` mounts — demonstrates malware detection without a real EICAR string. |
 | `oversize.png` | 16 MB — over the 15 MB per-file limit. **Git-ignored**, regenerated on demand. |
-| `report.pdf` | A minimal valid PDF, used only to prove PDFs are refused at the upload route in Phase 1 (FD-036); added beyond T-303's own fixture list because `05-demo-storyboard.md` step 12 needs it — see ISSUES.md. |
+| `report.pdf` | A minimal valid PDF, used only to prove PDFs are refused at the upload route in Phase 1 (FD-036); added for `05-demo-storyboard.md` step 12. |
 
 ## Storage key layout (seed derivatives, `seed/derivatives.ts`)
 
@@ -25,5 +25,4 @@ Generated evidence derivatives (not these fixtures) are written under
 <STORAGE_ROOT>/private/<itemPublicId>/...   (failed items only — never public)
 ```
 
-T-304's real `FsStorage` adapter should keep this same `{public,private}/<itemPublicId>/<file>`
-layout so seeded rows keep resolving after the real pipeline replaces this stand-in.
+Seeded rows resolve against this `{public,private}/<itemPublicId>/<file>` layout.
