@@ -11,6 +11,12 @@ kept outside the repository.
 
 ## Result
 
+**Update 2026-11-09: SUCCESS.** The five manual targets were walked on `main` (office computer,
+Windows 11 Enterprise), the last fixes landed (FD-123, ISS-818), and `pnpm check` and `pnpm smoke` were
+re-run green on `29a2567`. See "Manual checks, 2026-11-09" at the end. The 2026-11-08 result below is
+kept as it was recorded.
+
+
 **FAILED** under the stage's failure predicate only because five manual targets are Unverified,
 after the rung-1 fixes below, with no product defect found:
 
@@ -473,3 +479,40 @@ Build and Test rows now have their run).
 ## Loop-back log
 
 None: no rung-3 loop-back was taken (no product defect was found).
+
+## Manual checks, 2026-11-09
+
+Walked on `main` (`4ae320e` and `29a2567`) on the office computer, Windows 11 Enterprise
+10.0.26300, Node 24.18.0, pnpm 11.20.0, against the dev database `rogikotha` and the main compose
+project. The detailed rows are in `docs/validation/U50-walkthrough.md`.
+
+| Target | Observed | Verdict |
+|---|---|---|
+| U50-M3 Ctrl+C | The demo ran in its own console; a console Ctrl+C reached it. The worker logged `worker.stopping` and `worker.stopped` (signal SIGINT), the demo printed "Stopped. The containers keep running; pnpm demo:down stops them.", the demo, web and worker processes exited, `/api/health` stopped answering, and postgres, clamav and mailpit stayed healthy | Met |
+| U50-M4 port 3000 held | A second `pnpm demo` while the first held port 3000 stopped at preflight with exit 1: "Port 3000 (web app) is in use. Free it and run pnpm demo again." and "Find its holder: netstat -ano \| findstr :3000" | Met |
+| U50-M5 twice | After the first and the second run: doctors 14, reviews 40, accounts 120, comments 73; 0 doctor names occur twice; the second run's Data step took 9 s | Met |
+| U50-M6 reset | First walk: the reset seeded, then emptied the storage folders, leaving 0 files, so the seeded evidence had no files (ISS-818, S2). Fixed in `scripts/demo-reset.mjs` (empty first, then reset and seed; order test updated). Re-walk: exit 0, 20 files regenerated, Mailpit 0 messages, and `shirin_88` signed in through `/en/sign-in` and landed on `/en/me` | Met after ISS-818 |
+| U50-BR10.4 clean clone | `git clone` of `main` at `29a2567` into an empty folder, `pnpm install --frozen-lockfile`, `RK_COMPOSE_PROJECT=rogikotha_rehearsal pnpm demo`: the banner after 146 s (clone 7 s, install 29 s, preflight 3 s, services 20 s, data 18 s, build 61 s, start 6 s) with cached images; `/bn`, `/en` and Mailpit 200; health ok; `down -v` removed the rehearsal volumes | Met |
+| U50-BR10.7 font (method fix, ISS-814) | Width comparison on `/bn`: the body stack measures 647.6 px for the test sentence, Nirmala UI 647.6 px, the other four names 700.6 px (the `monospace` fallback): Nirmala UI is in use | Met |
+
+Fixes landed before the re-run (each squash-merged on `main`):
+
+- `release-1-security-fixes` (`4ae320e`, FD-123): migration 0012 limits the `rk.audit_expiry` escape
+  hatch to an `rk_maintenance` session inside `fn_expire_audit` and pins `search_path` (ISS-141,
+  ISS-148); migration 0013 narrows `rk_worker` on `evidence_items` to column grants without
+  `original_filename_enc` and `uploaded_by_account_id` (ISS-139, ISS-632, ISS-239); better-auth 1.7.18
+  (ISS-704); `packages/application` declares `@types/node` (ISS-817). The two `it.fails` tripwires
+  became ordinary passing tests, and new probes cover the narrowed grants. On the fix branch:
+  `pnpm check` 4513 passed, `pnpm smoke` 60, `pnpm test:int` 65 files, 446 passed.
+- `release-1-demo-reset-order` (`29a2567`): ISS-818.
+
+Re-run on `main` at `29a2567`:
+
+| Command | Exit | Result |
+|---|---|---|
+| `pnpm install --frozen-lockfile` | 0 | lockfile unchanged |
+| `pnpm check` | 0 | 366 files, 4513 passed, 1 skipped (4514); statements 94.56%, lines 96.13% |
+| `pnpm smoke` | 0 | 31 files, 60 passed |
+
+ISS ids found or fixed on 2026-11-09: ISS-139, ISS-141, ISS-148, ISS-239, ISS-632, ISS-704, ISS-813,
+ISS-814, ISS-816 (recorded, open S4), ISS-817, ISS-818.

@@ -20,7 +20,7 @@ rollback drill, the font check and every Verdict cell are done at Build and Test
 | pnpm | 11.20.0 |
 | Chromium (Playwright build) | `@playwright/test` 1.64.1, Chromium revision 1248 (Chrome for Testing 156.0.8078.4) |
 | Bengali body font in use (BR10.7, see "Bengali body font") | Nirmala UI (width comparison, 2026-11-09) |
-| Clean-clone time to the banner (see "Clean clone") | not run yet (Build and Test) |
+| Clean-clone time to the banner (see "Clean clone") | 2 min 26 s with cached images (2026-11-09) |
 | Journey runs (Step 42) | Step 42 pair at `751433b`: (A) 231 expected, 0 unexpected, 0 flaky, 0 skipped; (B) the same. Step 51 pair at `40adadd` (code identical to `751433b`): run 1: 231 expected, 0 unexpected, 0 flaky, 0 skipped (6.0 min); run 2, straight after: 231 expected, 0 unexpected, 0 flaky, 0 skipped (6.0 min); no test needed a retry in either run. Per project: `chromium-desktop` 121, `chromium-360` 72, `chromium-reduced-motion` 32, `log-scan` 6 |
 
 ## Storyboard steps 1 to 28
@@ -158,11 +158,11 @@ S3 row; a demo that does not start is S1.
 
 | Item | Value |
 |---|---|
-| Images cached before the run | |
-| Time to the banner | |
-| Banner links open (`/bn`, `/en`, Mailpit) | |
-| Rehearsal volumes removed | |
-| Verdict and ISS | |
+| Images cached before the run | yes: `postgres:18`, `clamav/clamav:1.5.4`, `axllent/mailpit:v1.31.1` |
+| Time to the banner | 146 s from the start of `git clone` (clone 7 s, `pnpm install --frozen-lockfile` 29 s, preflight 3 s, services 20 s, migrate and seed 18 s, build 61 s, start 6 s) |
+| Banner links open (`/bn`, `/en`, Mailpit) | `/bn` 200, `/en` 200, Mailpit 200; `/api/health` `{"ok":true,"db":"ok","queue":"ok","mail":"ok","scanner":"ok","mode":"demo"}` |
+| Rehearsal volumes removed | `docker compose -p rogikotha_rehearsal down -v` removed the rehearsal volumes and network; 0 rehearsal volumes left; the main project's volumes untouched |
+| Verdict and ISS | pass (under the 6-minute target); clone of `main` at `29a2567` |
 
 ## Rollback drill (BR10.5)
 
