@@ -1,6 +1,6 @@
 # Continue on another device
 
-> **2026-11-06 evening: the latest handoff is [handoff-2026-11-06/README.md](handoff-2026-11-06/README.md).** It is the last push of that day; read it first. It supersedes the "where things stand" parts below.
+> **2026-11-09: release 1 is finished and submitted. Start with [handoff-2026-11-09/README.md](handoff-2026-11-09/README.md)** (how to continue on this archive branch). The older handoffs are [handoff-2026-11-08](handoff-2026-11-08/README.md) and [handoff-2026-11-06](handoff-2026-11-06/README.md).
 
 This guide picks up the RogiKotha build on a different computer, for example your home machine. For where the work stands, read [RESUME.md](RESUME.md) first. Your decisions and the agents' calls are in [OWNER-REVIEW-QUEUE.md](OWNER-REVIEW-QUEUE.md).
 
