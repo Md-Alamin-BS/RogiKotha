@@ -1,6 +1,6 @@
 # Data model
 
-Owner per table follows the module map in `docs/planning/05-recommended-architecture.md`. Snake_case;
+Owner per table follows the module map in `docs/planning/05-recommended-architecture.md` (on branch `archive/full-project-2026-11-09`) and the modules in `packages/application/src/modules/`. Snake_case;
 every table has `id uuid primary key` (UUIDv7, app-generated), `created_at timestamptz not null default now()`,
 and, where rows change, `updated_at timestamptz`. Public-facing entities additionally carry
 `public_id text unique not null` (10-char base32). Append-only tables have a trigger that raises on

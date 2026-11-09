@@ -116,7 +116,7 @@ The T-101 ports below are the shapes in `packages/application/src/ports/*.ts`; w
 | `Storage` | `putQuarantine(stream, {itemId}) → key`, `getPrivate(key) → stream`, `putDerivative(bytes, meta) → key` (immutable), `head(key)`, `delete(key, {reason})` | `adapters/storage-fs` under `STORAGE_ROOT/{quarantine,private,public}` | in-memory map |
 | `MalwareScanner` | `scan(stream) → {status:'clean'|'detected'|'unavailable', signatureVersion?}` | `adapters/scanner-clamd` (INSTREAM to `CLAMD_HOST:3310`, 30 s timeout) | scripted |
 | `ImageSanitiser` | `sanitise(bytes, {maxPixels}) → {png: bytes, width, height, version}` | sharp: decode → strip metadata → re-encode PNG (or JPEG for photos > 2 MP) | passthrough |
-| `PdfRasteriser`, `PdfAssembler` | **Phase 2** (FD-036) — see `07-phase-2-document-evidence.md`; not created in Phase 1 | — | — |
+| `PdfRasteriser`, `PdfAssembler` | **Phase 2** (FD-036) — see `07-phase-2-document-evidence.md` (on branch `archive/full-project-2026-11-09`); not created in Phase 1 | — | — |
 | `JobQueue` | `ensure(name)`; `enqueue(tx, name, payload, {key}) → PortResult<'enqueued' \| 'deduplicated', 'job_not_enqueued'>` (the worker's `work(name, handler)` stays in `database/queue`) | `database/queue` (pg-boss) | in-memory |
 | `Outbox` | `append(tx, name, payload)`, payload typed per event name | `database` | list |
 | `SearchIndex` | `upsert(doc)`, `remove(kind, refId)`, `search(query, filters, page)`, `suggest(q)` | `database/search` | naive in-memory |

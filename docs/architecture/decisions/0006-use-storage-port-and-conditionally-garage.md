@@ -2,7 +2,7 @@
 
 - **Status:** Accepted architecture; implementation conditional
 - **Date:** 2026-08-30
-- **Sources:** FD-007, `docs/planning/03-research-report.md`
+- **Sources:** FD-007, `docs/planning/03-research-report.md` (on branch `archive/full-project-2026-11-09`)
 
 ## Decision
 

@@ -26,25 +26,17 @@ const NO_CONSOLE_EXCEPTIONS = [
 
 export default tseslint.config(
   {
-    // ASSUMPTION(T-001): the task's ignore list (node_modules, dist, .next,
-    // ui-design-prototype, tools, _bmad, .data, docs) did not anticipate the
-    // agent-tooling directories already present in this checkout
-    // (.agents, .claude, .github, .impeccable) — they hold third-party skill
-    // scripts, not repo source, so they are ignored too (see ISS-003). .codex
-    // holds the AI-DLC Codex hooks and tools, likewise not repo source (ISS-220).
+    // Not repo source: the design prototype, the contrast tool, local data, docs, the AI-DLC
+    // harness (.claude) and the design-tool config (.impeccable).
     ignores: [
       'node_modules',
       '**/dist',
       '**/.next',
       'ui-design-prototype/**',
       'tools/**',
-      '_bmad/**',
       '.data/**',
       'docs/**',
-      '.agents/**',
       '.claude/**',
-      '.codex/**',
-      '.github/**',
       '.impeccable/**',
       // T-010: planted boundary violations, linted only by `pnpm lint:boundaries`.
       'lint-fixtures/**',

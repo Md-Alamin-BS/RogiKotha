@@ -6,7 +6,7 @@ journey test checked, not what a person saw. The hand walk, the manual checks, t
 rollback drill, the font check and every Verdict cell are done at Build and Test (BR10.2). Rows already marked
 "release 2" were decided in the design (FD-105) and are not walked. The storyboard is
 [05-demo-storyboard.md](../implementation/05-demo-storyboard.md); a finding becomes an `ISS-` row in
-[ISSUES.md](../implementation/ISSUES.md) with Found in `U50`.
+the defect register `docs/implementation/ISSUES.md` (on branch `archive/full-project-2026-11-09`) with Found in `U50`.
 
 ## Header (filled at the walk-through)
 

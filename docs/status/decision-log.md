@@ -228,7 +228,7 @@ Taken on the readiness check of the documents the AI-DLC Inception stages transc
 
 ## Founder decision frontier status
 
-All `CQ-01` through `CQ-12` questions in [the conflicts and assumptions register](../planning/02-conflicts-assumptions-questions.md) are resolved. The founder explicitly approved Gate 1 and authorized the final architecture, ADR, dependency, backlog, frontend, design-concept and worktree-safe planning artifacts on 2026-08-30.
+All `CQ-01` through `CQ-12` questions in the conflicts and assumptions register `docs/planning/02-conflicts-assumptions-questions.md` (on branch `archive/full-project-2026-11-09`) are resolved. The founder explicitly approved Gate 1 and authorized the final architecture, ADR, dependency, backlog, frontend, design-concept and worktree-safe planning artifacts on 2026-08-30.
 
 ## Specialist decisions reserved
 

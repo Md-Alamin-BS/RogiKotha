@@ -30,7 +30,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
 // STORY-NFR-AA-HOVER-001: static base-state contrast guard (complementary to
-// tools/hover-probe.mjs which exercises the live :hover state in a browser).
+// the hover probe, on branch archive/full-project-2026-11-09, which exercised the live :hover state).
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 const flagAt = process.argv.indexOf('--tokens');
 const tokensPath = flagAt === -1 ? null : process.argv[flagAt + 1];

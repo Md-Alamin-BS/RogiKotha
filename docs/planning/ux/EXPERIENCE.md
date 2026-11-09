@@ -10,8 +10,8 @@ design: ./DESIGN.md
 sources:
   - ../01-requirement-baseline.md
   - ../06-requirement-traceability-matrix.md
-  - ../08-product-backlog.md
-  - ../09-frontend-prototype-plan.md
+  - ../08-product-backlog.md  # on branch archive/full-project-2026-11-09
+  - ../09-frontend-prototype-plan.md  # on branch archive/full-project-2026-11-09
 ---
 
 > Selected direction: **Concept 04b — Quiet Clinic (minimal pass)**. Founder decision FD-027, 2026-09-06 (supersedes FD-026 / Concept 04 warm variant).

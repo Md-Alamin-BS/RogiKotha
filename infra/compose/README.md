@@ -88,7 +88,7 @@ Restart it with `docker compose -f infra/compose/docker-compose.yml start clamav
 
 ## Version pins
 
-- `postgres:18` — floating major tag, per `00-master-plan.md` §3; re-verified 2026-09-13
+- `postgres:18` — floating major tag, per the master plan's stack pins (`00-master-plan.md` §3, on branch `archive/full-project-2026-11-09`); re-verified 2026-09-13
   (`docs/status/dependency-check-log.md`) as resolving to 18.6, no newer 18.x patch at that date.
 - `clamav/clamav:1.5.4` — **never `latest`**; 1.5.4 carries the 2026 CVE fixes
   (CVE-2026-20337/20338/20339/20345/20346/20347/20348, CVE-2025-8088). Re-verified unchanged

@@ -3,7 +3,7 @@
 **Status:** Gate 2 baseline  
 **Date:** 2026-08-30  
 **Requirement count:** 100 functional + 12 non-functional = 112  
-**Backlog:** [08-product-backlog.md](08-product-backlog.md) and [backlog.yaml](backlog.yaml)
+**Backlog:** `08-product-backlog.md` and `backlog.yaml` (on branch `archive/full-project-2026-11-09`)
 
 ## Coverage rule
 

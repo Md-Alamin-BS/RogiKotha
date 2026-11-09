@@ -1,6 +1,6 @@
 // @ts-check
 // Import boundaries of `01-conventions.md` §2 with FD-040 and FD-093 (T-010). The element matrix
-// is `docs/aidlc-migration/design-drafts/t-010-boundary-lint-and-ci/functional-spec.md` § 3.
+// is § 3 of T-010's functional spec, on branch `archive/full-project-2026-11-09`.
 import { builtinModules } from 'node:module';
 import boundaries from 'eslint-plugin-boundaries';
 

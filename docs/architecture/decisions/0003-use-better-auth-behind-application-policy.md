@@ -2,7 +2,7 @@
 
 - **Status:** Accepted with spike
 - **Date:** 2026-08-30
-- **Sources:** FD-006, FD-013, `docs/planning/03-research-report.md`
+- **Sources:** FD-006, FD-013, `docs/planning/03-research-report.md` (on branch `archive/full-project-2026-11-09`)
 
 ## Decision
 

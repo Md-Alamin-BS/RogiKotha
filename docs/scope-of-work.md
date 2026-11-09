@@ -15,7 +15,9 @@ doctors and facilities, with provenance, distributions, and a moderation path.
 Nothing in the product is medical advice. The product is the published
 account.
 
-Phase 1 is an unrestricted public launch on a single small server
+The PRD's Phase 1 is a public launch on a single small server. Release 1, the version in this
+repository, is a local demo on synthetic data and is not for public launch, because moderation
+is release 2 (FD-105). The rest of this page describes the PRD's Phase 1
 (USD ≤ 100/month), built with open-source-first components, with Bangladesh as
 the primary country and locale. The product is intentionally not a
 doctor-rating app, not a clinical decision-support tool, and not a global SaaS.
@@ -224,11 +226,10 @@ architecture, and decision material live in:
 - Product Requirements: `docs/RogiKotha_PRD_v1.0.docx`
 - Business Requirements: `docs/RogiKotha_BRD_v1.0.docx`
 - Requirement baseline: `docs/planning/01-requirement-baseline.md`
-- Architecture spine: `docs/architecture/ARCHITECTURE-SPINE.md`
+- Architecture as built: `README.md` (Architecture)
 - Architecture decisions: `docs/architecture/decisions/` (ADR-001 → ADR-013)
-- Dependency selections: `docs/architecture/DEPENDENCY-SELECTIONS.md`
-- Founder decisions: `docs/status/decision-log.md` (FD-001 → FD-028)
-- Product backlog: `docs/planning/08-product-backlog.md`
-- Validation strategy: `docs/planning/10-validation-strategy.md`
-- Current status: `docs/status/current-status.md`
-- Risk register: `docs/status/risk-register.md`
+- Dependency checks: `docs/status/dependency-check-log.md`
+- Founder decisions: `docs/status/decision-log.md` (FD-001 → FD-123)
+- Units of work: `aidlc/spaces/default/intents/261011-aidlc-adoption/inception/units-generation/unit-of-work.md`
+- Build and Test results: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/build-and-test/build-and-test-summary.md`
+- Known limitations: `docs/known-limitations.md`

@@ -12,7 +12,7 @@ updated: 2026-09-06
 sources:
   - ../01-requirement-baseline.md
   - ../06-requirement-traceability-matrix.md
-  - ../09-frontend-prototype-plan.md
+  - ../09-frontend-prototype-plan.md  # on branch archive/full-project-2026-11-09
   - ../../../ui-design-prototype/README.md
   - ../../../ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/
 colors:
@@ -154,7 +154,7 @@ RogiKotha feels like a calm consulting room for reading first-person experiences
 
 The selected design direction is **Concept 04b — Quiet Clinic (minimal pass)**, chosen via BMad UX Update run on 2026-09-06 (founder decision FD-027). It supersedes FD-026 (the warm Quiet Clinic variant, Concept 04). Five directions were compared under FD-025; Concept 04b was selected for the calm-consulting-room posture expressed without the warm "consulting-room" skin. Concept 04b is now the only patient direction in the live gallery, at `ui-design-prototype/concepts/concept-04b-quiet-clinic-minimal/`. Concepts 01, 02, 03, 04, 04c, 04d, and 05 are all archived under `ui-design-prototype/.archive/` — 04c and 04d per FD-028 (2026-09-06), then 03 and 04 on 2026-09-08 once the editorial reference and the warm-vs-minimal comparison had served their purpose. They stay inspectable there; they are no longer runnable comparisons.
 
-This file is the visual contract for the patient-facing product. It does not govern the staff console at `ui-design-prototype/admin/`, which was redesigned onto its own surface system — **Chart Tray** — and shares none of the tokens below; see `../09-frontend-prototype-plan.md`.
+This file is the visual contract for the patient-facing product. It does not govern the staff console at `ui-design-prototype/admin/`, which was redesigned onto its own surface system — **Chart Tray** — and shares none of the tokens below; see `../09-frontend-prototype-plan.md` (on branch `archive/full-project-2026-11-09`).
 
 Quiet Clinic (minimal pass) keeps the FD-026 identity — circular avatars, separate-capsule distributions, opaque surfaces, coral held back for emergencies — and applies the published 2025–2026 healthcare-UX research findings: paper background instead of warm oat, teal-gray instead of teal, hairline rules, no decorative linework, no atmospheric veil, no panel shadow, smaller radii, and an outline-only capsule row with a status dot rather than tinted fills. Roundness is carried by shape — radii, pills, circles — with `ui-rounded` as progressive enhancement on Apple platforms.
 
@@ -250,5 +250,5 @@ All five primitives are killed by the existing `body[data-motion="off"]` rule (c
 2. The founder reviewed the live gallery at `http://localhost:4173/ui-design-prototype/` and selected Concept 04 Quiet Clinic (recorded as FD-026 on 2026-09-06).
 3. The Quiet Clinic prototype was then extended with two additional directions for explicit side-by-side comparison: 04c (Editorial — Substack / Stripe Press / Scroll.in reference) and 04d (Modern SaaS — Linear / Stripe / Notion reference).
 4. All four variants (Concept 04 warm, 04b minimal pass, 04c Editorial, 04d Modern SaaS) were reviewed side by side on 2026-09-06. The founder selected Concept 04b — Quiet Clinic (minimal pass) as the implementation direction, recorded as FD-027. FD-026 is superseded.
-5. Concept A's identity contract is now "the 04b minimal-pass variant of Quiet Clinic"; Concept A's archived Concept B / Concept C wireframes in `wireframes/.archive/` remain historical references only. Per FD-028 (2026-09-06), Concept 04c (Editorial) and Concept 04d (Modern SaaS) were archived in `ui-design-prototype/.archive/` once 04b was chosen as the implementation direction; Concept 03 (Luminous Editorial) and Concept 04 (warm) were kept a while longer as the editorial reference and the warm-vs-minimal comparison, then archived beside them on 2026-09-08. The live gallery now shows one patient direction — Concept 04b — beside the staff console.
+5. Concept A's identity contract is now "the 04b minimal-pass variant of Quiet Clinic"; Concept A's archived Concept B / Concept C wireframes in `wireframes/.archive/` (on branch `archive/full-project-2026-11-09`) remain historical references only. Per FD-028 (2026-09-06), Concept 04c (Editorial) and Concept 04d (Modern SaaS) were archived in `ui-design-prototype/.archive/` (on branch `archive/full-project-2026-11-09`) once 04b was chosen as the implementation direction; Concept 03 (Luminous Editorial) and Concept 04 (warm) were kept a while longer as the editorial reference and the warm-vs-minimal comparison, then archived beside them on 2026-09-08. The live gallery now shows one patient direction — Concept 04b — beside the staff console.
 6. DESIGN.md and EXPERIENCE.md were finalized against the 04b prototype tokens, components, and motion primitives via a BMad UX Update run on 2026-09-06. The BMad-UX skill walked Discovery → Finalize, surfaced the FD-026 warm-variant tokens as conflicts, and resolved them through FD-027.

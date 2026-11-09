@@ -1,7 +1,9 @@
 # Demo storyboard
 
-What the finished local demo shows, in order, with the seeded data that makes each step work. T-504
-verifies every step; T-503 automates the ones marked ●.
+What the finished local demo shows, in order, with the seeded data that makes each step work. The
+Playwright suite automates the ones marked ●.
+
+**Release 1 scope (FD-105):** steps 1, 3 to 15 and 28 are in release 1. Step 2 (search) and steps 16 to 27 (reports, the staff console, the workspace, data export and deletion, the PWA) are release 2. Some release-1 steps have release-2 parts; each row of [docs/validation/U50-walkthrough.md](../validation/U50-walkthrough.md) names them.
 
 ## Seeded accounts (`pnpm db:seed`)
 
@@ -70,7 +72,7 @@ third tab. Total ≈ 25 minutes.
 27. Install as PWA (Chrome "Install"), go offline → home shell loads, `/me` does not; sign out purges caches.
 28. Reset the demo: `pnpm demo:reset` restores the seed and the clock.
 
-T-504 records the observed result of every step in `docs/implementation/tasks/T-504-walkthrough-record.md`; T-505 reads it. For release 1 the record is [docs/validation/U50-walkthrough.md](../validation/U50-walkthrough.md) (FD-105 defers the parts that need the staff console and the other release-2 features). Note: a **failed** evidence item (step 12's encrypted PDF) is shown to its author only; the public experience page lists published documents alone (AD-6) — the prototype's public rendering of e5's failure is not carried over.
+The observed result of every release-1 step is recorded in [docs/validation/U50-walkthrough.md](../validation/U50-walkthrough.md) (FD-105 defers the parts that need the staff console and the other release-2 features). Note: a **failed** evidence item (step 12's encrypted PDF) is shown to its author only; the public experience page lists published documents alone (AD-6) — the prototype's public rendering of e5's failure is not carried over.
 
 ## Fixtures (`packages/test-support/fixtures/`)
 

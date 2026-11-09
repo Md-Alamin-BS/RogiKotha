@@ -15,15 +15,7 @@ Two cards on the gallery (`index.html`), and nothing else:
 
 ## The archive
 
-Everything else is under `.archive/`. It is still runnable, and it is the record of how the two live artefacts were arrived at, not live work. FD-029 (2026-09-08) took 03 and 04 off the gallery.
-
-| Concept | Notes |
-| --- | --- |
-| **03** — Luminous Editorial | Warm earth tones, terracotta anchor. It carried an in-folder moderation console of its own; the console that shipped is the standalone one at `admin/`. |
-| **04** — Quiet Clinic | Oat + muted teal, serif headings, generous air. FD-026. |
-| **01** Bioluminescent Depth, **02** Editorial Futurism, **05** Operator Console | Three of the five directions built per FD-025, alongside 03 and 04. |
-| **04c** Editorial, **04d** Modern SaaS | Side-by-side variants explored during the 04b selection. FD-028. |
-| `admin-shell-studies/` | A *Chart Tray*, B *Ink Ledger*, C *Signal Ward* — the three shells built against identical markup. A was chosen and ported to `admin/`. |
+The rejected directions (01, 02, 03, 04, 04c, 04d, 05) and the three admin shell studies were archived per FD-028 and FD-029. They are not on `main`; they are kept on branch `archive/full-project-2026-11-09` under `ui-design-prototype/.archive/`.
 
 ## Admin console
 
@@ -72,19 +64,11 @@ python -m http.server 4173
 # open http://127.0.0.1:4173/
 ```
 
-Or `npm start` from the repo root, which serves the tree on `http://localhost:8137/ui-design-prototype/`.
-
 No bundler, no `node_modules`, nothing loaded from the network at runtime.
 
 ## Traceability
 
-Each story in `docs/planning/08-product-backlog.md` has a live status (Done / Partial / Missing / Blocked / Won't Do) and a proof pointer in [`docs/planning/09-coverage-matrix.md`](../docs/planning/09-coverage-matrix.md). Regenerate the rollup with:
-
-```powershell
-node tools/coverage.mjs
-```
-
-Inline annotations in the prototype have the form `<!-- STORY-XYZ: short title -->` and are the proof points the regenerator greps.
+Inline annotations in the prototype have the form `<!-- STORY-XYZ: short title -->`. The story list, the coverage matrix and the tool that read these annotations are kept on branch `archive/full-project-2026-11-09`.
 
 ## Detector
 

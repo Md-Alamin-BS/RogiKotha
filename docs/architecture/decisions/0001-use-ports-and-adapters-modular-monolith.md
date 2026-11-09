@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-08-30
-- **Sources:** `docs/planning/04-architecture-options.md`, FD-010
+- **Sources:** `docs/planning/04-architecture-options.md` (on branch `archive/full-project-2026-11-09`), FD-010
 
 ## Decision
 

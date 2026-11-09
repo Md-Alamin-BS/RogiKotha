@@ -1,17 +1,17 @@
 # Conventions for implementing RogiKotha
 
 Every task file assumes these rules. An agent that follows them produces code that merges cleanly
-with everyone else's. Where a task file and this file disagree, the task file wins for that task —
+with everyone else's. Where a Unit's Functional Design and this file disagree, the Unit's Functional Design wins for that task —
 and the disagreement must be noted in the task's hand-off section.
 
 ## 0. Read order for an implementing agent
 
 1. `AGENTS.md` (no attribution anywhere; version checks; research before deviating)
-2. `docs/implementation/00-master-plan.md` §1–§4 (what, decisions, stack, layout)
+2. `README.md` (what was built, architecture, stack) and `docs/status/decision-log.md`
 3. This file
 4. `docs/implementation/02-data-model.md` and `03-routes-and-contracts.md` — the sections your task names
 5. `PRODUCT.md` "Hard rules" — every task's checklist is derived from them
-6. Your task file `docs/implementation/tasks/T-xxx-*.md`
+6. Your Unit's record: `aidlc/spaces/default/intents/261011-aidlc-adoption/construction/<unit>/` and its row in `inception/units-generation/unit-of-work.md`
 7. The prototype files your task names (read them fully — they are the spec for behaviour and copy)
 
 Do **not** read the whole `docs/planning/` tree unless your task tells you to; the plan already distilled it.
@@ -212,7 +212,7 @@ export interface Actor {
 | domain | `packages/domain/**/*.test.ts` | Vitest | every state transition table; every policy function; hard-rule tests where the task names them |
 | application | `packages/application/**/*.test.ts` with fakes from `test-support` | Vitest | each command's happy path + each authorization refusal + one audit assertion |
 | database | `packages/database/**/*.int.test.ts` | Vitest against the compose PostgreSQL (`DATABASE_URL_TEST`) | each repository method; migrations apply from empty |
-| component | `apps/web/**/*.test.tsx` | Vitest + Testing Library + jsdom | render in `en` and `bn`; the interactions the prototype's `tools/smoke.mjs` covered for that screen |
+| component | `apps/web/**/*.test.tsx` | Vitest + Testing Library + jsdom | render in `en` and `bn`; the interactions the prototype covers for that screen |
 | e2e | `apps/web/e2e/*.spec.ts` | Playwright + axe | added in T-503; earlier tasks add a smoke spec only if the task says so |
 
 Test names read as sentences: `it('hides content after five distinct confirmed accounts report it')`. Use builders, never hand-written fixture objects. Never assert on implementation details (class names, internal calls).
@@ -225,18 +225,18 @@ Test names read as sentences: `it('hides content after five distinct confirmed a
 
 ## 12. Git and commits
 
-- Branch per task from `main`: `task/t-101-better-auth`. Worktree per lane. Never `reset --hard`, `checkout --`, or `clean` on a dirty tree (see `docs/planning/11-worktree-safe-execution-plan.md`).
+- Branch per task from `main`: `task/t-101-better-auth`. Worktree per lane. Never `reset --hard`, `checkout --`, or `clean` on a dirty tree (`aidlc/spaces/default/memory/team.md`, Way of Working).
 - Commit only the task's owned paths after reading `git diff --cached`. Message: `T-101: Better Auth adapter with Argon2id and verified email` then a short body. **No `Co-Authored-By`, no tool or model names, anywhere** (`AGENTS.md`). If your tool injects a trailer, run `git commit --amend` to remove it before pushing, or stop and tell the human.
-- One task = one PR into `main` after its `VALIDATE` record says PASS.
+- One Unit = one Bolt, squash-merged into `main` after the reviewer's READY and the owner's approval.
 
 ## 13. Definition of done (every task)
 
 1. All steps in the task file done; owned paths only.
-2. `pnpm check` green — eleven steps in this order, stopping at the first failure (T-010, T-011): `typecheck`, `lint` (boundary rules included), `lint:boundaries` (the fixture proof), `format:check` (Prettier), `check:identity` (no attribution markers), `test:coverage` (every test project, the database one included, with the 80% line floor per package), `i18n:check`, `contrast` (`--tokens apps/web/src/styles/tokens.css`), `contrast:patient`, `check:motion`, `build`. Then `pnpm smoke` green, and the CI run on the Bolt branch head green before the merge.
+2. `pnpm check` green — eleven steps in this order, stopping at the first failure (T-010, T-011): `typecheck`, `lint` (boundary rules included), `lint:boundaries` (the fixture proof), `format:check` (Prettier), `check:identity` (no attribution markers), `test:coverage` (every test project, the database one included, with the 80% line floor per package), `i18n:check`, `contrast` (`--tokens apps/web/src/styles/tokens.css`), `contrast:patient`, `check:motion`, `build`. Then `pnpm smoke` green.
 3. New strings exist in both `en.json` and `bn.json`.
 4. Hard-rule checklist in the task file ticked with evidence (file:line or test name).
-5. `docs/implementation/tasks/T-xxx-*.md` "Hand-off" section filled: what changed, what was not done, questions for the human, follow-ups.
-6. A separate validator session produced a record in `docs/validation/T-xxx.md` (template in `README.md` §4) with PASS / PASS WITH FOLLOW-UP / FAIL.
+5. The Unit's `code-generation/code-summary.md` in the AI-DLC record filled: what changed, what was not done, questions for the owner, follow-ups.
+6. A separate AI-DLC reviewer agent read the full diff and recorded its verdict (READY or NOT-READY) in the Unit's `code-generation/reviews/`.
 
 ## 14. The hard-rule checklist (copy into every task's hand-off)
 

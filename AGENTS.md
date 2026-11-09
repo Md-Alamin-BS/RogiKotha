@@ -1,23 +1,5 @@
 # Instructions for AI agents / CLI tools working in this repo
 
-## ⚠️ STOP — AI-DLC migration pending (read before any implementation)
-
-This project now follows AWS **AI-DLC** (installed, pinned to 2.11.0). The conversion of the
-existing plan, backlog, tasks, skills and build loop (BMAD, grill-me, `docs/implementation/LOOP.md`)
-is **in progress** — see the progress table in `docs/aidlc-migration/README.md`.
-
-Before you start any implementation, build, loop or task work — in any tool (Claude Code, Codex,
-Puku CLI, Cursor, …):
-
-1. Show the human this warning: "⚠️ AI-DLC migration pending — the resources and docs must be
-   converted into AI-DLC artifacts before implementation starts. See
-   `docs/aidlc-migration/README.md`."
-2. Ask whether to convert first or proceed on the old process this once.
-3. Do only what the human answers. Never start implementation silently.
-
-Full inventory, mapping and open decisions: [docs/aidlc-migration/README.md](docs/aidlc-migration/README.md).
-Remove this section only when that file says **Status: DONE**.
-
 ## No agent identity, anywhere
 
 Do not add your name, brand, tool identity, model name, "Co-Authored-By"
@@ -44,9 +26,8 @@ its own git author identity, disable that behavior before committing. If it
 cannot be disabled, ask the user before committing rather than pushing
 attribution into the repo.
 
-This rule was added after a prior commit (`Puku CLI` / `Opus 4.8`,
-`noreply@puku.sh`) landed on GitHub with tool identity in the author and
-trailer fields. Don't repeat that.
+This rule was added after an earlier commit landed on GitHub with a tool's
+identity in the author and trailer fields. Don't repeat that.
 
 ## Check dependency versions before implementing something new
 

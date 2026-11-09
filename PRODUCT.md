@@ -1,6 +1,6 @@
 # RogiKotha — Product Truth
 
-> Durable product context for AI coding agents. Updated by `/impeccable init`.
+> Durable product context for anyone, person or agent, who changes this product.
 > Source-of-truth: `docs/RogiKotha_PRD_v1.0.docx`, `docs/RogiKotha_BRD_v1.0.docx`,
 > `docs/status/decision-log.md` (founder decisions), and `docs/architecture/`.
 
@@ -56,7 +56,7 @@ The product must not look like, sound like, or behave like:
 
 ## Design references
 
-Two artefacts are live:
+Two design artefacts are the reference:
 
 - **04b Quiet Clinic (minimal pass)** *(selected via FD-027, 2026-09-06)* —
   the patient UI. Paper base, teal-gray accent, hairline rules, no decorative
@@ -69,8 +69,12 @@ Two artefacts are live:
   action. Chosen from three shell studies (A Chart Tray, B Ink Ledger,
   C Signal Ward).
 
-The directions 04b was chosen against are archived under
-`ui-design-prototype/.archive/`, runnable but no longer live:
+Since FD-091 (2026-10-27) the shipped patient UI follows its own redesign, "Warm Paper, Soft
+Depth", with its own design and motion tokens in `apps/web/src/styles/`. The 04b prototype stays
+the source of truth for content, data and behaviour.
+
+The directions 04b was chosen against were archived. They are no longer on `main`; they are on
+branch `archive/full-project-2026-11-09`:
 
 - **03 Luminous Editorial** — warm earth tones, terracotta anchor, editorial
   reading measure, provenance in the margin. It carried a moderation console of
@@ -79,8 +83,8 @@ The directions 04b was chosen against are archived under
 - **04 Quiet Clinic (warm variant)** — oat + muted teal + sage + taupe, coral
   held for emergencies only, opaque surfaces, no glass anywhere. Archived per
   FD-029, 2026-09-08.
-- **01**, **02**, **04c**, **04d** and **05** were archived earlier, and the
-  three admin shell studies sit at `.archive/admin-shell-studies/`.
+- **01**, **02**, **04c**, **04d** and **05** were archived earlier, as were the
+  three admin shell studies.
 
 Every patient direction rebuilds the type scale for Bengali and drops the cap.
 All of them, and the console, honour `prefers-reduced-motion` and
@@ -113,18 +117,16 @@ All of them, and the console, honour `prefers-reduced-motion` and
 
 ## Technical context
 
-- Static HTML/CSS prototype is the current state (no Next.js workspace yet —
-  see `docs/status/current-status.md`).
-- No backend, no auth, no real evidence storage, no real moderation service.
-- The runnable gallery at `ui-design-prototype/index.html` lists what is live —
-  the 04b patient prototype and the staff console — and nothing else. The
-  direction is chosen, so the gallery is a record rather than a picker. Serve
-  the repo with `npm start` (port 8137) or the folder with
-  `python -m http.server 4173`.
-- `docs/architecture/` carries the future spine, but it is not yet wired to
-  code. Trim work is on the static prototype.
-- Node 24.x is available locally for tooling; the prototype itself is
-  dependency-free (no build step, no webfonts, no network).
+- Release 1 is built: a Next.js web app and a pg-boss worker on PostgreSQL 18,
+  run locally on synthetic data with `pnpm demo`. See `README.md` for the
+  architecture and `DEMO.md` for the demo. The staff console, moderation,
+  search and the other FD-105 items are release 2.
+- The static prototype at `ui-design-prototype/index.html` stays as the design
+  reference: the 04b patient prototype and the staff console. It is
+  dependency-free (no build step, no webfonts, no network); serve the folder
+  with any static file server, for example `python -m http.server 4173`.
+- Architecture decisions are in `docs/architecture/decisions/`; where an older
+  document disagrees with the code on layout or stack, the code wins.
 
 ## How to use this file
 
@@ -144,9 +146,9 @@ When an AI coding agent is asked to change something in this product:
 
 ## See also
 
-- `DESIGN.md` — the visual system in the format Impeccable consumes
+- `DESIGN.md` — the visual system
 - `docs/RogiKotha_PRD_v1.0.docx` — full product requirements
 - `docs/RogiKotha_BRD_v1.0.docx` — business requirements
-- `docs/status/decision-log.md` — founder decisions, FD-001 through FD-030
+- `docs/status/decision-log.md` — founder decisions, FD-001 through FD-123
 - `docs/design/design-comparison.md` — Gate 3 scorecard + FD-027 selection
-- `ui-design-prototype/README.md` — the runnable prototype itself
+- `ui-design-prototype/README.md` — the static prototype itself

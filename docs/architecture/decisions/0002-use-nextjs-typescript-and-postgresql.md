@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-08-30
-- **Sources:** `docs/planning/03-research-report.md`, `docs/status/dependency-check-log.md`
+- **Sources:** `docs/planning/03-research-report.md` (on branch `archive/full-project-2026-11-09`), `docs/status/dependency-check-log.md`
 
 ## Decision
 
