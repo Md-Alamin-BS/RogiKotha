@@ -27,6 +27,29 @@ Rules:
 
 ## Entries
 
+### 2026-11-09 (release-1-security-fixes — `better-auth` bump, ISS-704)
+
+- Scope: Build and Test defect fix ISS-704, under the owner's instruction of 2026-11-09 ("Fix all
+  three"): move `apps/web` from `better-auth` 1.7.14 to the latest 1.7.x patch.
+- Checked: `better-auth` dist-tags on npm (`latest` 1.7.18 of 2026-11-05, `beta` 1.8.0-beta.6,
+  `release-1.6` 1.6.34); the GitHub release notes of v1.7.15 (2026-11-01), v1.7.16 (2026-11-03),
+  v1.7.17 (2026-11-04) and v1.7.18 (2026-11-05); the open issues that mention 1.7.18 (none is a
+  regression in a path this app uses: they concern MongoDB, Expo, the organization and
+  oauth-provider plugins, or are feature requests).
+- Findings: 1.7.18 is the current stable; 1.8 is still beta. The security fixes are in 1.7.15
+  (social providers no longer follow redirects on token exchange) and 1.7.16 (revoked sessions
+  stay usable through the cookie cache or secondary storage; email verification and change-email
+  links bound to the issuing account; email OTP guessing under concurrency; wildcard
+  `trustedOrigins` scope; string `email_verified` claims). The behaviour changes are all in parts
+  this app does not use: phone-number fields refused on sign-up and sign-in (phone plugin),
+  `user:set-phone` for `/admin/update-user` (admin plugin), headers from a non-returning
+  `hooks.before`, and `stripeCustomerId` (Stripe plugin). The app's instance has `plugins: []`,
+  no `hooks`, no secondary storage, `cookieCache` disabled and one exact `trustedOrigins` entry.
+  1.7.17 and 1.7.18 are session-revocation, two-factor and test-helper fixes. The lockfile change
+  is the seven `@better-auth/*` 1.7.18 packages and `better-call` 1.4.4 to 1.4.5, nothing else.
+- Decision: `better-auth@~1.7.18` in `apps/web`. Confirmed by `pnpm check` and `pnpm smoke` on
+  the bolt branch.
+
 ### 2026-11-07 (U50 T-503/T-504/T-505 — release-1 browser suite, demo composition, NFR13)
 
 - Scope: the Playwright journeys with axe checks and the NFR13 Lighthouse flow. The 2026-10-29

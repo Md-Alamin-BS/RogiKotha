@@ -10,11 +10,13 @@
 
 -- The one sanctioned bypass: `fn_expire_audit` sets `rk.audit_expiry = on`
 -- (transaction-local — `set_config(..., true)`) for the single DELETE it
--- issues on `audit_events`; every other UPDATE/DELETE on every append-only
--- table, from every role including the table owner, is still blocked
--- unconditionally. Found live while verifying this migration: without this
--- check, `fn_expire_audit`'s own DELETE tripped its table's trigger and the
--- retention-expiry function could never actually delete anything.
+-- issues on `audit_events`. Found live while verifying this migration: without
+-- this check, `fn_expire_audit`'s own DELETE tripped its table's trigger and
+-- the retention-expiry function could never actually delete anything.
+-- As written here the flag alone opens the bypass, so any role holding DELETE
+-- on audit_events (rk_app) could set it (ISS-141). 0012_audit_expiry_owner_gate.sql
+-- replaces fn_block_mutation() and also requires an rk_maintenance session
+-- inside fn_expire_audit (FD-123).
 CREATE FUNCTION fn_block_mutation() RETURNS trigger AS $$
 BEGIN
   IF TG_OP = 'DELETE' AND TG_TABLE_NAME = 'audit_events' AND current_setting('rk.audit_expiry', true) = 'on' THEN

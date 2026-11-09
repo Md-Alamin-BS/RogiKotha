@@ -14,5 +14,8 @@
   "dependencies": {
     "@rogikotha/domain": "workspace:*",
     "@rogikotha/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.4"
   }
 }

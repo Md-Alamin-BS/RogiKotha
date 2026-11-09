@@ -85,6 +85,20 @@
       "when": 1793959989125,
       "tag": "0011_directory_suggestions_and_branch_names",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794210249950,
+      "tag": "0012_audit_expiry_owner_gate",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794210253572,
+      "tag": "0013_worker_evidence_columns",
+      "breakpoints": true
     }
   ]
 }

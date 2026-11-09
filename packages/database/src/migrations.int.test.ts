@@ -133,7 +133,8 @@ describe('migrations apply from an empty database', () => {
     // § 10.5), the same mechanical consequence. U11 adds 0010_identity_constraints (BR5.4).
     const rows = await testDb.execute(sql`select hash from drizzle_migrations order by id`);
     // U46 adds 0011_directory_suggestions_and_branch_names (the same mechanical count change).
-    expect(rows.rows).toHaveLength(12);
+    // FD-123 adds 0012_audit_expiry_owner_gate and 0013_worker_evidence_columns.
+    expect(rows.rows).toHaveLength(14);
   });
 
   it('creates every §1–§5, §9, §11, §15 table', async () => {

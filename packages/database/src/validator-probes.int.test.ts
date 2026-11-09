@@ -3,12 +3,10 @@
 // add test files under the task's test paths and must say so."). See
 // `docs/validation/T-005.md`.
 //
-// Both probes assert the behaviour the specification requires. Neither holds
-// today, so both are marked `it.fails` — the run stays green while the
-// defect is open, and turns **red** the moment the defect is fixed, which is
-// the signal to delete the `.fails` marker and keep the plain assertion.
-// Do not "fix" a red result here by weakening the assertion: a red result
-// means the ISS row below can be closed.
+// Both probes assert the behaviour the specification requires. They started
+// as `it.fails` tripwires while ISS-139 and ISS-141 were open; FD-123
+// (0012_audit_expiry_owner_gate.sql, 0013_worker_evidence_columns.sql) fixed
+// both, so they are plain assertions now. Never weaken one to make it pass.
 import { readFileSync } from 'node:fs';
 
 import { sql } from 'drizzle-orm';
@@ -17,12 +15,41 @@ import { describe, expect, it } from 'vitest';
 
 import { testDb, workerUrlForTestDb } from './test-setup';
 
+/** `DATABASE_URL_TEST` with `rk_maintenance`'s credentials, as `append-only.int.test.ts` derives it. */
+function maintenanceUrlForTestDb(): string {
+  const u = new URL(process.env.DATABASE_URL_TEST!);
+  u.username = 'rk_maintenance';
+  u.password = 'rk_maintenance';
+  return u.toString();
+}
+
+async function insertAuditProbe(stream: string): Promise<void> {
+  await testDb.execute(
+    sql`insert into audit_events (stream, action, actor, details) values (${stream}, 'probe', 'system:validator', '{}')`,
+  );
+}
+
+async function auditRowCount(stream: string): Promise<number> {
+  const result = await testDb.execute<{ n: number }>(
+    sql`select count(*)::int as n from audit_events where stream = ${stream}`,
+  );
+  return result.rows[0]?.n ?? -1;
+}
+
+// Drizzle wraps the driver error ("Failed query: ..."), so the PostgreSQL message is on `cause`.
+async function expectPgError(promise: Promise<unknown>, pattern: RegExp): Promise<void> {
+  await expect(promise).rejects.toSatisfy((err: unknown) => {
+    const cause = err instanceof Error ? err.cause : undefined;
+    const message = cause instanceof Error ? cause.message : undefined;
+    return typeof message === 'string' && pattern.test(message);
+  });
+}
+
 describe('T-005 validator probes', () => {
   // ISS-139. `02-data-model.md` §16 lists `evidence_items.original_filename_enc`
   // among `rk_worker`'s **column-level revokes**; `0005_grants_part2.sql`
-  // grants the whole table instead, so the worker can read the private
-  // filename ciphertext column.
-  it.fails('ISS-139: rk_worker cannot read evidence_items.original_filename_enc', async () => {
+  // granted the whole table, and 0013_worker_evidence_columns.sql narrows it.
+  it('ISS-139: rk_worker cannot read evidence_items.original_filename_enc', async () => {
     const pool = new Pool({ connectionString: workerUrlForTestDb() });
     try {
       await expect(
@@ -33,27 +60,24 @@ describe('T-005 validator probes', () => {
     }
   });
 
-  // ISS-141. `fn_block_mutation()`'s escape hatch keys off a plain
+  // ISS-141. `fn_block_mutation()`'s escape hatch keyed off a plain
   // transaction-local GUC (`rk.audit_expiry`) that any role may set with
-  // `set_config()`. `rk_app` holds DELETE on `audit_events` (it owns the
-  // table), so the append-only invariant of `02-data-model.md` §10 is one
-  // `set_config` call away from being bypassed by the web tier — contrary to
-  // `0003_triggers.sql`'s own comment ("every other UPDATE/DELETE ... from
-  // every role including the table owner, is still blocked unconditionally").
-  it.fails(
-    'ISS-141: setting rk.audit_expiry does not let rk_app delete audit_events rows',
-    async () => {
-      await testDb.execute(
-        sql`insert into audit_events (stream, action, actor, details) values ('validator:iss-141', 'probe', 'system:validator', '{}')`,
-      );
-      await expect(
-        testDb.transaction(async (tx) => {
-          await tx.execute(sql`select set_config('rk.audit_expiry', 'on', true)`);
-          await tx.execute(sql`delete from audit_events where stream = 'validator:iss-141'`);
-        }),
-      ).rejects.toThrow(/append_only_violation/i);
-    },
-  );
+  // `set_config()`, and `rk_app` holds DELETE on `audit_events` (it owns the
+  // table). 0012_audit_expiry_owner_gate.sql also requires an rk_maintenance
+  // session inside `fn_expire_audit`.
+  it('ISS-141: setting rk.audit_expiry does not let rk_app delete audit_events rows', async () => {
+    await testDb.execute(
+      sql`insert into audit_events (stream, action, actor, details) values ('validator:iss-141', 'probe', 'system:validator', '{}')`,
+    );
+    await expectPgError(
+      testDb.transaction(async (tx) => {
+        await tx.execute(sql`select set_config('rk.audit_expiry', 'on', true)`);
+        await tx.execute(sql`delete from audit_events where stream = 'validator:iss-141'`);
+      }),
+      /append_only_violation/i,
+    );
+    expect(await auditRowCount('validator:iss-141')).toBeGreaterThanOrEqual(1);
+  });
 });
 
 // CR-006 (FD-041, FD-092): plain probes, not tripwires. Each runs one zero-row
@@ -201,7 +225,8 @@ describe('CR-006: rk_worker privilege boundary', () => {
       // T-101 adds 0009_auth_indexes_and_email_dedupe (same mechanical count change as ISS-242).
       // U11 adds 0010_identity_constraints (BR5.4).
       // U46 adds 0011_directory_suggestions_and_branch_names.
-      expect(applied.rows).toHaveLength(12);
+      // FD-123 adds 0012_audit_expiry_owner_gate and 0013_worker_evidence_columns.
+      expect(applied.rows).toHaveLength(14);
     });
   });
 
@@ -300,5 +325,96 @@ describe('CR-006: rk_worker privilege boundary', () => {
         ).resolves.toBeDefined();
       });
     });
+  });
+});
+
+describe('FD-123: the fixed boundaries of ISS-139 and ISS-141', () => {
+  it('ISS-139: rk_worker cannot update evidence_items.original_filename_enc', async () => {
+    const pool = new Pool({ connectionString: workerUrlForTestDb() });
+    try {
+      await expect(
+        pool.query("update evidence_items set original_filename_enc = '\\x00' where false"),
+      ).rejects.toThrow(PERMISSION_DENIED);
+    } finally {
+      await pool.end();
+    }
+  });
+
+  it('ISS-632: rk_worker cannot read evidence_items.uploaded_by_account_id', async () => {
+    const pool = new Pool({ connectionString: workerUrlForTestDb() });
+    try {
+      await expect(
+        pool.query('select uploaded_by_account_id from evidence_items limit 1'),
+      ).rejects.toThrow(PERMISSION_DENIED);
+      await expect(pool.query('select * from evidence_items limit 1')).rejects.toThrow(
+        PERMISSION_DENIED,
+      );
+    } finally {
+      await pool.end();
+    }
+  });
+
+  it('rk_worker can still read the columns its jobs use and change an item state', async () => {
+    const pool = new Pool({ connectionString: workerUrlForTestDb() });
+    try {
+      await pool.query(
+        'select id, review_id, state, created_at, declared_mime, detected_mime, original_bytes, original_sha256 from evidence_items limit 1',
+      );
+      await pool.query(
+        "update evidence_items set state = 'failed', fail_reason = null, updated_at = now() where false returning id",
+      );
+      await pool.query('select id from evidence_items where false for update skip locked');
+    } finally {
+      await pool.end();
+    }
+  });
+
+  it('ISS-141: rk_app calling fn_expire_audit still cannot delete audit rows', async () => {
+    await insertAuditProbe('validator:iss-141-app-call');
+    await expectPgError(
+      testDb.execute(sql`select fn_expire_audit(now() + interval '1 minute')`),
+      /append_only_violation/i,
+    );
+    expect(await auditRowCount('validator:iss-141-app-call')).toBe(1);
+  });
+
+  it('ISS-141: rk_maintenance cannot delete audit rows directly, even with the flag set', async () => {
+    await insertAuditProbe('validator:iss-141-maintenance');
+    const pool = new Pool({ connectionString: maintenanceUrlForTestDb() });
+    const client = await pool.connect();
+    try {
+      await client.query('begin');
+      await client.query("select set_config('rk.audit_expiry', 'on', true)");
+      await expect(
+        client.query("delete from audit_events where stream = 'validator:iss-141-maintenance'"),
+      ).rejects.toThrow(PERMISSION_DENIED);
+      await client.query('rollback');
+    } finally {
+      client.release();
+      await pool.end();
+    }
+    expect(await auditRowCount('validator:iss-141-maintenance')).toBe(1);
+  });
+
+  it('ISS-141: rk_worker can no longer execute fn_expire_audit', async () => {
+    const pool = new Pool({ connectionString: workerUrlForTestDb() });
+    try {
+      await expect(
+        pool.query("select fn_expire_audit(now() - interval '100 years')"),
+      ).rejects.toThrow(PERMISSION_DENIED);
+    } finally {
+      await pool.end();
+    }
+  });
+
+  it('ISS-148: both append-only functions pin search_path', async () => {
+    const result = await testDb.execute<{ name: string; config: string[] | null }>(
+      sql`select proname as name, proconfig as config from pg_proc
+          where proname in ('fn_block_mutation', 'fn_expire_audit') order by proname`,
+    );
+    expect(result.rows).toEqual([
+      { name: 'fn_block_mutation', config: ['search_path=pg_catalog, public, pg_temp'] },
+      { name: 'fn_expire_audit', config: ['search_path=pg_catalog, public, pg_temp'] },
+    ]);
   });
 });

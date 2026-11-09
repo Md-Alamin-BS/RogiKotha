@@ -65,12 +65,11 @@ export const evidenceItems = pgTable(
     detectedMime: text('detected_mime', { enum: PHASE1_MIME_TYPES }),
     originalBytes: bigint('original_bytes', { mode: 'number' }).notNull(),
     originalSha256: text('original_sha256').notNull(),
-    // Private (02-data-model.md §7).
+    // Private (02-data-model.md §7); `rk_worker` holds no SELECT or UPDATE on it (0013, FD-123).
     originalFilenameEnc: bytea('original_filename_enc').notNull(),
     pageCount: integer('page_count').notNull().default(1),
-    // Private. `0005_grants_part2.sql` grants `rk_worker` table-wide SELECT on
-    // `evidence_items`, so the database does not hide this column; BR4.8 keeps
-    // it out of the worker's column list (U48, R-06).
+    // Private; `rk_worker` holds no SELECT on it (0013, FD-123), and BR4.8 keeps it out of the
+    // worker's column list (U48, R-06).
     uploadedByAccountId: uuid('uploaded_by_account_id')
       .notNull()
       .references(() => accountProfiles.id),

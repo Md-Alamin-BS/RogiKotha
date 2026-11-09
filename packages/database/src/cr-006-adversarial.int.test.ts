@@ -143,7 +143,7 @@ describe('CR-006 adversarial: rk_worker cannot be widened by mistake', () => {
       );
       expect(views.rows).toEqual([]);
 
-      // fn_expire_audit is the one ruled exception (0003_triggers.sql); any new one must be reviewed.
+      // rk_worker executes no security-definer function since 0012 revoked fn_expire_audit (FD-123); any new one must be reviewed.
       const definers = await pool.query<{ name: string; readsAuthUsers: boolean }>(
         `select p.oid::regprocedure::text as name, p.prosrc ilike '%auth_users%' as "readsAuthUsers"
          from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -151,9 +151,7 @@ describe('CR-006 adversarial: rk_worker cannot be widened by mistake', () => {
            and n.nspname not in ${SYSTEM_SCHEMAS}
            and has_function_privilege('rk_worker', p.oid, 'EXECUTE')`,
       );
-      expect(definers.rows).toEqual([
-        { name: 'fn_expire_audit(timestamp with time zone)', readsAuthUsers: false },
-      ]);
+      expect(definers.rows).toEqual([]);
 
       // A trigger function fires without an EXECUTE check on the session role.
       const definerTriggers = await pool.query<{ name: string }>(
