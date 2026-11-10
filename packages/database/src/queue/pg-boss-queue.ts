@@ -4,7 +4,6 @@
 // `work(name, handler)`) — `packages/application` does not declare the
 // `JobQueue` interface yet (T-101 onward creates it), so there is no
 // `implements` clause here yet.
-// TODO(T-101): implements JobQueue
 import { PgBoss } from 'pg-boss';
 import type { JobWithMetadata } from 'pg-boss';
 

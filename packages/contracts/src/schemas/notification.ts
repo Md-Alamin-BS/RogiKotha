@@ -11,7 +11,7 @@ export const MarkNotificationsReadInput = z.union([
 
 export const NotificationUnreadCountInput = z.object({}).strict();
 
-// TODO(T-405): the worker-internal `notification.deliver` job payload shape
+// Release 2 (T-405): the worker-internal `notification.deliver` job payload shape
 // (event name + ids, per 03-routes-and-contracts.md §5) is owned by that task.
 export const NotificationDeliverJobInput = z.unknown();
 

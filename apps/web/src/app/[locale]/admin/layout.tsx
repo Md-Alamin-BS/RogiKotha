@@ -17,7 +17,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = { ...noindex() };
 
 // Task step 13: staff console chrome. No auth guard yet.
-// TODO(T-103): staff guard (redirect unauthenticated/non-staff visitors to
+// Release 2 (T-103): staff guard (redirect unauthenticated/non-staff visitors to
 // /admin/sign-in) belongs here once the account system exists.
 export default async function AdminLayout({
   children,

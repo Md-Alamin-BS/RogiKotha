@@ -3,7 +3,7 @@
 // (02-data-model.md §12); every item renders a `message_key` + `params`
 // pair, never free text.
 //
-// TODO(T-408): owner refines every field below against the ported
+// Release 2 (T-408): owner refines every field below against the ported
 // component.
 import type { StaffNotificationKind } from '../enums';
 

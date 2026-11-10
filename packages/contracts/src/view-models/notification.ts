@@ -4,7 +4,7 @@
 // console's notification feed is `StaffNotificationsVM` in
 // `view-models/staff-notifications.ts`.
 //
-// TODO(T-405): owner refines every field below against the ported
+// Release 2 (T-405): owner refines every field below against the ported
 // component.
 import type { NotificationKind } from '../enums';
 

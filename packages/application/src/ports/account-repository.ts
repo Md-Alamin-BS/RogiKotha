@@ -44,7 +44,7 @@ export interface NewAccountProfile {
   termsAcceptedAt: Date;
 }
 
-/** TODO(T-104): moves behind the identity repository; ids come from the caller's IdGenerator. */
+/** Release 2 (T-104): moves behind the identity repository; ids come from the caller's IdGenerator. */
 export interface NewDefaultPersonas {
   accountId: string;
   username: string;

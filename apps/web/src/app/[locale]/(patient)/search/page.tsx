@@ -12,7 +12,7 @@ export default async function SearchResultsPage() {
   const t = await getTranslations();
   return (
     <ViewShell view="results" title={titleForView('results', t)}>
-      <p className="note">{t('shell.placeholder', { task: 'T-206' })}</p>
+      <p className="note">{t('shell.placeholder')}</p>
     </ViewShell>
   );
 }

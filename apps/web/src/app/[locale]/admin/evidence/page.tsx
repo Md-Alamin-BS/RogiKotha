@@ -12,7 +12,7 @@ export default async function EvidenceQuarantinePage() {
   const t = await getTranslations();
   return (
     <ViewShell view="evidence" title={titleForView('evidence', t)}>
-      <p className="note">{t('shell.placeholder', { task: 'T-407' })}</p>
+      <p className="note">{t('shell.placeholder')}</p>
     </ViewShell>
   );
 }

@@ -584,7 +584,7 @@ export async function seedContent(db: Db, ctx: SeedContext): Promise<number> {
       id: newId(),
       accountId,
       kind: 'quick',
-      payloadEnc: payload, // TODO(T-101/T-301): encrypt with the real Crypto port once it exists.
+      payloadEnc: payload, // Release 2 (T-101/T-301): the seed stores the plain payload; encrypt it with the Crypto port.
       doctorId,
       blockedOnSubmissionId,
       expiresAt: new Date(Date.now() + d.expiresInDays * 24 * 60 * 60 * 1000),

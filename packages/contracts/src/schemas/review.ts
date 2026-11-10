@@ -247,7 +247,7 @@ export const RestoreReviewInput = z.object({ reviewId: z.string().min(1) }).stri
 
 export const GetExperienceInput = z.object({ publicId }).strict();
 
-// TODO(T-301): filter shape owned by that task.
+// Release 2 (T-301): filter shape owned by that task.
 export const ListExperiencesInput = z
   .object({ ...PageParams, filters: z.unknown().optional() })
   .strict();

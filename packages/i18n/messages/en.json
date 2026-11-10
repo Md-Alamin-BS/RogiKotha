@@ -1155,7 +1155,7 @@
     "ofTotal": "{n, plural, one {of {count} patient experience} other {of {count} patient experiences}}"
   },
   "shell": {
-    "placeholder": "This screen arrives with task {task}."
+    "placeholder": "This page is part of the next release."
   },
   "sort": {
     "label": "Order",

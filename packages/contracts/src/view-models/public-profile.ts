@@ -3,7 +3,7 @@
 // published reviews — an allowlisted projection, never account id, email,
 // or private identity linkage (01-conventions.md §5).
 //
-// TODO(T-409): owner refines every field below against the ported
+// Release 2 (T-409): owner refines every field below against the ported
 // component.
 export interface PublicProfileReviewRefVM {
   publicId: string;

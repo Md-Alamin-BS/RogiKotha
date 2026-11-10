@@ -13,7 +13,7 @@ export default async function SavedPage() {
   const t = await getTranslations();
   return (
     <ViewShell view="saved" title={titleForView('saved', t)}>
-      <p className="note">{t('shell.placeholder', { task: 'T-409' })}</p>
+      <p className="note">{t('shell.placeholder')}</p>
     </ViewShell>
   );
 }

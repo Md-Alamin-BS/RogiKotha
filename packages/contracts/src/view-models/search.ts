@@ -2,7 +2,7 @@
 // (compare tray/sheet), app.js. Maps from the `search.query` command's
 // output (03-routes-and-contracts.md §4 "search (T-205)").
 //
-// TODO(T-206): owner refines every field below against the ported
+// Release 2 (T-206): owner refines every field below against the ported
 // component; `SearchResultItemVM`'s card union is a placeholder — the
 // actual page renders two tabs (doctors, facilities) with conditions/
 // reviews as a documented follow-up (03-routes-and-contracts.md §1).

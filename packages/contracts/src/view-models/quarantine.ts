@@ -2,7 +2,7 @@
 // controls), admin/app.js. Maps from RK.moderation.quarantine (stage,
 // stages, note, failClosed).
 //
-// TODO(T-407): owner refines every field below against the ported
+// Release 2 (T-407): owner refines every field below against the ported
 // component; whether staff ever see the original filename (vs. a
 // server-generated label) is this task's call against 01-conventions.md §4
 // ("original filename is private metadata only").

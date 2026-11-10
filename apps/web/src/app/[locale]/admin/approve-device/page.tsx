@@ -12,7 +12,7 @@ export default async function StaffApproveDevicePage() {
   const t = await getTranslations();
   return (
     <ViewShell view="admin-approve" title={titleForView('admin-approve', t)}>
-      <p className="note">{t('shell.placeholder', { task: 'T-103' })}</p>
+      <p className="note">{t('shell.placeholder')}</p>
     </ViewShell>
   );
 }

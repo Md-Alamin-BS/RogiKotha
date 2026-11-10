@@ -3,7 +3,7 @@
 // Maps from RK.user (published, drafts, bookmarks) and the account/
 // data-requests/moderation queries this page composes.
 //
-// TODO(T-409): owner refines every field below against the ported
+// Release 2 (T-409): owner refines every field below against the ported
 // component.
 import type { DataRequestKind, DataRequestStatus, Locale, PublicationState } from '../enums';
 

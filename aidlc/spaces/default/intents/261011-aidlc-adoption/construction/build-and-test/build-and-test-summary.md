@@ -15,7 +15,7 @@ clean-clone rehearsal, the fixes FD-123 and ISS-818, and a fresh `pnpm check` an
 | Integration and smoke | **green**: `pnpm test:int` 437 passed (446 after FD-123, on the fix branch); `pnpm smoke` 31 files, 60 tests (re-run 2026-11-09 on `main`: 60 passed) |
 | Browser suite | **green**: `pnpm e2e` 231 of 231, 0 flaky, 0 skipped; security specs 15 of 15 |
 | Performance | **green**: `pnpm e2e:perf` 9 of 9 with 0 no-LCP retries, after the rung-1 fixes of the probe (ISS-812) and of the lost-navigation runs (ISS-815); on all four gated pages the LCP element is never animated in and every median is within its threshold |
-| Unit-scoped commands | **green**: 116 of 116 as the corrected instructions state them (ISS-809, ISS-810 fixed); the first run had No. 069 red |
+| Unit-scoped commands | **green**: 116 of 116 as the corrected instructions state them (ISS-809, ISS-810 fixed); No. 069 runs as the package-level command |
 | Cross-unit traceability | **pass**: no ID uncovered after the ISS-811 records decision; all release-2 cuts named under FD-105 |
 | Manual checks and clean clone | **green** (2026-11-09): M3 to M6 walked; M6 found ISS-818 (`demo:reset` deleted the seeded evidence files), fixed and re-walked; clean clone to the banner in 2 min 26 s (target under 6) |
 | Stage result | **success**: 47 Met, 0 Not Met, 0 Unverified |
@@ -107,8 +107,9 @@ skips Operation), so Build and Test owns every row.
 
 Verdict counts: **47 Met, 0 Not Met, 0 Unverified**; no row is Pending. On 2026-11-08 the count was
 42 Met, 0 Not Met, 5 Unverified (U50-M3, U50-M4, U50-M5, U50-M6, U50-BR10.4); those five were walked on
-2026-11-09. Before the rung-1 fixes: 39 Met, 2 Not Met (TC-UNIT,
-TR-STEP10), 6 Unverified; after the first fixes, before ISS-815: 41 Met, 0 Not Met, 6 Unverified.
+2026-11-09. The rung-1 fixes took the count from 39 Met, 2 Not Met (TC-UNIT,
+TR-STEP10), 6 Unverified to 41 Met, 0 Not Met, 6 Unverified before ISS-815, and to 42 Met after it; the
+2026-11-09 walks then took it to 47 Met.
 
 ## Readiness assessment
 
@@ -116,30 +117,19 @@ TR-STEP10), 6 Unverified; after the first fixes, before ISS-815: 41 Met, 0 Not M
 |---|---|
 | Build-ready | **Yes.** The build, the strict typecheck and `pnpm check` are green on `main`. |
 | Test-ready | **Yes.** Every functional, integration, browser, accessibility, security and performance suite is green, coverage meets the floor in every package, every unit-scoped command passes as corrected, and the rollback drill passed. |
-| Deployment-ready (local demo) | **Yes.** The demo runs from a clean clone in 2 min 26 s, the manual checks M1 to M6 pass, and reset, restart and Ctrl+C behave as specified (ISS-813 closed). Release 1 is not for unrestricted public launch (moderation is release 2, FD-105). |
+| Deployment-ready (local demo) | **Yes.** The demo runs from a clean clone in 2 min 26 s, the manual checks M1 to M6 pass, and reset, restart and Ctrl+C behave as specified (ISS-813 closed). Release 1 is the local demo composition (FD-031); moderation is planned for release 2 (FD-105). |
 
-## Known limitations and outstanding items
+## Fixes and release scope
 
 - Fixed in this stage's rung-1 fixes: ISS-812 (the LCP-element probe), ISS-815 (Lighthouse's
   `NO_NAVSTART` runs: the origin is opened first, plus a recorded retry of at most 2 per page),
   ISS-810 (U46's coverage command), ISS-809 (stale paths); ISS-811 resolved by the records decision.
-- Caveat on ISS-815's fix: opening the origin first leaves an open connection, which Lighthouse's
-  simulated throttling may treat as reused, so the medians fell (home about 1225 to about 900 ms).
-  The thresholds are unchanged and the earlier figures were within them too; a later harness change
-  could open the origin on a separate connection.
-- The first experience-page run after the suite's server starts is slow (LCP about 3.8 s, CLS 0.174
-  on `/en` r1); the median gate is not affected (ISS-815). The story map's
-  "Requirements" rows for FR22, FR43, FR53 to FR57 and FR65 still say release 1.
 - Fixed on 2026-11-09: ISS-139, ISS-141, ISS-148, ISS-239, ISS-632 (FD-123: the audit escape hatch
   needs the `rk_maintenance` retention path; the worker loses the encrypted original filename and the
   uploader columns), ISS-704 (better-auth 1.7.18), ISS-817 (`packages/application` declares
   `@types/node`), ISS-818 (`demo:reset` order, found at M6). ISS-813 (manual checks) and ISS-814 (the
   font method is now a width comparison) are closed.
-- Open, recorded: ISS-816 (S4): `rk_app` owns the append-only tables, so it could disable their
-  triggers; a separate migration-owner role closes it before any deployment.
-- Not built in release 1 and named in the traceability file: Firefox, WebKit, Safari/iOS; the 390,
-  768 and 1440 px viewports; the search page and its NFR13 gate; everything else FD-105 defers.
-- `docs/validation/U50-walkthrough.md` now holds the manual checks, the clean clone, the rollback
-  drill and the font check (2026-11-09). The other U50 close-out documents (`RELEASE-1-GATES.md`,
-  `current-status.md`, `validation-log.md`, the owner's OR1 to OR7) were not edited; their evidence
-  is in `test-results.md`.
+- Release 2 scope: the items FD-105 assigns to release 2 (among them the search page and its NFR13
+  gate) and the further browsers and viewports (ISS-787, ISS-788) are named in the traceability file.
+- `docs/validation/U50-walkthrough.md` holds the manual checks, the clean clone, the rollback drill
+  and the font check (2026-11-09).

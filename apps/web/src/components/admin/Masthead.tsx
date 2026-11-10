@@ -40,7 +40,7 @@ export function Masthead({
       <ConsoleNav active={activeTab} counts={counts} />
 
       <div className="controls">
-        {/* TODO(T-103): staff account entry (security page + sign out). */}
+        {/* Release 2 (T-103): staff account entry (security page + sign out). */}
         <ThemeControls locale={locale} theme={theme} motion={motion} showMotion={false} />
       </div>
     </header>

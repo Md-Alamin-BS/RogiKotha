@@ -1155,7 +1155,7 @@
     "ofTotal": "{n, plural, one {{count}টি রোগীর অভিজ্ঞতার মধ্যে} other {{count}টি রোগীর অভিজ্ঞতার মধ্যে}}"
   },
   "shell": {
-    "placeholder": "এই স্ক্রিনটি টাস্ক {task}-এ আসবে।"
+    "placeholder": "এই পাতাটি পরবর্তী সংস্করণের অংশ।"
   },
   "sort": {
     "label": "ক্রম",

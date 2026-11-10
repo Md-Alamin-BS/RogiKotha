@@ -12,7 +12,7 @@ export default async function StaffSignInPage() {
   const t = await getTranslations();
   return (
     <ViewShell view="admin-signin" title={titleForView('admin-signin', t)}>
-      <p className="note">{t('shell.placeholder', { task: 'T-103' })}</p>
+      <p className="note">{t('shell.placeholder')}</p>
     </ViewShell>
   );
 }

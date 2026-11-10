@@ -4,7 +4,7 @@
 // a public view model (03-routes-and-contracts.md §4 `evidence.getPublic`
 // "only published").
 //
-// TODO(T-308): owner refines every field below against the ported
+// Release 2 (T-308): owner refines every field below against the ported
 // evidence-viewer component.
 import type { EvidenceGroup } from '../enums';
 

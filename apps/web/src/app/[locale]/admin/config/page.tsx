@@ -12,7 +12,7 @@ export default async function ConfigViewPage() {
   const t = await getTranslations();
   return (
     <ViewShell view="config" title={titleForView('config', t)}>
-      <p className="note">{t('shell.placeholder', { task: 'T-408' })}</p>
+      <p className="note">{t('shell.placeholder')}</p>
     </ViewShell>
   );
 }

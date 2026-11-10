@@ -76,7 +76,7 @@ export const DoctorsAtBranchInput = z.object({ branchPublicId: publicId }).stric
 
 export const FacilitiesForDoctorInput = z.object({ doctorPublicId: publicId }).strict();
 
-// TODO(T-201/T-204): `payload` shape (per-kind submission fields) owned by
+// Release 2 (T-201/T-204): `payload` shape (per-kind submission fields) owned by
 // the directory tasks.
 export const SubmitProfileInput = z
   .object({
@@ -132,7 +132,7 @@ export const DecideClaimInput = z
   })
   .strict();
 
-// TODO(T-201): `newValue`'s shape depends on `field`; kept unknown here.
+// Release 2 (T-201): `newValue`'s shape depends on `field`; kept unknown here.
 export const ProposeFieldChangeInput = z
   .object({
     targetKind: PROFILE_KIND,

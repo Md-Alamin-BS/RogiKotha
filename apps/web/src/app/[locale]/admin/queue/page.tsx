@@ -12,7 +12,7 @@ export default async function QueuePage() {
   const t = await getTranslations();
   return (
     <ViewShell view="queue" title={titleForView('queue', t)}>
-      <p className="note">{t('shell.placeholder', { task: 'T-406' })}</p>
+      <p className="note">{t('shell.placeholder')}</p>
     </ViewShell>
   );
 }

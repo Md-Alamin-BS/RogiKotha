@@ -59,7 +59,7 @@ export const CreateDefaultPersonasInput = z
   })
   .strict();
 
-// TODO(T-104): private query consumed only by data-requests and moderation
+// Release 2 (T-104): private query consumed only by data-requests and moderation
 // enforcement — exact filter shape owned by that task.
 export const AccountsOfInput = z.unknown();
 

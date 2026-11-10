@@ -2,7 +2,7 @@
 // admin/app.js. Maps from `config_versions`/`config_changes`
 // (02-data-model.md §11).
 //
-// TODO(T-408): owner refines every field below against the ported
+// Release 2 (T-408): owner refines every field below against the ported
 // component.
 import type { ConfigValues } from '../config-values';
 

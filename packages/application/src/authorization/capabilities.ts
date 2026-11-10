@@ -3,7 +3,7 @@
 // as staff (T-103 F2, BR4.3).
 import type { Capability, StaffRole } from '@rogikotha/contracts';
 
-/** TODO(T-103): resolve the role's capabilities behind the approved-device gate. */
+/** Release 2 (T-103): resolve the role's capabilities behind the approved-device gate. */
 export function capabilitiesFor(_staffRole: StaffRole | null): Capability[] {
   void _staffRole;
   return [];

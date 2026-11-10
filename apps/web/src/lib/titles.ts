@@ -2,7 +2,7 @@
 // admin/app.js's equivalent per-tab titles. Static branches only — a
 // dynamic detail page (doctor name, condition name, case code, …) is
 // filled in by the task that owns that page's real data, marked
-// `// TODO(T-xxx)` at the call site.
+// `// Release 2 (T-xxx)` at the call site.
 export type Translate = (key: string) => string;
 
 export type ViewName =

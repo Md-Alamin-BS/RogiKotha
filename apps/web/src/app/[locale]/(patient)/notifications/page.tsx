@@ -13,7 +13,7 @@ export default async function NotificationsPage() {
   const t = await getTranslations();
   return (
     <ViewShell view="notifications" title={titleForView('notifications', t)}>
-      <p className="note">{t('shell.placeholder', { task: 'T-405' })}</p>
+      <p className="note">{t('shell.placeholder')}</p>
     </ViewShell>
   );
 }

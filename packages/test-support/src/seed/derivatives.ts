@@ -1,4 +1,4 @@
-// TODO(T-304): re-seed through the pipeline. Until the real evidence
+// Release 2 (T-304): re-seed through the pipeline. Until the real evidence
 // pipeline exists, this generates evidence derivatives directly with
 // sharp: one `page_png` (1240x1754, white, the DEMO marker text + item
 // label + page number, drawn via an SVG overlay) and one `thumbnail`

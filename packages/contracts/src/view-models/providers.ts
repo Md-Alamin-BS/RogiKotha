@@ -2,7 +2,7 @@
 // changes), admin/app.js. Maps from RK.moderation.providers (pending,
 // claims, fieldChanges).
 //
-// TODO(T-407): owner refines every field below against the ported
+// Release 2 (T-407): owner refines every field below against the ported
 // component.
 export interface PendingSubmissionVM {
   id: string;

@@ -12,7 +12,7 @@ export default async function ProvidersPage() {
   const t = await getTranslations();
   return (
     <ViewShell view="providers" title={titleForView('providers', t)}>
-      <p className="note">{t('shell.placeholder', { task: 'T-407' })}</p>
+      <p className="note">{t('shell.placeholder')}</p>
     </ViewShell>
   );
 }

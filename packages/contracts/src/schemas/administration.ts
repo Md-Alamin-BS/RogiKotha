@@ -10,7 +10,7 @@ export const GetConfigHistoryInput = z
   .object({ page: z.number().int().min(1).optional() })
   .strict();
 
-// TODO(T-408): whether a shallow or deep partial best fits the config
+// Release 2 (T-408): whether a shallow or deep partial best fits the config
 // editor's diff preview is owned by that task; shallow partial for now.
 export const ProposeConfigInput = z.object({ values: ConfigValuesSchema.partial() }).strict();
 

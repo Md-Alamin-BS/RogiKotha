@@ -3,7 +3,7 @@
 // identity never appears here (01-conventions.md §5): the console always
 // reads "restricted".
 //
-// TODO(T-406): owner refines every field below against the ported
+// Release 2 (T-406): owner refines every field below against the ported
 // component.
 import type { CaseStatus, ModerationAction, ModerationLane, ReportReason } from '../enums';
 

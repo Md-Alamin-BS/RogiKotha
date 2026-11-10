@@ -2,7 +2,7 @@
 // Maps from RK.moderation.cases (lane, ageHours, reports, autoHidden,
 // coordinated, reasons, targetKind).
 //
-// TODO(T-406): owner refines every field below against the ported
+// Release 2 (T-406): owner refines every field below against the ported
 // component.
 import type { ModerationLane, ReportReason, TargetKind } from '../enums';
 

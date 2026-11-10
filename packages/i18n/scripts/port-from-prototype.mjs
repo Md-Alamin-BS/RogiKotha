@@ -519,10 +519,10 @@ const ADDENDUM_KEYS = {
   'emergency.ambulanceLabel': { en: 'Ambulance', bn: 'অ্যাম্বুলেন্স' },
   'emergency.healthLineLabel': { en: 'Health guidance', bn: 'স্বাস্থ্য পরামর্শ' },
   'experience.publishedLabel': { en: 'Published', bn: 'প্রকাশ' },
-  // shell.placeholder: wording pinned by docs/implementation/tasks/T-008-web-shell.md step 14.
+  // shell.placeholder: the planned next-release page notice.
   'shell.placeholder': {
-    en: 'This screen arrives with task {task}.',
-    bn: 'এই স্ক্রিনটি টাস্ক {task}-এ আসবে।',
+    en: 'This page is part of the next release.',
+    bn: 'এই পাতাটি পরবর্তী সংস্করণের অংশ।',
   },
   // notif.*: five keys named (not worded) by T-007 step 6. Templates below are
   // generalisations of RK.user.notifications' n1-n5 free text into parameterised

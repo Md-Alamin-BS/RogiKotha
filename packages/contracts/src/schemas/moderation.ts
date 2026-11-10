@@ -57,7 +57,7 @@ export const FileAppealInput = z
   })
   .strict();
 
-// TODO(T-404): the appeal review checklist shape is owned by that task.
+// Release 2 (T-404): the appeal review checklist shape is owned by that task.
 export const DecideAppealInput = z
   .object({
     appealId: z.string().min(1),
